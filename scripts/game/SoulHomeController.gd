@@ -1,4 +1,8 @@
 extends Node2D
+
+## SoulGrowthData preload (class_name may not be registered in all contexts)
+const SoulGrowthData = preload("res://scripts/game/SoulGrowthData.gd")
+
 ## SoulHomeController - Controller for the Soul Home scene
 ##
 ## Manages the soul home environment, soul display, room switching,
@@ -23,7 +27,7 @@ var rooms: Dictionary = {
 }
 
 ## Soul growth data reference
-var soul_growth: SoulGrowthData = null
+var soul_growth: Resource = null
 
 ## Soul display node (placeholder for M1)
 var soul_display: Node2D = null
@@ -167,7 +171,7 @@ func _enter_soul_world() -> void:
 		"communicationMedium": "direct_api"
 	}
 
-	SoulArenaClient.enter_world(soul_id, body, self, "_on_world_entered")
+	SoulArenaClient.enter_world(soul_id, soul_world_id, "", self, "_on_world_entered")
 
 
 ## Callback for world enter
