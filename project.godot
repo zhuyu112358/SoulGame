@@ -40,8 +40,13 @@ AnimationManager="*res://scripts/core/AnimationManager.gd"
 
 window/size/viewport_width=1280
 window/size/viewport_height=720
+window/size/window_width_override=1280
+window/size/window_height_override=720
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
+window/handheld/orientation=0
+window/vsync/vsync_mode=1
+window/permissions/internet_access=true
 
 [input]
 
@@ -72,6 +77,29 @@ toggle_debug={
 [physics]
 
 common/physics_ticks_per_second=60
+common/physics_jitter_fix=0.5
+2d/use_continuous_collision_detection=false
+2d/default_gravity=980.0
+2d/default_gravity_vector=Vector2(0, 1)
+
+[audio]
+
+buses/default_bus_layout="res://default_bus_layout.tres"
+driver/mix_rate=44100
+driver/output_latency=0.05
+
+[debug]
+
+settings/fps/force_fps=0
+settings/print_to_console=true
+settings/stdout/verbose_stdout=false
+gdscript/warnings/untyped_declaration=1
+gdscript/warnings/integer_division=1
+gdscript/warnings/unsafe_call=1
+gdscript/warnings/unsafe_property_access=1
+gdscript/warnings/native_method_override=1
+gdscript/completion/add_type_hints=true
+gdscript/places_capitalization=false
 
 [rendering]
 
@@ -79,3 +107,23 @@ renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
 textures/canvas_textures/default_texture_filter=0
 environment/defaults/default_clear_color=Color(0.05, 0.05, 0.08, 1)
+2d/snap/snap_2d_transforms_to_pixel=false
+2d/snap/snap_2d_rotation_to_pixel=false
+2d/snap/snap_2d_vertices_to_pixel=false
+2d/options/use_pixel_snap=false
+anti_aliasing/quality/msaa_2d=0
+anti_aliasing/quality/use_debanding=false
+lights_and_shadows/2d/use_shadow_texture=true
+lights_and_shadows/2d/shadow_texture_size=2048
+lights_and_shadows/2d/shadow_atlas_size=2048
+lights_and_shadows/2d/directional_shadow_mode=1
+particles/use_gpu_sim=true
+limits/buffers/lightmap_capture_pool_size=256
+limits/buffers/particles_pool_size=2048
+limits/buffers/particles_emitter_pool_size=256
+limits/buffers/particles_draw_list_size=2048
+limits/buffers/2d/vertices=4096
+limits/buffers/2d/indices=8192
+debug/draw_fps=false
+debug/draw_time_discrete=false
+debug/viewport/debug_compat=false
