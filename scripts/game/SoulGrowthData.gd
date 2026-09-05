@@ -194,14 +194,16 @@ func add_dimension_experience(dimension: String, amount: int, sub_dim: String = 
 
 ## Check if a dimension leveled up
 func _check_dimension_level_up(dim_data: Dictionary) -> bool:
-	var exp_needed := _calc_dimension_exp_to_next(dim_data["level"])
+	var exp_needed: int = _calc_dimension_exp_to_next(int(dim_data["level"]))
 	if dim_data["experience"] >= exp_needed:
 		dim_data["experience"] -= exp_needed
 		dim_data["level"] += 1
 		# Increase all sub-dimension values by 1
 		if dim_data.has("sub_dimensions"):
-			for sub in dim_data["sub_dimensions"]:
-				dim_data["sub_dimensions"][sub]["value"] += 1
+				var sub_dict: Dictionary = dim_data["sub_dimensions"]
+				var sub_keys: Array = sub_dict.keys()
+				for sub in sub_keys:
+						sub_dict[sub]["value"] += 1
 		GameLog.info("SoulGrowth: %s dimension leveled up to Lv.%d" % [soul_name, dim_data["level"]], "Growth")
 		return true
 	return false
@@ -240,13 +242,13 @@ func _on_level_up() -> void:
 
 ## Check and award milestones
 func _check_milestones() -> void:
-	var milestone_defs := [
-		{"level": 5, "name": "鍒濊瘑涓栫晫", "description": "杈惧埌Lv.5"},
-		{"level": 10, "name": "鎴愰暱涓?, "description": "杈惧埌Lv.10"},
-		{"level": 20, "name": "娓愬叆浣冲", "description": "杈惧埌Lv.20"},
-		{"level": 30, "name": "鐙綋涓€闈?, "description": "杈惧埌Lv.30"},
-		{"level": 50, "name": "鎴愮啛鐏甸瓊", "description": "杈惧埌Lv.50"},
-		{"level": 100, "name": "浼犲鐏甸瓊", "description": "杈惧埌Lv.100"}
+	var milestone_defs: Array = [
+		{"level": 5, "name": "Awakening", "description": "Reached level 5"},
+		{"level": 10, "name": "Growing", "description": "Reached level 10"},
+		{"level": 20, "name": "Developing", "description": "Reached level 20"},
+		{"level": 30, "name": "Maturing", "description": "Reached level 30"},
+		{"level": 50, "name": "Flourishing", "description": "Reached level 50"},
+		{"level": 100, "name": "Transcendent", "description": "Reached level 100"}
 	]
 
 	for ms in milestone_defs:
@@ -268,58 +270,22 @@ func _has_milestone(name: String) -> bool:
 	return false
 
 
-## --- Memory System ---
-
-## Add a memory
-func add_memory(content: String, memory_type: String = "experience", importance: int = 1) -> void:
-	memories.append({
-		"content": content,
-		"type": memory_type,
-		"importance": importance,
-		"timestamp": Time.get_datetime_string_from_system(),
-		"session_time": session_interaction_time
-	})
-
-	# Keep memory list manageable (keep most important + most recent)
-	if memories.size() > 200:
-		# Sort by importance, keep top 100 important + 100 most recent
-		memories.sort_custom(func(a, b): return a["importance"] > b["importance"])
-		memories = memories.slice(0, 200)
-
-	GameLog.debug("SoulGrowth: %s memory added: %s" % [soul_name, content.substr(0, 50)], "Growth")
-
-
-## Get memories by type
-func get_memories_by_type(memory_type: String) -> Array:
-	var result := []
-	for mem in memories:
-		if mem["type"] == memory_type:
-			result.append(mem)
-	return result
-
-
-## --- Personality System ---
-
-## Adjust personality trait (slow change over time)
-## amount: -5 to +5 per significant event
-func adjust_personality(trait: String, amount: float) -> void:
-	if personality.has(trait):
-		var old_value = personality[trait]
-		personality[trait] = clamp(personality[trait] + amount, 0.0, 100.0)
-		if abs(personality[trait] - old_value) > 0.1:
-			GameLog.debug("SoulGrowth: %s personality %s: %.1f -> %.1f" % [soul_name, trait, old_value, personality[trait]], "Growth")
 
 
 ## Get personality summary string
 func get_personality_summary() -> String:
-	var traits := []
-	for trait in personality:
-		var value = personality[trait]
-		if value > 65:
-			traits.append("high_%s" % trait)
-		elif value < 35:
-			traits.append("low_%s" % trait)
-	return ", ".join(traits)
+	var result = ""
+	var pkeys = personality.keys()
+	for idx in range(pkeys.size()):
+		var key = pkeys[idx]
+		var val = personality[key]
+		if val > 65:
+			result += "high_" + key + ","
+		elif val < 35:
+			result += "low_" + key + ","
+	if result.length() > 0:
+		result = result.substr(0, result.length() - 1)
+	return result
 
 
 ## --- Skill System ---

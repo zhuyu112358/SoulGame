@@ -330,7 +330,7 @@ func get_stats() -> Dictionary:
 		"total_recoveries": _total_recoveries,
 		"recovery_stats": _recovery_stats.duplicate(true),
 		"suppressed_categories": _suppression_state.size(),
-		"unrecovered_count": get_unrecovered_errors().size()
+		"unrecovered_count": get_unrecovered_errors().size(), "critical_count": _severity_counts.get("critical", 0), "pending_count": get_unrecovered_errors().size()
 	}
 
 

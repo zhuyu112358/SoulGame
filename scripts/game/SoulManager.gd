@@ -1,4 +1,5 @@
 extends Node
+const SoulGrowthData = preload("res://scripts/game/SoulGrowthData.gd")
 ## SoulManager - Manages soul lifecycle: create, view, train, deploy
 ##
 ## Handles soul creation, growth data management, training tasks,
@@ -12,7 +13,7 @@ extends Node
 ## - Player names the soul
 
 ## Currently active soul
-var active_soul: SoulGrowthData = null
+var active_soul = null
 
 ## List of all souls (summaries)
 var soul_list: Array = []
@@ -113,7 +114,7 @@ func _generate_personality_from_description(description: String) -> Dictionary:
 
 
 ## Complete soul creation with a name
-func complete_creation(name: String) -> SoulGrowthData:
+func complete_creation(name: String):
 	if not creation_state["in_progress"]:
 		GameLog.error("SoulManager: No creation in progress", "SoulManager")
 		return null
@@ -277,16 +278,16 @@ func _on_deploy_result(status_code: int, response: Dictionary) -> void:
 ## --- Persistence ---
 
 ## Save soul data
-func _save_soul(soul: SoulGrowthData) -> void:
+func _save_soul(soul) -> void:
 	var key = "soul_%s" % soul.soul_id
-	SaveSystem.set_value(key, soul.to_dict())
+	SaveSystem.set_setting("soul", key, soul.to_dict())
 	_save_soul_list()
 
 
 ## Load soul data
-func _load_soul(soul_id: String) -> SoulGrowthData:
+func _load_soul(soul_id: String):
 	var key = "soul_%s" % soul_id
-	var data = SaveSystem.get_value(key, {})
+	var data = SaveSystem.get_setting("soul", key, {})
 	if data.size() == 0:
 		return null
 	var soul = SoulGrowthData.new()
@@ -296,12 +297,12 @@ func _load_soul(soul_id: String) -> SoulGrowthData:
 
 ## Save soul list
 func _save_soul_list() -> void:
-	SaveSystem.set_value("soul_list", soul_list)
+	SaveSystem.set_setting("soul", "soul_list", soul_list)
 
 
 ## Load soul list
 func _load_soul_list() -> void:
-	soul_list = SaveSystem.get_value("soul_list", [])
+	soul_list = SaveSystem.get_setting("soul", "soul_list", [])
 	GameLog.info("SoulManager: Loaded %d souls" % soul_list.size(), "SoulManager")
 
 

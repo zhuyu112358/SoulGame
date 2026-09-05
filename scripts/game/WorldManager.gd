@@ -263,12 +263,12 @@ func remove_soul_from_world(soul_id: String, world_id: String) -> bool:
 
 func _save_world(world: Dictionary) -> void:
 	var key = "world_%s" % world["id"]
-	SaveSystem.set_value(key, world)
+	SaveSystem.set_setting("world", key, world)
 
 
 func _load_world(world_id: String) -> Dictionary:
 	var key = "world_%s" % world_id
-	return SaveSystem.get_value(key, {})
+	return SaveSystem.get_setting("world", key, {})
 
 
 func _save_world_list() -> void:

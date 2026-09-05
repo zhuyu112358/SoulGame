@@ -448,7 +448,7 @@ func clear_cache() -> void:
 ## Get statistics
 func get_stats() -> Dictionary:
 	var stats := _stats.duplicate()
-	stats["active_sfx"] = _active_sfx
+	stats["active_sfx"] = _active_sfx; stats["sfx_playing"] = _active_sfx
 	stats["music_playing"] = _music_playing
 	stats["cached_streams"] = _audio_cache.size()
 	stats["active_fades"] = _active_fades.size()
