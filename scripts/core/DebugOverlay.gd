@@ -16,6 +16,7 @@ var _panel: PanelContainer = null
 var _fps_label: Label = null
 var _state_label: Label = null
 var _network_label: Label = null
+var _system_label: Label = null
 var _log_label: RichTextLabel = null
 
 ## Update interval
@@ -102,6 +103,16 @@ func _build_ui() -> void:
 	_network_label.add_theme_font_size_override("font_size", 11)
 	vbox.add_child(_network_label)
 
+	# System (audio, locale, errors, memory)
+	var sys_title := Label.new()
+	sys_title.text = "-- System --"
+	sys_title.add_theme_font_size_override("font_size", 12)
+	vbox.add_child(sys_title)
+
+	_system_label = Label.new()
+	_system_label.add_theme_font_size_override("font_size", 11)
+	vbox.add_child(_system_label)
+
 	# Logs
 	var log_title := Label.new()
 	log_title.text = "-- Recent Logs --"
@@ -154,6 +165,23 @@ func _update_display() -> void:
 		StateSyncClient.get_latency_ms(),
 		sa_stats["total_calls"], seed_stats["total_calls"], seed_stats["total_ticks"],
 		sync_state, latency_stats["http_avg_ms"], latency_stats["ws_pings"]
+	]
+
+	# System (audio, locale, errors, memory)
+	var audio_stats := AudioManager.get_stats()
+	var locale_lang := LocalizationManager.get_language()
+	var error_stats := ErrorHandler.get_stats()
+	var mem_static := Performance.get_memory(Performance.MEMORY_STATIC) / 1048576.0
+	var mem_orphan := Performance.get_object_count(Performance.OBJECT_ORPHAN_NODE)
+	var mem_render := Performance.get_render_info(Performance.RENDER_TOTAL_OBJECTS_IN_FRAME)
+	var draw_calls := Performance.get_render_info(Performance.RENDER_DRAW_CALLS_IN_FRAME)
+	_system_label.text = "Audio: SFX %d/%d playing | Music: %s | Master: %.0f%%\nLocale: %s | Missing keys: %d\nErrors: %d total (%d critical) | Pending: %d\nMem: %.1fMB static | Orphans: %d | Draw calls: %d | Render objs: %d" % [
+		audio_stats["sfx_playing"], audio_stats["sfx_pool_size"],
+		("yes" if audio_stats["music_playing"] else "no"),
+		AudioManager.get_volume("Master") * 100.0,
+		locale_lang, LocalizationManager.get_missing_keys().size(),
+		error_stats["total_errors"], error_stats["critical_count"], error_stats["pending_count"],
+		mem_static, mem_orphan, draw_calls, mem_render
 	]
 
 	# Logs
