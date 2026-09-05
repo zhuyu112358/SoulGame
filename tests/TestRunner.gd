@@ -464,15 +464,15 @@ func _test_localization_manager() -> void:
 	# Switch language
 	LocalizationManager.set_language("zh")
 	_assert(LocalizationManager.get_language() == "zh", "LocalizationManager.set_language zh")
-	_assert(LocalizationManager.tr("LOADING") == "闂傚倸鍊风粈渚€骞夐垾鎰佹綎缂備焦蓱閸欏繘鏌熼锝囦汗鐟滅増甯掗悙濠囨煏婵炑€鍋撻柡?..", "LocalizationManager.tr zh")
+	_assert(LocalizationManager.tr("LOADING") == "加载中...", "LocalizationManager.tr zh")
 
 	# Fallback to default
 	LocalizationManager.set_language("ja")
 	_assert(LocalizationManager.tr("LOADING") == "Loading...", "LocalizationManager fallback to en for missing ja")
 
 	# Add translation
-	LocalizationManager.add_translation("ja", "LOADING", "闂傚倷娴囧畷鐢稿窗閹剧粯鎯為幖娣妼閸屻劑鎮峰▎蹇擃仼妞ゆ洟浜堕弻宥夊传閸曨偀鍋撻崷顓犵闁搞儮鏅濈壕鍏间繆閵堝懎顏柕鍡楀暟缁辨捇宕掑鍏夹﹂梺?..")
-	_assert(LocalizationManager.tr("LOADING") == "闂傚倷娴囧畷鐢稿窗閹剧粯鎯為幖娣妼閸屻劑鎮峰▎蹇擃仼妞ゆ洟浜堕弻宥夊传閸曨偀鍋撻崷顓犵闁搞儮鏅濈壕鍏间繆閵堝懎顏柕鍡楀暟缁辨捇宕掑鍏夹﹂梺?..", "LocalizationManager.add_translation ja")
+	LocalizationManager.add_translation("ja", "LOADING", "読み込み中...")
+	_assert(LocalizationManager.tr("LOADING") == "読み込み中...", "LocalizationManager.add_translation ja")
 
 	# Reset
 	LocalizationManager.reset_to_default()

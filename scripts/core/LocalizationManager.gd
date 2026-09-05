@@ -89,10 +89,15 @@ func translate(key: String) -> String:
 	_log_missing_key(key, _current_language)
 	return key
 
+## Alias for translate() (shorthand)
+func tr(key: String) -> String:
+	return translate(key)
+
+
 
 ## Translate with formatting (replaces {0}, {1}, etc.)
 func trf(key: String, args: Array) -> String:
-	var text := tr(key)
+	var text: String = tr(key)
 	for i in range(args.size()):
 		text = text.replace("{%d}" % i, str(args[i]))
 	return text
