@@ -32,7 +32,7 @@ var _record_history: bool = true
 
 func _ready() -> void:
 	_initialize_defaults()
-	Logger.info("GameState initialized", "State")
+	GameLog.info("GameState initialized", "State")
 
 
 ## Set a state value and notify subscribers
@@ -180,14 +180,14 @@ func start_session(session_id: String) -> void:
 	set_value("session", "id", session_id)
 	set_value("session", "start_time", Time.get_datetime_string_from_system())
 	set_value("session", "tick_count", 0)
-	Logger.info("Session started: %s" % session_id, "State")
+	GameLog.info("Session started: %s" % session_id, "State")
 
 
 ## End current session
 func end_session() -> void:
 	var session_id = get_value("session", "id", "unknown")
 	set_value("session", "end_time", Time.get_datetime_string_from_system())
-	Logger.info("Session ended: %s" % session_id, "State")
+	GameLog.info("Session ended: %s" % session_id, "State")
 
 
 ## Increment session tick
@@ -251,7 +251,7 @@ func reset() -> void:
 	}
 	_history.clear()
 	_initialize_defaults()
-	Logger.warning("GameState reset", "State")
+	GameLog.warning("GameState reset", "State")
 
 
 func _initialize_defaults() -> void:

@@ -43,14 +43,14 @@ func _ready() -> void:
 func load_config(config_name: String) -> bool:
 	var path := _get_config_path(config_name)
 	if path.is_empty():
-		Logger.error("Unknown config: %s" % config_name, "Config")
+		GameLog.error("Unknown config: %s" % config_name, "Config")
 		return false
 
 	var config := ConfigFile.new()
 	var error_code := config.load(path)
 
 	if error_code != OK:
-		Logger.warning("Could not load config '%s' (will use defaults): %s" % [config_name, path], "Config")
+		GameLog.warning("Could not load config '%s' (will use defaults): %s" % [config_name, path], "Config")
 		# Create empty config with defaults
 		_configs[config_name] = config
 		_dirty[config_name] = true
@@ -58,14 +58,14 @@ func load_config(config_name: String) -> bool:
 
 	_configs[config_name] = config
 	_dirty[config_name] = false
-	Logger.info("Loaded config: %s" % config_name, "Config")
+	GameLog.info("Loaded config: %s" % config_name, "Config")
 	return true
 
 
 ## Save a configuration file
 func save_config(config_name: String) -> bool:
 	if not _configs.has(config_name):
-		Logger.error("Config not loaded: %s" % config_name, "Config")
+		GameLog.error("Config not loaded: %s" % config_name, "Config")
 		return false
 
 	var path := _get_config_path(config_name)
@@ -82,11 +82,11 @@ func save_config(config_name: String) -> bool:
 	var error_code := config.save(path)
 
 	if error_code != OK:
-		Logger.error("Failed to save config '%s': error %d" % [config_name, error_code], "Config")
+		GameLog.error("Failed to save config '%s': error %d" % [config_name, error_code], "Config")
 		return false
 
 	_dirty[config_name] = false
-	Logger.info("Saved config: %s" % config_name, "Config")
+	GameLog.info("Saved config: %s" % config_name, "Config")
 	return true
 
 

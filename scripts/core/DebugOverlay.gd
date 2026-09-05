@@ -33,7 +33,7 @@ func _ready() -> void:
 	_build_ui()
 	_visible = ConfigManager.get_value("game", "debug", "show_debug_overlay", true)
 	_panel.visible = _visible
-	Logger.info("DebugOverlay initialized", "Debug")
+	GameLog.info("DebugOverlay initialized", "Debug")
 
 
 func _input(event: InputEvent) -> void:
@@ -171,10 +171,10 @@ func _update_display() -> void:
 	var audio_stats := AudioManager.get_stats()
 	var locale_lang := LocalizationManager.get_language()
 	var error_stats := ErrorHandler.get_stats()
-	var mem_static := Performance.get_memory(Performance.MEMORY_STATIC) / 1048576.0
-	var mem_orphan := Performance.get_object_count(Performance.OBJECT_ORPHAN_NODE)
-	var mem_render := Performance.get_render_info(Performance.RENDER_TOTAL_OBJECTS_IN_FRAME)
-	var draw_calls := Performance.get_render_info(Performance.RENDER_DRAW_CALLS_IN_FRAME)
+	var mem_static := Performance.get_monitor(Performance.MEMORY_STATIC) / 1048576.0
+	var mem_orphan := Performance.get_monitor(Performance.OBJECT_ORPHAN_NODE_COUNT)
+	var mem_render := Performance.get_monitor(12)
+	var draw_calls := Performance.get_monitor(13)
 	_system_label.text = "Audio: SFX %d/%d playing | Music: %s | Master: %.0f%%\nLocale: %s | Missing keys: %d\nErrors: %d total (%d critical) | Pending: %d\nMem: %.1fMB static | Orphans: %d | Draw calls: %d | Render objs: %d" % [
 		audio_stats["sfx_playing"], audio_stats["sfx_pool_size"],
 		("yes" if audio_stats["music_playing"] else "no"),
@@ -185,7 +185,7 @@ func _update_display() -> void:
 	]
 
 	# Logs
-	var logs := Logger.get_recent_entries(15)
+	var logs := GameLog.get_recent_entries(15)
 	var log_text := ""
 	for entry in logs:
 		var color := "white"

@@ -35,7 +35,7 @@ var _stats: Dictionary = {
 
 func _ready() -> void:
 	_load_config()
-	Logger.info("SoulArenaClient initialized (v%s, base=%s)" % [_sdk_version, _base_url], "SoulArena")
+	GameLog.info("SoulArenaClient initialized (v%s, base=%s)" % [_sdk_version, _base_url], "SoulArena")
 
 
 ## Load configuration from ConfigManager
@@ -50,14 +50,14 @@ func _load_config() -> void:
 ## GET /api/souls
 func get_souls(callback_target: Object = null, callback_method: String = "") -> void:
 	_stats["total_calls"] += 1
-	NetworkClient.get("%s/api/souls" % _base_url, callback_target, callback_method)
+	NetworkClient.http_get("%s/api/souls" % _base_url, callback_target, callback_method)
 
 
 ## Get soul details
 ## GET /api/souls/:id
 func get_soul(soul_id: String, callback_target: Object = null, callback_method: String = "") -> void:
 	_stats["total_calls"] += 1
-	NetworkClient.get("%s/api/souls/%s" % [_base_url, soul_id], callback_target, callback_method)
+	NetworkClient.http_get("%s/api/souls/%s" % [_base_url, soul_id], callback_target, callback_method)
 
 
 ## --- World Lifecycle ---
@@ -74,7 +74,7 @@ func enter_world(soul_id: String, world_id: String, callback_url: String = "", c
 		"perceptionConfig": {},
 		"worldRules": {}
 	}
-	NetworkClient.post("%s/api/souls/%s/enter-world" % [_base_url, soul_id], body, self, "_on_enter_world")
+	NetworkClient.http_post("%s/api/souls/%s/enter-world" % [_base_url, soul_id], body, self, "_on_enter_world")
 	# Store callback for chaining
 	_pending_callbacks["enter_world"] = {"target": callback_target, "method": callback_method, "soul_id": soul_id}
 
@@ -83,7 +83,7 @@ func enter_world(soul_id: String, world_id: String, callback_url: String = "", c
 ## GET /api/souls/:id/world-state
 func get_world_state(soul_id: String, callback_target: Object = null, callback_method: String = "") -> void:
 	_stats["total_calls"] += 1
-	NetworkClient.get("%s/api/souls/%s/world-state" % [_base_url, soul_id], callback_target, callback_method)
+	NetworkClient.http_get("%s/api/souls/%s/world-state" % [_base_url, soul_id], callback_target, callback_method)
 
 
 ## Exit a soul from a world
@@ -91,7 +91,7 @@ func get_world_state(soul_id: String, callback_target: Object = null, callback_m
 func exit_world(soul_id: String, reason: String = "unknown", callback_target: Object = null, callback_method: String = "") -> void:
 	_stats["total_calls"] += 1
 	var body := {"reason": reason}
-	NetworkClient.post("%s/api/souls/%s/exit-world" % [_base_url, soul_id], body, callback_target, callback_method)
+	NetworkClient.http_post("%s/api/souls/%s/exit-world" % [_base_url, soul_id], body, callback_target, callback_method)
 
 
 ## --- Perception / Action Loop ---
@@ -109,7 +109,7 @@ func exit_world(soul_id: String, reason: String = "unknown", callback_target: Ob
 ## }
 func perceive(soul_id: String, perception: Dictionary, callback_target: Object = null, callback_method: String = "") -> void:
 	_stats["total_calls"] += 1
-	NetworkClient.post("%s/api/souls/%s/perceive" % [_base_url, soul_id], perception, callback_target, callback_method)
+	NetworkClient.http_post("%s/api/souls/%s/perceive" % [_base_url, soul_id], perception, callback_target, callback_method)
 
 
 ## Send action result back to soul
@@ -126,7 +126,7 @@ func action_result(soul_id: String, action_id: String, action_type: String, resu
 		"result": result,
 		"tick": GameState.get_value("session", "tick_count", 0)
 	}
-	NetworkClient.post("%s/api/souls/%s/action-result" % [_base_url, soul_id], body, callback_target, callback_method)
+	NetworkClient.http_post("%s/api/souls/%s/action-result" % [_base_url, soul_id], body, callback_target, callback_method)
 
 
 ## --- Connection Testing ---
@@ -138,7 +138,7 @@ func check_connection() -> bool:
 
 ## Ping the API (simple connectivity test)
 func ping(callback_target: Object = null, callback_method: String = "") -> void:
-	NetworkClient.get("%s/api/souls" % _base_url, self, "_on_ping_response")
+	NetworkClient.http_get("%s/api/souls" % _base_url, self, "_on_ping_response")
 	_pending_callbacks["ping"] = {"target": callback_target, "method": callback_method}
 
 
@@ -160,7 +160,7 @@ func get_base_url() -> String:
 ## Set base URL (for testing)
 func set_base_url(url: String) -> void:
 	_base_url = url
-	Logger.info("SoulArenaClient: Base URL set to %s" % url, "SoulArena")
+	GameLog.info("SoulArenaClient: Base URL set to %s" % url, "SoulArena")
 
 
 ## --- Internal callbacks ---
@@ -173,11 +173,11 @@ func _on_enter_world(status: int, data: Dictionary) -> void:
 		_stats["successful"] += 1
 		_stats["active_souls"] += 1
 		_connected = true
-		Logger.info("SoulArenaClient: Soul entered world successfully", "SoulArena")
+		GameLog.info("SoulArenaClient: Soul entered world successfully", "SoulArena")
 	else:
 		_stats["failed"] += 1
 		_last_error = str(data)
-		Logger.error("SoulArenaClient: Enter world failed: %s" % str(data), "SoulArena")
+		GameLog.error("SoulArenaClient: Enter world failed: %s" % str(data), "SoulArena")
 
 	if _pending_callbacks.has("enter_world"):
 		var cb = _pending_callbacks["enter_world"]

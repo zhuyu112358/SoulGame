@@ -89,7 +89,7 @@ func _ready() -> void:
 	_initialize_buses()
 	_initialize_sfx_pool()
 	_initialize_default_groups()
-	Logger.info("AudioManager initialized (%d SFX players)" % _max_sfx_players, "Audio")
+	GameLog.info("AudioManager initialized (%d SFX players)" % _max_sfx_players, "Audio")
 
 
 ## Initialize audio buses (create if missing)
@@ -105,7 +105,7 @@ func _initialize_buses() -> void:
 			AudioServer.add_bus()
 			var idx := AudioServer.bus_count - 1
 			AudioServer.set_bus_name(idx, bus_name)
-			Logger.debug("AudioManager: Created bus '%s'" % bus_name, "Audio")
+			GameLog.debug("AudioManager: Created bus '%s'" % bus_name, "Audio")
 
 	# Set bus send targets
 	var master_idx := AudioServer.get_bus_index(BUS_MASTER)
@@ -144,12 +144,12 @@ func _initialize_default_groups() -> void:
 func play_sfx(path: String, volume: float = 1.0, pitch: float = 1.0, priority: int = Priority.NORMAL) -> void:
 	var stream := _get_cached_stream(path)
 	if stream == null:
-		Logger.warning("AudioManager: Could not load SFX: %s" % path, "Audio")
+		GameLog.warning("AudioManager: Could not load SFX: %s" % path, "Audio")
 		return
 
 	var slot := _get_free_sfx_slot(priority)
 	if slot == null:
-		Logger.debug("AudioManager: SFX pool full and no lower priority to steal", "Audio")
+		GameLog.debug("AudioManager: SFX pool full and no lower priority to steal", "Audio")
 		return
 
 	slot["player"].stream = stream
@@ -205,7 +205,7 @@ func stop_all_sfx() -> void:
 func play_music(path: String, volume: float = -1.0, fade_in: float = 0.0) -> void:
 	var stream := _get_cached_stream(path)
 	if stream == null:
-		Logger.error("AudioManager: Could not load music: %s" % path, "Audio")
+		GameLog.error("AudioManager: Could not load music: %s" % path, "Audio")
 		return
 
 	var target_volume := _music_volume if volume < 0 else volume
@@ -230,7 +230,7 @@ func play_music(path: String, volume: float = -1.0, fade_in: float = 0.0) -> voi
 	if fade_in > 0:
 		_fade_volume(_music_player, target_volume, fade_in)
 
-	Logger.info("AudioManager: Playing music: %s (fade=%.1fs)" % [path, fade_in], "Audio")
+	GameLog.info("AudioManager: Playing music: %s (fade=%.1fs)" % [path, fade_in], "Audio")
 
 
 ## Cross-fade between current and new music
@@ -260,7 +260,7 @@ func _crossfade_music(new_stream: AudioStream, target_volume: float, fade_durati
 		_music_player_fade.stop()
 	)
 
-	Logger.info("AudioManager: Cross-fading music (%.1fs)" % fade_time, "Audio")
+	GameLog.info("AudioManager: Cross-fading music (%.1fs)" % fade_time, "Audio")
 
 
 ## Stop music with optional fade out
@@ -278,7 +278,7 @@ func stop_music(fade_out: float = 0.0) -> void:
 			_music_playing = false
 			_current_music = null
 			_stats["music_stopped"] += 1
-		Logger.info("AudioManager: Music stopped (fade=%.1fs)" % fade_out, "Audio")
+		GameLog.info("AudioManager: Music stopped (fade=%.1fs)" % fade_out, "Audio")
 
 
 ## Pause music
@@ -347,7 +347,7 @@ func fade_bus_volume(bus_name: String, target_volume: float, duration: float) ->
 func set_volume(bus_name: String, volume: float) -> void:
 	var idx := AudioServer.get_bus_index(bus_name)
 	if idx < 0:
-		Logger.warning("AudioManager: Bus not found: %s" % bus_name, "Audio")
+		GameLog.warning("AudioManager: Bus not found: %s" % bus_name, "Audio")
 		return
 
 	var clamped := clamp(volume, 0.0, 1.0)
@@ -358,7 +358,7 @@ func set_volume(bus_name: String, volume: float) -> void:
 		BUS_SFX: _sfx_volume = clamped
 		BUS_MUSIC: _music_volume = clamped
 
-	Logger.debug("AudioManager: Volume '%s' = %.2f" % [bus_name, clamped], "Audio")
+	GameLog.debug("AudioManager: Volume '%s' = %.2f" % [bus_name, clamped], "Audio")
 
 
 ## Get volume for a bus (0-1 linear)
@@ -389,7 +389,7 @@ func is_muted(bus_name: String) -> bool:
 ## Set volume for an audio group (affects all buses in group)
 func set_group_volume(group_name: String, volume: float) -> void:
 	if not _audio_groups.has(group_name):
-		Logger.warning("AudioManager: Group not found: %s" % group_name, "Audio")
+		GameLog.warning("AudioManager: Group not found: %s" % group_name, "Audio")
 		return
 
 	var group = _audio_groups[group_name]
@@ -427,7 +427,7 @@ func is_group_muted(group_name: String) -> bool:
 ## Register a custom audio group
 func register_group(group_name: String, buses: Array) -> void:
 	_audio_groups[group_name] = {"volume": 1.0, "muted": false, "buses": buses}
-	Logger.info("AudioManager: Registered group '%s' with %d buses" % [group_name, buses.size()], "Audio")
+	GameLog.info("AudioManager: Registered group '%s' with %d buses" % [group_name, buses.size()], "Audio")
 
 
 ## --- Cache Management ---
@@ -436,13 +436,13 @@ func register_group(group_name: String, buses: Array) -> void:
 func preload_audio(paths: Array) -> void:
 	for path in paths:
 		_get_cached_stream(path)
-	Logger.info("AudioManager: Preloaded %d audio files" % paths.size(), "Audio")
+	GameLog.info("AudioManager: Preloaded %d audio files" % paths.size(), "Audio")
 
 
 ## Clear audio cache
 func clear_cache() -> void:
 	_audio_cache.clear()
-	Logger.info("AudioManager: Cache cleared", "Audio")
+	GameLog.info("AudioManager: Cache cleared", "Audio")
 
 
 ## Get statistics

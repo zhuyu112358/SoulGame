@@ -11,7 +11,7 @@ extends Node
 ##   { "type": "pong", "timestamp": 1234567890, "server_time": 1234567891 }
 ##
 ## Usage:
-##   StateSyncClient.connect("ws://localhost:3000/ws")
+##   StateSyncClient.connect_to_server("ws://localhost:3000/ws")
 ##   StateSyncClient.send_state("soul_position", {"x": 1, "y": 2})
 ##   StateSyncClient.subscribe("soul_position", self, "_on_soul_pos")
 
@@ -72,7 +72,7 @@ var _current_latency_ms: float = 0.0
 
 
 func _ready() -> void:
-	Logger.info("StateSyncClient initialized", "Sync")
+	GameLog.info("StateSyncClient initialized", "Sync")
 
 
 func _process(delta: float) -> void:
@@ -100,7 +100,7 @@ func _process(delta: float) -> void:
 
 
 ## Connect to WebSocket server
-func connect(url: String) -> void:
+func connect_to_server(url: String) -> void:
 	_server_url = url
 	_reconnect_attempts = 0
 	_connect()
@@ -114,27 +114,27 @@ func _connect() -> void:
 	_ws = WebSocketPeer.new()
 	var error_code := _ws.connect_to_url(_server_url)
 	if error_code != OK:
-		Logger.error("StateSyncClient: Failed to connect to %s: error %d" % [_server_url, error_code], "Sync")
+		GameLog.error("StateSyncClient: Failed to connect to %s: error %d" % [_server_url, error_code], "Sync")
 		return
 
 	_connection_state = ConnectionState.CONNECTING
-	Logger.info("StateSyncClient: Connecting to %s" % _server_url, "Sync")
+	GameLog.info("StateSyncClient: Connecting to %s" % _server_url, "Sync")
 
 
 ## Disconnect from server
-func disconnect() -> void:
+func disconnect_from_server() -> void:
 	_auto_reconnect = false
 	if _ws:
 		_ws.close()
 	_connection_state = ConnectionState.DISCONNECTED
-	Logger.info("StateSyncClient: Disconnected", "Sync")
+	GameLog.info("StateSyncClient: Disconnected", "Sync")
 
 
 ## Send a state update to server
 func send_state(state_type: String, data: Dictionary) -> void:
 	if _connection_state != ConnectionState.CONNECTED:
 		_stats["dropped_messages"] += 1
-		Logger.warning("StateSyncClient: Cannot send, not connected", "Sync")
+		GameLog.warning("StateSyncClient: Cannot send, not connected", "Sync")
 		return
 
 	var message := {
@@ -229,7 +229,7 @@ func _send_message(message: Dictionary) -> void:
 		_stats["bytes_sent"] += json_string.length()
 	else:
 		_stats["dropped_messages"] += 1
-		Logger.error("StateSyncClient: Send failed: error %d" % error_code, "Sync")
+		GameLog.error("StateSyncClient: Send failed: error %d" % error_code, "Sync")
 
 
 func _process_messages() -> void:
@@ -242,7 +242,7 @@ func _process_messages() -> void:
 
 		var json := JSON.new()
 		if json.parse(text) != OK:
-			Logger.warning("StateSyncClient: Invalid JSON received: %s" % text.substr(0, 100), "Sync")
+			GameLog.warning("StateSyncClient: Invalid JSON received: %s" % text.substr(0, 100), "Sync")
 			continue
 
 		var message: Dictionary = json.data
@@ -271,7 +271,7 @@ func _handle_message(message: Dictionary) -> void:
 func _handle_state_update(message: Dictionary) -> void:
 	var data: Dictionary = message.get("data", {})
 	var tick: int = message.get("tick", 0)
-	var state_key: String = message.get("state_key", message_type)
+	var state_key: String = message.get("state_key", message.get("type", "unknown"))
 
 	if tick > _last_server_tick:
 		_last_server_tick = tick
@@ -326,13 +326,13 @@ func _on_connected() -> void:
 	_connection_state = ConnectionState.CONNECTED
 	_reconnect_attempts = 0
 	_reconnect_delay = 0.0
-	Logger.info("StateSyncClient: Connected to %s" % _server_url, "Sync")
+	GameLog.info("StateSyncClient: Connected to %s" % _server_url, "Sync")
 	EventBus.emit("sync_connected", {"url": _server_url})
 
 
 func _on_disconnected() -> void:
 	_connection_state = ConnectionState.DISCONNECTED
-	Logger.warning("StateSyncClient: Disconnected from %s" % _server_url, "Sync")
+	GameLog.warning("StateSyncClient: Disconnected from %s" % _server_url, "Sync")
 	EventBus.emit("sync_disconnected", {"url": _server_url})
 
 
@@ -343,7 +343,7 @@ func _process_reconnect(delta: float) -> void:
 		_stats["reconnect_count"] += 1
 		_reconnect_delay = _reconnect_base_delay * pow(2.0, _reconnect_attempts - 1)
 		_reconnect_timer = 0.0
-		Logger.info("StateSyncClient: Reconnect attempt %d/%d in %.1fs" % [
+		GameLog.info("StateSyncClient: Reconnect attempt %d/%d in %.1fs" % [
 			_reconnect_attempts, _max_reconnect_attempts, _reconnect_delay
 		], "Sync")
 

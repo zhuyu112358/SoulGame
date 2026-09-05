@@ -92,7 +92,7 @@ var _stats: Dictionary = {
 
 
 func _ready() -> void:
-	Logger.info("TimeManager initialized (tick_rate=%.0f Hz)" % (1.0 / _fixed_timestep), "Time")
+	GameLog.info("TimeManager initialized (tick_rate=%.0f Hz)" % (1.0 / _fixed_timestep), "Time")
 
 
 func _process(delta: float) -> void:
@@ -224,14 +224,14 @@ func schedule_after_ticks(ticks: int, target: Object, method: String, args: Dict
 func cancel(schedule_id: int) -> void:
 	if _scheduled.has(schedule_id):
 		_scheduled[schedule_id]["active"] = false
-		Logger.debug("TimeManager: Cancelled schedule %d" % schedule_id, "Time")
+		GameLog.debug("TimeManager: Cancelled schedule %d" % schedule_id, "Time")
 
 
 ## Cancel all scheduled callbacks
 func cancel_all() -> void:
 	for id in _scheduled:
 		_scheduled[id]["active"] = false
-	Logger.info("TimeManager: Cancelled all schedules", "Time")
+	GameLog.info("TimeManager: Cancelled all schedules", "Time")
 
 
 ## Check if a schedule is active
@@ -257,7 +257,7 @@ func start_named_timer(name: String, duration: float, auto_remove: bool = true) 
 		"auto_remove": auto_remove
 	}
 	_stats["named_timers"] = _named_timers.size()
-	Logger.debug("TimeManager: Started timer '%s' (%.2fs)" % [name, duration], "Time")
+	GameLog.debug("TimeManager: Started timer '%s' (%.2fs)" % [name, duration], "Time")
 
 
 ## Get remaining time for a named timer
@@ -306,7 +306,7 @@ func get_active_timers() -> Dictionary:
 func set_time_scale(scale: float) -> void:
 	_time_scale = clamp(scale, 0.0, 10.0)
 	GameState.set_world_state("time_scale", _time_scale)
-	Logger.info("TimeManager: Time scale set to %.2f" % _time_scale, "Time")
+	GameLog.info("TimeManager: Time scale set to %.2f" % _time_scale, "Time")
 	EventBus.emit("time_scale_changed", {"scale": _time_scale})
 
 
@@ -338,7 +338,7 @@ func get_fixed_timestep() -> float:
 ## Set fixed timestep (tick rate)
 func set_tick_rate(ticks_per_second: int) -> void:
 	_fixed_timestep = 1.0 / float(max(ticks_per_second, 1))
-	Logger.info("TimeManager: Tick rate set to %d Hz" % ticks_per_second, "Time")
+	GameLog.info("TimeManager: Tick rate set to %d Hz" % ticks_per_second, "Time")
 
 
 ## --- Pause ---
@@ -348,7 +348,7 @@ func pause() -> void:
 	_paused = true
 	GameState.set_value("game", "paused", true)
 	EventBus.emit("game_paused", {})
-	Logger.info("TimeManager: Paused", "Time")
+	GameLog.info("TimeManager: Paused", "Time")
 
 
 ## Resume game time
@@ -356,7 +356,7 @@ func resume() -> void:
 	_paused = false
 	GameState.set_value("game", "paused", false)
 	EventBus.emit("game_resumed", {})
-	Logger.info("TimeManager: Resumed", "Time")
+	GameLog.info("TimeManager: Resumed", "Time")
 
 
 ## Check if paused
@@ -482,7 +482,7 @@ func reset() -> void:
 	_frame_times.clear()
 	_frame_stats = {"min_ms": 9999.0, "max_ms": 0.0, "avg_ms": 0.0, "total_frames": 0}
 	cancel_all()
-	Logger.info("TimeManager: Reset", "Time")
+	GameLog.info("TimeManager: Reset", "Time")
 
 
 func _add_schedule(delay: float, repeating: bool, target: Object, method: String, args: Dictionary) -> int:
@@ -503,7 +503,7 @@ func _add_schedule(delay: float, repeating: bool, target: Object, method: String
 	_stats["scheduled_total"] += 1
 	_stats["scheduled_active"] = _scheduled.size()
 
-	Logger.debug("TimeManager: Scheduled %s (id=%d, delay=%.2fs, repeating=%s)" % [
+	GameLog.debug("TimeManager: Scheduled %s (id=%d, delay=%.2fs, repeating=%s)" % [
 		method, id, delay, repeating
 	], "Time")
 

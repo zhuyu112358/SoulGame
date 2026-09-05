@@ -52,7 +52,7 @@ func _ready() -> void:
 	_ensure_directories()
 	_load_settings()
 	_load_save_metadata()
-	Logger.info("SaveSystem initialized", "Save")
+	GameLog.info("SaveSystem initialized", "Save")
 
 
 func _process(delta: float) -> void:
@@ -66,7 +66,7 @@ func _process(delta: float) -> void:
 ## Save game data to a slot
 func save_game(slot: int, data: Dictionary, slot_name: String = "") -> bool:
 	if slot < 0 or slot >= _max_slots:
-		Logger.error("SaveSystem: Invalid slot %d" % slot, "Save")
+		GameLog.error("SaveSystem: Invalid slot %d" % slot, "Save")
 		return false
 
 	var save_path := _get_save_path(slot)
@@ -83,7 +83,7 @@ func save_game(slot: int, data: Dictionary, slot_name: String = "") -> bool:
 
 	var error_code := save_file.save(save_path)
 	if error_code != OK:
-		Logger.error("SaveSystem: Failed to save slot %d: error %d" % [slot, error_code], "Save")
+		GameLog.error("SaveSystem: Failed to save slot %d: error %d" % [slot, error_code], "Save")
 		return false
 
 	# Update metadata cache
@@ -94,7 +94,7 @@ func save_game(slot: int, data: Dictionary, slot_name: String = "") -> bool:
 	}
 
 	EventBus.emit("game_saved", {"slot": slot, "name": _save_metadata[slot]["name"]})
-	Logger.info("SaveSystem: Saved game to slot %d" % slot, "Save")
+	GameLog.info("SaveSystem: Saved game to slot %d" % slot, "Save")
 	return true
 
 
@@ -102,24 +102,24 @@ func save_game(slot: int, data: Dictionary, slot_name: String = "") -> bool:
 ## Automatically migrates old save formats to current version
 func load_game(slot: int) -> Dictionary:
 	if slot < 0 or slot >= _max_slots:
-		Logger.error("SaveSystem: Invalid slot %d" % slot, "Save")
+		GameLog.error("SaveSystem: Invalid slot %d" % slot, "Save")
 		return {}
 
 	var save_path := _get_save_path(slot)
 	if not FileAccess.file_exists(save_path):
-		Logger.warning("SaveSystem: No save in slot %d" % slot, "Save")
+		GameLog.warning("SaveSystem: No save in slot %d" % slot, "Save")
 		return {}
 
 	var save_file := ConfigFile.new()
 	var error_code := save_file.load(save_path)
 	if error_code != OK:
-		Logger.error("SaveSystem: Failed to load slot %d: error %d" % [slot, error_code], "Save")
+		GameLog.error("SaveSystem: Failed to load slot %d: error %d" % [slot, error_code], "Save")
 		return {}
 
 	# Check version and migrate if needed
 	var save_version := int(save_file.get_value("meta", "version", "1"))
 	if save_version < SAVE_VERSION:
-		Logger.info("SaveSystem: Migrating save slot %d from v%d to v%d" % [slot, save_version, SAVE_VERSION], "Save")
+		GameLog.info("SaveSystem: Migrating save slot %d from v%d to v%d" % [slot, save_version, SAVE_VERSION], "Save")
 		var migrated := _migrate_save(save_file, save_version)
 		if migrated:
 			save_file.save(save_path)
@@ -127,11 +127,11 @@ func load_game(slot: int) -> Dictionary:
 			_migration_stats["last_migration"] = "slot %d: v%d -> v%d" % [slot, save_version, SAVE_VERSION]
 		else:
 			_migration_stats["failed_migrations"] += 1
-			Logger.error("SaveSystem: Migration failed for slot %d" % slot, "Save")
+			GameLog.error("SaveSystem: Migration failed for slot %d" % slot, "Save")
 
 	var data := _deserialize_dict(save_file, "data")
 	EventBus.emit("game_loaded", {"slot": slot, "version": SAVE_VERSION})
-	Logger.info("SaveSystem: Loaded game from slot %d (v%d)" % [slot, SAVE_VERSION], "Save")
+	GameLog.info("SaveSystem: Loaded game from slot %d (v%d)" % [slot, SAVE_VERSION], "Save")
 	return data
 
 
@@ -148,12 +148,12 @@ func delete_save(slot: int) -> bool:
 
 	var error_code := DirAccess.remove_absolute(save_path)
 	if error_code != OK:
-		Logger.error("SaveSystem: Failed to delete slot %d" % slot, "Save")
+		GameLog.error("SaveSystem: Failed to delete slot %d" % slot, "Save")
 		return false
 
 	_save_metadata.erase(slot)
 	EventBus.emit("save_deleted", {"slot": slot})
-	Logger.info("SaveSystem: Deleted save slot %d" % slot, "Save")
+	GameLog.info("SaveSystem: Deleted save slot %d" % slot, "Save")
 	return true
 
 
@@ -171,9 +171,9 @@ func get_save_info(slot: int) -> Dictionary:
 
 ## Auto-save to slot 0
 func auto_save() -> void:
-	var data := GameState.get_namespace("game")
-	data["souls"] = GameState.get_namespace("soul")
-	data["world"] = GameState.get_namespace("world")
+	var data := GameState.get_ns("game")
+	data["souls"] = GameState.get_ns("soul")
+	data["world"] = GameState.get_ns("world")
 	save_game(0, data, "Auto-save")
 
 
@@ -297,7 +297,7 @@ func _migrate_save(config: ConfigFile, from_version: int) -> bool:
 				if not _migrate_v1_to_v2(config):
 					return false
 			_:
-				Logger.warning("SaveSystem: No migration path for v%d" % current, "Save")
+				GameLog.warning("SaveSystem: No migration path for v%d" % current, "Save")
 				return false
 		current += 1
 
@@ -320,7 +320,7 @@ func _migrate_v1_to_v2(config: ConfigFile) -> bool:
 	if not config.has_section("data"):
 		config.set_value("data", "migrated", true)
 
-	Logger.info("SaveSystem: Migrated v1 -> v2", "Save")
+	GameLog.info("SaveSystem: Migrated v1 -> v2", "Save")
 	return true
 
 

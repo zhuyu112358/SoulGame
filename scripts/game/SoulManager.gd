@@ -27,11 +27,11 @@ var creation_state: Dictionary = {
 
 ## Training tasks available
 var training_tasks: Array = [
-	{"id": "cognitive_basic", "name": "基础认知训练", "dimension": "cognitive", "exp": 15, "duration": 30},
-	{"id": "emotional_basic", "name": "情感交流练习", "dimension": "emotional", "exp": 12, "duration": 25},
-	{"id": "skill_basic", "name": "基础技能练习", "dimension": "skill", "exp": 20, "duration": 40},
-	{"id": "memory_review", "name": "记忆复习", "dimension": "cognitive", "exp": 8, "duration": 15},
-	{"id": "social_practice", "name": "社交练习", "dimension": "emotional", "exp": 10, "duration": 20}
+	{"id": "cognitive_basic", "name": "鍩虹璁ょ煡璁粌", "dimension": "cognitive", "exp": 15, "duration": 30},
+	{"id": "emotional_basic", "name": "鎯呮劅浜ゆ祦缁冧範", "dimension": "emotional", "exp": 12, "duration": 25},
+	{"id": "skill_basic", "name": "鍩虹鎶€鑳界粌涔?, "dimension": "skill", "exp": 20, "duration": 40},
+	{"id": "memory_review", "name": "璁板繂澶嶄範", "dimension": "cognitive", "exp": 8, "duration": 15},
+	{"id": "social_practice", "name": "绀句氦缁冧範", "dimension": "emotional", "exp": 10, "duration": 20}
 ]
 
 ## Active training task
@@ -42,7 +42,7 @@ var _training_timer: float = 0.0
 
 
 func _ready() -> void:
-	Logger.info("SoulManager: Initialized", "SoulManager")
+	GameLog.info("SoulManager: Initialized", "SoulManager")
 	_load_soul_list()
 
 
@@ -65,7 +65,7 @@ func start_creation(description: String) -> void:
 	# Generate personality based on description keywords
 	creation_state["generated_personality"] = _generate_personality_from_description(description)
 
-	Logger.info("SoulManager: Creation started - '%s'" % description, "SoulManager")
+	GameLog.info("SoulManager: Creation started - '%s'" % description, "SoulManager")
 	EventBus.emit("soul_creation_started", {"description": description})
 
 
@@ -86,22 +86,22 @@ func _generate_personality_from_description(description: String) -> Dictionary:
 
 	# Keyword-based personality adjustment
 	var keywords := {
-		"勇敢": {"bravery": 20, "extraversion": 10},
-		"胆小": {"bravery": -20, "neuroticism": 10},
-		"活泼": {"extraversion": 20, "warmth": 10},
-		"安静": {"extraversion": -15, "conscientiousness": 10},
-		"聪明": {"openness": 15, "curiosity": 15},
-		"好奇": {"curiosity": 25, "openness": 10},
-		"温柔": {"warmth": 20, "agreeableness": 15},
-		"冷漠": {"warmth": -20, "agreeableness": -10},
-		"认真": {"conscientiousness": 20},
-		"调皮": {"openness": 10, "extraversion": 10, "conscientiousness": -10},
-		"善良": {"agreeableness": 20, "warmth": 15},
-		"神秘": {"openness": 10, "neuroticism": 5},
-		"坚强": {"bravery": 15, "neuroticism": -10},
-		"敏感": {"neuroticism": 15, "warmth": 10},
-		"乐观": {"extraversion": 10, "neuroticism": -15},
-		"谨慎": {"conscientiousness": 15, "bravery": -5}
+		"鍕囨暍": {"bravery": 20, "extraversion": 10},
+		"鑳嗗皬": {"bravery": -20, "neuroticism": 10},
+		"娲绘臣": {"extraversion": 20, "warmth": 10},
+		"瀹夐潤": {"extraversion": -15, "conscientiousness": 10},
+		"鑱槑": {"openness": 15, "curiosity": 15},
+		"濂藉": {"curiosity": 25, "openness": 10},
+		"娓╂煍": {"warmth": 20, "agreeableness": 15},
+		"鍐锋紶": {"warmth": -20, "agreeableness": -10},
+		"璁ょ湡": {"conscientiousness": 20},
+		"璋冪毊": {"openness": 10, "extraversion": 10, "conscientiousness": -10},
+		"鍠勮壇": {"agreeableness": 20, "warmth": 15},
+		"绁炵": {"openness": 10, "neuroticism": 5},
+		"鍧氬己": {"bravery": 15, "neuroticism": -10},
+		"鏁忔劅": {"neuroticism": 15, "warmth": 10},
+		"涔愯": {"extraversion": 10, "neuroticism": -15},
+		"璋ㄦ厧": {"conscientiousness": 15, "bravery": -5}
 	}
 
 	for keyword in keywords:
@@ -115,7 +115,7 @@ func _generate_personality_from_description(description: String) -> Dictionary:
 ## Complete soul creation with a name
 func complete_creation(name: String) -> SoulGrowthData:
 	if not creation_state["in_progress"]:
-		Logger.error("SoulManager: No creation in progress", "SoulManager")
+		GameLog.error("SoulManager: No creation in progress", "SoulManager")
 		return null
 
 	var soul := SoulGrowthData.new()
@@ -148,7 +148,7 @@ func complete_creation(name: String) -> SoulGrowthData:
 	# Save
 	_save_soul(soul)
 
-	Logger.info("SoulManager: Soul created - %s (%s)" % [name, soul.soul_id], "SoulManager")
+	GameLog.info("SoulManager: Soul created - %s (%s)" % [name, soul.soul_id], "SoulManager")
 	EventBus.emit("soul_created", {"id": soul.soul_id, "name": name, "personality": soul.personality})
 
 	return soul
@@ -162,10 +162,10 @@ func set_active_soul(soul_id: String) -> bool:
 		if soul_summary["id"] == soul_id:
 			active_soul = _load_soul(soul_id)
 			if active_soul:
-				Logger.info("SoulManager: Active soul set to %s" % active_soul.soul_name, "SoulManager")
+				GameLog.info("SoulManager: Active soul set to %s" % active_soul.soul_name, "SoulManager")
 				EventBus.emit("soul_selected", {"id": soul_id, "name": active_soul.soul_name})
 				return true
-	Logger.warning("SoulManager: Soul not found: %s" % soul_id, "SoulManager")
+	GameLog.warning("SoulManager: Soul not found: %s" % soul_id, "SoulManager")
 	return false
 
 
@@ -185,7 +185,7 @@ func delete_soul(soul_id: String) -> bool:
 			_save_soul_list()
 			if active_soul and active_soul.soul_id == soul_id:
 				active_soul = null
-			Logger.info("SoulManager: Soul deleted: %s" % soul_id, "SoulManager")
+			GameLog.info("SoulManager: Soul deleted: %s" % soul_id, "SoulManager")
 			EventBus.emit("soul_deleted", {"id": soul_id})
 			return true
 	return false
@@ -196,18 +196,18 @@ func delete_soul(soul_id: String) -> bool:
 ## Start a training task
 func start_training(task_id: String) -> bool:
 	if active_soul == null:
-		Logger.warning("SoulManager: No active soul for training", "SoulManager")
+		GameLog.warning("SoulManager: No active soul for training", "SoulManager")
 		return false
 
 	for task in training_tasks:
 		if task["id"] == task_id:
 			active_training = task.duplicate()
 			_training_timer = 0.0
-			Logger.info("SoulManager: Training started - %s" % task["name"], "SoulManager")
+			GameLog.info("SoulManager: Training started - %s" % task["name"], "SoulManager")
 			EventBus.emit("soul_training_started", {"task": task, "soul_id": active_soul.soul_id})
 			return true
 
-	Logger.warning("SoulManager: Unknown training task: %s" % task_id, "SoulManager")
+	GameLog.warning("SoulManager: Unknown training task: %s" % task_id, "SoulManager")
 	return false
 
 
@@ -223,7 +223,7 @@ func _complete_training() -> void:
 	var result = active_soul.add_dimension_experience(dimension, exp)
 	active_soul.add_memory("Completed training: %s (+%d %s exp)" % [task["name"], exp, dimension], "training", 2)
 
-	Logger.info("SoulManager: Training complete - %s (+%d %s)" % [task["name"], exp, dimension], "SoulManager")
+	GameLog.info("SoulManager: Training complete - %s (+%d %s)" % [task["name"], exp, dimension], "SoulManager")
 	EventBus.emit("soul_training_complete", {
 		"task": task,
 		"soul_id": active_soul.soul_id,
@@ -249,7 +249,7 @@ func get_training_progress() -> float:
 func deploy_soul(soul_id: String, world_id: String, world_name: String) -> bool:
 	var soul = _load_soul(soul_id)
 	if soul == null:
-		Logger.warning("SoulManager: Cannot deploy, soul not found: %s" % soul_id, "SoulManager")
+		GameLog.warning("SoulManager: Cannot deploy, soul not found: %s" % soul_id, "SoulManager")
 		return false
 
 	# Call SoulArena API to enter world
@@ -260,17 +260,17 @@ func deploy_soul(soul_id: String, world_id: String, world_name: String) -> bool:
 	}
 	SoulArenaClient.enter_world(soul_id, body, self, "_on_deploy_result")
 
-	Logger.info("SoulManager: Deploying %s to %s" % [soul.soul_name, world_name], "SoulManager")
+	GameLog.info("SoulManager: Deploying %s to %s" % [soul.soul_name, world_name], "SoulManager")
 	return true
 
 
 ## Callback for deployment result
 func _on_deploy_result(status_code: int, response: Dictionary) -> void:
 	if status_code == 200:
-		Logger.info("SoulManager: Soul deployed successfully", "SoulManager")
+		GameLog.info("SoulManager: Soul deployed successfully", "SoulManager")
 		EventBus.emit("soul_deployed", {"status": "success", "response": response})
 	else:
-		Logger.error("SoulManager: Deployment failed: %d" % status_code, "SoulManager")
+		GameLog.error("SoulManager: Deployment failed: %d" % status_code, "SoulManager")
 		ErrorHandler.track_error("SoulManager", "Soul deployment failed", {"status": status_code}, "error")
 
 
@@ -302,7 +302,7 @@ func _save_soul_list() -> void:
 ## Load soul list
 func _load_soul_list() -> void:
 	soul_list = SaveSystem.get_value("soul_list", [])
-	Logger.info("SoulManager: Loaded %d souls" % soul_list.size(), "SoulManager")
+	GameLog.info("SoulManager: Loaded %d souls" % soul_list.size(), "SoulManager")
 
 
 ## Get all souls summary

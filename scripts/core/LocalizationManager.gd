@@ -42,13 +42,13 @@ var _stats: Dictionary = {
 func _ready() -> void:
 	_register_default_languages()
 	_load_builtin_translations()
-	Logger.info("LocalizationManager initialized (lang=%s)" % _current_language, "Locale")
+	GameLog.info("LocalizationManager initialized (lang=%s)" % _current_language, "Locale")
 
 
 ## Set current language
 func set_language(lang_code: String) -> void:
 	if not _available_languages.has(lang_code):
-		Logger.warning("LocalizationManager: Unknown language: %s" % lang_code, "Locale")
+		GameLog.warning("LocalizationManager: Unknown language: %s" % lang_code, "Locale")
 		return
 
 	_current_language = lang_code
@@ -57,7 +57,7 @@ func set_language(lang_code: String) -> void:
 	# Update Godot's translation server
 	TranslationServer.set_locale(lang_code)
 
-	Logger.info("LocalizationManager: Language set to %s" % lang_code, "Locale")
+	GameLog.info("LocalizationManager: Language set to %s" % lang_code, "Locale")
 	EventBus.emit("language_changed", {"language": lang_code, "name": _available_languages[lang_code]["name"]})
 
 
@@ -115,7 +115,7 @@ func add_translation(language: String, key: String, text: String) -> void:
 ## Format: key,en,zh,ja (first row is header with language codes)
 func load_translation_csv(path: String) -> bool:
 	if not FileAccess.file_exists(path):
-		Logger.error("LocalizationManager: Translation file not found: %s" % path, "Locale")
+		GameLog.error("LocalizationManager: Translation file not found: %s" % path, "Locale")
 		return false
 
 	var file := FileAccess.open(path, FileAccess.READ)
@@ -158,7 +158,7 @@ func load_translation_csv(path: String) -> bool:
 		count += 1
 
 	_stats["translations_loaded"] += count
-	Logger.info("LocalizationManager: Loaded %d translations from %s" % [count, path], "Locale")
+	GameLog.info("LocalizationManager: Loaded %d translations from %s" % [count, path], "Locale")
 	return true
 
 
@@ -166,7 +166,7 @@ func load_translation_csv(path: String) -> bool:
 func load_translations_dir(dir_path: String) -> int:
 	var dir := DirAccess.open(dir_path)
 	if dir == null:
-		Logger.warning("LocalizationManager: Directory not found: %s" % dir_path, "Locale")
+		GameLog.warning("LocalizationManager: Directory not found: %s" % dir_path, "Locale")
 		return 0
 
 	var count := 0
@@ -208,8 +208,8 @@ func reset_to_default() -> void:
 func _register_default_languages() -> void:
 	_available_languages = {
 		"en": {"name": "English", "native_name": "English"},
-		"zh": {"name": "Chinese", "native_name": "中文"},
-		"ja": {"name": "Japanese", "native_name": "日本語"}
+		"zh": {"name": "Chinese", "native_name": "涓枃"},
+		"ja": {"name": "Japanese", "native_name": "鏃ユ湰瑾?}
 	}
 
 
@@ -238,25 +238,25 @@ func _load_builtin_translations() -> void:
 	}
 
 	_translations["zh"] = {
-		"LOADING": "加载中...",
-		"ERROR": "错误",
-		"OK": "确定",
-		"CANCEL": "取消",
-		"YES": "是",
-		"NO": "否",
-		"BACK": "返回",
-		"SETTINGS": "设置",
-		"LANGUAGE": "语言",
-		"VOLUME": "音量",
-		"PAUSED": "已暂停",
-		"RESUME": "继续",
-		"QUIT": "退出",
-		"CONNECTING": "连接中...",
-		"CONNECTION_FAILED": "连接失败",
-		"RETRY": "重试",
-		"PERFORMANCE_TEST": "性能测试",
-		"FPS": "帧率",
-		"MEMORY": "内存"
+		"LOADING": "鍔犺浇涓?..",
+		"ERROR": "閿欒",
+		"OK": "纭畾",
+		"CANCEL": "鍙栨秷",
+		"YES": "鏄?,
+		"NO": "鍚?,
+		"BACK": "杩斿洖",
+		"SETTINGS": "璁剧疆",
+		"LANGUAGE": "璇█",
+		"VOLUME": "闊抽噺",
+		"PAUSED": "宸叉殏鍋?,
+		"RESUME": "缁х画",
+		"QUIT": "閫€鍑?,
+		"CONNECTING": "杩炴帴涓?..",
+		"CONNECTION_FAILED": "杩炴帴澶辫触",
+		"RETRY": "閲嶈瘯",
+		"PERFORMANCE_TEST": "鎬ц兘娴嬭瘯",
+		"FPS": "甯х巼",
+		"MEMORY": "鍐呭瓨"
 	}
 
 	_stats["translations_loaded"] = _translations["en"].size() + _translations["zh"].size()
@@ -272,4 +272,4 @@ func _log_missing_key(key: String, language: String) -> void:
 	_stats["missing_translations"] += 1
 
 	if _missing_keys[key]["count"] == 1:
-		Logger.debug("LocalizationManager: Missing translation '%s' for '%s'" % [key, language], "Locale")
+		GameLog.debug("LocalizationManager: Missing translation '%s' for '%s'" % [key, language], "Locale")

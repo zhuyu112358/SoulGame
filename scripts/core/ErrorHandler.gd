@@ -88,7 +88,7 @@ var _total_recoveries: int = 0
 
 func _ready() -> void:
 	_ensure_crash_dir()
-	Logger.info("ErrorHandler initialized (rate_window=%.0fs, suppression=%s)" % [_rate_window_seconds, _suppression_enabled], "Error")
+	GameLog.info("ErrorHandler initialized (rate_window=%.0fs, suppression=%s)" % [_rate_window_seconds, _suppression_enabled], "Error")
 
 
 ## Track an error manually
@@ -134,16 +134,16 @@ func track_error(category: String, message: String, data: Dictionary = {}, sever
 	# Log based on severity
 	match severity:
 		"critical":
-			Logger.error("CRITICAL [%s]: %s" % [category, message], "Error")
+			GameLog.error("CRITICAL [%s]: %s" % [category, message], "Error")
 			_generate_crash_dump(entry)
 			if _pause_on_critical:
 				get_tree().paused = true
 		"error":
-			Logger.error("[%s]: %s" % [category, message], "Error")
+			GameLog.error("[%s]: %s" % [category, message], "Error")
 		"warning":
-			Logger.warning("[%s]: %s" % [category, message], "Error")
+			GameLog.warning("[%s]: %s" % [category, message], "Error")
 		"info":
-			Logger.info("[%s]: %s" % [category, message], "Error")
+			GameLog.info("[%s]: %s" % [category, message], "Error")
 
 	EventBus.emit("error_tracked", entry)
 
@@ -180,7 +180,7 @@ func register_recovery(category: String, target: Object, method: String, max_ret
 	if not _recovery_stats.has(category):
 		_recovery_stats[category] = {"attempted": 0, "succeeded": 0, "failed": 0}
 
-	Logger.info("ErrorHandler: Registered recovery for '%s' -> %s.%s (retries=%d)" % [category, target, method, max_retries], "Error")
+	GameLog.info("ErrorHandler: Registered recovery for '%s' -> %s.%s (retries=%d)" % [category, target, method, max_retries], "Error")
 
 
 ## Unregister all recovery handlers for a category
@@ -208,11 +208,11 @@ func _attempt_recovery(category: String, error_entry: Dictionary) -> void:
 			if success:
 				error_entry["recovered"] = true
 				_recovery_stats[category]["succeeded"] += 1
-				Logger.info("ErrorHandler: Recovery succeeded for '%s' (attempt %d)" % [category, attempt + 1], "Error")
+				GameLog.info("ErrorHandler: Recovery succeeded for '%s' (attempt %d)" % [category, attempt + 1], "Error")
 				EventBus.emit("error_recovered", {"category": category, "error": error_entry})
 			else:
 				_recovery_stats[category]["failed"] += 1
-				Logger.warning("ErrorHandler: Recovery failed for '%s' after %d attempts" % [category, handler["max_retries"]], "Error")
+				GameLog.warning("ErrorHandler: Recovery failed for '%s' after %d attempts" % [category, handler["max_retries"]], "Error")
 
 
 ## --- Error Rate Monitoring ---
@@ -357,8 +357,8 @@ func _generate_crash_dump(error_entry: Dictionary) -> void:
 	dump += "Objects: %d\n" % get_tree().get_node_count()
 	dump += "Scene: %s\n" % GameState.get_value("game", "current_scene", "unknown")
 	dump += "Memory Static: %.1fMB\n" % (float(Performance.get_monitor(Performance.MEMORY_STATIC)) / (1024*1024))
-	dump += "Memory Dynamic: %.1fMB\n" % (float(Performance.get_monitor(Performance.MEMORY_DYNAMIC)) / (1024*1024))
-	dump += "Draw Calls: %d\n" % int(Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME))
+	dump += "Memory Dynamic: %.1fMB\n" % (float(Performance.get_monitor(5)) / (1024*1024))
+	dump += "Draw Calls: %d\n" % int(Performance.get_monitor(13))
 	dump += "Error Rate: %.1f/min (%s)\n" % [get_error_rate(), get_error_rate_status()]
 	dump += "\n=== Recent Errors ===\n"
 	for entry in get_error_history(10):
@@ -368,7 +368,7 @@ func _generate_crash_dump(error_entry: Dictionary) -> void:
 	if file:
 		file.store_string(dump)
 		file.close()
-		Logger.info("ErrorHandler: Crash dump saved to %s" % dump_path, "Error")
+		GameLog.info("ErrorHandler: Crash dump saved to %s" % dump_path, "Error")
 
 
 ## Generate a manual crash dump (for debugging)
@@ -394,7 +394,7 @@ func clear_history() -> void:
 	_total_errors = 0
 	_error_timestamps.clear()
 	_suppression_state.clear()
-	Logger.info("ErrorHandler: History cleared", "Error")
+	GameLog.info("ErrorHandler: History cleared", "Error")
 
 
 ## Set whether to pause on critical errors

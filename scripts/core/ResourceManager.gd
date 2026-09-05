@@ -36,7 +36,7 @@ var _stats: Dictionary = {
 
 
 func _ready() -> void:
-	Logger.info("ResourceManager initialized", "Resource")
+	GameLog.info("ResourceManager initialized", "Resource")
 
 
 ## Load a resource synchronously (with cache)
@@ -50,7 +50,7 @@ func load(path: String) -> Resource:
 	_stats["cache_misses"] += 1
 	var resource: Resource = ResourceLoader.load(path)
 	if resource == null:
-		Logger.error("ResourceManager: Failed to load: %s" % path, "Resource")
+		GameLog.error("ResourceManager: Failed to load: %s" % path, "Resource")
 		return null
 
 	_cache_resource(path, resource)
@@ -86,7 +86,7 @@ func load_async(path: String, callback_target: Object = null, callback_method: S
 	# Use ResourceLoader.load_threaded_request
 	var error_code := ResourceLoader.load_threaded_request(path, false, ResourceLoader.CACHE_MODE_REUSE)
 	if error_code != OK:
-		Logger.error("ResourceManager: Async load failed for %s: error %d" % [path, error_code], "Resource")
+		GameLog.error("ResourceManager: Async load failed for %s: error %d" % [path, error_code], "Resource")
 		_notify_load_complete(path, null)
 		return
 
@@ -123,9 +123,9 @@ func unload(path: String) -> void:
 		_stats["current_cache_size_kb"] -= entry["size_kb"]
 		_stats["total_unloaded"] += 1
 		_cache.erase(path)
-		Logger.debug("ResourceManager: Unloaded: %s (%.1f KB)" % [path, entry["size_kb"]], "Resource")
+		GameLog.debug("ResourceManager: Unloaded: %s (%.1f KB)" % [path, entry["size_kb"]], "Resource")
 	else:
-		Logger.debug("ResourceManager: Released ref: %s (refs=%d)" % [path, entry["ref_count"]], "Resource")
+		GameLog.debug("ResourceManager: Released ref: %s (refs=%d)" % [path, entry["ref_count"]], "Resource")
 
 
 ## Force unload regardless of ref count
@@ -135,7 +135,7 @@ func force_unload(path: String) -> void:
 		_stats["current_cache_size_kb"] -= entry["size_kb"]
 		_stats["total_unloaded"] += 1
 		_cache.erase(path)
-		Logger.info("ResourceManager: Force unloaded: %s" % path, "Resource")
+		GameLog.info("ResourceManager: Force unloaded: %s" % path, "Resource")
 
 
 ## Load a group of resources with progress callback
@@ -153,7 +153,7 @@ func load_group(paths: Array, callback_target: Object = null, callback_method: S
 		"callback_method": callback_method
 	}
 
-	Logger.info("ResourceManager: Loading group %d (%d resources)" % [group_id, paths.size()], "Resource")
+	GameLog.info("ResourceManager: Loading group %d (%d resources)" % [group_id, paths.size()], "Resource")
 
 	for path in paths:
 		load_async(path, self, "_on_group_resource_loaded")
@@ -204,7 +204,7 @@ func clear_cache() -> void:
 	var count := _cache.size()
 	_cache.clear()
 	_stats["current_cache_size_kb"] = 0
-	Logger.info("ResourceManager: Cleared cache (%d resources)" % count, "Resource")
+	GameLog.info("ResourceManager: Cleared cache (%d resources)" % count, "Resource")
 
 
 ## Get resource manager statistics
@@ -225,7 +225,7 @@ func get_stats() -> Dictionary:
 func preload(paths: Array) -> void:
 	for path in paths:
 		load(path)
-	Logger.info("ResourceManager: Preloaded %d resources" % paths.size(), "Resource")
+	GameLog.info("ResourceManager: Preloaded %d resources" % paths.size(), "Resource")
 
 
 ## --- Internal ---
@@ -258,7 +258,7 @@ func _await_async_load(path: String) -> void:
 			_stats["total_loads"] += 1
 		_notify_load_complete(path, resource)
 	else:
-		Logger.error("ResourceManager: Async load failed for %s (status=%d)" % [path, status], "Resource")
+		GameLog.error("ResourceManager: Async load failed for %s (status=%d)" % [path, status], "Resource")
 		_notify_load_complete(path, null)
 
 
@@ -290,7 +290,7 @@ func _on_group_resource_loaded(path: String, resource: Resource) -> void:
 				})
 
 			if group["loaded"] >= group["total"]:
-				Logger.info("ResourceManager: Group %d complete (%d resources)" % [group_id, group["total"]], "Resource")
+				GameLog.info("ResourceManager: Group %d complete (%d resources)" % [group_id, group["total"]], "Resource")
 				_loading_groups.erase(group_id)
 			break
 

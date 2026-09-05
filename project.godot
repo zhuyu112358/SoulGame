@@ -14,7 +14,7 @@ config/icon="res://icon.svg"
 
 [autoload]
 
-Logger="*res://scripts/autoload/Logger.gd"
+GameLog="*res://scripts/autoload/Logger.gd"
 EventBus="*res://scripts/autoload/EventBus.gd"
 ConfigManager="*res://scripts/autoload/ConfigManager.gd"
 GameState="*res://scripts/autoload/GameState.gd"
@@ -95,11 +95,11 @@ driver/output_latency=0.05
 settings/fps/force_fps=0
 settings/print_to_console=true
 settings/stdout/verbose_stdout=false
-gdscript/warnings/untyped_declaration=1
-gdscript/warnings/integer_division=1
-gdscript/warnings/unsafe_call=1
-gdscript/warnings/unsafe_property_access=1
-gdscript/warnings/native_method_override=1
+gdscript/warnings/untyped_declaration=0
+gdscript/warnings/integer_division=0
+gdscript/warnings/unsafe_call=0
+gdscript/warnings/unsafe_property_access=0
+gdscript/warnings/native_method_override=0
 gdscript/completion/add_type_hints=true
 gdscript/places_capitalization=false
 

@@ -41,7 +41,7 @@ var _results_label: Label = null
 func _ready() -> void:
 	_setup_containers()
 	_setup_ui()
-	Logger.info("PerformanceTest scene ready - press 1-5 to run tests", "PerfTest")
+	GameLog.info("PerformanceTest scene ready - press 1-5 to run tests", "PerfTest")
 
 
 func _process(delta: float) -> void:
@@ -69,7 +69,7 @@ func _input(event: InputEvent) -> void:
 
 func _start_test(test_name: String) -> void:
 	if _test_running:
-		Logger.warning("PerformanceTest: Test already running", "PerfTest")
+		GameLog.warning("PerformanceTest: Test already running", "PerfTest")
 		return
 
 	_reset_test_objects()
@@ -89,14 +89,14 @@ func _start_test(test_name: String) -> void:
 		"combined":
 			_run_combined_test()
 
-	Logger.info("PerformanceTest: Started '%s' (%.1fs)" % [test_name, _test_duration], "PerfTest")
+	GameLog.info("PerformanceTest: Started '%s' (%.1fs)" % [test_name, _test_duration], "PerfTest")
 
 
 func _end_current_test() -> void:
 	_test_running = false
 	var results = PerformanceMonitor.end_baseline(_current_test)
 	_results[_current_test] = results
-	Logger.info("PerformanceTest: '%s' complete - avg FPS: %.1f" % [_current_test, results.get("avg_fps", 0)], "PerfTest")
+	GameLog.info("PerformanceTest: '%s' complete - avg FPS: %.1f" % [_current_test, results.get("avg_fps", 0)], "PerfTest")
 	_update_results_display()
 
 
@@ -110,7 +110,7 @@ func _run_all_tests() -> void:
 		await _wait_for_test_complete()
 		await get_tree().create_timer(0.5).timeout
 
-	Logger.info("PerformanceTest: All tests complete", "PerfTest")
+	GameLog.info("PerformanceTest: All tests complete", "PerfTest")
 	_print_results()
 
 
@@ -304,10 +304,10 @@ func _update_results_display() -> void:
 
 
 func _print_results() -> void:
-	Logger.info("=== Performance Baseline Results ===", "PerfTest")
+	GameLog.info("=== Performance Baseline Results ===", "PerfTest")
 	for test_name in _results:
 		var r = _results[test_name]
-		Logger.info("  %s: avg_fps=%.1f, 1pct_low=%.1f, peak_frame=%.2fms, draw_calls=%d" % [
+		GameLog.info("  %s: avg_fps=%.1f, 1pct_low=%.1f, peak_frame=%.2fms, draw_calls=%d" % [
 			test_name, r.get("avg_fps", 0), r.get("fps_1pct_low", 0),
 			r.get("frame_time_peak_ms", 0), r.get("draw_calls", 0)
 		], "PerfTest")
@@ -333,4 +333,4 @@ func _reset() -> void:
 	_test_timer = 0.0
 	PerformanceMonitor.reset()
 	_update_results_display()
-	Logger.info("PerformanceTest: Reset", "PerfTest")
+	GameLog.info("PerformanceTest: Reset", "PerfTest")

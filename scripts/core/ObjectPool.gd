@@ -8,7 +8,7 @@ extends Node
 ##   ObjectPool.register_pool("enemy", preload("res://enemy.tscn"), 10, 50)
 ##   var enemy = ObjectPool.acquire("enemy")
 ##   ObjectPool.release("enemy", enemy)
-##   ObjectPool.preload("enemy", 20)
+##   ObjectPool.preload_objects("enemy", 20)
 
 ## Pool definitions: { pool_name: { scene, active_count, pool, min_size, max_size, total_created } }
 var _pools: Dictionary = {}
@@ -24,7 +24,7 @@ var _stats: Dictionary = {
 
 
 func _ready() -> void:
-	Logger.info("ObjectPool initialized", "Pool")
+	GameLog.info("ObjectPool initialized", "Pool")
 
 
 ## Register a new object pool
@@ -34,7 +34,7 @@ func _ready() -> void:
 ## max_size: Maximum objects (0 = unlimited)
 func register_pool(pool_name: String, scene: PackedScene, min_size: int = 5, max_size: int = 0) -> void:
 	if _pools.has(pool_name):
-		Logger.warning("ObjectPool: Pool '%s' already registered, re-registering" % pool_name, "Pool")
+		GameLog.warning("ObjectPool: Pool '%s' already registered, re-registering" % pool_name, "Pool")
 
 	_pools[pool_name] = {
 		"scene": scene,
@@ -50,7 +50,7 @@ func register_pool(pool_name: String, scene: PackedScene, min_size: int = 5, max
 		var obj := _create_instance(pool_name)
 		_pools[pool_name]["available"].append(obj)
 
-	Logger.info("ObjectPool: Registered '%s' (min=%d, max=%d, preloaded=%d)" % [
+	GameLog.info("ObjectPool: Registered '%s' (min=%d, max=%d, preloaded=%d)" % [
 		pool_name, min_size, max_size, min_size
 	], "Pool")
 
@@ -59,7 +59,7 @@ func register_pool(pool_name: String, scene: PackedScene, min_size: int = 5, max
 ## Returns null if pool is at max capacity
 func acquire(pool_name: String) -> Node:
 	if not _pools.has(pool_name):
-		Logger.error("ObjectPool: Unknown pool '%s'" % pool_name, "Pool")
+		GameLog.error("ObjectPool: Unknown pool '%s'" % pool_name, "Pool")
 		return null
 
 	var pool = _pools[pool_name]
@@ -79,7 +79,7 @@ func acquire(pool_name: String) -> Node:
 
 	# Pool miss - create new instance if under max
 	if pool["max_size"] > 0 and pool["total_created"] >= pool["max_size"]:
-		Logger.warning("ObjectPool: Pool '%s' at max capacity (%d)" % [pool_name, pool["max_size"]], "Pool")
+		GameLog.warning("ObjectPool: Pool '%s' at max capacity (%d)" % [pool_name, pool["max_size"]], "Pool")
 		return null
 
 	var obj := _create_instance(pool_name)
@@ -93,7 +93,7 @@ func acquire(pool_name: String) -> Node:
 ## Release an object back to the pool
 func release(pool_name: String, obj: Node) -> void:
 	if not _pools.has(pool_name):
-		Logger.error("ObjectPool: Unknown pool '%s'" % pool_name, "Pool")
+		GameLog.error("ObjectPool: Unknown pool '%s'" % pool_name, "Pool")
 		obj.queue_free()
 		return
 
@@ -120,7 +120,7 @@ func release(pool_name: String, obj: Node) -> void:
 
 
 ## Preload additional objects into the pool
-func preload(pool_name: String, count: int) -> void:
+func preload_objects(pool_name: String, count: int) -> void:
 	if not _pools.has(pool_name):
 		return
 
@@ -131,7 +131,7 @@ func preload(pool_name: String, count: int) -> void:
 		var obj := _create_instance(pool_name)
 		pool["available"].append(obj)
 
-	Logger.debug("ObjectPool: Preloaded %d into '%s' (total=%d)" % [count, pool_name, pool["total_created"]], "Pool")
+	GameLog.debug("ObjectPool: Preloaded %d into '%s' (total=%d)" % [count, pool_name, pool["total_created"]], "Pool")
 
 
 ## Get pool size info
@@ -175,7 +175,7 @@ func clear_pool(pool_name: String) -> void:
 	pool["available"].clear()
 	pool["active"].clear()
 	pool["total_created"] = 0
-	Logger.info("ObjectPool: Cleared pool '%s'" % pool_name, "Pool")
+	GameLog.info("ObjectPool: Cleared pool '%s'" % pool_name, "Pool")
 
 
 ## Clear all pools

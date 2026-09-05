@@ -16,10 +16,10 @@ var current_room: String = "main"
 
 ## Available rooms
 var rooms: Dictionary = {
-	"main": {"name": "主房间", "unlocked": true, "m1": true},
-	"training": {"name": "训练室", "unlocked": false, "m1": false},
-	"study": {"name": "书房", "unlocked": false, "m1": false},
-	"garden": {"name": "花园", "unlocked": false, "m1": false}
+	"main": {"name": "涓绘埧闂?, "unlocked": true, "m1": true},
+	"training": {"name": "璁粌瀹?, "unlocked": false, "m1": false},
+	"study": {"name": "涔︽埧", "unlocked": false, "m1": false},
+	"garden": {"name": "鑺卞洯", "unlocked": false, "m1": false}
 }
 
 ## Soul growth data reference
@@ -52,7 +52,7 @@ var home_state: Dictionary = {
 
 
 func _ready() -> void:
-	Logger.info("SoulHome: Scene initialized", "SoulHome")
+	GameLog.info("SoulHome: Scene initialized", "SoulHome")
 	_setup_soul_display()
 	_enter_home()
 
@@ -81,7 +81,7 @@ func _enter_home() -> void:
 	# Enter soul world via SoulArena API
 	_enter_soul_world()
 
-	Logger.info("SoulHome: Entered (visit #%d)" % home_state["visit_count"], "SoulHome")
+	GameLog.info("SoulHome: Entered (visit #%d)" % home_state["visit_count"], "SoulHome")
 	EventBus.emit("soul_home_entered", {"room": current_room, "visit": home_state["visit_count"]})
 
 
@@ -95,7 +95,7 @@ func exit_home() -> void:
 	# Exit soul world
 	_exit_soul_world()
 
-	Logger.info("SoulHome: Exited (total time: %.1fs)" % home_state["total_time"], "SoulHome")
+	GameLog.info("SoulHome: Exited (total time: %.1fs)" % home_state["total_time"], "SoulHome")
 	EventBus.emit("soul_home_exited", {"total_time": home_state["total_time"]})
 
 
@@ -116,7 +116,7 @@ func _setup_soul_display() -> void:
 	sprite.position = Vector2(-32, -32)
 	soul_display.add_child(sprite)
 
-	Logger.debug("SoulHome: Soul display created (placeholder)", "SoulHome")
+	GameLog.debug("SoulHome: Soul display created (placeholder)", "SoulHome")
 
 
 ## --- Room Management ---
@@ -124,22 +124,22 @@ func _setup_soul_display() -> void:
 ## Switch to a different room
 func switch_room(room_name: String) -> bool:
 	if _room_switch_cooldown > 0:
-		Logger.debug("SoulHome: Room switch on cooldown", "SoulHome")
+		GameLog.debug("SoulHome: Room switch on cooldown", "SoulHome")
 		return false
 
 	if not rooms.has(room_name):
-		Logger.warning("SoulHome: Unknown room: %s" % room_name, "SoulHome")
+		GameLog.warning("SoulHome: Unknown room: %s" % room_name, "SoulHome")
 		return false
 
 	if not rooms[room_name]["unlocked"]:
-		Logger.warning("SoulHome: Room locked: %s" % room_name, "SoulHome")
+		GameLog.warning("SoulHome: Room locked: %s" % room_name, "SoulHome")
 		return false
 
 	var old_room = current_room
 	current_room = room_name
 	_room_switch_cooldown = 0.3
 
-	Logger.info("SoulHome: Switched from %s to %s" % [old_room, room_name], "SoulHome")
+	GameLog.info("SoulHome: Switched from %s to %s" % [old_room, room_name], "SoulHome")
 	EventBus.emit("soul_home_room_changed", {"from": old_room, "to": room_name})
 	return true
 
@@ -156,7 +156,7 @@ func get_current_room() -> Dictionary:
 ## Enter soul world via SoulArena API
 func _enter_soul_world() -> void:
 	if soul_id.is_empty():
-		Logger.warning("SoulHome: No soul_id set, skipping world enter", "SoulHome")
+		GameLog.warning("SoulHome: No soul_id set, skipping world enter", "SoulHome")
 		return
 
 	soul_world_id = "soul_home_%s_%d" % [soul_id, Time.get_unix_time_from_system()]
@@ -174,9 +174,9 @@ func _enter_soul_world() -> void:
 func _on_world_entered(status_code: int, response: Dictionary) -> void:
 	if status_code == 200:
 		soul_in_world = true
-		Logger.info("SoulHome: Soul entered world %s" % soul_world_id, "SoulHome")
+		GameLog.info("SoulHome: Soul entered world %s" % soul_world_id, "SoulHome")
 	else:
-		Logger.error("SoulHome: Failed to enter world: %d" % status_code, "SoulHome")
+		GameLog.error("SoulHome: Failed to enter world: %d" % status_code, "SoulHome")
 		ErrorHandler.track_error("SoulHome", "Failed to enter soul world", {"status": status_code, "response": response}, "error")
 
 
@@ -192,9 +192,9 @@ func _exit_soul_world() -> void:
 ## Callback for world exit
 func _on_world_exited(status_code: int, response: Dictionary) -> void:
 	if status_code == 200:
-		Logger.info("SoulHome: Soul exited world", "SoulHome")
+		GameLog.info("SoulHome: Soul exited world", "SoulHome")
 	else:
-		Logger.warning("SoulHome: World exit returned %d" % status_code, "SoulHome")
+		GameLog.warning("SoulHome: World exit returned %d" % status_code, "SoulHome")
 
 
 ## Send a message to the soul (chat)
@@ -202,7 +202,7 @@ func send_message(message: String) -> void:
 	if _interaction_cooldown > 0:
 		return
 	if not soul_in_world:
-		Logger.warning("SoulHome: Soul not in world, cannot send message", "SoulHome")
+		GameLog.warning("SoulHome: Soul not in world, cannot send message", "SoulHome")
 		return
 
 	_interaction_cooldown = 0.5
@@ -226,10 +226,10 @@ func send_message(message: String) -> void:
 ## Callback for perceive response (soul's reaction)
 func _on_perceive_response(status_code: int, response: Dictionary) -> void:
 	if status_code == 200:
-		Logger.debug("SoulHome: Soul perceived: %s" % str(response).substr(0, 100), "SoulHome")
+		GameLog.debug("SoulHome: Soul perceived: %s" % str(response).substr(0, 100), "SoulHome")
 		EventBus.emit("soul_chat_received", {"response": response})
 	else:
-		Logger.error("SoulHome: Perceive failed: %d" % status_code, "SoulHome")
+		GameLog.error("SoulHome: Perceive failed: %d" % status_code, "SoulHome")
 
 
 ## --- Interactions (M1 basics) ---
@@ -244,7 +244,7 @@ func interact_pet() -> void:
 		soul_growth.add_dimension_experience("emotional", 8, "attachment")
 		soul_growth.add_memory("Player petted me", "emotional", 2)
 
-	Logger.info("SoulHome: Player petted soul", "SoulHome")
+	GameLog.info("SoulHome: Player petted soul", "SoulHome")
 	EventBus.emit("soul_interaction", {"type": "pet", "soul_id": soul_id})
 
 
@@ -259,7 +259,7 @@ func interact_feed() -> void:
 		soul_growth.add_dimension_experience("emotional", 5, "emotion_perception")
 		soul_growth.add_memory("Player fed me", "care", 2)
 
-	Logger.info("SoulHome: Player fed soul", "SoulHome")
+	GameLog.info("SoulHome: Player fed soul", "SoulHome")
 	EventBus.emit("soul_interaction", {"type": "feed", "soul_id": soul_id})
 
 
@@ -274,7 +274,7 @@ func interact_play() -> void:
 		soul_growth.add_dimension_experience("emotional", 5, "emotion_expression")
 		soul_growth.add_memory("Player played with me", "play", 2)
 
-	Logger.info("SoulHome: Player played with soul", "SoulHome")
+	GameLog.info("SoulHome: Player played with soul", "SoulHome")
 	EventBus.emit("soul_interaction", {"type": "play", "soul_id": soul_id})
 
 
@@ -286,13 +286,13 @@ func _load_soul_growth() -> void:
 	if save_data.has("soul_growth"):
 		soul_growth = SoulGrowthData.new()
 		soul_growth.from_dict(save_data["soul_growth"])
-		Logger.info("SoulHome: Loaded soul growth data (Lv.%d)" % soul_growth.level, "SoulHome")
+		GameLog.info("SoulHome: Loaded soul growth data (Lv.%d)" % soul_growth.level, "SoulHome")
 	else:
 		# Create new soul growth data
 		soul_growth = SoulGrowthData.new()
 		soul_growth.soul_id = soul_id
 		soul_growth.soul_name = "Soul"
-		Logger.info("SoulHome: Created new soul growth data", "SoulHome")
+		GameLog.info("SoulHome: Created new soul growth data", "SoulHome")
 
 	soul_growth.start_session()
 
@@ -306,7 +306,7 @@ func _save_soul_growth() -> void:
 
 	var save_data := {"soul_growth": soul_growth.to_dict()}
 	SaveSystem.save_game(0, save_data, "Soul Home Auto Save")
-	Logger.info("SoulHome: Saved soul growth data", "SoulHome")
+	GameLog.info("SoulHome: Saved soul growth data", "SoulHome")
 
 
 ## Get soul growth summary for UI

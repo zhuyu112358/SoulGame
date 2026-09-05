@@ -60,7 +60,7 @@ var _session_stats: Dictionary = {
 
 
 func _ready() -> void:
-	Logger.info("PerformanceMonitor initialized", "Perf")
+	GameLog.info("PerformanceMonitor initialized", "Perf")
 
 
 func _process(delta: float) -> void:
@@ -108,7 +108,7 @@ func _process(delta: float) -> void:
 ## Start a performance baseline test
 func start_baseline(test_name: String) -> void:
 	if _active_baselines.has(test_name):
-		Logger.warning("PerformanceMonitor: Baseline '%s' already running, restarting" % test_name, "Perf")
+		GameLog.warning("PerformanceMonitor: Baseline '%s' already running, restarting" % test_name, "Perf")
 
 	_active_baselines[test_name] = {
 		"start_time": Time.get_ticks_msec(),
@@ -121,13 +121,13 @@ func start_baseline(test_name: String) -> void:
 		"draw_calls_start": _draw_calls,
 		"memory_start": _memory_static + _memory_dynamic
 	}
-	Logger.info("PerformanceMonitor: Baseline started: %s" % test_name, "Perf")
+	GameLog.info("PerformanceMonitor: Baseline started: %s" % test_name, "Perf")
 
 
 ## End a performance baseline test and return results
 func end_baseline(test_name: String) -> Dictionary:
 	if not _active_baselines.has(test_name):
-		Logger.error("PerformanceMonitor: Baseline '%s' not found" % test_name, "Perf")
+		GameLog.error("PerformanceMonitor: Baseline '%s' not found" % test_name, "Perf")
 		return {}
 
 	var baseline = _active_baselines[test_name]
@@ -170,7 +170,7 @@ func end_baseline(test_name: String) -> Dictionary:
 	_baseline_results[test_name] = results
 	_active_baselines.erase(test_name)
 
-	Logger.info("PerformanceMonitor: Baseline '%s' complete - avg FPS: %.1f, 1%% low: %.1f, peak frame: %.2fms" % [
+	GameLog.info("PerformanceMonitor: Baseline '%s' complete - avg FPS: %.1f, 1%% low: %.1f, peak frame: %.2fms" % [
 		test_name, avg_fps, fps_1pct_low, baseline["frame_time_peak"]
 	], "Perf")
 
@@ -273,7 +273,7 @@ func reset() -> void:
 		"fps_1pct_low": 0.0,
 		"memory_peak_mb": 0.0
 	}
-	Logger.info("PerformanceMonitor reset", "Perf")
+	GameLog.info("PerformanceMonitor reset", "Perf")
 
 
 ## Get performance statistics (standard interface)
@@ -282,20 +282,20 @@ func get_stats() -> Dictionary:
 	snapshot["session_stats"] = _session_stats.duplicate()
 	snapshot["custom_metrics_count"] = _custom_metrics.size()
 	snapshot["process_time_ms"] = _process_time_ms
-	snapshot["process_time_peak_ms"] = _process_time_peak_ms
+	snapshot["process_time_peak_ms"] = _process_time_peak
 	return snapshot
 
 
 func _update_heavy_metrics() -> void:
 	# Memory stats (Godot 4 Performance API)
 	_memory_static = float(Performance.get_monitor(Performance.MEMORY_STATIC)) / (1024.0 * 1024.0)
-	_memory_dynamic = float(Performance.get_monitor(Performance.MEMORY_DYNAMIC)) / (1024.0 * 1024.0)
+	_memory_dynamic = float(Performance.get_monitor(5)) / (1024.0 * 1024.0)
 	var total_memory := _memory_static + _memory_dynamic
 	if total_memory > _memory_peak:
 		_memory_peak = total_memory
 
 	# Draw calls
-	_draw_calls = int(Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME))
+	_draw_calls = int(Performance.get_monitor(13))
 	if _draw_calls > _draw_calls_peak:
 		_draw_calls_peak = _draw_calls
 

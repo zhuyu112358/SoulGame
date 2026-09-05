@@ -139,7 +139,7 @@ func add_experience(amount: int) -> bool:
 		_on_level_up()
 
 	if leveled_up:
-		Logger.info("SoulGrowth: %s leveled up to Lv.%d" % [soul_name, level], "Growth")
+		GameLog.info("SoulGrowth: %s leveled up to Lv.%d" % [soul_name, level], "Growth")
 		EventBus.emit("soul_level_up", {"soul_id": soul_id, "level": level})
 
 	return leveled_up
@@ -202,7 +202,7 @@ func _check_dimension_level_up(dim_data: Dictionary) -> bool:
 		if dim_data.has("sub_dimensions"):
 			for sub in dim_data["sub_dimensions"]:
 				dim_data["sub_dimensions"][sub]["value"] += 1
-		Logger.info("SoulGrowth: %s dimension leveled up to Lv.%d" % [soul_name, dim_data["level"]], "Growth")
+		GameLog.info("SoulGrowth: %s dimension leveled up to Lv.%d" % [soul_name, dim_data["level"]], "Growth")
 		return true
 	return false
 
@@ -241,12 +241,12 @@ func _on_level_up() -> void:
 ## Check and award milestones
 func _check_milestones() -> void:
 	var milestone_defs := [
-		{"level": 5, "name": "初识世界", "description": "达到Lv.5"},
-		{"level": 10, "name": "成长中", "description": "达到Lv.10"},
-		{"level": 20, "name": "渐入佳境", "description": "达到Lv.20"},
-		{"level": 30, "name": "独当一面", "description": "达到Lv.30"},
-		{"level": 50, "name": "成熟灵魂", "description": "达到Lv.50"},
-		{"level": 100, "name": "传奇灵魂", "description": "达到Lv.100"}
+		{"level": 5, "name": "鍒濊瘑涓栫晫", "description": "杈惧埌Lv.5"},
+		{"level": 10, "name": "鎴愰暱涓?, "description": "杈惧埌Lv.10"},
+		{"level": 20, "name": "娓愬叆浣冲", "description": "杈惧埌Lv.20"},
+		{"level": 30, "name": "鐙綋涓€闈?, "description": "杈惧埌Lv.30"},
+		{"level": 50, "name": "鎴愮啛鐏甸瓊", "description": "杈惧埌Lv.50"},
+		{"level": 100, "name": "浼犲鐏甸瓊", "description": "杈惧埌Lv.100"}
 	]
 
 	for ms in milestone_defs:
@@ -256,7 +256,7 @@ func _check_milestones() -> void:
 				"description": ms["description"],
 				"achieved_at": Time.get_datetime_string_from_system()
 			})
-			Logger.info("SoulGrowth: %s achieved milestone '%s'" % [soul_name, ms["name"]], "Growth")
+			GameLog.info("SoulGrowth: %s achieved milestone '%s'" % [soul_name, ms["name"]], "Growth")
 			EventBus.emit("soul_milestone", {"soul_id": soul_id, "milestone": ms})
 
 
@@ -286,7 +286,7 @@ func add_memory(content: String, memory_type: String = "experience", importance:
 		memories.sort_custom(func(a, b): return a["importance"] > b["importance"])
 		memories = memories.slice(0, 200)
 
-	Logger.debug("SoulGrowth: %s memory added: %s" % [soul_name, content.substr(0, 50)], "Growth")
+	GameLog.debug("SoulGrowth: %s memory added: %s" % [soul_name, content.substr(0, 50)], "Growth")
 
 
 ## Get memories by type
@@ -307,7 +307,7 @@ func adjust_personality(trait: String, amount: float) -> void:
 		var old_value = personality[trait]
 		personality[trait] = clamp(personality[trait] + amount, 0.0, 100.0)
 		if abs(personality[trait] - old_value) > 0.1:
-			Logger.debug("SoulGrowth: %s personality %s: %.1f -> %.1f" % [soul_name, trait, old_value, personality[trait]], "Growth")
+			GameLog.debug("SoulGrowth: %s personality %s: %.1f -> %.1f" % [soul_name, trait, old_value, personality[trait]], "Growth")
 
 
 ## Get personality summary string
@@ -329,7 +329,7 @@ func unlock_skill(skill_id: String, skill_name: String) -> void:
 	if not skills["unlocked"].has(skill_id):
 		skills["unlocked"].append(skill_id)
 		skills["in_progress"][skill_id] = {"name": skill_name, "level": 1, "experience": 0}
-		Logger.info("SoulGrowth: %s unlocked skill '%s'" % [soul_name, skill_name], "Growth")
+		GameLog.info("SoulGrowth: %s unlocked skill '%s'" % [soul_name, skill_name], "Growth")
 		EventBus.emit("soul_skill_unlocked", {"soul_id": soul_id, "skill_id": skill_id, "skill_name": skill_name})
 
 
@@ -342,7 +342,7 @@ func add_skill_experience(skill_id: String, amount: int) -> void:
 		if skill["experience"] >= exp_needed:
 			skill["experience"] -= exp_needed
 			skill["level"] += 1
-			Logger.info("SoulGrowth: %s skill '%s' leveled to Lv.%d" % [soul_name, skill["name"], skill["level"]], "Growth")
+			GameLog.info("SoulGrowth: %s skill '%s' leveled to Lv.%d" % [soul_name, skill["name"], skill["level"]], "Growth")
 			EventBus.emit("soul_skill_level_up", {"soul_id": soul_id, "skill_id": skill_id, "level": skill["level"]})
 
 

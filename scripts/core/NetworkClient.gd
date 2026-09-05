@@ -15,8 +15,8 @@ extends Node
 ## - Request cancellation
 ##
 ## Usage:
-##   NetworkClient.get("http://localhost:3000/api/souls", self, "_on_souls_loaded")
-##   NetworkClient.post("http://localhost:3000/api/soul/1/perceive", body, self, "_on_perceive")
+##   NetworkClient.http_get("http://localhost:3000/api/souls", self, "_on_souls_loaded")
+##   NetworkClient.http_post("http://localhost:3000/api/soul/1/perceive", body, self, "_on_perceive")
 ##   NetworkClient.connect_ws("ws://localhost:3000/ws")
 ##   NetworkClient.set_priority("http://localhost:3000/api", NetworkClient.PRIORITY_HIGH)
 
@@ -93,28 +93,28 @@ var _active_requests: int = 0
 
 
 func _ready() -> void:
-	Logger.info("NetworkClient initialized (max_concurrent=%d, breaker_threshold=%d)" % [_max_concurrent_requests, _breaker_failure_threshold], "Network")
+	GameLog.info("NetworkClient initialized (max_concurrent=%d, breaker_threshold=%d)" % [_max_concurrent_requests, _breaker_failure_threshold], "Network")
 
 
 ## --- HTTP Methods ---
 
 ## HTTP GET
-func get(url: String, callback_target: Object = null, callback_method: String = "", headers: Dictionary = {}, priority: int = Priority.NORMAL) -> void:
+func http_get(url: String, callback_target: Object = null, callback_method: String = "", headers: Dictionary = {}, priority: int = Priority.NORMAL) -> void:
 	_queue_request(url, HTTPClient.METHOD_GET, {}, headers, callback_target, callback_method, priority)
 
 
 ## HTTP POST
-func post(url: String, body: Dictionary, callback_target: Object = null, callback_method: String = "", headers: Dictionary = {}, priority: int = Priority.NORMAL) -> void:
+func http_post(url: String, body: Dictionary, callback_target: Object = null, callback_method: String = "", headers: Dictionary = {}, priority: int = Priority.NORMAL) -> void:
 	_queue_request(url, HTTPClient.METHOD_POST, body, headers, callback_target, callback_method, priority)
 
 
 ## HTTP PUT
-func put(url: String, body: Dictionary, callback_target: Object = null, callback_method: String = "", headers: Dictionary = {}, priority: int = Priority.NORMAL) -> void:
+func http_put(url: String, body: Dictionary, callback_target: Object = null, callback_method: String = "", headers: Dictionary = {}, priority: int = Priority.NORMAL) -> void:
 	_queue_request(url, HTTPClient.METHOD_PUT, body, headers, callback_target, callback_method, priority)
 
 
 ## HTTP DELETE
-func delete(url: String, callback_target: Object = null, callback_method: String = "", headers: Dictionary = {}, priority: int = Priority.NORMAL) -> void:
+func http_delete(url: String, callback_target: Object = null, callback_method: String = "", headers: Dictionary = {}, priority: int = Priority.NORMAL) -> void:
 	_queue_request(url, HTTPClient.METHOD_DELETE, {}, headers, callback_target, callback_method, priority)
 
 
@@ -164,7 +164,7 @@ func _send_queued_request(request: Dictionary) -> void:
 	if _is_circuit_open(host):
 		_stats["breaker_rejected"] += 1
 		_stats["failed"] += 1
-		Logger.warning("NetworkClient: Circuit open for %s, rejecting request" % host, "Network")
+		GameLog.warning("NetworkClient: Circuit open for %s, rejecting request" % host, "Network")
 		if request["target"] and is_instance_valid(request["target"]) and not request["method_name"].is_empty():
 			request["target"].call(request["method_name"], 0, {"error": "Circuit breaker open", "host": host})
 		_process_queue()
@@ -194,9 +194,9 @@ func _send_queued_request(request: Dictionary) -> void:
 		_on_request_completed.bind(request, start_time, http_request)
 	)
 
-	var error_code := http_request.request(url, header_array, true, request["method"], body_string)
+	var error_code := http_request.request(url, header_array, request["method"], body_string)
 	if error_code != OK:
-		Logger.error("NetworkClient: Failed to start request to %s: error %d" % [url, error_code], "Network")
+		GameLog.error("NetworkClient: Failed to start request to %s: error %d" % [url, error_code], "Network")
 		_handle_request_failure(request, error_code, "")
 		http_request.queue_free()
 		_active_requests -= 1
@@ -223,8 +223,8 @@ func _on_request_completed(result: int, response_code: int, headers: PackedStrin
 	if result == HTTPRequest.RESULT_SUCCESS and response_code >= 200 and response_code < 300:
 		_stats["successful"] += 1
 		_record_success(host)
-		var response_data := _parse_response(body)
-		Logger.debug("NetworkClient: %s %s -> %d (%dms)" % [_method_string(request["method"]), url, response_code, elapsed], "Network")
+		var response_data = _parse_response(body)
+		GameLog.debug("NetworkClient: %s %s -> %d (%dms)" % [_method_string(request["method"]), url, response_code, elapsed], "Network")
 
 		if request["target"] and is_instance_valid(request["target"]) and not request["method_name"].is_empty():
 			request["target"].call(request["method_name"], response_code, response_data)
@@ -232,13 +232,13 @@ func _on_request_completed(result: int, response_code: int, headers: PackedStrin
 		_stats["failed"] += 1
 		_record_failure(host)
 		var error_body := body.get_string_from_utf8()
-		Logger.warning("NetworkClient: %s %s -> %d (result=%d, %dms) %s" % [_method_string(request["method"]), url, response_code, result, elapsed, error_body], "Network")
+		GameLog.warning("NetworkClient: %s %s -> %d (result=%d, %dms) %s" % [_method_string(request["method"]), url, response_code, result, elapsed, error_body], "Network")
 
 		# Retry on server errors or network failures
 		if request["retry_count"] < _default_retries and (response_code >= 500 or result != HTTPRequest.RESULT_SUCCESS):
 			_stats["retries"] += 1
 			var delay := _retry_base_delay * pow(2.0, request["retry_count"]) / 1000.0
-			Logger.info("NetworkClient: Retrying %s (attempt %d/%d) in %.1fs" % [url, request["retry_count"] + 1, _default_retries, delay], "Network")
+			GameLog.info("NetworkClient: Retrying %s (attempt %d/%d) in %.1fs" % [url, request["retry_count"] + 1, _default_retries, delay], "Network")
 			request["retry_count"] += 1
 			await get_tree().create_timer(delay).timeout
 			_request_queue.insert(0, request)  # Re-queue at front for retry
@@ -293,7 +293,7 @@ func _is_circuit_open(host: String) -> bool:
 			if now - breaker["last_failure_time"] > _breaker_reset_timeout:
 				breaker["state"] = BreakerState.HALF_OPEN
 				breaker["half_open_count"] = 0
-				Logger.info("NetworkClient: Circuit half-open for %s" % host, "Network")
+				GameLog.info("NetworkClient: Circuit half-open for %s" % host, "Network")
 				return false
 			return true
 		BreakerState.HALF_OPEN:
@@ -320,7 +320,7 @@ func _record_success(host: String) -> void:
 			breaker["state"] = BreakerState.CLOSED
 			breaker["failure_count"] = 0
 			breaker["success_count"] = 0
-			Logger.info("NetworkClient: Circuit closed for %s" % host, "Network")
+			GameLog.info("NetworkClient: Circuit closed for %s" % host, "Network")
 
 
 ## Record a failed request for circuit breaker
@@ -342,10 +342,10 @@ func _record_failure(host: String) -> void:
 		# Any failure in half-open re-opens circuit
 		breaker["state"] = BreakerState.OPEN
 		breaker["half_open_count"] = 0
-		Logger.warning("NetworkClient: Circuit re-opened for %s" % host, "Network")
+		GameLog.warning("NetworkClient: Circuit re-opened for %s" % host, "Network")
 	elif breaker["failure_count"] >= _breaker_failure_threshold and breaker["state"] == BreakerState.CLOSED:
 		breaker["state"] = BreakerState.OPEN
-		Logger.warning("NetworkClient: Circuit opened for %s after %d failures" % [host, breaker["failure_count"]], "Network")
+		GameLog.warning("NetworkClient: Circuit opened for %s after %d failures" % [host, breaker["failure_count"]], "Network")
 		EventBus.emit("circuit_opened", {"host": host, "failures": breaker["failure_count"]})
 
 
@@ -379,7 +379,7 @@ func get_all_circuit_states() -> Dictionary:
 func reset_circuit(host: String) -> void:
 	if _circuit_breakers.has(host):
 		_circuit_breakers.erase(host)
-		Logger.info("NetworkClient: Circuit reset for %s" % host, "Network")
+		GameLog.info("NetworkClient: Circuit reset for %s" % host, "Network")
 
 
 ## --- WebSocket ---
@@ -387,13 +387,13 @@ func reset_circuit(host: String) -> void:
 ## Connect to a WebSocket endpoint
 func connect_ws(url: String, callback_target: Object = null, callback_method: String = "") -> WebSocketPeer:
 	if _ws_connections.has(url):
-		Logger.warning("NetworkClient: Already connected to %s" % url, "Network")
+		GameLog.warning("NetworkClient: Already connected to %s" % url, "Network")
 		return _ws_connections[url]["peer"]
 
 	var ws_peer := WebSocketPeer.new()
 	var error_code := ws_peer.connect_to_url(url)
 	if error_code != OK:
-		Logger.error("NetworkClient: Failed to connect WS %s: error %d" % [url, error_code], "Network")
+		GameLog.error("NetworkClient: Failed to connect WS %s: error %d" % [url, error_code], "Network")
 		return null
 
 	_ws_connections[url] = {
@@ -404,25 +404,25 @@ func connect_ws(url: String, callback_target: Object = null, callback_method: St
 		"reconnect_attempts": 0
 	}
 	_stats["ws_connections"] += 1
-	Logger.info("NetworkClient: Connecting WS %s" % url, "Network")
+	GameLog.info("NetworkClient: Connecting WS %s" % url, "Network")
 	return ws_peer
 
 
 ## Send data over WebSocket
 func send_ws(url: String, data: String) -> bool:
 	if not _ws_connections.has(url):
-		Logger.error("NetworkClient: No WS connection to %s" % url, "Network")
+		GameLog.error("NetworkClient: No WS connection to %s" % url, "Network")
 		return false
 
 	var conn = _ws_connections[url]
 	if not conn["connected"]:
-		Logger.warning("NetworkClient: WS not connected to %s" % url, "Network")
+		GameLog.warning("NetworkClient: WS not connected to %s" % url, "Network")
 		return false
 
 	var ws_peer: WebSocketPeer = conn["peer"]
 	var error_code := ws_peer.send_text(data)
 	if error_code != OK:
-		Logger.error("NetworkClient: WS send failed to %s: error %d" % [url, error_code], "Network")
+		GameLog.error("NetworkClient: WS send failed to %s: error %d" % [url, error_code], "Network")
 		return false
 	return true
 
@@ -434,7 +434,7 @@ func close_ws(url: String) -> void:
 		ws_peer.close()
 		_ws_connections.erase(url)
 		_stats["ws_connections"] -= 1
-		Logger.info("NetworkClient: Closed WS %s" % url, "Network")
+		GameLog.info("NetworkClient: Closed WS %s" % url, "Network")
 
 
 ## Process WebSocket events (call in _process)
@@ -450,7 +450,7 @@ func _process(delta: float) -> void:
 				if not conn["connected"]:
 					conn["connected"] = true
 					conn["reconnect_attempts"] = 0
-					Logger.info("NetworkClient: WS connected %s" % url, "Network")
+					GameLog.info("NetworkClient: WS connected %s" % url, "Network")
 					EventBus.emit("ws_connected", {"url": url})
 					if conn["target"] and is_instance_valid(conn["target"]):
 						conn["target"].call(conn["method"], "connected", {})
@@ -459,14 +459,14 @@ func _process(delta: float) -> void:
 				while ws_peer.get_available_packet_count() > 0:
 					var packet := ws_peer.get_packet()
 					var message := packet.get_string_from_utf8()
-					Logger.debug("NetworkClient: WS message from %s: %s" % [url, message.substr(0, 100)], "Network")
+					GameLog.debug("NetworkClient: WS message from %s: %s" % [url, message.substr(0, 100)], "Network")
 					if conn["target"] and is_instance_valid(conn["target"]):
 						conn["target"].call(conn["method"], "message", {"data": message})
 
 			WebSocketPeer.STATE_CLOSED:
 				if conn["connected"]:
 					conn["connected"] = false
-					Logger.warning("NetworkClient: WS disconnected %s" % url, "Network")
+					GameLog.warning("NetworkClient: WS disconnected %s" % url, "Network")
 					EventBus.emit("ws_disconnected", {"url": url})
 					if conn["target"] and is_instance_valid(conn["target"]):
 						conn["target"].call(conn["method"], "disconnected", {})
@@ -520,7 +520,7 @@ func check_connectivity(url: String) -> bool:
 	var http_request := HTTPRequest.new()
 	http_request.timeout = 2.0
 	add_child(http_request)
-	var error_code := http_request.request(url, [], true, HTTPClient.METHOD_HEAD, "")
+	var error_code := http_request.request(url, [], HTTPClient.METHOD_HEAD, "")
 	return error_code == OK
 
 
@@ -532,7 +532,7 @@ func get_queue_size() -> int:
 ## Clear request queue
 func clear_queue() -> void:
 	_request_queue.clear()
-	Logger.info("NetworkClient: Request queue cleared", "Network")
+	GameLog.info("NetworkClient: Request queue cleared", "Network")
 
 
 func _parse_response(body: PackedByteArray) -> Variant:
@@ -542,7 +542,7 @@ func _parse_response(body: PackedByteArray) -> Variant:
 	var json := JSON.new()
 	var error_code := json.parse(text)
 	if error_code != OK:
-		Logger.warning("NetworkClient: Failed to parse JSON response: %s" % text.substr(0, 200), "Network")
+		GameLog.warning("NetworkClient: Failed to parse JSON response: %s" % text.substr(0, 200), "Network")
 		return {"raw": text}
 	return json.data
 

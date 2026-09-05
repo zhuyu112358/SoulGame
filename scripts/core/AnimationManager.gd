@@ -75,7 +75,7 @@ var _stats: Dictionary = {
 
 
 func _ready() -> void:
-	Logger.info("AnimationManager initialized", "Anim")
+	GameLog.info("AnimationManager initialized", "Anim")
 
 
 ## --- Tween Management ---
@@ -377,18 +377,18 @@ func _count_animating_nodes() -> int:
 ## Register an animation player
 func register_animation_player(name: String, player: AnimationPlayer) -> void:
 	_animation_players[name] = player
-	Logger.debug("AnimationManager: Registered player '%s'" % name, "Anim")
+	GameLog.debug("AnimationManager: Registered player '%s'" % name, "Anim")
 
 
 ## Play an animation on a registered player
 func play_animation(player_name: String, animation_name: String, custom_blend: float = -1.0, custom_speed: float = 1.0, from_end: bool = false) -> bool:
 	if not _animation_players.has(player_name):
-		Logger.warning("AnimationManager: Player not found: %s" % player_name, "Anim")
+		GameLog.warning("AnimationManager: Player not found: %s" % player_name, "Anim")
 		return false
 
 	var player: AnimationPlayer = _animation_players[player_name]
 	if not player.has_animation(animation_name):
-		Logger.warning("AnimationManager: Animation not found: %s/%s" % [player_name, animation_name], "Anim")
+		GameLog.warning("AnimationManager: Animation not found: %s/%s" % [player_name, animation_name], "Anim")
 		return false
 
 	player.play(animation_name, custom_blend, custom_speed, from_end)
@@ -446,7 +446,7 @@ func kill_all_tweens() -> void:
 	_stats["active_tweens"] = 0
 	_stats["animating_nodes"] = 0
 	_stats["queued_animations"] = 0
-	Logger.info("AnimationManager: Killed all tweens", "Anim")
+	GameLog.info("AnimationManager: Killed all tweens", "Anim")
 
 
 ## Get statistics

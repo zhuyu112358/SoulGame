@@ -45,7 +45,7 @@ var _max_cache_size: int = 10
 
 func _ready() -> void:
 	_register_default_aliases()
-	Logger.info("SceneManager initialized", "Scene")
+	GameLog.info("SceneManager initialized", "Scene")
 
 
 ## Register a scene alias for convenient referencing
@@ -56,12 +56,12 @@ func register_alias(alias: String, scene_path: String) -> void:
 ## Change to a new scene (replaces current)
 func change_scene(scene_path: String, use_transition: bool = true) -> void:
 	if _transitioning:
-		Logger.warning("SceneManager: Already transitioning, ignoring", "Scene")
+		GameLog.warning("SceneManager: Already transitioning, ignoring", "Scene")
 		return
 
 	var resolved_path := _resolve_path(scene_path)
 	if resolved_path.is_empty():
-		Logger.error("SceneManager: Unknown scene: %s" % scene_path, "Scene")
+		GameLog.error("SceneManager: Unknown scene: %s" % scene_path, "Scene")
 		return
 
 	_transitioning = true
@@ -77,7 +77,7 @@ func change_scene(scene_path: String, use_transition: bool = true) -> void:
 func push_scene(scene_path: String) -> void:
 	var resolved_path := _resolve_path(scene_path)
 	if resolved_path.is_empty():
-		Logger.error("SceneManager: Unknown scene: %s" % scene_path, "Scene")
+		GameLog.error("SceneManager: Unknown scene: %s" % scene_path, "Scene")
 		return
 
 	_scene_stack.append(_current_scene)
@@ -87,7 +87,7 @@ func push_scene(scene_path: String) -> void:
 ## Pop back to previous scene in stack
 func pop_scene() -> void:
 	if _scene_stack.is_empty():
-		Logger.warning("SceneManager: Scene stack is empty", "Scene")
+		GameLog.warning("SceneManager: Scene stack is empty", "Scene")
 		return
 
 	var previous_scene: String = _scene_stack.pop_back()
@@ -115,12 +115,12 @@ func preload_scene(scene_path: String) -> bool:
 
 	var packed_scene: PackedScene = load(resolved_path)
 	if packed_scene == null:
-		Logger.error("SceneManager: Failed to load scene: %s" % resolved_path, "Scene")
+		GameLog.error("SceneManager: Failed to load scene: %s" % resolved_path, "Scene")
 		return false
 
 	_scene_cache[resolved_path] = packed_scene
 	_trim_cache()
-	Logger.debug("SceneManager: Cached scene: %s" % resolved_path, "Scene")
+	GameLog.debug("SceneManager: Cached scene: %s" % resolved_path, "Scene")
 	return true
 
 
@@ -147,7 +147,7 @@ func _change_scene_immediate(scene_path: String) -> void:
 	_scene_change_count += 1
 	_transitioning = false
 	EventBus.emit("scene_changed", {"scene": scene_path, "previous": _previous_scene})
-	Logger.info("SceneManager: Changed to %s" % scene_path, "Scene")
+	GameLog.info("SceneManager: Changed to %s" % scene_path, "Scene")
 
 
 func _play_transition(scene_path: String, is_push: bool) -> void:

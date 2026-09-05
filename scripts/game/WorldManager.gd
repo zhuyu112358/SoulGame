@@ -15,8 +15,8 @@ var active_world: Dictionary = {}
 var world_templates: Array = [
 	{
 		"id": "training_arena",
-		"name": "训练竞技场",
-		"description": "基础训练场地，适合技能练习",
+		"name": "璁粌绔炴妧鍦?,
+		"description": "鍩虹璁粌鍦哄湴锛岄€傚悎鎶€鑳界粌涔?,
 		"size": "medium",
 		"resource_points": 3,
 		"growth_rules": {"skill_rate": 1.2, "cognitive_rate": 1.0},
@@ -24,8 +24,8 @@ var world_templates: Array = [
 	},
 	{
 		"id": "exploration_forest",
-		"name": "探索森林",
-		"description": "充满未知的森林，适合探索和认知成长",
+		"name": "鎺㈢储妫灄",
+		"description": "鍏呮弧鏈煡鐨勬．鏋楋紝閫傚悎鎺㈢储鍜岃鐭ユ垚闀?,
 		"size": "large",
 		"resource_points": 5,
 		"growth_rules": {"cognitive_rate": 1.3, "emotional_rate": 1.1},
@@ -33,8 +33,8 @@ var world_templates: Array = [
 	},
 	{
 		"id": "social_plaza",
-		"name": "社交广场",
-		"description": "灵魂聚集的广场，适合社交和情感成长",
+		"name": "绀句氦骞垮満",
+		"description": "鐏甸瓊鑱氶泦鐨勫箍鍦猴紝閫傚悎绀句氦鍜屾儏鎰熸垚闀?,
 		"size": "medium",
 		"resource_points": 4,
 		"growth_rules": {"emotional_rate": 1.4, "skill_rate": 0.9},
@@ -42,8 +42,8 @@ var world_templates: Array = [
 	},
 	{
 		"id": "challenge_maze",
-		"name": "挑战迷宫",
-		"description": "复杂的迷宫，考验问题解决和空间认知",
+		"name": "鎸戞垬杩峰",
+		"description": "澶嶆潅鐨勮糠瀹紝鑰冮獙闂瑙ｅ喅鍜岀┖闂磋鐭?,
 		"size": "large",
 		"resource_points": 6,
 		"growth_rules": {"cognitive_rate": 1.5, "skill_rate": 1.2},
@@ -68,7 +68,7 @@ var simulation_state: Dictionary = {
 
 
 func _ready() -> void:
-	Logger.info("WorldManager: Initialized", "WorldManager")
+	GameLog.info("WorldManager: Initialized", "WorldManager")
 	_load_world_list()
 
 
@@ -91,16 +91,16 @@ func start_creation(template_id: String) -> bool:
 			creation_state["in_progress"] = true
 			creation_state["template_id"] = template_id
 			creation_state["custom_config"] = template.duplicate(true)
-			Logger.info("WorldManager: Creation started from template: %s" % template["name"], "WorldManager")
+			GameLog.info("WorldManager: Creation started from template: %s" % template["name"], "WorldManager")
 			return true
-	Logger.warning("WorldManager: Unknown template: %s" % template_id, "WorldManager")
+	GameLog.warning("WorldManager: Unknown template: %s" % template_id, "WorldManager")
 	return false
 
 
 ## Configure world parameters
 func configure_world(config_key: String, value) -> bool:
 	if not creation_state["in_progress"]:
-		Logger.warning("WorldManager: No creation in progress", "WorldManager")
+		GameLog.warning("WorldManager: No creation in progress", "WorldManager")
 		return false
 	creation_state["custom_config"][config_key] = value
 	return true
@@ -109,7 +109,7 @@ func configure_world(config_key: String, value) -> bool:
 ## Complete world creation
 func complete_creation(world_name: String) -> Dictionary:
 	if not creation_state["in_progress"]:
-		Logger.error("WorldManager: No creation in progress", "WorldManager")
+		GameLog.error("WorldManager: No creation in progress", "WorldManager")
 		return {}
 
 	var world := {
@@ -138,7 +138,7 @@ func complete_creation(world_name: String) -> Dictionary:
 	_save_world(world)
 	_save_world_list()
 
-	Logger.info("WorldManager: World created - %s (%s)" % [world_name, world["id"]], "WorldManager")
+	GameLog.info("WorldManager: World created - %s (%s)" % [world_name, world["id"]], "WorldManager")
 	EventBus.emit("world_created", {"id": world["id"], "name": world_name, "template": world["template"]})
 
 	return world
@@ -160,7 +160,7 @@ func delete_world(world_id: String) -> bool:
 			if active_world.get("id", "") == world_id:
 				stop_simulation()
 				active_world = {}
-			Logger.info("WorldManager: World deleted: %s" % world_id, "WorldManager")
+			GameLog.info("WorldManager: World deleted: %s" % world_id, "WorldManager")
 			EventBus.emit("world_deleted", {"id": world_id})
 			return true
 	return false
@@ -182,7 +182,7 @@ func get_templates() -> Array:
 func start_simulation(world_id: String) -> bool:
 	var world = _load_world(world_id)
 	if world.size() == 0:
-		Logger.warning("WorldManager: Cannot start, world not found: %s" % world_id, "WorldManager")
+		GameLog.warning("WorldManager: Cannot start, world not found: %s" % world_id, "WorldManager")
 		return false
 
 	active_world = world
@@ -195,7 +195,7 @@ func start_simulation(world_id: String) -> bool:
 	active_world["status"] = "running"
 	_save_world(active_world)
 
-	Logger.info("WorldManager: Simulation started - %s" % world["name"], "WorldManager")
+	GameLog.info("WorldManager: Simulation started - %s" % world["name"], "WorldManager")
 	EventBus.emit("world_simulation_started", {"id": world_id, "name": world["name"]})
 	return true
 
@@ -212,7 +212,7 @@ func stop_simulation() -> void:
 		active_world["stats"]["total_ticks"] += simulation_state["tick_count"]
 		active_world["stats"]["total_runtime"] += simulation_state["elapsed_time"]
 		_save_world(active_world)
-		Logger.info("WorldManager: Simulation stopped - %s (ticks: %d)" % [active_world["name"], simulation_state["tick_count"]], "WorldManager")
+		GameLog.info("WorldManager: Simulation stopped - %s (ticks: %d)" % [active_world["name"], simulation_state["tick_count"]], "WorldManager")
 		EventBus.emit("world_simulation_stopped", {"id": active_world["id"], "ticks": simulation_state["tick_count"]})
 
 
@@ -233,13 +233,13 @@ func _on_world_tick() -> void:
 func deploy_soul_to_world(soul_id: String, world_id: String) -> bool:
 	var world = _load_world(world_id)
 	if world.size() == 0:
-		Logger.warning("WorldManager: World not found: %s" % world_id, "WorldManager")
+		GameLog.warning("WorldManager: World not found: %s" % world_id, "WorldManager")
 		return false
 
 	if not world["souls_deployed"].has(soul_id):
 		world["souls_deployed"].append(soul_id)
 		_save_world(world)
-		Logger.info("WorldManager: Soul %s deployed to world %s" % [soul_id, world_id], "WorldManager")
+		GameLog.info("WorldManager: Soul %s deployed to world %s" % [soul_id, world_id], "WorldManager")
 		EventBus.emit("world_soul_deployed", {"soul_id": soul_id, "world_id": world_id})
 		return true
 	return false
@@ -254,7 +254,7 @@ func remove_soul_from_world(soul_id: String, world_id: String) -> bool:
 	if world["souls_deployed"].has(soul_id):
 		world["souls_deployed"].erase(soul_id)
 		_save_world(world)
-		Logger.info("WorldManager: Soul %s removed from world %s" % [soul_id, world_id], "WorldManager")
+		GameLog.info("WorldManager: Soul %s removed from world %s" % [soul_id, world_id], "WorldManager")
 		return true
 	return false
 
@@ -277,7 +277,7 @@ func _save_world_list() -> void:
 
 func _load_world_list() -> void:
 	world_list = SaveSystem.get_value("world_list", [])
-	Logger.info("WorldManager: Loaded %d worlds" % world_list.size(), "WorldManager")
+	GameLog.info("WorldManager: Loaded %d worlds" % world_list.size(), "WorldManager")
 
 
 ## Get stats

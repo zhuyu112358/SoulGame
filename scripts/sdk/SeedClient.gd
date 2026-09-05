@@ -36,7 +36,7 @@ var _stats: Dictionary = {
 
 func _ready() -> void:
 	_load_config()
-	Logger.info("SeedClient initialized (v%s, base=%s)" % [_sdk_version, _base_url], "Seed")
+	GameLog.info("SeedClient initialized (v%s, base=%s)" % [_sdk_version, _base_url], "Seed")
 
 
 ## Load configuration from ConfigManager
@@ -56,7 +56,7 @@ func create_world(world_id: String, config: Dictionary = {}, callback_target: Ob
 		"name": config.get("name", world_id),
 		"config": config
 	}
-	NetworkClient.post("%s/api/worlds" % _base_url, body, self, "_on_world_created")
+	NetworkClient.http_post("%s/api/worlds" % _base_url, body, self, "_on_world_created")
 	_pending_callbacks["create_world"] = {"target": callback_target, "method": callback_method, "world_id": world_id}
 
 
@@ -64,21 +64,21 @@ func create_world(world_id: String, config: Dictionary = {}, callback_target: Ob
 ## GET /api/worlds/:id
 func get_world_state(world_id: String, callback_target: Object = null, callback_method: String = "") -> void:
 	_stats["total_calls"] += 1
-	NetworkClient.get("%s/api/worlds/%s" % [_base_url, world_id], callback_target, callback_method)
+	NetworkClient.http_get("%s/api/worlds/%s" % [_base_url, world_id], callback_target, callback_method)
 
 
 ## List all worlds
 ## GET /api/worlds
 func list_worlds(callback_target: Object = null, callback_method: String = "") -> void:
 	_stats["total_calls"] += 1
-	NetworkClient.get("%s/api/worlds" % _base_url, callback_target, callback_method)
+	NetworkClient.http_get("%s/api/worlds" % _base_url, callback_target, callback_method)
 
 
 ## Delete a world
 ## DELETE /api/worlds/:id
 func delete_world(world_id: String, callback_target: Object = null, callback_method: String = "") -> void:
 	_stats["total_calls"] += 1
-	NetworkClient.delete("%s/api/worlds/%s" % [_base_url, world_id], callback_target, callback_method)
+	NetworkClient.http_delete("%s/api/worlds/%s" % [_base_url, world_id], callback_target, callback_method)
 	_active_worlds.erase(world_id)
 	_stats["active_worlds"] = _active_worlds.size()
 
@@ -90,7 +90,7 @@ func delete_world(world_id: String, callback_target: Object = null, callback_met
 func tick_world(world_id: String, callback_target: Object = null, callback_method: String = "") -> void:
 	_stats["total_calls"] += 1
 	_stats["total_ticks"] += 1
-	NetworkClient.post("%s/api/worlds/%s/tick" % [_base_url, world_id], {}, callback_target, callback_method)
+	NetworkClient.http_post("%s/api/worlds/%s/tick" % [_base_url, world_id], {}, callback_target, callback_method)
 
 
 ## Run multiple ticks
@@ -99,7 +99,7 @@ func tick_world_multiple(world_id: String, count: int, callback_target: Object =
 	_stats["total_calls"] += 1
 	_stats["total_ticks"] += count
 	var body := {"count": count}
-	NetworkClient.post("%s/api/worlds/%s/tick-multiple" % [_base_url, world_id], body, callback_target, callback_method)
+	NetworkClient.http_post("%s/api/worlds/%s/tick-multiple" % [_base_url, world_id], body, callback_target, callback_method)
 
 
 ## --- Soul Management in World ---
@@ -112,21 +112,21 @@ func spawn_soul(world_id: String, soul_id: String, position: Dictionary = {}, ca
 		"soulId": soul_id,
 		"position": position
 	}
-	NetworkClient.post("%s/api/worlds/%s/souls" % [_base_url, world_id], body, callback_target, callback_method)
+	NetworkClient.http_post("%s/api/worlds/%s/souls" % [_base_url, world_id], body, callback_target, callback_method)
 
 
 ## Remove a soul from world
 ## DELETE /api/worlds/:id/souls/:soulId
 func remove_soul(world_id: String, soul_id: String, callback_target: Object = null, callback_method: String = "") -> void:
 	_stats["total_calls"] += 1
-	NetworkClient.delete("%s/api/worlds/%s/souls/%s" % [_base_url, world_id, soul_id], callback_target, callback_method)
+	NetworkClient.http_delete("%s/api/worlds/%s/souls/%s" % [_base_url, world_id, soul_id], callback_target, callback_method)
 
 
 ## Get soul state in world
 ## GET /api/worlds/:id/souls/:soulId
 func get_soul_in_world(world_id: String, soul_id: String, callback_target: Object = null, callback_method: String = "") -> void:
 	_stats["total_calls"] += 1
-	NetworkClient.get("%s/api/worlds/%s/souls/%s" % [_base_url, world_id, soul_id], callback_target, callback_method)
+	NetworkClient.http_get("%s/api/worlds/%s/souls/%s" % [_base_url, world_id, soul_id], callback_target, callback_method)
 
 
 ## --- Entity Management ---
@@ -140,14 +140,14 @@ func spawn_entity(world_id: String, entity_type: String, position: Dictionary, c
 		"position": position,
 		"config": config
 	}
-	NetworkClient.post("%s/api/worlds/%s/entities" % [_base_url, world_id], body, callback_target, callback_method)
+	NetworkClient.http_post("%s/api/worlds/%s/entities" % [_base_url, world_id], body, callback_target, callback_method)
 
 
 ## List entities in world
 ## GET /api/worlds/:id/entities
 func list_entities(world_id: String, callback_target: Object = null, callback_method: String = "") -> void:
 	_stats["total_calls"] += 1
-	NetworkClient.get("%s/api/worlds/%s/entities" % [_base_url, world_id], callback_target, callback_method)
+	NetworkClient.http_get("%s/api/worlds/%s/entities" % [_base_url, world_id], callback_target, callback_method)
 
 
 ## --- Bridge / Adapter ---
@@ -156,7 +156,7 @@ func list_entities(world_id: String, callback_target: Object = null, callback_me
 ## GET /api/bridge/status
 func get_bridge_status(callback_target: Object = null, callback_method: String = "") -> void:
 	_stats["total_calls"] += 1
-	NetworkClient.get("%s/api/bridge/status" % _base_url, callback_target, callback_method)
+	NetworkClient.http_get("%s/api/bridge/status" % _base_url, callback_target, callback_method)
 
 
 ## Start bridge for a soul
@@ -167,7 +167,7 @@ func start_bridge(soul_id: String, world_id: String, callback_target: Object = n
 		"soulId": soul_id,
 		"worldId": world_id
 	}
-	NetworkClient.post("%s/api/bridge/start" % _base_url, body, callback_target, callback_method)
+	NetworkClient.http_post("%s/api/bridge/start" % _base_url, body, callback_target, callback_method)
 
 
 ## Stop bridge for a soul
@@ -175,7 +175,7 @@ func start_bridge(soul_id: String, world_id: String, callback_target: Object = n
 func stop_bridge(soul_id: String, callback_target: Object = null, callback_method: String = "") -> void:
 	_stats["total_calls"] += 1
 	var body := {"soulId": soul_id}
-	NetworkClient.post("%s/api/bridge/stop" % _base_url, body, callback_target, callback_method)
+	NetworkClient.http_post("%s/api/bridge/stop" % _base_url, body, callback_target, callback_method)
 
 
 ## --- Connection Testing ---
@@ -219,10 +219,10 @@ func _on_world_created(status: int, data: Dictionary) -> void:
 				_active_worlds.append(world_id)
 			_stats["active_worlds"] = _active_worlds.size()
 		_connected = true
-		Logger.info("SeedClient: World created successfully", "Seed")
+		GameLog.info("SeedClient: World created successfully", "Seed")
 	else:
 		_stats["failed"] += 1
-		Logger.error("SeedClient: Create world failed: %s" % str(data), "Seed")
+		GameLog.error("SeedClient: Create world failed: %s" % str(data), "Seed")
 
 	if _pending_callbacks.has("create_world"):
 		var cb = _pending_callbacks["create_world"]

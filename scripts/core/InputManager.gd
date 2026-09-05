@@ -44,7 +44,7 @@ var _stats: Dictionary = {
 
 func _ready() -> void:
 	_register_default_actions()
-	Logger.info("InputManager initialized", "Input")
+	GameLog.info("InputManager initialized", "Input")
 
 
 func _input(event: InputEvent) -> void:
@@ -98,7 +98,7 @@ func _process(delta: float) -> void:
 ## Bind keys to an action
 func bind_action(action_name: String, keycodes: Array) -> void:
 	_action_bindings[action_name] = keycodes.duplicate()
-	Logger.debug("InputManager: Bound '%s' to %d keys" % [action_name, keycodes.size()], "Input")
+	GameLog.debug("InputManager: Bound '%s' to %d keys" % [action_name, keycodes.size()], "Input")
 
 
 ## Add a key to an existing action
@@ -167,7 +167,7 @@ func unsubscribe(action_name: String, target: Object, method: String) -> void:
 func push_context(context_name: String) -> void:
 	_context_stack.append(context_name)
 	_stats["context_switches"] += 1
-	Logger.info("InputManager: Pushed context '%s' (stack: %s)" % [context_name, _context_stack], "Input")
+	GameLog.info("InputManager: Pushed context '%s' (stack: %s)" % [context_name, _context_stack], "Input")
 	EventBus.emit("context_changed", {"context": context_name, "stack": _context_stack.duplicate()})
 
 
@@ -177,7 +177,7 @@ func pop_context() -> String:
 		return ""
 	var context: String = _context_stack.pop_back()
 	_stats["context_switches"] += 1
-	Logger.info("InputManager: Popped context '%s' (stack: %s)" % [context, _context_stack], "Input")
+	GameLog.info("InputManager: Popped context '%s' (stack: %s)" % [context, _context_stack], "Input")
 	EventBus.emit("context_changed", {"context": "", "stack": _context_stack.duplicate()})
 	return context
 
@@ -206,7 +206,7 @@ func set_input_enabled(enabled: bool) -> void:
 	_input_enabled = enabled
 	if not enabled:
 		_pressed_keys.clear()
-	Logger.info("InputManager: Input %s" % ["disabled", "enabled"][enabled], "Input")
+	GameLog.info("InputManager: Input %s" % ["disabled", "enabled"][enabled], "Input")
 
 
 ## Check if input is enabled
@@ -238,7 +238,7 @@ func is_mouse_button_pressed(button: int) -> bool:
 func listen_for_key() -> int:
 	# Simple implementation: wait for next key press
 	# In production, this would show a UI prompt
-	Logger.info("InputManager: Listening for key press...", "Input")
+	GameLog.info("InputManager: Listening for key press...", "Input")
 	return -1  # Placeholder - requires UI integration
 
 
@@ -256,7 +256,7 @@ func export_bindings() -> Dictionary:
 func import_bindings(bindings: Dictionary) -> void:
 	for action_name in bindings:
 		_action_bindings[action_name] = bindings[action_name].duplicate()
-	Logger.info("InputManager: Imported %d action bindings" % bindings.size(), "Input")
+	GameLog.info("InputManager: Imported %d action bindings" % bindings.size(), "Input")
 
 
 ## Get statistics
@@ -268,7 +268,7 @@ func get_stats() -> Dictionary:
 func reset_to_defaults() -> void:
 	_action_bindings.clear()
 	_register_default_actions()
-	Logger.info("InputManager: Reset to default bindings", "Input")
+	GameLog.info("InputManager: Reset to default bindings", "Input")
 
 
 ## --- Internal ---

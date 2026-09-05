@@ -40,7 +40,7 @@ var _request_counter: int = 0
 
 
 func _ready() -> void:
-	Logger.info("LatencyProfiler initialized", "Latency")
+	GameLog.info("LatencyProfiler initialized", "Latency")
 
 
 ## Measure HTTP request latency
@@ -56,7 +56,7 @@ func measure_http(url: String, callback_target: Object = null, callback_method: 
 		"callback_method": callback_method
 	}
 
-	NetworkClient.get(url, self, "_on_http_response")
+	NetworkClient.http_get(url, self, "_on_http_response")
 	return request_id
 
 
@@ -84,7 +84,7 @@ func record_sync_delay(delay_ms: float) -> void:
 ## count: number of requests to send
 ## interval_ms: delay between requests
 func run_http_batch(url: String, count: int, interval_ms: float = 100.0, callback_target: Object = null, callback_method: String = "") -> void:
-	Logger.info("LatencyProfiler: Starting batch test - %d requests to %s" % [count, url], "Latency")
+	GameLog.info("LatencyProfiler: Starting batch test - %d requests to %s" % [count, url], "Latency")
 	_batch_results = []
 	_batch_target = callback_target
 	_batch_method = callback_method
@@ -147,7 +147,7 @@ func reset() -> void:
 		"sync_events": 0,
 		"sync_avg_ms": 0.0
 	}
-	Logger.info("LatencyProfiler reset", "Latency")
+	GameLog.info("LatencyProfiler reset", "Latency")
 
 
 ## --- Internal ---
@@ -217,7 +217,7 @@ func _on_batch_response(result: Dictionary) -> void:
 			"p95_ms": sorted[int(sorted.size() * 0.95)],
 			"results": _batch_results
 		}
-		Logger.info("LatencyProfiler: Batch complete - avg: %.1fms, p95: %.1fms" % [summary["avg_ms"], summary["p95_ms"]], "Latency")
+		GameLog.info("LatencyProfiler: Batch complete - avg: %.1fms, p95: %.1fms" % [summary["avg_ms"], summary["p95_ms"]], "Latency")
 
 		if _batch_target and is_instance_valid(_batch_target) and not _batch_method.is_empty():
 			_batch_target.call(_batch_method, summary)
