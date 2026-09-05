@@ -1,0 +1,197 @@
+[gd_scene load_steps=3 format=3 uid="uid://arenascene001"]
+
+[ext_resource type="Script" path="res://scripts/game/ArenaController.gd" id="1_controller"]
+[ext_resource type="Script" path="res://scripts/ui/SoulSprite.gd" id="2_soulsprite"]
+
+[node name="Arena" type="Node2D"]
+script = ExtResource("1_controller")
+
+[node name="Background" type="ColorRect" parent="."]
+offset_right = 1280.0
+offset_bottom = 720.0
+color = Color(0.08, 0.06, 0.12, 1)
+
+[node name="TopBar" type="Panel" parent="."]
+offset_right = 1280.0
+offset_bottom = 50.0
+
+[node name="TurnLabel" type="Label" parent="TopBar"]
+offset_left = 20.0
+offset_top = 10.0
+offset_right = 1260.0
+offset_bottom = 40.0
+text = "Arena - No active battle"
+horizontal_alignment = 1
+
+[node name="Soul1Panel" type="Panel" parent="."]
+offset_left = 50.0
+offset_top = 80.0
+offset_right = 450.0
+offset_bottom = 500.0
+
+[node name="NameLabel" type="Label" parent="Soul1Panel"]
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 390.0
+offset_bottom = 40.0
+text = "Soul 1"
+horizontal_alignment = 1
+
+[node name="SoulSprite" type="Node2D" parent="Soul1Panel"]
+position = Vector2(136, 120)
+script = ExtResource("2_soulsprite")
+
+[node name="HPBar" type="ProgressBar" parent="Soul1Panel"]
+offset_left = 20.0
+offset_top = 300.0
+offset_right = 380.0
+offset_bottom = 330.0
+value = 100.0
+
+[node name="HPLabel" type="Label" parent="Soul1Panel"]
+offset_left = 20.0
+offset_top = 335.0
+offset_right = 380.0
+offset_bottom = 355.0
+text = "HP"
+horizontal_alignment = 1
+
+[node name="EnergyBar" type="ProgressBar" parent="Soul1Panel"]
+offset_left = 20.0
+offset_top = 370.0
+offset_right = 380.0
+offset_bottom = 400.0
+value = 100.0
+
+[node name="EnergyLabel" type="Label" parent="Soul1Panel"]
+offset_left = 20.0
+offset_top = 405.0
+offset_right = 380.0
+offset_bottom = 425.0
+text = "Energy"
+horizontal_alignment = 1
+
+[node name="Soul2Panel" type="Panel" parent="."]
+offset_left = 830.0
+offset_top = 80.0
+offset_right = 1230.0
+offset_bottom = 500.0
+
+[node name="NameLabel" type="Label" parent="Soul2Panel"]
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 390.0
+offset_bottom = 40.0
+text = "Soul 2"
+horizontal_alignment = 1
+
+[node name="SoulSprite" type="Node2D" parent="Soul2Panel"]
+position = Vector2(136, 120)
+script = ExtResource("2_soulsprite")
+
+[node name="HPBar" type="ProgressBar" parent="Soul2Panel"]
+offset_left = 20.0
+offset_top = 300.0
+offset_right = 380.0
+offset_bottom = 330.0
+value = 100.0
+
+[node name="HPLabel" type="Label" parent="Soul2Panel"]
+offset_left = 20.0
+offset_top = 335.0
+offset_right = 380.0
+offset_bottom = 355.0
+text = "HP"
+horizontal_alignment = 1
+
+[node name="EnergyBar" type="ProgressBar" parent="Soul2Panel"]
+offset_left = 20.0
+offset_top = 370.0
+offset_right = 380.0
+offset_bottom = 400.0
+value = 100.0
+
+[node name="EnergyLabel" type="Label" parent="Soul2Panel"]
+offset_left = 20.0
+offset_top = 405.0
+offset_right = 380.0
+offset_bottom = 425.0
+text = "Energy"
+horizontal_alignment = 1
+
+[node name="VSLabel" type="Label" parent="."]
+offset_left = 580.0
+offset_top = 250.0
+offset_right = 700.0
+offset_bottom = 300.0
+text = "VS"
+horizontal_alignment = 1
+
+[node name="BattleLog" type="Panel" parent="."]
+offset_left = 470.0
+offset_top = 80.0
+offset_right = 810.0
+offset_bottom = 500.0
+
+[node name="LogTitle" type="Label" parent="BattleLog"]
+offset_left = 10.0
+offset_top = 5.0
+offset_right = 330.0
+offset_bottom = 30.0
+text = "Battle Log"
+horizontal_alignment = 1
+
+[node name="LogText" type="RichTextLabel" parent="BattleLog"]
+offset_left = 10.0
+offset_top = 35.0
+offset_right = 330.0
+offset_bottom = 410.0
+bbcode_enabled = true
+scroll_following = true
+
+[node name="BottomBar" type="Panel" parent="."]
+offset_left = 0.0
+offset_top = 520.0
+offset_right = 1280.0
+offset_bottom = 720.0
+
+[node name="SkillButtons" type="HBoxContainer" parent="BottomBar"]
+offset_left = 50.0
+offset_top = 30.0
+offset_right = 900.0
+offset_bottom = 170.0
+theme_override_constants/separation = 15
+
+[node name="BasicAttack" type="Button" parent="BottomBar/SkillButtons"]
+custom_minimum_size = Vector2(150, 50)
+text = "Attack"
+
+[node name="HeavyStrike" type="Button" parent="BottomBar/SkillButtons"]
+custom_minimum_size = Vector2(150, 50)
+text = "Heavy (15)"
+
+[node name="QuickStrike" type="Button" parent="BottomBar/SkillButtons"]
+custom_minimum_size = Vector2(150, 50)
+text = "Quick (3)"
+
+[node name="Heal" type="Button" parent="BottomBar/SkillButtons"]
+custom_minimum_size = Vector2(150, 50)
+text = "Heal (10)"
+
+[node name="Defend" type="Button" parent="BottomBar/SkillButtons"]
+custom_minimum_size = Vector2(150, 50)
+text = "Defend (2)"
+
+[node name="BackButton" type="Button" parent="BottomBar"]
+offset_left = 1080.0
+offset_top = 40.0
+offset_right = 1230.0
+offset_bottom = 90.0
+text = "Back to CLI"
+
+[connection signal="pressed" from="BottomBar/SkillButtons/BasicAttack" to="." method="_on_skill_pressed" binds=["basic_attack"]]
+[connection signal="pressed" from="BottomBar/SkillButtons/HeavyStrike" to="." method="_on_skill_pressed" binds=["heavy_strike"]]
+[connection signal="pressed" from="BottomBar/SkillButtons/QuickStrike" to="." method="_on_skill_pressed" binds=["quick_strike"]]
+[connection signal="pressed" from="BottomBar/SkillButtons/Heal" to="." method="_on_skill_pressed" binds=["heal"]]
+[connection signal="pressed" from="BottomBar/SkillButtons/Defend" to="." method="_on_skill_pressed" binds=["defend"]]
+[connection signal="pressed" from="BottomBar/BackButton" to="." method="_on_back_pressed"]

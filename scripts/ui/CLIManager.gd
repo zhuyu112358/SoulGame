@@ -359,6 +359,12 @@ func _start_battle(p_parts: Array) -> void:
 	add_line("Type battle_log to view battle log.")
 
 
+## Enter arena scene
+func _enter_arena() -> void:
+	add_line("Entering arena...")
+	SceneManager.change_scene("res://scenes/arena.tscn")
+
+
 ## Find soul by name
 func _find_soul_by_name(p_name: String):
 	for soul in SoulManager.soul_list:
