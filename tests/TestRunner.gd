@@ -29,6 +29,9 @@ func _run_all_tests() -> void:
 	_test_object_pool()
 	_test_input_manager()
 	_test_performance_monitor()
+	_test_time_manager()
+	_test_error_handler()
+	_test_math_utils()
 
 
 func _assert(condition: bool, test_name: String, message: String = "") -> void:
@@ -245,6 +248,132 @@ func _test_performance_monitor() -> void:
 
 	PerformanceMonitor.reset()
 	_assert(PerformanceMonitor.get_all_baselines().is_empty(), "PerformanceMonitor.reset clears baselines")
+
+
+# --- TimeManager Tests ---
+
+func _test_time_manager() -> void:
+	print("\n--- TimeManager Tests ---")
+
+	# Time scale
+	TimeManager.set_time_scale(0.5)
+	_assert(TimeManager.get_time_scale() == 0.5, "TimeManager.set_time_scale")
+	TimeManager.set_time_scale(1.0)
+	_assert(TimeManager.get_time_scale() == 1.0, "TimeManager.set_time_scale reset")
+
+	# Pause/resume
+	TimeManager.pause()
+	_assert(TimeManager.is_paused(), "TimeManager.pause")
+	TimeManager.resume()
+	_assert(not TimeManager.is_paused(), "TimeManager.resume")
+
+	# Scheduling
+	var callback_fired := false
+	func _on_schedule():
+		callback_fired = true
+
+	var id = TimeManager.schedule_once(0.1, self, "_on_schedule")
+	_assert(id > 0, "TimeManager.schedule_once returns id")
+	_assert(TimeManager.is_scheduled(id), "TimeManager.is_scheduled")
+
+	await get_tree().create_timer(0.2).timeout
+	_assert(callback_fired, "TimeManager.schedule_once fires callback")
+	_assert(not TimeManager.is_scheduled(id), "TimeManager schedule auto-removes")
+
+	# Repeating schedule
+	var repeat_count := 0
+	func _on_repeat():
+		repeat_count += 1
+
+	var repeat_id = TimeManager.schedule_repeating(0.05, self, "_on_repeat")
+	await get_tree().create_timer(0.2).timeout
+	_assert(repeat_count >= 2, "TimeManager.schedule_repeating fires multiple times")
+	TimeManager.cancel(repeat_id)
+	_assert(not TimeManager.is_scheduled(repeat_id), "TimeManager.cancel")
+
+	# Time of day
+	TimeManager.set_time_of_day(14.5)
+	_assert(TimeManager.get_time_of_day() == 14.5, "TimeManager.set_time_of_day")
+	_assert(TimeManager.get_time_of_day_string() == "14:30", "TimeManager.get_time_of_day_string")
+	_assert(TimeManager.get_day_phase() == "day", "TimeManager.get_day_phase (afternoon)")
+
+	TimeManager.set_time_of_day(22.0)
+	_assert(TimeManager.get_day_phase() == "night", "TimeManager.get_day_phase (night)")
+
+
+# --- ErrorHandler Tests ---
+
+func _test_error_handler() -> void:
+	print("\n--- ErrorHandler Tests ---")
+
+	ErrorHandler.track_error("TestCategory", "Test error message", {"code": 42}, "error")
+	var history = ErrorHandler.get_error_history(10)
+	_assert(history.size() >= 1, "ErrorHandler.track_error records error")
+	_assert(history[0]["category"] == "TestCategory", "ErrorHandler error category")
+	_assert(history[0]["message"] == "Test error message", "ErrorHandler error message")
+	_assert(history[0]["severity"] == "error", "ErrorHandler error severity")
+
+	# Track different severities
+	ErrorHandler.track_error("Net", "Warning test", {}, "warning")
+	ErrorHandler.track_error("Sys", "Info test", {}, "info")
+
+	var stats = ErrorHandler.get_stats()
+	_assert(stats["total_errors"] >= 3, "ErrorHandler.get_stats total")
+	_assert(stats["by_severity"]["error"] >= 1, "ErrorHandler stats by severity")
+	_assert(stats["by_category"].has("TestCategory"), "ErrorHandler stats by category")
+
+	# Filter by category
+	var net_errors = ErrorHandler.get_errors_by_category("Net")
+	_assert(net_errors.size() >= 1, "ErrorHandler.get_errors_by_category")
+
+	# Critical error
+	ErrorHandler.track_error("Critical", "Critical test", {}, "critical")
+	_assert(ErrorHandler.has_critical_errors(), "ErrorHandler.has_critical_errors")
+
+	# Clear
+	ErrorHandler.clear_history()
+	_assert(ErrorHandler.get_stats()["total_errors"] == 0, "ErrorHandler.clear_history")
+
+
+# --- MathUtils Tests ---
+
+func _test_math_utils() -> void:
+	print("\n--- MathUtils Tests ---")
+
+	# Clamp
+	_assert(MathUtils.clamp(15.0, 0.0, 10.0) == 10.0, "MathUtils.clamp high")
+	_assert(MathUtils.clamp(-5.0, 0.0, 10.0) == 0.0, "MathUtils.clamp low")
+	_assert(MathUtils.clamp(5.0, 0.0, 10.0) == 5.0, "MathUtils.clamp in range")
+
+	# Lerp
+	_assert(MathUtils.lerp(0.0, 10.0, 0.5) == 5.0, "MathUtils.lerp")
+	_assert(MathUtils.lerp(0.0, 10.0, 0.0) == 0.0, "MathUtils.lerp t=0")
+	_assert(MathUtils.lerp(0.0, 10.0, 1.0) == 10.0, "MathUtils.lerp t=1")
+
+	# Map range
+	_assert(MathUtils.map_range(5.0, 0.0, 10.0, 0.0, 100.0) == 50.0, "MathUtils.map_range")
+
+	# Distance
+	_assert(MathUtils.approx(MathUtils.distance(Vector2.ZERO, Vector2(3, 4)), 5.0), "MathUtils.distance")
+
+	# Approx
+	_assert(MathUtils.approx(1.0, 1.0001, 0.001), "MathUtils.approx true")
+	_assert(not MathUtils.approx(1.0, 1.1, 0.001), "MathUtils.approx false")
+
+	# Wrap
+	_assert(MathUtils.wrap(370.0, 0.0, 360.0) == 10.0, "MathUtils.wrap")
+
+	# Angle normalize
+	_assert(MathUtils.approx(MathUtils.normalize_angle(PI + 0.5), -PI + 0.5, 0.01), "MathUtils.normalize_angle")
+
+	# Easing
+	_assert(MathUtils.ease_in(0.5) == 0.25, "MathUtils.ease_in")
+	_assert(MathUtils.approx(MathUtils.ease_out(0.5), 0.75), "MathUtils.ease_out")
+	_assert(MathUtils.ease_in_out(0.5) == 0.5, "MathUtils.ease_in_out midpoint")
+
+	# Smoothstep
+	_assert(MathUtils.smoothstep(0.0, 1.0, 0.0) == 0.0, "MathUtils.smoothstep start")
+	_assert(MathUtils.smoothstep(0.0, 1.0, 1.0) == 1.0, "MathUtils.smoothstep end")
 
 
 func _print_summary() -> void:
