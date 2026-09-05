@@ -86,6 +86,12 @@ func process_command(command: String) -> void:
 			_stop_world()
 		"growth":
 			_open_growth_visualizer()
+		"battle":
+			_start_battle(parts)
+		"battle_log":
+			_show_battle_log()
+		"battle_status":
+			_show_battle_status()
 		"save":
 			_save_game()
 		"load":
@@ -316,6 +322,89 @@ func _load_game() -> void:
 	add_line("Game loaded.")
 	add_line("  Souls: %d" % SoulManager.soul_list.size())
 	add_line("  Worlds: %d" % WorldManager.world_list.size())
+
+
+## Start a battle between two souls
+func _start_battle(p_parts: Array) -> void:
+	if p_parts.size() < 3:
+		add_line("Usage: battle <soul1_name> <soul2_name>")
+		add_line("Starts a battle between two souls.")
+		return
+
+	var soul1_name = p_parts[1]
+	var soul2_name = p_parts[2]
+
+	# Find souls by name (simplified - use test data if not found)
+	var soul1 = _find_soul_by_name(soul1_name)
+	var soul2 = _find_soul_by_name(soul2_name)
+
+	if soul1 == null:
+		add_line("Soul not found. Using test soul: %s" % soul1_name)
+		soul1 = {"id": "test_soul_1", "name": soul1_name, "element": "fire", "level": 5}
+	if soul2 == null:
+		add_line("Soul not found. Using test soul: %s" % soul2_name)
+		soul2 = {"id": "test_soul_2", "name": soul2_name, "element": "water", "level": 5}
+
+	ArenaManager.start_battle(
+		soul1["id"], soul1["name"], soul1["element"], soul1["level"],
+		soul2["id"], soul2["name"], soul2["element"], soul2["level"]
+	)
+
+	add_line("=== Battle Started ===")
+	add_line("%s (%s, Lv.%d) vs %s (%s, Lv.%d)" % [
+		soul1["name"], soul1["element"], soul1["level"],
+		soul2["name"], soul2["element"], soul2["level"]
+	])
+	add_line("Type battle_status to view current state.")
+	add_line("Type battle_log to view battle log.")
+
+
+## Find soul by name
+func _find_soul_by_name(p_name: String):
+	for soul in SoulManager.soul_list:
+		if soul.get("name", "").to_lower() == p_name.to_lower():
+			return soul
+	return null
+
+
+## Show battle status
+func _show_battle_status() -> void:
+	var battle = ArenaManager.get_current_battle()
+	if battle == null or battle.status == "idle":
+		add_line("No active battle. Use battle name1 name2 to start.")
+		return
+
+	add_line("=== Battle Status ===")
+	add_line("Status: %s" % battle.status)
+	add_line("Turn: %d, Round: %d" % [battle.turn, battle.round])
+	add_line("")
+
+	for p in battle.participants:
+		var hp_pct = float(p["current_hp"]) / float(p["max_hp"]) * 100
+		var energy_pct = float(p["current_energy"]) / float(p["max_energy"]) * 100
+		var status_text = "ALIVE" if p["is_alive"] else "DEFEATED"
+		add_line("%s [%s] - HP: %d/%d (%.0f%%) - Energy: %d/%d (%.0f%%) - %s" % [
+			p["name"], p["element"], p["current_hp"], p["max_hp"], hp_pct,
+			p["current_energy"], p["max_energy"], energy_pct, status_text
+		])
+
+	if battle.status == "finished":
+		add_line("")
+		add_line("Result: %s" % battle.get_summary())
+
+
+## Show battle log
+func _show_battle_log() -> void:
+	var battle = ArenaManager.get_current_battle()
+	if battle == null or battle.battle_log.size() == 0:
+		add_line("No battle log available.")
+		return
+
+	add_line("=== Battle Log (last 10) ===")
+	var log_text = ArenaManager.get_battle_log_text(10)
+	for line in log_text.split("\n"):
+		if not line.strip_edges().is_empty():
+			add_line(line)
 
 
 ## Update display label
