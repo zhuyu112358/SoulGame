@@ -12,9 +12,19 @@ var _passed: int = 0
 var _failed: int = 0
 var _errors: int = 0
 
+## Test state variables (for nested function compatibility)
+var _test_received: Array = []
+
+## Utility class preloads (class_name may not be registered in test context)
+const MathUtils = preload("res://scripts/core/MathUtils.gd")
+const PhysicsUtils = preload("res://scripts/core/PhysicsUtils.gd")
+var _test_soul_state_received: bool = false
+var _test_callback_fired: bool = false
+var _test_repeat_count: int = 0
+
 
 func _ready() -> void:
-	Logger.info("=== SoulGame Test Runner ===", "Test")
+	GameLog.info("=== SoulGame Test Runner ===", "Test")
 	_run_all_tests()
 	_print_summary()
 
@@ -52,15 +62,13 @@ func _assert(condition: bool, test_name: String, message: String = "") -> void:
 func _test_event_bus() -> void:
 	print("\n--- EventBus Tests ---")
 
-	var received := []
-	func _on_test_event(data):
-		received.append(data)
+	_test_received.clear()
 
 	EventBus.subscribe("test_event", self, "_on_test_event")
 	_assert(EventBus.has_subscribers("test_event"), "EventBus.subscribe")
 
 	EventBus.emit("test_event", {"value": 42})
-	_assert(received.size() == 1 and received[0]["value"] == 42, "EventBus.emit delivers data")
+	_assert(_test_received.size() == 1 and _test_received[0]["value"] == 42, "EventBus.emit delivers data")
 
 	EventBus.unsubscribe("test_event", self, "_on_test_event")
 	_assert(not EventBus.has_subscribers("test_event"), "EventBus.unsubscribe")
@@ -71,14 +79,12 @@ func _test_event_bus() -> void:
 func _test_game_state() -> void:
 	print("\n--- GameState Tests ---")
 
-	GameState.set("test", "key1", "value1")
-	_assert(GameState.get("test", "key1") == "value1", "GameState.set/get")
+	GameState.set_value("test", "key1", "value1")
+	_assert(GameState.get_value("test", "key1") == "value1", "GameState.set/get")
 
-	_assert(GameState.get("test", "nonexistent", "default") == "default", "GameState.get with default")
+	_assert(GameState.get_value("test", "nonexistent", "default") == "default", "GameState.get with default")
 
-	var soul_state_received := false
-	func _on_soul_state(data):
-		soul_state_received = true
+	_test_soul_state_received = false
 
 	GameState.set_soul_state("soul_test", "emotion", "happy")
 	_assert(GameState.get_soul_state("soul_test", "emotion") == "happy", "GameState.soul state")
@@ -108,16 +114,16 @@ func _test_config_manager() -> void:
 func _test_logger() -> void:
 	print("\n--- Logger Tests ---")
 
-	Logger.info("Test info message", "Test")
-	Logger.warning("Test warning message", "Test")
-	Logger.error("Test error message", "Test")
+	GameLog.info("Test info message", "Test")
+	GameLog.warning("Test warning message", "Test")
+	GameLog.error("Test error message", "Test")
 
-	var stats = Logger.get_stats()
+	var stats = GameLog.get_stats()
 	_assert(stats["info"] >= 1, "Logger.info count")
 	_assert(stats["warning"] >= 1, "Logger.warning count")
 	_assert(stats["error"] >= 1, "Logger.error count")
 
-	var entries = Logger.get_recent_entries(5)
+	var entries = GameLog.get_recent_entries(5)
 	_assert(entries.size() > 0, "Logger.get_recent_entries")
 
 
@@ -126,7 +132,7 @@ func _test_logger() -> void:
 func _test_save_system() -> void:
 	print("\n--- SaveSystem Tests ---")
 
-	var test_data := {"player": {"name": "test", "level": 1}, "world": {"time": 100}}
+	var test_data: Dictionary = {"player": {"name": "test", "level": 1}, "world": {"time": 100}}
 	var saved = SaveSystem.save_game(9, test_data, "Test Save")
 	_assert(saved, "SaveSystem.save_game")
 
@@ -145,8 +151,8 @@ func _test_object_pool() -> void:
 	print("\n--- ObjectPool Tests ---")
 
 	# Create a simple test scene programmatically
-	var test_scene := PackedScene.new()
-	var node := Node2D.new()
+	var test_scene: PackedScene = PackedScene.new()
+	var node: Node2D = Node2D.new()
 	node.name = "TestObject"
 	test_scene.pack(node)
 
@@ -270,26 +276,22 @@ func _test_time_manager() -> void:
 	_assert(not TimeManager.is_paused(), "TimeManager.resume")
 
 	# Scheduling
-	var callback_fired := false
-	func _on_schedule():
-		callback_fired = true
+	_test_callback_fired = false
 
 	var id = TimeManager.schedule_once(0.1, self, "_on_schedule")
 	_assert(id > 0, "TimeManager.schedule_once returns id")
 	_assert(TimeManager.is_scheduled(id), "TimeManager.is_scheduled")
 
 	await get_tree().create_timer(0.2).timeout
-	_assert(callback_fired, "TimeManager.schedule_once fires callback")
+	_assert(_test_callback_fired, "TimeManager.schedule_once fires callback")
 	_assert(not TimeManager.is_scheduled(id), "TimeManager schedule auto-removes")
 
 	# Repeating schedule
-	var repeat_count := 0
-	func _on_repeat():
-		repeat_count += 1
+	_test_repeat_count = 0
 
 	var repeat_id = TimeManager.schedule_repeating(0.05, self, "_on_repeat")
 	await get_tree().create_timer(0.2).timeout
-	_assert(repeat_count >= 2, "TimeManager.schedule_repeating fires multiple times")
+	_assert(_test_repeat_count >= 2, "TimeManager.schedule_repeating fires multiple times")
 	TimeManager.cancel(repeat_id)
 	_assert(not TimeManager.is_scheduled(repeat_id), "TimeManager.cancel")
 
@@ -398,17 +400,17 @@ func _test_physics_utils() -> void:
 	_assert(not PhysicsUtils.point_in_rect(Vector2(15, 15), Rect2(0, 0, 10, 10)), "PhysicsUtils.point_in_rect outside")
 
 	# Distance to segment
-	var seg_result = PhysicsUtils.distance_to_segment(Vector2(0, 5), Vector2(-10, 0), Vector2(10, 0))
+	var seg_result: Dictionary = PhysicsUtils.distance_to_segment(Vector2(0, 5), Vector2(-10, 0), Vector2(10, 0))
 	_assert(MathUtils.approx(seg_result["distance"], 5.0), "PhysicsUtils.distance_to_segment")
 	_assert(seg_result["closest_point"] == Vector2(0, 0), "PhysicsUtils.distance_to_segment closest")
 
 	# Friction
-	var vel := Vector2(100, 0)
-	var after_friction := PhysicsUtils.apply_friction(vel, 0.5, 1.0)
+	var vel: Vector2 = Vector2(100, 0)
+	var after_friction: Vector2 = PhysicsUtils.apply_friction(vel, 0.5, 1.0)
 	_assert(after_friction.x < vel.x, "PhysicsUtils.apply_friction reduces velocity")
 
 	# Gravity
-	var with_gravity := PhysicsUtils.apply_gravity(Vector2.ZERO, 9.8, 1.0)
+	var with_gravity: Vector2 = PhysicsUtils.apply_gravity(Vector2.ZERO, 9.8, 1.0)
 	_assert(MathUtils.approx(with_gravity.y, 9.8), "PhysicsUtils.apply_gravity")
 
 	# Clamp velocity
@@ -416,11 +418,11 @@ func _test_physics_utils() -> void:
 	_assert(PhysicsUtils.clamp_velocity(Vector2(10, 0), 50.0).length() == 10.0, "PhysicsUtils.clamp_velocity under max")
 
 	# Bounce
-	var bounced := PhysicsUtils.bounce(Vector2(10, -10), Vector2.UP, 1.0)
+	var bounced: Vector2 = PhysicsUtils.bounce(Vector2(10, -10), Vector2.UP, 1.0)
 	_assert(MathUtils.approx(bounced.y, 10.0), "PhysicsUtils.bounce")
 
 	# Line intersection
-	var intersect := PhysicsUtils.line_intersection(Vector2(-10, 0), Vector2(10, 0), Vector2(0, -10), Vector2(0, 10))
+	var intersect: Vector2 = PhysicsUtils.line_intersection(Vector2(-10, 0), Vector2(10, 0), Vector2(0, -10), Vector2(0, 10))
 	_assert(intersect == Vector2.ZERO, "PhysicsUtils.line_intersection")
 
 	# Segment intersection
@@ -428,11 +430,11 @@ func _test_physics_utils() -> void:
 	_assert(not PhysicsUtils.segments_intersect(Vector2(-10, 0), Vector2(-5, 0), Vector2(5, 0), Vector2(10, 0)), "PhysicsUtils.segments_intersect false")
 
 	# Look at rotation
-	var rot := PhysicsUtils.look_at_rotation(0.0, PI / 2, PI, 0.1)
+	var rot: float = PhysicsUtils.look_at_rotation(0.0, PI / 2, PI, 0.1)
 	_assert(rot > 0.0, "PhysicsUtils.look_at_rotation moves toward target")
 
 	# Spring damper
-	var spring := PhysicsUtils.spring_damper(10.0, 0.0, 0.0, 10.0, 2.0, 0.1)
+	var spring: Dictionary = PhysicsUtils.spring_damper(10.0, 0.0, 0.0, 10.0, 2.0, 0.1)
 	_assert(spring["position"] < 10.0, "PhysicsUtils.spring_damper moves toward target")
 
 
@@ -456,21 +458,21 @@ func _test_localization_manager() -> void:
 	_assert(not LocalizationManager.has_translation("NONEXISTENT_KEY"), "LocalizationManager.has_translation false")
 
 	# Format translation
-	var formatted := LocalizationManager.trf("LOADING", [])
+	var formatted: String = LocalizationManager.trf("LOADING", [])
 	_assert(formatted == "Loading...", "LocalizationManager.trf no args")
 
 	# Switch language
 	LocalizationManager.set_language("zh")
 	_assert(LocalizationManager.get_language() == "zh", "LocalizationManager.set_language zh")
-	_assert(LocalizationManager.tr("LOADING") == "加载中...", "LocalizationManager.tr zh")
+	_assert(LocalizationManager.tr("LOADING") == "闂備礁鎲″缁樻叏閹灐褰掑炊閵娧€鏋?..", "LocalizationManager.tr zh")
 
 	# Fallback to default
 	LocalizationManager.set_language("ja")
 	_assert(LocalizationManager.tr("LOADING") == "Loading...", "LocalizationManager fallback to en for missing ja")
 
 	# Add translation
-	LocalizationManager.add_translation("ja", "LOADING", "読み込み中...")
-	_assert(LocalizationManager.tr("LOADING") == "読み込み中...", "LocalizationManager.add_translation ja")
+	LocalizationManager.add_translation("ja", "LOADING", "闂佽崵鍠撻搹搴ㄥ储鐟欏嫬顕遍柍鍝勫€圭紞鍥╃磼濡ゅ嫭銆冪紓鍌氼槸閳?..")
+	_assert(LocalizationManager.tr("LOADING") == "闂佽崵鍠撻搹搴ㄥ储鐟欏嫬顕遍柍鍝勫€圭紞鍥╃磼濡ゅ嫭銆冪紓鍌氼槸閳?..", "LocalizationManager.add_translation ja")
 
 	# Reset
 	LocalizationManager.reset_to_default()
@@ -489,14 +491,14 @@ func _test_localization_manager() -> void:
 
 
 func _print_summary() -> void:
-	print("\n" + "=" * 50)
+	print("\n" + "==================================================")
 	print("TEST SUMMARY")
-	print("=" * 50)
+	print("==================================================")
 	print("Passed: %d" % _passed)
 	print("Failed: %d" % _failed)
 	print("Errors: %d" % _errors)
 	print("Total:  %d" % (_passed + _failed + _errors))
-	print("=" * 50)
+	print("==================================================")
 
 	if _failed > 0 or _errors > 0:
 		print("\nFAILED TESTS:")
@@ -505,3 +507,21 @@ func _print_summary() -> void:
 				print("  - %s: %s" % [result["name"], result["message"]])
 
 	get_tree().quit(_failed > 0 or _errors > 0)
+
+
+# --- Callback functions (class-level for Godot 4.7 compatibility) ---
+
+func _on_test_event(data) -> void:
+	_test_received.append(data)
+
+
+func _on_soul_state(data) -> void:
+	_test_soul_state_received = true
+
+
+func _on_schedule() -> void:
+	_test_callback_fired = true
+
+
+func _on_repeat() -> void:
+	_test_repeat_count += 1
