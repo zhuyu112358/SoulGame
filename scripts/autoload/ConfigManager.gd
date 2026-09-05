@@ -216,3 +216,21 @@ func _load_defaults() -> void:
 			}
 		}
 	}
+
+
+## Get configuration statistics
+func get_stats() -> Dictionary:
+	var loaded_count := 0
+	var dirty_count := 0
+	for config_name in _configs:
+		if _configs[config_name] != null:
+			loaded_count += 1
+	for config_name in _dirty:
+		if _dirty[config_name]:
+			dirty_count += 1
+	return {
+		"configs_registered": _config_paths.size(),
+		"configs_loaded": loaded_count,
+		"dirty_configs": dirty_count,
+		"defaults_defined": _defaults.size()
+	}

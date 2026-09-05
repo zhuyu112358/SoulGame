@@ -207,6 +207,20 @@ func clear_cache() -> void:
 	Logger.info("ResourceManager: Cleared cache (%d resources)" % count, "Resource")
 
 
+## Get resource manager statistics
+func get_stats() -> Dictionary:
+	var stats := _stats.duplicate()
+	stats["cached_resources"] = _cache.size()
+	stats["pending_loads"] = _pending_loads.size()
+	stats["loading_groups"] = _loading_groups.size()
+	stats["max_cache_kb"] = _max_cache_kb
+	if _stats["cache_hits"] + _stats["cache_misses"] > 0:
+		stats["cache_hit_rate"] = float(_stats["cache_hits"]) / float(_stats["cache_hits"] + _stats["cache_misses"])
+	else:
+		stats["cache_hit_rate"] = 0.0
+	return stats
+
+
 ## Preload a list of resources synchronously
 func preload(paths: Array) -> void:
 	for path in paths:

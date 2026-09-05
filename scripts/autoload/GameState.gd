@@ -217,6 +217,29 @@ func get_summary() -> Dictionary:
 	}
 
 
+## Get state statistics (standard interface)
+func get_stats() -> Dictionary:
+	var namespace_counts := {}
+	for ns in _states:
+		namespace_counts[ns] = _states[ns].size()
+	return {
+		"namespaces": _states.size(),
+		"namespace_counts": namespace_counts,
+		"soul_count": _states["soul"].size(),
+		"history_size": _history.size(),
+		"total_keys": _count_total_keys(),
+		"session_active": get("session", "id", "") != ""
+	}
+
+
+## Count total keys across all namespaces
+func _count_total_keys() -> int:
+	var count := 0
+	for ns in _states:
+		count += _states[ns].size()
+	return count
+
+
 ## Reset all states (use with caution)
 func reset() -> void:
 	_states = {

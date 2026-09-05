@@ -12,6 +12,12 @@ extends Node
 ## Current scene path
 var _current_scene: String = ""
 
+## Previous scene path
+var _previous_scene: String = ""
+
+## Total scene changes
+var _scene_change_count: int = 0
+
 ## Scene stack for push/pop navigation
 var _scene_stack: Array = []
 
@@ -136,9 +142,11 @@ func _change_scene_immediate(scene_path: String) -> void:
 		return
 
 	get_tree().change_scene_to_packed(packed_scene)
+	_previous_scene = _current_scene
 	_current_scene = scene_path
+	_scene_change_count += 1
 	_transitioning = false
-	EventBus.emit("scene_changed", {"scene": scene_path})
+	EventBus.emit("scene_changed", {"scene": scene_path, "previous": _previous_scene})
 	Logger.info("SceneManager: Changed to %s" % scene_path, "Scene")
 
 
@@ -190,4 +198,18 @@ func _register_default_aliases() -> void:
 		"main": "res://scenes/main.tscn",
 		"loading": "res://scenes/loading.tscn",
 		"bootstrap": "res://scenes/bootstrap.tscn"
+	}
+
+
+## Get scene manager statistics
+func get_stats() -> Dictionary:
+	return {
+		"current_scene": _current_scene,
+		"previous_scene": _previous_scene,
+		"cached_scenes": _scene_cache.size(),
+		"max_cache_size": _max_cache_size,
+		"registered_aliases": _scene_aliases.size(),
+		"transitioning": _transitioning,
+		"transition_duration": _transition_duration,
+		"scene_changes": _scene_change_count
 	}

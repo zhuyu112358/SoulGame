@@ -276,6 +276,16 @@ func reset() -> void:
 	Logger.info("PerformanceMonitor reset", "Perf")
 
 
+## Get performance statistics (standard interface)
+func get_stats() -> Dictionary:
+	var snapshot := get_snapshot()
+	snapshot["session_stats"] = _session_stats.duplicate()
+	snapshot["custom_metrics_count"] = _custom_metrics.size()
+	snapshot["process_time_ms"] = _process_time_ms
+	snapshot["process_time_peak_ms"] = _process_time_peak_ms
+	return snapshot
+
+
 func _update_heavy_metrics() -> void:
 	# Memory stats (Godot 4 Performance API)
 	_memory_static = float(Performance.get_monitor(Performance.MEMORY_STATIC)) / (1024.0 * 1024.0)
