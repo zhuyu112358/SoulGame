@@ -37,6 +37,7 @@ LocalizationManager="*res://scripts/core/LocalizationManager.gd"
 AnimationManager="*res://scripts/core/AnimationManager.gd"
 SoulManager="*res://scripts/game/SoulManager.gd"
 WorldManager="*res://scripts/game/WorldManager.gd"
+CLIManager="*res://scripts/ui/CLIManager.gd"
 
 [display]
 

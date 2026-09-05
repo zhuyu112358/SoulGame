@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+- **Godot 4.7.2 Compatibility** (BUG-010 through BUG-015) - Project now fully loads with 0 script errors
+  - Renamed `Logger` autoload to `GameLog` (conflict with internal symbol)
+  - Renamed built-in method conflicts: `get/set/connect/disconnect/load/preload` → prefixed versions
+  - Renamed `create_tween()` → `create_anim_tween()`, `tr()` → `translate()`
+  - Fixed Performance API: `get_monitor(index)` with numeric indices for removed RENDER_* enums
+  - Fixed HTTPRequest API: 4-parameter `request()` (removed ssl_verify_domain)
+  - Fixed AudioServer: `is_bus_mute()` (not `is_bus_muted()`)
+  - Fixed ConfigFile: string values must be quoted
+  - Fixed encoding corruption: replaced all damaged Chinese strings with English
+  - Fixed `trait` parameter name conflict (Godot 4.7.2 reserved word) → `trait_name`
+  - Fixed lambda function parsing issues → named functions
+  - Fixed for-loop iteration over Dictionary/Array → index-based iteration
+  - Fixed class_name global registration issue → preload constants
+  - Fixed SaveSystem API: `get_value/set_value` → `get_setting/set_setting`
+  - Fixed stats dictionary missing keys (sfx_playing, critical_count, pending_count)
+  - All 20 autoloads initialize successfully
+
 ### Planned
 - M1 Soul Home full interaction system
 - M1 Soul growth visualization (radar charts, progress bars)

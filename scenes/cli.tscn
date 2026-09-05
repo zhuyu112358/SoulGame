@@ -1,0 +1,58 @@
+[gd_scene load_steps=2 format=3 uid="uid://cli_scene_001"]
+
+[ext_resource type="Script" path="res://scripts/ui/CLIManager.gd" id="1_cli"]
+
+[node name="CLI" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_cli")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.02, 0.05, 0.95)
+
+[node name="OutputContainer" type="ScrollContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = -40.0
+grow_horizontal = 2
+grow_vertical = 2
+scroll_horizontal_enabled = false
+
+[node name="Output" type="Label" parent="OutputContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+text = "=== Soul Game CLI ==="
+horizontal_alignment = 0
+vertical_alignment = 0
+
+[node name="InputContainer" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -40.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="Prompt" type="Label" parent="InputContainer"]
+layout_mode = 2
+text = "> "
+theme_override_font_sizes/font_size = 14
+
+[node name="Input" type="LineEdit" parent="InputContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Type command... (help for list)"
