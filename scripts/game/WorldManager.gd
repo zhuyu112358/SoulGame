@@ -15,8 +15,8 @@ var active_world: Dictionary = {}
 var world_templates: Array = [
 	{
 		"id": "training_arena",
-		"name": "璁粌绔炴妧鍦?,
-		"description": "鍩虹璁粌鍦哄湴锛岄€傚悎鎶€鑳界粌涔?,
+		"name": "Training Arena",
+		"description": "Basic training ground, suitable for skill practice",
 		"size": "medium",
 		"resource_points": 3,
 		"growth_rules": {"skill_rate": 1.2, "cognitive_rate": 1.0},
@@ -24,8 +24,8 @@ var world_templates: Array = [
 	},
 	{
 		"id": "exploration_forest",
-		"name": "鎺㈢储妫灄",
-		"description": "鍏呮弧鏈煡鐨勬．鏋楋紝閫傚悎鎺㈢储鍜岃鐭ユ垚闀?,
+		"name": "Exploration Forest",
+		"description": "Forest full of unknowns, suitable for exploration and cognitive growth",
 		"size": "large",
 		"resource_points": 5,
 		"growth_rules": {"cognitive_rate": 1.3, "emotional_rate": 1.1},
@@ -33,8 +33,8 @@ var world_templates: Array = [
 	},
 	{
 		"id": "social_plaza",
-		"name": "绀句氦骞垮満",
-		"description": "鐏甸瓊鑱氶泦鐨勫箍鍦猴紝閫傚悎绀句氦鍜屾儏鎰熸垚闀?,
+		"name": "Social Plaza",
+		"description": "Soul gathering plaza, suitable for social and emotional growth",
 		"size": "medium",
 		"resource_points": 4,
 		"growth_rules": {"emotional_rate": 1.4, "skill_rate": 0.9},
@@ -42,8 +42,8 @@ var world_templates: Array = [
 	},
 	{
 		"id": "challenge_maze",
-		"name": "鎸戞垬杩峰",
-		"description": "澶嶆潅鐨勮糠瀹紝鑰冮獙闂瑙ｅ喅鍜岀┖闂磋鐭?,
+		"name": "Challenge Maze",
+		"description": "Complex maze, tests problem solving and spatial cognition",
 		"size": "large",
 		"resource_points": 6,
 		"growth_rules": {"cognitive_rate": 1.5, "skill_rate": 1.2},
@@ -272,11 +272,11 @@ func _load_world(world_id: String) -> Dictionary:
 
 
 func _save_world_list() -> void:
-	SaveSystem.set_value("world_list", world_list)
+	SaveSystem.set_setting("world", "world_list", world_list)
 
 
 func _load_world_list() -> void:
-	world_list = SaveSystem.get_value("world_list", [])
+	world_list = SaveSystem.get_setting("world", "world_list", [])
 	GameLog.info("WorldManager: Loaded %d worlds" % world_list.size(), "WorldManager")
 
 

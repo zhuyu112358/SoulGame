@@ -200,15 +200,17 @@ func _attempt_recovery(category: String, error_entry: Dictionary) -> void:
 			_total_recoveries += 1
 			_recovery_stats[category]["attempted"] += 1
 			var success := false
+			var attempts_used := 0
 			# Simple synchronous recovery (async retry could be added later)
 			for attempt in range(handler["max_retries"]):
+				attempts_used = attempt + 1
 				if handler["target"].call(handler["method"], error_entry):
 					success = true
 					break
 			if success:
 				error_entry["recovered"] = true
 				_recovery_stats[category]["succeeded"] += 1
-				GameLog.info("ErrorHandler: Recovery succeeded for '%s' (attempt %d)" % [category, attempt + 1], "Error")
+				GameLog.info("ErrorHandler: Recovery succeeded for '%s' (attempt %d)" % [category, attempts_used], "Error")
 				EventBus.emit("error_recovered", {"category": category, "error": error_entry})
 			else:
 				_recovery_stats[category]["failed"] += 1

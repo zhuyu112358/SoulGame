@@ -380,7 +380,7 @@ func set_muted(bus_name: String, muted: bool) -> void:
 func is_muted(bus_name: String) -> bool:
 	var idx := AudioServer.get_bus_index(bus_name)
 	if idx >= 0:
-		return AudioServer.is_bus_muted(idx)
+		return AudioServer.is_bus_mute(idx)
 	return false
 
 

@@ -206,7 +206,7 @@ func set_input_enabled(enabled: bool) -> void:
 	_input_enabled = enabled
 	if not enabled:
 		_pressed_keys.clear()
-	GameLog.info("InputManager: Input %s" % ["disabled", "enabled"][enabled], "Input")
+	GameLog.info("InputManager: Input %s" % ("enabled" if enabled else "disabled"), "Input")
 
 
 ## Check if input is enabled

@@ -7,7 +7,7 @@ extends Node
 ##
 ## Usage:
 ##   ResourceManager.load_async("res://assets/textures/player.png", self, "_on_loaded")
-##   var tex = ResourceManager.get("res://assets/textures/player.png")
+##   var tex = ResourceManager.get_resource("res://assets/textures/player.png")
 ##   ResourceManager.unload("res://assets/textures/player.png")
 ##   ResourceManager.load_group(["a.png", "b.png"], self, "_on_group", 0.5)
 
@@ -40,7 +40,7 @@ func _ready() -> void:
 
 
 ## Load a resource synchronously (with cache)
-func load(path: String) -> Resource:
+func load_resource(path: String) -> Resource:
 	if _cache.has(path):
 		_stats["cache_hits"] += 1
 		var entry = _cache[path]
@@ -84,7 +84,7 @@ func load_async(path: String, callback_target: Object = null, callback_method: S
 	_stats["cache_misses"] += 1
 
 	# Use ResourceLoader.load_threaded_request
-	var error_code := ResourceLoader.load_threaded_request(path, false, ResourceLoader.CACHE_MODE_REUSE)
+	var error_code := ResourceLoader.load_threaded_request(path, "", false, ResourceLoader.CACHE_MODE_REUSE)
 	if error_code != OK:
 		GameLog.error("ResourceManager: Async load failed for %s: error %d" % [path, error_code], "Resource")
 		_notify_load_complete(path, null)
@@ -95,7 +95,7 @@ func load_async(path: String, callback_target: Object = null, callback_method: S
 
 
 ## Get a cached resource (does not increment ref count)
-func get(path: String) -> Resource:
+func get_resource(path: String) -> Resource:
 	if _cache.has(path):
 		return _cache[path]["resource"]
 	return null
@@ -222,9 +222,9 @@ func get_stats() -> Dictionary:
 
 
 ## Preload a list of resources synchronously
-func preload(paths: Array) -> void:
+func preload_resources(paths: Array) -> void:
 	for path in paths:
-		load(path)
+		load_resource(path)
 	GameLog.info("ResourceManager: Preloaded %d resources" % paths.size(), "Resource")
 
 

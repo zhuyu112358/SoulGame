@@ -208,8 +208,8 @@ func reset_to_default() -> void:
 func _register_default_languages() -> void:
 	_available_languages = {
 		"en": {"name": "English", "native_name": "English"},
-		"zh": {"name": "Chinese", "native_name": "涓枃"},
-		"ja": {"name": "Japanese", "native_name": "鏃ユ湰瑾?}
+		"zh": {"name": "Chinese", "native_name": "Chinese"},
+		"ja": {"name": "Japanese", "native_name": "Japanese"},
 	}
 
 
@@ -238,25 +238,25 @@ func _load_builtin_translations() -> void:
 	}
 
 	_translations["zh"] = {
-		"LOADING": "鍔犺浇涓?..",
-		"ERROR": "閿欒",
-		"OK": "纭畾",
-		"CANCEL": "鍙栨秷",
-		"YES": "鏄?,
-		"NO": "鍚?,
-		"BACK": "杩斿洖",
-		"SETTINGS": "璁剧疆",
-		"LANGUAGE": "璇█",
-		"VOLUME": "闊抽噺",
-		"PAUSED": "宸叉殏鍋?,
-		"RESUME": "缁х画",
-		"QUIT": "閫€鍑?,
-		"CONNECTING": "杩炴帴涓?..",
-		"CONNECTION_FAILED": "杩炴帴澶辫触",
-		"RETRY": "閲嶈瘯",
-		"PERFORMANCE_TEST": "鎬ц兘娴嬭瘯",
-		"FPS": "甯х巼",
-		"MEMORY": "鍐呭瓨"
+		"LOADING": "Loading...",
+		"ERROR": "Error",
+		"OK": "OK",
+		"CANCEL": "Cancel",
+		"YES": "Yes",
+		"NO": "No",
+		"BACK": "Back",
+		"SETTINGS": "Settings",
+		"LANGUAGE": "Language",
+		"VOLUME": "Volume",
+		"PAUSED": "Paused",
+		"RESUME": "Resume",
+		"QUIT": "Quit",
+		"CONNECTING": "Connecting...",
+		"CONNECTION_FAILED": "Connection Failed",
+		"RETRY": "Retry",
+		"PERFORMANCE_TEST": "Performance Test",
+		"FPS": "FPS",
+		"MEMORY": "Memory"
 	}
 
 	_stats["translations_loaded"] = _translations["en"].size() + _translations["zh"].size()

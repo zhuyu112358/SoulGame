@@ -27,11 +27,11 @@ var creation_state: Dictionary = {
 
 ## Training tasks available
 var training_tasks: Array = [
-	{"id": "cognitive_basic", "name": "鍩虹璁ょ煡璁粌", "dimension": "cognitive", "exp": 15, "duration": 30},
-	{"id": "emotional_basic", "name": "鎯呮劅浜ゆ祦缁冧範", "dimension": "emotional", "exp": 12, "duration": 25},
-	{"id": "skill_basic", "name": "鍩虹鎶€鑳界粌涔?, "dimension": "skill", "exp": 20, "duration": 40},
-	{"id": "memory_review", "name": "璁板繂澶嶄範", "dimension": "cognitive", "exp": 8, "duration": 15},
-	{"id": "social_practice", "name": "绀句氦缁冧範", "dimension": "emotional", "exp": 10, "duration": 20}
+	{"id": "cognitive_basic", "name": "Cognitive Basic Training", "dimension": "cognitive", "exp": 15, "duration": 30},
+	{"id": "emotional_basic", "name": "Emotional Connection Practice", "dimension": "emotional", "exp": 12, "duration": 25},
+	{"id": "skill_basic", "name": "Basic Skill Practice", "dimension": "skill", "exp": 20, "duration": 40},
+	{"id": "memory_review", "name": "Memory Review", "dimension": "cognitive", "exp": 8, "duration": 15},
+	{"id": "social_practice", "name": "Social Practice", "dimension": "emotional", "exp": 10, "duration": 20}
 ]
 
 ## Active training task
@@ -86,22 +86,22 @@ func _generate_personality_from_description(description: String) -> Dictionary:
 
 	# Keyword-based personality adjustment
 	var keywords := {
-		"鍕囨暍": {"bravery": 20, "extraversion": 10},
-		"鑳嗗皬": {"bravery": -20, "neuroticism": 10},
-		"娲绘臣": {"extraversion": 20, "warmth": 10},
-		"瀹夐潤": {"extraversion": -15, "conscientiousness": 10},
-		"鑱槑": {"openness": 15, "curiosity": 15},
-		"濂藉": {"curiosity": 25, "openness": 10},
-		"娓╂煍": {"warmth": 20, "agreeableness": 15},
-		"鍐锋紶": {"warmth": -20, "agreeableness": -10},
-		"璁ょ湡": {"conscientiousness": 20},
-		"璋冪毊": {"openness": 10, "extraversion": 10, "conscientiousness": -10},
-		"鍠勮壇": {"agreeableness": 20, "warmth": 15},
-		"绁炵": {"openness": 10, "neuroticism": 5},
-		"鍧氬己": {"bravery": 15, "neuroticism": -10},
-		"鏁忔劅": {"neuroticism": 15, "warmth": 10},
-		"涔愯": {"extraversion": 10, "neuroticism": -15},
-		"璋ㄦ厧": {"conscientiousness": 15, "bravery": -5}
+		"brave": {"bravery": 20, "extraversion": 10},
+		"coward": {"bravery": -20, "neuroticism": 10},
+		"outgoing": {"extraversion": 20, "warmth": 10},
+		"shy": {"extraversion": -15, "conscientiousness": 10},
+		"curious": {"openness": 15, "curiosity": 15},
+		"explorer": {"curiosity": 25, "openness": 10},
+		"kind": {"warmth": 20, "agreeableness": 15},
+		"cold": {"warmth": -20, "agreeableness": -10},
+		"disciplined": {"conscientiousness": 20},
+		"creative": {"openness": 10, "extraversion": 10, "conscientiousness": -10},
+		"friendly": {"agreeableness": 20, "warmth": 15},
+		"anxious": {"openness": 10, "neuroticism": 5},
+		"confident": {"bravery": 15, "neuroticism": -10},
+		"sensitive": {"neuroticism": 15, "warmth": 10},
+		"calm": {"extraversion": 10, "neuroticism": -15},
+		"organized": {"conscientiousness": 15, "bravery": -5}
 	}
 
 	for keyword in keywords:

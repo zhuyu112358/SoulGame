@@ -16,10 +16,10 @@ var current_room: String = "main"
 
 ## Available rooms
 var rooms: Dictionary = {
-	"main": {"name": "涓绘埧闂?, "unlocked": true, "m1": true},
-	"training": {"name": "璁粌瀹?, "unlocked": false, "m1": false},
-	"study": {"name": "涔︽埧", "unlocked": false, "m1": false},
-	"garden": {"name": "鑺卞洯", "unlocked": false, "m1": false}
+	"main": {"name": "Main Room", "unlocked": true, "m1": true},
+	"training": {"name": "Training Room", "unlocked": false, "m1": false},
+	"study": {"name": "Study", "unlocked": false, "m1": false},
+	"garden": {"name": "Garden", "unlocked": false, "m1": false}
 }
 
 ## Soul growth data reference
