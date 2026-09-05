@@ -30,6 +30,8 @@ LatencyProfiler="*res://scripts/core/LatencyProfiler.gd"
 ObjectPool="*res://scripts/core/ObjectPool.gd"
 ResourceManager="*res://scripts/core/ResourceManager.gd"
 InputManager="*res://scripts/core/InputManager.gd"
+ErrorHandler="*res://scripts/core/ErrorHandler.gd"
+TimeManager="*res://scripts/core/TimeManager.gd"
 
 [display]
 
