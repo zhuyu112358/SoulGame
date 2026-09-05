@@ -271,6 +271,55 @@ func _has_milestone(name: String) -> bool:
 
 
 
+## --- Memory System ---
+
+## Add a memory
+func add_memory(content: String, memory_type: String = "experience", importance: int = 1) -> void:
+	memories.append({
+		"content": content,
+		"type": memory_type,
+		"importance": importance,
+		"timestamp": Time.get_datetime_string_from_system(),
+		"session_time": session_interaction_time
+	})
+
+	# Keep memory list manageable (keep most important + most recent)
+	if memories.size() > 200:
+		# Sort by importance, keep top 100 important + 100 most recent
+		memories.sort_custom(_sort_memories_by_importance)
+		memories = memories.slice(0, 200)
+
+	GameLog.debug("SoulGrowth: %s memory added: %s" % [soul_name, content.substr(0, 50)], "Growth")
+
+
+## Sort memories by importance (for sort_custom)
+func _sort_memories_by_importance(x: Dictionary, y: Dictionary) -> bool:
+	return x["importance"] > y["importance"]
+
+
+## Get memories by type
+func get_memories_by_type(memory_type: String) -> Array:
+	var result: Array = []
+	for i in range(memories.size()):
+		var mem = memories[i]
+		if mem["type"] == memory_type:
+			result.append(mem)
+	return result
+
+## --- Personality System ---
+
+## Adjust personality trait (slow change over time)
+func adjust_personality(trait_name: String, amount: float) -> void:
+	if personality.has(trait_name):
+		var old_value = personality[trait_name]
+		personality[trait_name] = clamp(personality[trait_name] + amount, 0.0, 100.0)
+		if abs(personality[trait_name] - old_value) > 0.1:
+			GameLog.debug("SoulGrowth: %s personality %s: %.1f -> %.1f" % [soul_name, trait_name, old_value, personality[trait_name]], "Growth")
+
+
+
+
+
 
 ## Get personality summary string
 func get_personality_summary() -> String:
