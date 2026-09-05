@@ -1,4 +1,4 @@
-﻿extends Node
+extends Node
 ## SceneManager - Scene switching, loading, and transition management
 ##
 ## Handles scene lifecycle with fade transitions, loading screens,

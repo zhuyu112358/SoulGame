@@ -60,7 +60,7 @@ func subscribe(event_name: String, target: Object, method: String) -> void:
 		"target": target,
 		"method": StringName(method)
 	})
-	Logger.debug("EventBus: Subscribed to '%s' -> %s.%s" % [event_name, target, method], "EventBus")
+	print("[EventBus] Subscribed to '%s' -> %s.%s" % [event_name, target, method])
 
 
 ## Unsubscribe from an event
@@ -73,7 +73,7 @@ func unsubscribe(event_name: String, target: Object, method: String) -> void:
 		var sub = subscribers[i]
 		if sub.target == target and sub.method == StringName(method):
 			subscribers.remove_at(i)
-			Logger.debug("EventBus: Unsubscribed from '%s' -> %s.%s" % [event_name, target, method], "EventBus")
+			print("[EventBus] Unsubscribed from '%s' -> %s.%s" % [event_name, target, method])
 
 	if subscribers.is_empty():
 		_subscribers.erase(event_name)
@@ -104,7 +104,7 @@ func emit(event_name: String, data: Dictionary = {}) -> void:
 			sub.target.call(sub.method, data)
 		else:
 			# Clean up invalid subscribers
-			Logger.warning("EventBus: Invalid subscriber for '%s', removing" % event_name, "EventBus")
+			push_warning("[EventBus] Invalid subscriber for '%s', removing" % event_name)
 			_remove_invalid_subscriber(event_name, sub.target)
 
 	_record_history(event_name, data, delivered, false)
@@ -135,7 +135,7 @@ func get_history(count: int = 20) -> Array:
 	if count <= 0 or _event_history.is_empty():
 		return []
 	var end := _event_history.size()
-	var start := max(end - count, 0)
+	var start: int = max(end - count, 0)
 	# Return in reverse order (most recent first)
 	var result := []
 	for i in range(end - 1, start - 1, -1):
@@ -159,7 +159,7 @@ func get_history_by_event(event_name: String, count: int = 20) -> Array:
 ## Clear event history
 func clear_history() -> void:
 	_event_history.clear()
-	Logger.info("EventBus: History cleared", "EventBus")
+	print("[EventBus] History cleared")
 
 
 ## Set maximum history size
@@ -175,14 +175,14 @@ func set_max_history_size(size: int) -> void:
 ## Temporarily suppress an event (it will be recorded but not delivered)
 func suppress_event(event_name: String) -> void:
 	_suppressed_events[event_name] = true
-	Logger.info("EventBus: Suppressing event '%s'" % event_name, "EventBus")
+	print("[EventBus] Suppressing event '%s'" % event_name)
 
 
 ## Unsuppress an event
 func unsuppress_event(event_name: String) -> void:
 	if _suppressed_events.has(event_name):
 		_suppressed_events.erase(event_name)
-		Logger.info("EventBus: Unsuppressing event '%s'" % event_name, "EventBus")
+		print("[EventBus] Unsuppressing event '%s'" % event_name)
 
 
 ## Check if an event is suppressed

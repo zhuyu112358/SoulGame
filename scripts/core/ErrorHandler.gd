@@ -355,7 +355,7 @@ func _generate_crash_dump(error_entry: Dictionary) -> void:
 	dump += "=== System State ===\n"
 	dump += "FPS: %d\n" % Engine.get_frames_per_second()
 	dump += "Objects: %d\n" % get_tree().get_node_count()
-	dump += "Scene: %s\n" % GameState.get("game", "current_scene", "unknown")
+	dump += "Scene: %s\n" % GameState.get_value("game", "current_scene", "unknown")
 	dump += "Memory Static: %.1fMB\n" % (float(Performance.get_monitor(Performance.MEMORY_STATIC)) / (1024*1024))
 	dump += "Memory Dynamic: %.1fMB\n" % (float(Performance.get_monitor(Performance.MEMORY_DYNAMIC)) / (1024*1024))
 	dump += "Draw Calls: %d\n" % int(Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME))

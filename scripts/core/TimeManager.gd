@@ -1,4 +1,4 @@
-﻿extends Node
+extends Node
 ## TimeManager - Game time management, tick scheduling, timers, and time events
 ##
 ## Manages game time scaling, fixed timestep ticks, scheduled callbacks,

@@ -1,16 +1,16 @@
-﻿extends Node
+extends Node
 ## GameState - Global state management for game, soul, and world states
 ##
 ## Provides a centralized state store with change notifications.
-## States are organized into namespaces (game, soul, world, ui).
+## States are organized into nss (game, soul, world, ui).
 ##
 ## Usage:
 ##   GameState.set_value("game", "current_scene", "main_menu")
-##   var scene = GameState.get("game", "current_scene")
+##   var scene = GameState.get_value("game", "current_scene")
 ##   GameState.subscribe("game", "current_scene", self, "_on_scene_changed")
 ##   GameState.get_soul_state("soul_001", "emotion")
 
-## State stores by namespace
+## State stores by ns
 var _states: Dictionary = {
 	"game": {},
 	"soul": {},
@@ -19,7 +19,7 @@ var _states: Dictionary = {
 	"session": {}
 }
 
-## State change subscribers: { "namespace.key": [{target, method}] }
+## State change subscribers: { "ns.key": [{target, method}] }
 var _subscribers: Dictionary = {}
 
 ## State history for undo/debug (limited)
@@ -36,21 +36,21 @@ func _ready() -> void:
 
 
 ## Set a state value and notify subscribers
-func set_value(namespace: String, key: String, value: Variant) -> void:
-	if not _states.has(namespace):
-		_states[namespace] = {}
+func set_value(ns: String, key: String, value) -> void:
+	if not _states.has(ns):
+		_states[ns] = {}
 
 	var old_value = null
-	if _states[namespace].has(key):
-		old_value = _states[namespace][key]
+	if _states[ns].has(key):
+		old_value = _states[ns][key]
 
-	_states[namespace][key] = value
+	_states[ns][key] = value
 
 	# Record history
 	if _record_history:
 		_history.append({
 			"timestamp": Time.get_ticks_msec(),
-			"namespace": namespace,
+			"ns": ns,
 			"key": key,
 			"old": old_value,
 			"new": value
@@ -59,10 +59,10 @@ func set_value(namespace: String, key: String, value: Variant) -> void:
 			_history.pop_front()
 
 	# Notify subscribers
-	var subscriber_key := "%s.%s" % [namespace, key]
+	var subscriber_key := "%s.%s" % [ns, key]
 	if _subscribers.has(subscriber_key):
 		var data := {
-			"namespace": namespace,
+			"ns": ns,
 			"key": key,
 			"old": old_value,
 			"new": value
@@ -73,27 +73,27 @@ func set_value(namespace: String, key: String, value: Variant) -> void:
 
 	# Also emit global event
 	EventBus.emit("state_changed", {
-		"namespace": namespace,
+		"ns": ns,
 		"key": key,
 		"value": value
 	})
 
 
 ## Get a state value
-func get(namespace: String, key: String, default_value = null):
-	if _states.has(namespace) and _states[namespace].has(key):
-		return _states[namespace][key]
+func get_value(ns: String, key: String, default_value = null):
+	if _states.has(ns) and _states[ns].has(key):
+		return _states[ns][key]
 	return default_value
 
 
 ## Check if a state key exists
-func has(namespace: String, key: String) -> bool:
-	return _states.has(namespace) and _states[namespace].has(key)
+func has(ns: String, key: String) -> bool:
+	return _states.has(ns) and _states[ns].has(key)
 
 
 ## Subscribe to state changes for a specific key
-func subscribe(namespace: String, key: String, target: Object, method: String) -> void:
-	var subscriber_key := "%s.%s" % [namespace, key]
+func subscribe(ns: String, key: String, target: Object, method: String) -> void:
+	var subscriber_key := "%s.%s" % [ns, key]
 	if not _subscribers.has(subscriber_key):
 		_subscribers[subscriber_key] = []
 
@@ -108,8 +108,8 @@ func subscribe(namespace: String, key: String, target: Object, method: String) -
 
 
 ## Unsubscribe from state changes
-func unsubscribe(namespace: String, key: String, target: Object, method: String) -> void:
-	var subscriber_key := "%s.%s" % [namespace, key]
+func unsubscribe(ns: String, key: String, target: Object, method: String) -> void:
+	var subscriber_key := "%s.%s" % [ns, key]
 	if not _subscribers.has(subscriber_key):
 		return
 
@@ -119,17 +119,17 @@ func unsubscribe(namespace: String, key: String, target: Object, method: String)
 			subscribers.remove_at(i)
 
 
-## Get all state in a namespace
-func get_namespace(namespace: String) -> Dictionary:
-	if _states.has(namespace):
-		return _states[namespace].duplicate(true)
+## Get all state in a ns
+func get_ns(ns: String) -> Dictionary:
+	if _states.has(ns):
+		return _states[ns].duplicate(true)
 	return {}
 
 
-## Set entire namespace (bulk update)
-func set_namespace(namespace: String, data: Dictionary) -> void:
+## Set entire ns (bulk update)
+func set_ns(ns: String, data: Dictionary) -> void:
 	for key in data:
-		set(namespace, key, data[key])
+		set_value(ns, key, data[key])
 
 
 ## --- Soul-specific state management ---
@@ -165,36 +165,36 @@ func remove_soul(soul_id: String) -> void:
 
 ## Set world state
 func set_world_state(key: String, value) -> void:
-	set("world", key, value)
+	set_value("world", key, value)
 
 
 ## Get world state
 func get_world_state(key: String, default_value = null):
-	return get("world", key, default_value)
+	return get_value("world", key, default_value)
 
 
 ## --- Session management ---
 
 ## Start a new session
 func start_session(session_id: String) -> void:
-	set("session", "id", session_id)
-	set("session", "start_time", Time.get_datetime_string_from_system())
-	set("session", "tick_count", 0)
+	set_value("session", "id", session_id)
+	set_value("session", "start_time", Time.get_datetime_string_from_system())
+	set_value("session", "tick_count", 0)
 	Logger.info("Session started: %s" % session_id, "State")
 
 
 ## End current session
 func end_session() -> void:
-	var session_id = get("session", "id", "unknown")
-	set("session", "end_time", Time.get_datetime_string_from_system())
+	var session_id = get_value("session", "id", "unknown")
+	set_value("session", "end_time", Time.get_datetime_string_from_system())
 	Logger.info("Session ended: %s" % session_id, "State")
 
 
 ## Increment session tick
 func increment_tick() -> int:
-	var tick: int = get("session", "tick_count", 0)
+	var tick: int = get_value("session", "tick_count", 0)
 	tick += 1
-	set("session", "tick_count", tick)
+	set_value("session", "tick_count", tick)
 	return tick
 
 
@@ -208,31 +208,31 @@ func get_history(count: int = 20) -> Array:
 ## Get state summary for debug overlay
 func get_summary() -> Dictionary:
 	return {
-		"namespaces": _states.keys(),
+		"nss": _states.keys(),
 		"soul_count": _states["soul"].size(),
 		"history_size": _history.size(),
-		"current_scene": get("game", "current_scene", "none"),
-		"session_id": get("session", "id", "none"),
-		"tick": get("session", "tick_count", 0)
+		"current_scene": get_value("game", "current_scene", "none"),
+		"session_id": get_value("session", "id", "none"),
+		"tick": get_value("session", "tick_count", 0)
 	}
 
 
 ## Get state statistics (standard interface)
 func get_stats() -> Dictionary:
-	var namespace_counts := {}
+	var ns_counts := {}
 	for ns in _states:
-		namespace_counts[ns] = _states[ns].size()
+		ns_counts[ns] = _states[ns].size()
 	return {
-		"namespaces": _states.size(),
-		"namespace_counts": namespace_counts,
+		"nss": _states.size(),
+		"ns_counts": ns_counts,
 		"soul_count": _states["soul"].size(),
 		"history_size": _history.size(),
 		"total_keys": _count_total_keys(),
-		"session_active": get("session", "id", "") != ""
+		"session_active": get_value("session", "id", "") != ""
 	}
 
 
-## Count total keys across all namespaces
+## Count total keys across all nss
 func _count_total_keys() -> int:
 	var count := 0
 	for ns in _states:

@@ -1,4 +1,4 @@
-﻿extends Node
+extends Node
 ## LocalizationManager - Multi-language text localization
 ##
 ## Manages language files, text translation, and language switching.

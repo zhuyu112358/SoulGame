@@ -1,4 +1,4 @@
-﻿extends Node
+extends Node
 ## Bootstrap - Initialization entry point
 ##
 ## This is the first script that runs. It initializes all core systems
@@ -8,7 +8,7 @@
 
 func _ready() -> void:
 	Logger.info("=== SoulGame Bootstrap ===", "Bootstrap")
-	Logger.info("Version: %s" % GameState.get("game", "version", "0.1.0"), "Bootstrap")
+	Logger.info("Version: %s" % GameState.get_value("game", "version", "0.1.0"), "Bootstrap")
 
 	# Initialize systems in dependency order
 	_initialize_config()

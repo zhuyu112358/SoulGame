@@ -124,7 +124,7 @@ func action_result(soul_id: String, action_id: String, action_type: String, resu
 		"type": action_type,
 		"success": success,
 		"result": result,
-		"tick": GameState.get("session", "tick_count", 0)
+		"tick": GameState.get_value("session", "tick_count", 0)
 	}
 	NetworkClient.post("%s/api/souls/%s/action-result" % [_base_url, soul_id], body, callback_target, callback_method)
 
