@@ -27,6 +27,9 @@ DebugOverlay="*res://scripts/core/DebugOverlay.gd"
 PerformanceMonitor="*res://scripts/core/PerformanceMonitor.gd"
 StateSyncClient="*res://scripts/core/StateSyncClient.gd"
 LatencyProfiler="*res://scripts/core/LatencyProfiler.gd"
+ObjectPool="*res://scripts/core/ObjectPool.gd"
+ResourceManager="*res://scripts/core/ResourceManager.gd"
+InputManager="*res://scripts/core/InputManager.gd"
 
 [display]
 

@@ -26,6 +26,9 @@ func _run_all_tests() -> void:
 	_test_config_manager()
 	_test_logger()
 	_test_save_system()
+	_test_object_pool()
+	_test_input_manager()
+	_test_performance_monitor()
 
 
 func _assert(condition: bool, test_name: String, message: String = "") -> void:
@@ -129,6 +132,119 @@ func _test_save_system() -> void:
 
 	SaveSystem.delete_save(9)
 	_assert(not SaveSystem.has_save(9), "SaveSystem.delete_save")
+
+
+# --- ObjectPool Tests ---
+
+func _test_object_pool() -> void:
+	print("\n--- ObjectPool Tests ---")
+
+	# Create a simple test scene programmatically
+	var test_scene := PackedScene.new()
+	var node := Node2D.new()
+	node.name = "TestObject"
+	test_scene.pack(node)
+
+	ObjectPool.register_pool("test_pool", test_scene, 3, 10)
+	var info = ObjectPool.get_pool_info("test_pool")
+	_assert(info["available"] == 3, "ObjectPool.register_pool preloads min_size")
+	_assert(info["total_created"] == 3, "ObjectPool.register_pool creates instances")
+
+	var obj1 = ObjectPool.acquire("test_pool")
+	_assert(obj1 != null, "ObjectPool.acquire returns object")
+	_assert(obj1.visible == true, "ObjectPool.acquire makes object visible")
+	info = ObjectPool.get_pool_info("test_pool")
+	_assert(info["active"] == 1 and info["available"] == 2, "ObjectPool.acquire moves to active")
+
+	var obj2 = ObjectPool.acquire("test_pool")
+	var obj3 = ObjectPool.acquire("test_pool")
+	var obj4 = ObjectPool.acquire("test_pool")  # Should create new (pool miss)
+	_assert(obj4 != null, "ObjectPool.acquire creates new when pool empty")
+	info = ObjectPool.get_pool_info("test_pool")
+	_assert(info["total_created"] == 4, "ObjectPool.acquire grows pool on miss")
+
+	ObjectPool.release("test_pool", obj1)
+	info = ObjectPool.get_pool_info("test_pool")
+	_assert(info["active"] == 3 and info["available"] == 1, "ObjectPool.release returns to pool")
+
+	ObjectPool.clear_pool("test_pool")
+	info = ObjectPool.get_pool_info("test_pool")
+	_assert(info["active"] == 0 and info["available"] == 0, "ObjectPool.clear_pool frees all")
+
+
+# --- InputManager Tests ---
+
+func _test_input_manager() -> void:
+	print("\n--- InputManager Tests ---")
+
+	InputManager.bind_action("test_action", [KEY_X, KEY_Y])
+	var keys = InputManager.get_action_keys("test_action")
+	_assert(keys.size() == 2, "InputManager.bind_action")
+	_assert(keys.has(KEY_X), "InputManager.bind_action contains key")
+
+	InputManager.add_action_key("test_action", KEY_Z)
+	_assert(InputManager.get_action_keys("test_action").size() == 3, "InputManager.add_action_key")
+
+	InputManager.remove_action_key("test_action", KEY_X)
+	_assert(not InputManager.get_action_keys("test_action").has(KEY_X), "InputManager.remove_action_key")
+
+	# Context tests
+	_assert(InputManager.get_current_context() == "default", "InputManager default context")
+	InputManager.push_context("menu")
+	_assert(InputManager.get_current_context() == "menu", "InputManager.push_context")
+	InputManager.set_context_actions("menu", ["ui_accept"])
+	_assert(InputManager.get_context_stack().size() == 1, "InputManager context stack")
+
+	var popped = InputManager.pop_context()
+	_assert(popped == "menu", "InputManager.pop_context")
+	_assert(InputManager.get_current_context() == "default", "InputManager returns to default")
+
+	# Input enable/disable
+	InputManager.set_input_enabled(false)
+	_assert(not InputManager.is_input_enabled(), "InputManager.set_input_enabled(false)")
+	InputManager.set_input_enabled(true)
+	_assert(InputManager.is_input_enabled(), "InputManager.set_input_enabled(true)")
+
+	# Export/import
+	var bindings = InputManager.export_bindings()
+	_assert(bindings.has("test_action"), "InputManager.export_bindings")
+	InputManager.reset_to_defaults()
+	_assert(not InputManager.get_action_keys("test_action").has(KEY_Y), "InputManager.reset_to_defaults")
+
+
+# --- PerformanceMonitor Tests ---
+
+func _test_performance_monitor() -> void:
+	print("\n--- PerformanceMonitor Tests ---")
+
+	PerformanceMonitor.start_baseline("test_baseline")
+	_assert(PerformanceMonitor.get_snapshot()["active_baselines"] == 1, "PerformanceMonitor.start_baseline")
+
+	# Simulate some frames
+	for i in range(10):
+		await get_tree().create_timer(0.01).timeout
+
+	var results = PerformanceMonitor.end_baseline("test_baseline")
+	_assert(not results.is_empty(), "PerformanceMonitor.end_baseline returns results")
+	_assert(results.has("avg_fps"), "PerformanceMonitor.baseline has avg_fps")
+	_assert(results.has("frames"), "PerformanceMonitor.baseline has frame count")
+	_assert(results["frames"] >= 5, "PerformanceMonitor.baseline recorded frames")
+
+	# Custom metrics
+	PerformanceMonitor.record_metric("test_metric", 42.0)
+	PerformanceMonitor.record_metric("test_metric", 58.0)
+	var stats = PerformanceMonitor.get_metric_stats("test_metric")
+	_assert(stats["count"] == 2, "PerformanceMonitor.record_metric count")
+	_assert(stats["min"] == 42.0, "PerformanceMonitor.record_metric min")
+	_assert(stats["max"] == 58.0, "PerformanceMonitor.record_metric max")
+	_assert(stats["avg"] == 50.0, "PerformanceMonitor.record_metric avg")
+
+	var snapshot = PerformanceMonitor.get_snapshot()
+	_assert(snapshot.has("fps_current"), "PerformanceMonitor.snapshot has fps")
+	_assert(snapshot.has("memory_static_mb"), "PerformanceMonitor.snapshot has memory")
+
+	PerformanceMonitor.reset()
+	_assert(PerformanceMonitor.get_all_baselines().is_empty(), "PerformanceMonitor.reset clears baselines")
 
 
 func _print_summary() -> void:
