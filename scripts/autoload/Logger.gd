@@ -1,5 +1,5 @@
-class_name Logger
-## Minimal static logger for Godot 4.7.2 compatibility
+extends Node
+## Logger autoload singleton for Godot 4.7.2 compatibility
 
 enum Level {
 	DEBUG = 0,
@@ -9,23 +9,23 @@ enum Level {
 	NONE = 4
 }
 
-static var _min_level: Level = Level.DEBUG
-static var _buffer: Array = []
-static var _counts: Dictionary = {"debug": 0, "info": 0, "warning": 0, "error": 0}
+var _min_level: Level = Level.DEBUG
+var _buffer: Array = []
+var _counts: Dictionary = {"debug": 0, "info": 0, "warning": 0, "error": 0}
 
-static func debug(message: String, category: String = "General") -> void:
+func debug(message: String, category: String = "General") -> void:
 	_log(Level.DEBUG, message, category)
 
-static func info(message: String, category: String = "General") -> void:
+func info(message: String, category: String = "General") -> void:
 	_log(Level.INFO, message, category)
 
-static func warning(message: String, category: String = "General") -> void:
+func warning(message: String, category: String = "General") -> void:
 	_log(Level.WARNING, message, category)
 
-static func error(message: String, category: String = "General") -> void:
+func error(message: String, category: String = "General") -> void:
 	_log(Level.ERROR, message, category)
 
-static func _log(level: Level, message: String, category: String) -> void:
+func _log(level: Level, message: String, category: String) -> void:
 	if level < _min_level:
 		return
 	var level_name := _level_to_string(level)
@@ -43,12 +43,12 @@ static func _log(level: Level, message: String, category: String) -> void:
 		Level.ERROR: push_error(msg)
 		_: print(msg)
 
-static func get_recent_entries(count: int = 50) -> Array:
+func get_recent_entries(count: int = 50) -> Array:
 	if count >= _buffer.size():
 		return _buffer.duplicate()
 	return _buffer.slice(_buffer.size() - count, _buffer.size())
 
-static func get_stats() -> Dictionary:
+func get_stats() -> Dictionary:
 	return {
 		"total_debug": _counts["debug"],
 		"total_info": _counts["info"],
@@ -57,13 +57,13 @@ static func get_stats() -> Dictionary:
 		"buffer_size": _buffer.size()
 	}
 
-static func set_min_level(level: Level) -> void:
+func set_min_level(level: Level) -> void:
 	_min_level = level
 
-static func get_min_level() -> Level:
+func get_min_level() -> Level:
 	return _min_level
 
-static func _level_to_string(level: Level) -> String:
+func _level_to_string(level: Level) -> String:
 	match level:
 		Level.DEBUG: return "DEBUG"
 		Level.INFO: return "INFO"
