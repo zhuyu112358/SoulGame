@@ -70,7 +70,7 @@ Now developing actual game features: Soul Home + Soul Growth foundation.
 - [x] SDK connectivity verification (all 7 SoulArena API endpoints)
 - [x] Soul home interaction system (dialogue, pet, feed, play with soul reactions)
 - [x] Soul growth visualization (radar charts, progress bars, level up animations)
-- [ ] Soul home pixel art (128x128 soul sprite, room backgrounds)
+- [x] Soul home pixel art (128x128 soul sprite, room backgrounds)
 - [ ] Soul growth persistence integration
 - [ ] M1 integration tests
 

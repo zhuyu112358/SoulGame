@@ -19,6 +19,9 @@ var soul_id: String = ""
 ## Soul name
 var soul_name: String = ""
 
+## Soul element (fire, water, earth, wind, light, dark)
+var element: String = "light"
+
 ## Overall level (1-100+, no max cap)
 var level: int = 1
 

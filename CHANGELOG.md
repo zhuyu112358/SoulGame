@@ -36,6 +36,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   - Auto-loads active soul data from SoulManager
   - CLI command 'growth' to open visualizer
   - Custom _draw() radar chart with grid, data polygon, and labels
+- **Pixel Art Soul Sprite** (`scripts/ui/SoulSprite.gd`)
+  - Procedurally generated 128x128 pixel-art soul (16x16 grid at 8x scale)
+  - Element-based coloring: fire, water, earth, wind, light, dark
+  - Mood-based expressions: happy, neutral, sad, angry, sleepy
+  - Pulsing aura effect based on soul level
+  - Animated with _process() for continuous aura pulse
+  - Integrated into soul_home.tscn replacing placeholder ColorRect
+- **SoulGrowthData**: Added 'element' property with serialization
 
 ### Fixed
 - **Godot 4.7.2 Compatibility** (BUG-010 through BUG-015) - Project now fully loads with 0 script errors
