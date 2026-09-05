@@ -60,7 +60,7 @@ Now developing actual game features: Soul Home + Soul Growth foundation.
 - [x] **Godot 4.7.2 Compatibility** - Project fully loads with 0 script errors (BUG-010 through BUG-015)
   - [x] All 20 autoloads initialize successfully
   - [x] All M1 game scripts compile (SoulGrowthData, SoulManager, WorldManager, SoulHomeController)
-  - [x] Key compatibility issues resolved: Logger→GameLog, trait parameter name, built-in method conflicts, Performance API, encoding corruption
+  - [x] Key compatibility issues resolved: Logger鈫扜ameLog, trait parameter name, built-in method conflicts, Performance API, encoding corruption
 - [x] SoulGrowthData - 5-dimension growth data model (cognitive/emotional/skills/personality/memory)
 - [x] SoulHomeController - soul home scene controller with basic interactions
 - [x] SoulManager - soul creation, training, deployment
@@ -71,8 +71,8 @@ Now developing actual game features: Soul Home + Soul Growth foundation.
 - [x] Soul home interaction system (dialogue, pet, feed, play with soul reactions)
 - [x] Soul growth visualization (radar charts, progress bars, level up animations)
 - [x] Soul home pixel art (128x128 soul sprite, room backgrounds)
-- [ ] Soul growth persistence integration
-- [ ] M1 integration tests
+- [x] Soul growth persistence integration
+- [x] M1 integration tests (73 tests, 0 failures)
 
 #### Next (M2)
 

@@ -1,4 +1,4 @@
-class_name SoulGrowthData
+﻿class_name SoulGrowthData
 extends Resource
 ## SoulGrowthData - Data model for soul growth across 5 dimensions
 ##
@@ -391,6 +391,7 @@ func to_dict() -> Dictionary:
 	return {
 		"soul_id": soul_id,
 		"soul_name": soul_name,
+		"element": element,
 		"level": level,
 		"experience": experience,
 		"experience_to_next": experience_to_next,
@@ -412,6 +413,7 @@ func to_dict() -> Dictionary:
 func from_dict(data: Dictionary) -> void:
 	soul_id = data.get("soul_id", "")
 	soul_name = data.get("soul_name", "")
+	element = data.get("element", "light")
 	level = data.get("level", 1)
 	experience = data.get("experience", 0)
 	experience_to_next = data.get("experience_to_next", 100)
