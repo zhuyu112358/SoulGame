@@ -35,6 +35,8 @@ TimeManager="*res://scripts/core/TimeManager.gd"
 AudioManager="*res://scripts/core/AudioManager.gd"
 LocalizationManager="*res://scripts/core/LocalizationManager.gd"
 AnimationManager="*res://scripts/core/AnimationManager.gd"
+SoulManager="*res://scripts/game/SoulManager.gd"
+WorldManager="*res://scripts/game/WorldManager.gd"
 
 [display]
 

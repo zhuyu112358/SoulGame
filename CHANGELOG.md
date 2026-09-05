@@ -7,10 +7,42 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Planned
-- Full feature development (after game design v1.1 freeze)
+- M1 Soul Home full interaction system
+- M1 Soul growth visualization (radar charts, progress bars)
+- M1 CLI-based player interface
 - Game-specific SoulBridgeAdapter implementation
-- Game scenes and UI
-- Game logic (combat, growth, economy)
+
+## [0.3.0] - 2026-09-06 - M1 Foundation: Soul Home + Growth System
+
+### Added
+- **SoulGrowthData** (`scripts/game/SoulGrowthData.gd`) - Complete soul growth data model
+  - 5 growth dimensions: cognitive (8 sub-dims), emotional (6 sub-dims), skills, personality (8 traits), memory
+  - Experience and level system with scaling thresholds
+  - Milestone system (Lv.5/10/20/30/50/100)
+  - Diminishing returns for long sessions (30min threshold)
+  - Growth history tracking and memory system
+  - Serialization (to_dict/from_dict) for persistence
+- **SoulHomeController** (`scripts/game/SoulHomeController.gd`) - Soul Home scene controller
+  - Room management (main room M1, training/study/garden M2)
+  - Soul display placeholder (to be replaced with pixel art)
+  - Basic interactions: chat, pet, feed, play
+  - SoulArena API integration (enter/exit world, perceive)
+  - Soul growth data auto-load/save
+- **SoulManager** (`scripts/game/SoulManager.gd`) - Soul lifecycle management
+  - Soul creation from description (keyword-based personality generation)
+  - Soul list management (create/view/delete)
+  - Training system (5 training tasks with timers)
+  - Soul deployment to worlds via SoulArena API
+- **WorldManager** (`scripts/game/WorldManager.gd`) - World management
+  - 4 world templates (training arena, exploration forest, social plaza, challenge maze)
+  - World creation from templates with customization
+  - World simulation control (start/stop, tick system)
+  - Soul deployment to worlds
+- **Soul Home scene** (`scenes/soul_home.tscn`) - M1 scene foundation
+- Registered SoulManager and WorldManager as autoloads (20 total)
+
+### Changed
+- Updated project.godot with 2 new autoloads
 
 ## [0.2.0] - 2026-09-05
 

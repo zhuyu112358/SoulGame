@@ -1,0 +1,45 @@
+[gd_scene load_steps=2 format=3 uid="uid://b_soul_home_001"]
+
+[ext_resource type="Script" path="res://scripts/game/SoulHomeController.gd" id="1_controller"]
+
+[node name="SoulHome" type="Node2D"]
+script = ExtResource("1_controller")
+
+[node name="Background" type="ColorRect" parent="."]
+offset_right = 800.0
+offset_bottom = 600.0
+color = Color(0.12, 0.1, 0.18, 1)
+
+[node name="RoomLabel" type="Label" parent="."]
+offset_left = 20.0
+offset_top = 10.0
+offset_right = 200.0
+offset_bottom = 40.0
+text = "主房间"
+theme_override_colors/font_color = Color(0.9, 0.9, 0.95, 1)
+
+[node name="SoulDisplayArea" type="Node2D" parent="."]
+position = Vector2(400, 300)
+
+[node name="InteractionHint" type="Label" parent="."]
+offset_left = 250.0
+offset_top = 500.0
+offset_right = 550.0
+offset_bottom = 530.0
+text = "点击互动: 对话 | 抚摸 | 喂食 | 玩耍"
+theme_override_colors/font_color = Color(0.7, 0.7, 0.8, 1)
+horizontal_alignment = 1
+
+[node name="StatusPanel" type="Panel" parent="."]
+offset_left = 10.0
+offset_top = 540.0
+offset_right = 300.0
+offset_bottom = 590.0
+
+[node name="StatusLabel" type="Label" parent="StatusPanel"]
+offset_left = 10.0
+offset_top = 5.0
+offset_right = 280.0
+offset_bottom = 45.0
+text = "灵魂状态: Lv.1 | 情绪: 中性 | 精力: 100"
+theme_override_colors/font_color = Color(0.85, 0.85, 0.9, 1)

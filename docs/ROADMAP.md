@@ -1,11 +1,11 @@
 # Project Roadmap
 
-## Current Phase: Base Architecture (In Progress)
+## Current Phase: M1 Full Feature Development (In Progress)
 
-Game design v1.1 detailed design is not yet frozen. Only infrastructure work
-that does not depend on game design is allowed.
+Game design v1.1 has been frozen. Dual SDK v1.1.0 released.
+Now developing actual game features: Soul Home + Soul Growth foundation.
 
-### Phase 1: Base Architecture (Current)
+### Phase 1: Base Architecture (Completed)
 
 **Goal**: Build a solid foundation that can support any game design.
 
@@ -13,25 +13,27 @@ that does not depend on game design is allowed.
 
 - [x] Godot 4 project initialization (git, directory structure, project.godot)
 - [x] GitHub repository (zhuyu112358/SoulGame)
-- [x] Core systems (18 autoload singletons):
-  - [x] EventBus - global event publish/subscribe
-  - [x] Logger - leveled logging with file output
+- [x] Core systems (20 autoload singletons):
+  - [x] EventBus - global event publish/subscribe (enhanced: history, filtering, stats)
+  - [x] Logger - leveled logging with file output (enhanced: rotation, category levels)
   - [x] ConfigManager - configuration loading with defaults
   - [x] GameState - global/soul/world state management
   - [x] SceneManager - scene switching with fade transitions
   - [x] SaveSystem - multi-slot save and settings persistence
-  - [x] TimeManager - time scale, fixed tick, scheduling, day/night
-  - [x] ErrorHandler - global error tracking, crash dumps, severity levels
-  - [x] AudioManager - audio bus management, SFX pool, music playback
+  - [x] TimeManager - time scale, fixed tick, scheduling, day/night (enhanced: named timers, tick scheduling, FPS stats)
+  - [x] ErrorHandler - global error tracking, crash dumps, severity levels (enhanced: recovery strategies, rate monitoring, storm suppression)
+  - [x] AudioManager - audio bus management, SFX pool, music playback (enhanced: cross-fade, SFX priority, audio groups)
   - [x] LocalizationManager - multi-language support, CSV translations
-  - [x] AnimationManager - tween management, UI animations
+  - [x] AnimationManager - tween management, UI animations (fixed: recursion bug, enhanced: queue, node state)
   - [x] InputManager - action bindings, input context stack, key rebinding
+  - [x] SoulManager - soul lifecycle: create, view, train, deploy (NEW M1)
+  - [x] WorldManager - world management: create, configure, simulate (NEW M1)
 - [x] Network layer:
-  - [x] NetworkClient - HTTP/WebSocket with retry and timeout
+  - [x] NetworkClient - HTTP/WebSocket with retry and timeout (enhanced: priority queue, circuit breaker)
   - [x] StateSyncClient - WebSocket state sync with auto-reconnect
   - [x] LatencyProfiler - HTTP/WS latency p50/p95/p99
 - [x] SDK integration:
-  - [x] SoulArenaClient - SoulArena API wrapper
+  - [x] SoulArenaClient - SoulArena API wrapper (API paths corrected to plural /souls/)
   - [x] SeedClient - Seed API wrapper
   - [x] SDK version locking (config/sdk_versions.cfg)
 - [x] Performance & resources:
@@ -48,6 +50,32 @@ that does not depend on game design is allowed.
   - [x] CI/CD (GitHub Actions: structure validation, code style, quality gates)
   - [x] Coding standards (GDScript style guide)
   - [x] Architecture documentation
+
+### Phase 2: M1 - Soul Home + Soul Growth (Current)
+
+**Goal**: Build the soul home scene and soul growth system foundation.
+
+#### In Progress
+
+- [x] SoulGrowthData - 5-dimension growth data model (cognitive/emotional/skills/personality/memory)
+- [x] SoulHomeController - soul home scene controller with basic interactions
+- [x] SoulManager - soul creation, training, deployment
+- [x] WorldManager - world creation, simulation, soul deployment
+- [x] soul_home.tscn - M1 scene foundation
+- [ ] Soul home pixel art (128x128 soul sprite, room backgrounds)
+- [ ] Soul growth visualization (radar charts, progress bars, level up animations)
+- [ ] CLI-based player interface (main menu, soul home UI, soul management)
+- [ ] Soul home interaction system (dialogue, pet, feed, play with soul reactions)
+- [ ] Soul growth persistence integration
+- [ ] M1 integration tests
+
+#### Next (M2)
+
+- [ ] Training room, study room, garden rooms
+- [ ] Soul home customization
+- [ ] Mini-games in soul home
+- [ ] Battle arena mode
+- [ ] Economy system
   - [x] SDK integration guide
   - [x] Performance baseline documentation
 - [x] Technical verification:
