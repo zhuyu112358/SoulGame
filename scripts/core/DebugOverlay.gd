@@ -146,10 +146,14 @@ func _update_display() -> void:
 	var net_stats := NetworkClient.get_stats()
 	var sa_stats := SoulArenaClient.get_stats()
 	var seed_stats := SeedClient.get_stats()
-	_network_label.text = "HTTP: %d req (%d ok / %d fail) | Retries: %d\nAvg resp: %.0fms | WS: %d conns\nSoulArena: %d calls | Seed: %d calls | Ticks: %d" % [
+	var latency_stats := LatencyProfiler.get_stats()
+	var sync_state := StateSyncClient.get_connection_state()
+	_network_label.text = "HTTP: %d req (%d ok / %d fail) | Retries: %d\nAvg resp: %.0fms | WS: %s (latency: %.0fms)\nSoulArena: %d calls | Seed: %d calls | Ticks: %d\nSync: %s | HTTP avg: %.1fms | WS pings: %d" % [
 		net_stats["total_requests"], net_stats["successful"], net_stats["failed"],
 		net_stats["retries"], net_stats["avg_response_ms"], net_stats["ws_connections"],
-		sa_stats["total_calls"], seed_stats["total_calls"], seed_stats["total_ticks"]
+		StateSyncClient.get_latency_ms(),
+		sa_stats["total_calls"], seed_stats["total_calls"], seed_stats["total_ticks"],
+		sync_state, latency_stats["http_avg_ms"], latency_stats["ws_pings"]
 	]
 
 	# Logs

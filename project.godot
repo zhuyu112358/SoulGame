@@ -24,6 +24,9 @@ NetworkClient="*res://scripts/core/NetworkClient.gd"
 SoulArenaClient="*res://scripts/sdk/SoulArenaClient.gd"
 SeedClient="*res://scripts/sdk/SeedClient.gd"
 DebugOverlay="*res://scripts/core/DebugOverlay.gd"
+PerformanceMonitor="*res://scripts/core/PerformanceMonitor.gd"
+StateSyncClient="*res://scripts/core/StateSyncClient.gd"
+LatencyProfiler="*res://scripts/core/LatencyProfiler.gd"
 
 [display]
 
