@@ -1,0 +1,95 @@
+[gd_scene load_steps=2 format=3 uid="uid://growth_viz_001"]
+
+[ext_resource type="Script" path="res://scripts/ui/GrowthVisualizer.gd" id="1_viz"]
+
+[node name="GrowthVisualizer" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_viz")
+
+[node name="RadarPanel" type="Panel" parent="."]
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 310.0
+offset_bottom = 310.0
+
+[node name="RadarTitle" type="Label" parent="RadarPanel"]
+offset_left = 10.0
+offset_top = 5.0
+offset_right = 290.0
+offset_bottom = 30.0
+text = "=== Soul Attributes ==="
+horizontal_alignment = 1
+theme_override_colors/font_color = Color(0.9, 0.9, 0.95, 1)
+theme_override_font_sizes/font_size = 14
+
+[node name="BarsContainer" type="VBoxContainer" parent="."]
+offset_left = 330.0
+offset_top = 20.0
+offset_right = 600.0
+offset_bottom = 300.0
+
+[node name="LevelLabel" type="Label" parent="BarsContainer"]
+text = "Lv.1"
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.9, 0.9, 0.95, 1)
+
+[node name="XPLabel" type="Label" parent="BarsContainer"]
+text = "XP: 0/100"
+theme_override_font_sizes/font_size = 12
+
+[node name="XPBar" type="ProgressBar" parent="BarsContainer"]
+custom_minimum_size = Vector2(250, 18)
+max_value = 100.0
+value = 0.0
+
+[node name="EnergyLabel" type="Label" parent="BarsContainer"]
+text = "Energy"
+theme_override_font_sizes/font_size = 12
+
+[node name="EnergyBar" type="ProgressBar" parent="BarsContainer"]
+custom_minimum_size = Vector2(250, 18)
+max_value = 100.0
+value = 100.0
+
+[node name="CognitiveLabel" type="Label" parent="BarsContainer"]
+text = "Cognitive"
+theme_override_font_sizes/font_size = 12
+
+[node name="CognitiveBar" type="ProgressBar" parent="BarsContainer"]
+custom_minimum_size = Vector2(250, 18)
+max_value = 100.0
+value = 0.0
+
+[node name="EmotionalLabel" type="Label" parent="BarsContainer"]
+text = "Emotional"
+theme_override_font_sizes/font_size = 12
+
+[node name="EmotionalBar" type="ProgressBar" parent="BarsContainer"]
+custom_minimum_size = Vector2(250, 18)
+max_value = 100.0
+value = 0.0
+
+[node name="SkillLabel" type="Label" parent="BarsContainer"]
+text = "Skills"
+theme_override_font_sizes/font_size = 12
+
+[node name="SkillBar" type="ProgressBar" parent="BarsContainer"]
+custom_minimum_size = Vector2(250, 18)
+max_value = 100.0
+value = 0.0
+
+[node name="MilestoneLabel" type="Label" parent="BarsContainer"]
+text = "Milestones: 0"
+theme_override_font_sizes/font_size = 12
+
+[node name="BackButton" type="Button" parent="."]
+offset_left = 500.0
+offset_top = 320.0
+offset_right = 600.0
+offset_bottom = 350.0
+text = "Back"

@@ -29,6 +29,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   - Fixed enter_world() API call parameter (world_id string, not body dict)
   - Fixed exit_world() API call parameter (reason string, not dict)
   - Added get_mood() method to SoulGrowthData
+- **Growth Visualizer** (`scripts/ui/GrowthVisualizer.gd`, `scenes/growth_visualizer.tscn`)
+  - Radar chart for 8 soul attributes (perception, memory, reasoning, decision, empathy, expression, attachment, creativity)
+  - Progress bars for XP, energy, cognitive, emotional, skills
+  - Level and milestone display
+  - Auto-loads active soul data from SoulManager
+  - CLI command 'growth' to open visualizer
+  - Custom _draw() radar chart with grid, data polygon, and labels
 
 ### Fixed
 - **Godot 4.7.2 Compatibility** (BUG-010 through BUG-015) - Project now fully loads with 0 script errors

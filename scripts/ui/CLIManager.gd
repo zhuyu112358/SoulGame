@@ -84,6 +84,8 @@ func process_command(command: String) -> void:
 			_start_world(parts)
 		"stop_world":
 			_stop_world()
+		"growth":
+			_open_growth_visualizer()
 		"save":
 			_save_game()
 		"load":
@@ -287,6 +289,15 @@ func _start_world(parts: Array) -> void:
 func _stop_world() -> void:
 	WorldManager.stop_simulation()
 	add_line("World simulation stopped.")
+
+
+## Open growth visualizer scene
+func _open_growth_visualizer() -> void:
+	if not SoulManager.active_soul:
+		add_line("No active soul. Use create_soul or select_soul first.")
+		return
+	add_line("Opening growth visualizer for %s..." % SoulManager.active_soul.soul_name)
+	SceneManager.change_scene("res://scenes/growth_visualizer.tscn")
 
 
 ## Save game
