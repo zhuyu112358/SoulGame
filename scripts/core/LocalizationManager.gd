@@ -89,15 +89,11 @@ func translate(key: String) -> String:
 	_log_missing_key(key, _current_language)
 	return key
 
-## Alias for translate() (shorthand)
-func tr(key: String) -> String:
-	return translate(key)
-
 
 
 ## Translate with formatting (replaces {0}, {1}, etc.)
 func trf(key: String, args: Array) -> String:
-	var text: String = tr(key)
+	var text: String = translate(key)
 	for i in range(args.size()):
 		text = text.replace("{%d}" % i, str(args[i]))
 	return text
@@ -243,25 +239,25 @@ func _load_builtin_translations() -> void:
 	}
 
 	_translations["zh"] = {
-		"LOADING": "Loading...",
-		"ERROR": "Error",
-		"OK": "OK",
-		"CANCEL": "Cancel",
-		"YES": "Yes",
-		"NO": "No",
-		"BACK": "Back",
-		"SETTINGS": "Settings",
-		"LANGUAGE": "Language",
-		"VOLUME": "Volume",
-		"PAUSED": "Paused",
-		"RESUME": "Resume",
-		"QUIT": "Quit",
-		"CONNECTING": "Connecting...",
-		"CONNECTION_FAILED": "Connection Failed",
-		"RETRY": "Retry",
-		"PERFORMANCE_TEST": "Performance Test",
-		"FPS": "FPS",
-		"MEMORY": "Memory"
+		"LOADING": "加载中...",
+		"ERROR": "错误",
+		"OK": "确定",
+		"CANCEL": "取消",
+		"YES": "是",
+		"NO": "否",
+		"BACK": "返回",
+		"SETTINGS": "设置",
+		"LANGUAGE": "语言",
+		"VOLUME": "音量",
+		"PAUSED": "已暂停",
+		"RESUME": "继续",
+		"QUIT": "退出",
+		"CONNECTING": "连接中...",
+		"CONNECTION_FAILED": "连接失败",
+		"RETRY": "重试",
+		"PERFORMANCE_TEST": "性能测试",
+		"FPS": "帧率",
+		"MEMORY": "内存"
 	}
 
 	_stats["translations_loaded"] = _translations["en"].size() + _translations["zh"].size()

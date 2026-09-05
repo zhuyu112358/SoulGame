@@ -35,6 +35,9 @@ func _log(level: Level, message: String, category: String) -> void:
 	if _buffer.size() > 500:
 		_buffer.pop_front()
 	var count_key := level_name.to_lower()
+	# Map "warn" to "warning" for consistent counting
+	if count_key == "warn":
+		count_key = "warning"
 	if _counts.has(count_key):
 		_counts[count_key] += 1
 	var msg := "[%s] [%s] [%s] %s" % [timestamp, level_name, category, message]

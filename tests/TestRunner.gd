@@ -453,7 +453,7 @@ func _test_localization_manager() -> void:
 	_assert(langs.has("ja"), "LocalizationManager has ja")
 
 	# Translation
-	_assert(LocalizationManager.tr("LOADING") == "Loading...", "LocalizationManager.tr en")
+	_assert(LocalizationManager.translate("LOADING") == "Loading...", "LocalizationManager.tr en")
 	_assert(LocalizationManager.has_translation("LOADING"), "LocalizationManager.has_translation true")
 	_assert(not LocalizationManager.has_translation("NONEXISTENT_KEY"), "LocalizationManager.has_translation false")
 
@@ -464,15 +464,15 @@ func _test_localization_manager() -> void:
 	# Switch language
 	LocalizationManager.set_language("zh")
 	_assert(LocalizationManager.get_language() == "zh", "LocalizationManager.set_language zh")
-	_assert(LocalizationManager.tr("LOADING") == "加载中...", "LocalizationManager.tr zh")
+	_assert(LocalizationManager.translate("LOADING") == "加载中...", "LocalizationManager.tr zh")
 
 	# Fallback to default
 	LocalizationManager.set_language("ja")
-	_assert(LocalizationManager.tr("LOADING") == "Loading...", "LocalizationManager fallback to en for missing ja")
+	_assert(LocalizationManager.translate("LOADING") == "Loading...", "LocalizationManager fallback to en for missing ja")
 
 	# Add translation
 	LocalizationManager.add_translation("ja", "LOADING", "読み込み中...")
-	_assert(LocalizationManager.tr("LOADING") == "読み込み中...", "LocalizationManager.add_translation ja")
+	_assert(LocalizationManager.translate("LOADING") == "読み込み中...", "LocalizationManager.add_translation ja")
 
 	# Reset
 	LocalizationManager.reset_to_default()
@@ -480,7 +480,7 @@ func _test_localization_manager() -> void:
 
 	# Missing key tracking
 	var missing_before = LocalizationManager.get_missing_keys().size()
-	LocalizationManager.tr("COMPLETELY_FAKE_KEY")
+	LocalizationManager.translate("COMPLETELY_FAKE_KEY")
 	var missing_after = LocalizationManager.get_missing_keys().size()
 	_assert(missing_after > missing_before, "LocalizationManager tracks missing keys")
 
