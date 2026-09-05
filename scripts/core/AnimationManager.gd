@@ -1,15 +1,25 @@
 extends Node
 ## AnimationManager - Centralized animation and tween management
 ##
-## Manages tweens, animation players, fade transitions, and sequenced
-## animations. Provides convenience methods for common UI animations.
+## Manages tweens, animation players, fade transitions, sequenced
+## animations, animation queues, and per-node animation state.
 ## Infrastructure only - no game-specific animations.
+##
+## Features:
+## - Tween creation and pooling
+## - Property animation with easing/transitions
+## - Fade, pop, slide, shake, pulse convenience animations
+## - Animation player registry and playback
+## - Animation queue (sequential execution)
+## - Per-node animation state tracking
+## - Animation cancellation
 ##
 ## Usage:
 ##   AnimationManager.fade_in(node, 0.5)
 ##   AnimationManager.fade_out(node, 0.5)
 ##   var tween = AnimationManager.create_tween()
 ##   AnimationManager.animate_property(node, "position", target, 1.0, "elastic_out")
+##   AnimationManager.queue_animation(node, "bounce", {...})
 
 ## Active tweens: { id: Tween }
 var _active_tweens: Dictionary = {}
@@ -19,6 +29,12 @@ var _next_tween_id: int = 1
 
 ## Animation players registry: { name: AnimationPlayer }
 var _animation_players: Dictionary = {}
+
+## Animation queues: { node_id: [{type, params, tween}] }
+var _animation_queues: Dictionary = {}
+
+## Per-node animation state: { node_id: {current_anim, active_tweens, is_animating} }
+var _node_states: Dictionary = {}
 
 ## Easing function map
 var _easing_map: Dictionary = {
@@ -50,8 +66,11 @@ var _trans_map: Dictionary = {
 var _stats: Dictionary = {
 	"tweens_created": 0,
 	"tweens_completed": 0,
+	"tweens_killed": 0,
 	"animations_played": 0,
-	"active_tweens": 0
+	"active_tweens": 0,
+	"queued_animations": 0,
+	"animating_nodes": 0
 }
 
 
@@ -63,7 +82,7 @@ func _ready() -> void:
 
 ## Create a new tween with default settings
 func create_tween(parallel: bool = false) -> Tween:
-	var tween := create_tween()
+	var tween := get_tree().create_tween()
 	tween.set_parallel(parallel)
 
 	var id := _next_tween_id
@@ -76,6 +95,13 @@ func create_tween(parallel: bool = false) -> Tween:
 	return tween
 
 
+## Kill a specific tween
+func kill_tween(tween: Tween) -> void:
+	if tween and is_instance_valid(tween):
+		tween.kill()
+		_stats["tweens_killed"] += 1
+
+
 ## Animate a property to a target value
 ## easing: "linear", "ease_in", "ease_out", "ease_in_out", "elastic_out", "bounce_out"
 ## transition: "linear", "sine", "quad", "cubic", "quart", "quint", "elastic", "bounce", "back"
@@ -85,6 +111,7 @@ func animate_property(target: Object, property: String, final_value: Variant, du
 	var ease_type := _easing_map.get(easing, Tween.EASE_OUT)
 
 	tween.tween_property(target, property, final_value, duration).set_trans(trans_type).set_ease(ease_type)
+	_track_node_animation(target, tween)
 	return tween
 
 
@@ -118,6 +145,7 @@ func fade_in(node: CanvasItem, duration: float = 0.3, delay: float = 0.0) -> Twe
 	if delay > 0:
 		tween.tween_interval(delay)
 	tween.tween_property(node, "modulate:a", 1.0, duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	_track_node_animation(node, tween)
 	return tween
 
 
@@ -127,6 +155,7 @@ func fade_out(node: CanvasItem, duration: float = 0.3, hide_on_complete: bool = 
 	tween.tween_property(node, "modulate:a", 0.0, duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	if hide_on_complete:
 		tween.tween_callback(node.set_visible.bind(false))
+	_track_node_animation(node, tween)
 	return tween
 
 
@@ -143,6 +172,7 @@ func pop_in(node: Node2D, duration: float = 0.4) -> Tween:
 	node.visible = true
 	var tween := create_tween()
 	tween.tween_property(node, "scale", Vector2.ONE, duration).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_track_node_animation(node, tween)
 	return tween
 
 
@@ -151,6 +181,7 @@ func pop_out(node: Node2D, duration: float = 0.3) -> Tween:
 	var tween := create_tween()
 	tween.tween_property(node, "scale", Vector2.ZERO, duration).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
 	tween.tween_callback(node.set_visible.bind(false))
+	_track_node_animation(node, tween)
 	return tween
 
 
@@ -169,6 +200,7 @@ func slide_in(node: Control, direction: String = "left", duration: float = 0.4, 
 	node.visible = true
 	var tween := create_tween()
 	tween.tween_property(node, "position", original_pos, duration).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_track_node_animation(node, tween)
 	return tween
 
 
@@ -185,6 +217,7 @@ func shake(node: Node2D, intensity: float = 10.0, duration: float = 0.3) -> Twee
 		tween.tween_property(node, "position", original_pos + offset, step_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 	tween.tween_property(node, "position", original_pos, duration / steps).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	_track_node_animation(node, tween)
 	return tween
 
 
@@ -194,7 +227,149 @@ func pulse(node: Node2D, scale_amount: float = 1.1, duration: float = 0.5) -> Tw
 	var tween := create_tween()
 	tween.tween_property(node, "scale", original_scale * scale_amount, duration / 2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	tween.tween_property(node, "scale", original_scale, duration / 2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	_track_node_animation(node, tween)
 	return tween
+
+
+## Flash animation (modulate to white and back)
+func flash(node: CanvasItem, duration: float = 0.2, color: Color = Color.WHITE) -> Tween:
+	var original_modulate := node.modulate
+	var tween := create_tween()
+	tween.tween_property(node, "modulate", color, duration / 2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tween.tween_property(node, "modulate", original_modulate, duration / 2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	_track_node_animation(node, tween)
+	return tween
+
+
+## --- Animation Queue ---
+
+## Queue an animation to run after current animations on this node complete
+## anim_type: "fade_in", "fade_out", "pop_in", "pop_out", "shake", "pulse", "flash", "property"
+func queue_animation(node: Object, anim_type: String, params: Dictionary = {}) -> void:
+	var node_id := node.get_instance_id()
+	if not _animation_queues.has(node_id):
+		_animation_queues[node_id] = []
+
+	_animation_queues[node_id].append({"type": anim_type, "params": params})
+	_stats["queued_animations"] += 1
+
+	# If node is not currently animating, start immediately
+	if not is_node_animating(node):
+		_process_queue(node_id)
+
+
+## Process the animation queue for a node
+func _process_queue(node_id: int) -> void:
+	if not _animation_queues.has(node_id) or _animation_queues[node_id].is_empty():
+		return
+
+	var entry = _animation_queues[node_id].pop_front()
+	var node := instance_from_id(node_id)
+	if not node or not is_instance_valid(node):
+		_animation_queues.erase(node_id)
+		return
+
+	var tween: Tween = null
+	match entry["type"]:
+		"fade_in":
+			tween = fade_in(node, entry["params"].get("duration", 0.3), entry["params"].get("delay", 0.0))
+		"fade_out":
+			tween = fade_out(node, entry["params"].get("duration", 0.3), entry["params"].get("hide_on_complete", true))
+		"pop_in":
+			tween = pop_in(node, entry["params"].get("duration", 0.4))
+		"pop_out":
+			tween = pop_out(node, entry["params"].get("duration", 0.3))
+		"shake":
+			tween = shake(node, entry["params"].get("intensity", 10.0), entry["params"].get("duration", 0.3))
+		"pulse":
+			tween = pulse(node, entry["params"].get("scale_amount", 1.1), entry["params"].get("duration", 0.5))
+		"flash":
+			tween = flash(node, entry["params"].get("duration", 0.2), entry["params"].get("color", Color.WHITE))
+		"property":
+			tween = animate_property(
+				node,
+				entry["params"]["property"],
+				entry["params"]["final_value"],
+				entry["params"].get("duration", 0.3),
+				entry["params"].get("transition", "sine"),
+				entry["params"].get("easing", "ease_out")
+			)
+
+	if tween:
+		tween.finished.connect(_on_queue_anim_finished.bind(node_id))
+
+
+## Called when a queued animation finishes
+func _on_queue_anim_finished(node_id: int) -> void:
+	# Process next in queue
+	if _animation_queues.has(node_id) and not _animation_queues[node_id].is_empty():
+		_process_queue(node_id)
+	else:
+		_animation_queues.erase(node_id)
+
+
+## Clear animation queue for a node
+func clear_queue(node: Object) -> void:
+	var node_id := node.get_instance_id()
+	if _animation_queues.has(node_id):
+		_animation_queues.erase(node_id)
+
+
+## --- Per-Node Animation State ---
+
+## Track an animation for a node
+func _track_node_animation(node: Object, tween: Tween) -> void:
+	var node_id := node.get_instance_id()
+	if not _node_states.has(node_id):
+		_node_states[node_id] = {"active_tweens": [], "is_animating": false}
+
+	_node_states[node_id]["active_tweens"].append(tween)
+	_node_states[node_id]["is_animating"] = true
+	_stats["animating_nodes"] = _count_animating_nodes()
+
+	# Clean up when tween finishes
+	tween.finished.connect(_on_node_tween_finished.bind(node_id, tween))
+
+
+## Called when a node's tween finishes
+func _on_node_tween_finished(node_id: int, tween: Tween) -> void:
+	if _node_states.has(node_id):
+		var state = _node_states[node_id]
+		state["active_tweens"].erase(tween)
+		if state["active_tweens"].is_empty():
+			state["is_animating"] = false
+	_stats["animating_nodes"] = _count_animating_nodes()
+
+
+## Check if a node is currently animating
+func is_node_animating(node: Object) -> bool:
+	var node_id := node.get_instance_id()
+	if _node_states.has(node_id):
+		return _node_states[node_id]["is_animating"]
+	return false
+
+
+## Stop all animations on a node
+func stop_node_animations(node: Object) -> void:
+	var node_id := node.get_instance_id()
+	if _node_states.has(node_id):
+		for tween in _node_states[node_id]["active_tweens"]:
+			if tween and is_instance_valid(tween):
+				tween.kill()
+				_stats["tweens_killed"] += 1
+		_node_states[node_id]["active_tweens"].clear()
+		_node_states[node_id]["is_animating"] = false
+	clear_queue(node)
+	_stats["animating_nodes"] = _count_animating_nodes()
+
+
+## Count currently animating nodes
+func _count_animating_nodes() -> int:
+	var count := 0
+	for node_id in _node_states:
+		if _node_states[node_id]["is_animating"]:
+			count += 1
+	return count
 
 
 ## --- Animation Player Management ---
@@ -264,14 +439,25 @@ func kill_all_tweens() -> void:
 		var tween: Tween = _active_tweens[id]
 		if is_instance_valid(tween):
 			tween.kill()
+			_stats["tweens_killed"] += 1
 	_active_tweens.clear()
+	_node_states.clear()
+	_animation_queues.clear()
 	_stats["active_tweens"] = 0
+	_stats["animating_nodes"] = 0
+	_stats["queued_animations"] = 0
 	Logger.info("AnimationManager: Killed all tweens", "Anim")
 
 
 ## Get statistics
 func get_stats() -> Dictionary:
 	_stats["active_tweens"] = _active_tweens.size()
+	_stats["animating_nodes"] = _count_animating_nodes()
+	var queued_total := 0
+	for node_id in _animation_queues:
+		queued_total += _animation_queues[node_id].size()
+	_stats["queued_animations"] = queued_total
+	_stats["registered_players"] = _animation_players.size()
 	return _stats.duplicate()
 
 
