@@ -1,0 +1,69 @@
+key,en,zh,ja
+LOADING,Loading...,加载中...,読み込み中...
+ERROR,Error,错误,エラー
+OK,OK,确定,OK
+CANCEL,Cancel,取消,キャンセル
+YES,Yes,是,はい
+NO,No,否,いいえ
+BACK,Back,返回,戻る
+SETTINGS,Settings,设置,設定
+LANGUAGE,Language,语言,言語
+VOLUME,Volume,音量,音量
+PAUSED,Paused,已暂停,一時停止
+RESUME,Resume,继续,再開
+QUIT,Quit,退出,終了
+CONNECTING,Connecting...,连接中...,接続中...
+CONNECTION_FAILED,Connection Failed,连接失败,接続失敗
+RETRY,Retry,重试,再試行
+PERFORMANCE_TEST,Performance Test,性能测试,パフォーマンステスト
+FPS,FPS,帧率,FPS
+MEMORY,Memory,内存,メモリ
+SAVE,Save,保存,セーブ
+LOAD,Load,读取,ロード
+NEW_GAME,New Game,新游戏,ニューゲーム
+CONTINUE,Continue,继续,つづき
+OPTIONS,Options,选项,オプション
+CREDITS,Credits,制作人员,クレジット
+MAIN_MENU,Main Menu,主菜单,メインメニュー
+PAUSE_MENU,Pause Menu,暂停菜单,ポーズメニュー
+GAME_OVER,Game Over,游戏结束,ゲームオーバー
+VICTORY,Victory,胜利,勝利
+DEFEAT,Defeat,失败,敗北
+LEVEL_UP,Level Up,升级,レベルアップ
+ACHIEVEMENT,Achievement,成就,実績
+NOTIFICATION,Notification,通知,通知
+WARNING,Warning,警告,警告
+INFORMATION,Information,信息,情報
+SUCCESS,Success,成功,成功
+FAILURE,Failure,失败,失敗
+ONLINE,Online,在线,オンライン
+OFFLINE,Offline,离线,オフライン
+SEARCHING,Searching...,搜索中...,検索中...
+MATCH_FOUND,Match Found,找到匹配,マッチ発見
+WAITING,Waiting...,等待中...,待機中...
+READY,Ready,准备,準備完了
+NOT_READY,Not Ready,未准备,未準備
+ACCEPT,Accept,接受,承諾
+DECLINE,Decline,拒绝,拒否
+CONFIRM,Confirm,确认,確認
+DELETE,Delete,删除,削除
+EDIT,Edit,编辑,編集
+VIEW,View,查看,表示
+CLOSE,Close,关闭,閉じる
+OPEN,Open,打开,開く
+START,Start,开始,スタート
+STOP,Stop,停止,ストップ
+PAUSE,Pause,暂停,一時停止
+PLAY,Play,播放,再生
+NEXT,Next,下一个,次へ
+PREVIOUS,Previous,上一个,前へ
+FIRST,First,第一个,最初
+LAST,Last,最后一个,最後
+ALL,All,全部,すべて
+NONE,None,无,なし
+DEFAULT,Default,默认,デフォルト
+CUSTOM,Custom,自定义,カスタム
+RANDOM,Random,随机,ランダム
+SORT,Sort,排序,並べ替え
+FILTER,Filter,筛选,フィルター
+REFRESH,Refresh,刷新,更新
