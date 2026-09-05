@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- **CLIManager** (`scripts/ui/CLIManager.gd`) - Text-based command line interface for M1
+  - 18 commands: help, status, create_soul, list_souls, select_soul, soul_home, train, deploy, create_world, list_worlds, start_world, stop_world, save, load, clear, quit
+  - Soul management: create, list, select, train, deploy
+  - World management: create, list, start, stop simulation
+  - Command history and output buffer (100 lines)
+- **CLI scene** (`scenes/cli.tscn`) - Terminal-style UI with scrollable output and input line
+- **SDK Connectivity Verification** (`docs/SDK_CONNECTIVITY_VERIFICATION.md`)
+  - All 7 SoulArena API endpoints verified: souls list, soul detail, enter-world, world-state, perceive, action-result, exit-world
+  - Confirmed plural `/api/souls/` path for all endpoints
+  - Documented correct request body formats
+  - SoulArenaClient implementation matches actual API specification
+
 ### Fixed
 - **Godot 4.7.2 Compatibility** (BUG-010 through BUG-015) - Project now fully loads with 0 script errors
   - Renamed `Logger` autoload to `GameLog` (conflict with internal symbol)
