@@ -1,0 +1,66 @@
+# Auto detect text files and perform LF normalization
+* text=auto eol=lf
+
+# GDScript files - always LF
+*.gd text eol=lf
+
+# Godot scene/project files - always LF
+*.tscn text eol=lf
+*.tres text eol=lf
+*.godot text eol=lf
+*.cfg text eol=lf
+*.tres text eol=lf
+
+# Documentation - LF
+*.md text eol=lf
+*.txt text eol=lf
+
+# CSV translations - LF
+*.csv text eol=lf
+
+# YAML - LF
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# JSON - LF
+*.json text eol=lf
+
+# Shell scripts - LF
+*.sh text eol=lf
+
+# Batch files - CRLF (Windows)
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# PowerShell - CRLF (Windows)
+*.ps1 text eol=crlf
+
+# Binary files - no normalization
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.bmp binary
+*.svg binary
+*.ico binary
+*.webp binary
+*.ogg binary
+*.wav binary
+*.mp3 binary
+*.flac binary
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.zip binary
+*.tar binary
+*.gz binary
+*.7z binary
+*.exe binary
+*.dll binary
+*.so binary
+*.dylib binary
+
+# Git files - LF
+.gitignore text eol=lf
+.gitattributes text eol=lf
