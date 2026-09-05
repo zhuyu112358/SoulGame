@@ -209,7 +209,7 @@ func schedule_repeating(interval: float, target: Object, method: String, args: D
 
 ## Schedule a callback after N ticks
 func schedule_after_ticks(ticks: int, target: Object, method: String, args: Dictionary = {}) -> void:
-	var target_tick := _tick_count + max(ticks, 1)
+	var target_tick: int = _tick_count + max(int(ticks), 1)
 	if not _tick_schedules.has(target_tick):
 		_tick_schedules[target_tick] = []
 	_tick_schedules[target_tick].append({
@@ -449,7 +449,7 @@ func get_1pct_low_fps() -> float:
 	var sorted := _frame_times.duplicate()
 	sorted.sort()
 	var idx := int(sorted.size() * 0.99)
-	var p99_ms := sorted[min(idx, sorted.size() - 1)]
+	var p99_ms: float = float(sorted[min(idx, sorted.size() - 1)])
 	return 1000.0 / p99_ms if p99_ms > 0.0 else 0.0
 
 

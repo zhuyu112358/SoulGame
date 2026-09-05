@@ -254,7 +254,7 @@ func _crossfade_music(new_stream: AudioStream, target_volume: float, fade_durati
 	_stats["music_played"] += 1
 
 	# Fade in new, fade out old
-	var fade_time := max(fade_duration, 0.5)
+	var fade_time: float = max(float(fade_duration), 0.5)
 	_fade_volume(_music_player, target_volume, fade_time)
 	_fade_volume(_music_player_fade, 0.0, fade_time, func():
 		_music_player_fade.stop()
@@ -350,7 +350,7 @@ func set_volume(bus_name: String, volume: float) -> void:
 		GameLog.warning("AudioManager: Bus not found: %s" % bus_name, "Audio")
 		return
 
-	var clamped := clamp(volume, 0.0, 1.0)
+	var clamped: float = clamp(float(volume), 0.0, 1.0)
 	AudioServer.set_bus_volume_db(idx, linear_to_db(clamped))
 
 	match bus_name:
@@ -483,20 +483,20 @@ func _get_free_sfx_slot(priority: int) -> Dictionary:
 			return slot
 
 	# No free slot, try to steal a lower priority one
-	var lowest_priority_slot := null
+	var lowest_priority_slot: Dictionary = {}
 	var lowest_priority := Priority.CRITICAL + 1
 	for slot in _sfx_players:
 		if slot["priority"] < priority and slot["priority"] < lowest_priority:
 			lowest_priority = slot["priority"]
 			lowest_priority_slot = slot
 
-	if lowest_priority_slot:
+	if lowest_priority_slot.is_empty() == false:
 		lowest_priority_slot["player"].stop()
 		lowest_priority_slot["playing"] = false
 		_stats["sfx_stolen"] += 1
 		return lowest_priority_slot
 
-	return null
+	return {}
 
 
 func _on_sfx_finished(player: AudioStreamPlayer) -> void:

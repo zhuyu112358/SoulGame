@@ -131,7 +131,7 @@ func end_baseline(test_name: String) -> Dictionary:
 		return {}
 
 	var baseline = _active_baselines[test_name]
-	var elapsed_ms := Time.get_ticks_msec() - baseline["start_time"]
+	var elapsed_ms: int = Time.get_ticks_msec() - int(baseline["start_time"])
 
 	# Calculate statistics
 	var frame_times: Array = baseline["frame_times"]
@@ -149,8 +149,8 @@ func end_baseline(test_name: String) -> Dictionary:
 	var sorted_frames := frame_times.duplicate()
 	sorted_frames.sort()
 	var p99_index := int(sorted_frames.size() * 0.99)
-	var frame_time_p99 := sorted_frames[min(p99_index, sorted_frames.size() - 1)] if not sorted_frames.is_empty() else 0.0
-	var fps_1pct_low := 1000.0 / max(frame_time_p99, 0.01)
+	var frame_time_p99: float = float(sorted_frames[min(p99_index, sorted_frames.size() - 1)]) if not sorted_frames.is_empty() else 0.0
+	var fps_1pct_low: float = 1000.0 / max(frame_time_p99, 0.01)
 
 	var results := {
 		"test_name": test_name,

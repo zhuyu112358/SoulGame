@@ -17,7 +17,7 @@ extends Node
 ## Usage:
 ##   AnimationManager.fade_in(node, 0.5)
 ##   AnimationManager.fade_out(node, 0.5)
-##   var tween = AnimationManager.create_tween()
+##   var tween = AnimationManager.create_anim_tween()
 ##   AnimationManager.animate_property(node, "position", target, 1.0, "elastic_out")
 ##   AnimationManager.queue_animation(node, "bounce", {...})
 
@@ -81,7 +81,7 @@ func _ready() -> void:
 ## --- Tween Management ---
 
 ## Create a new tween with default settings
-func create_tween(parallel: bool = false) -> Tween:
+func create_anim_tween(parallel: bool = false) -> Tween:
 	var tween := get_tree().create_tween()
 	tween.set_parallel(parallel)
 
@@ -106,9 +106,9 @@ func kill_tween(tween: Tween) -> void:
 ## easing: "linear", "ease_in", "ease_out", "ease_in_out", "elastic_out", "bounce_out"
 ## transition: "linear", "sine", "quad", "cubic", "quart", "quint", "elastic", "bounce", "back"
 func animate_property(target: Object, property: String, final_value: Variant, duration: float, transition: String = "sine", easing: String = "ease_out") -> Tween:
-	var tween := create_tween()
-	var trans_type := _trans_map.get(transition, Tween.TRANS_SINE)
-	var ease_type := _easing_map.get(easing, Tween.EASE_OUT)
+	var tween := create_anim_tween()
+	var trans_type: int = int(_trans_map.get(transition, Tween.TRANS_SINE))
+	var ease_type: int = int(_easing_map.get(easing, Tween.EASE_OUT))
 
 	tween.tween_property(target, property, final_value, duration).set_trans(trans_type).set_ease(ease_type)
 	_track_node_animation(target, tween)
@@ -141,7 +141,7 @@ func animate_modulate(node: CanvasItem, target_modulate: Color, duration: float,
 func fade_in(node: CanvasItem, duration: float = 0.3, delay: float = 0.0) -> Tween:
 	node.modulate.a = 0.0
 	node.visible = true
-	var tween := create_tween()
+	var tween := create_anim_tween()
 	if delay > 0:
 		tween.tween_interval(delay)
 	tween.tween_property(node, "modulate:a", 1.0, duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
@@ -151,7 +151,7 @@ func fade_in(node: CanvasItem, duration: float = 0.3, delay: float = 0.0) -> Twe
 
 ## Fade out a node (alpha 1 -> 0)
 func fade_out(node: CanvasItem, duration: float = 0.3, hide_on_complete: bool = true) -> Tween:
-	var tween := create_tween()
+	var tween := create_anim_tween()
 	tween.tween_property(node, "modulate:a", 0.0, duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	if hide_on_complete:
 		tween.tween_callback(node.set_visible.bind(false))
@@ -170,7 +170,7 @@ func fade_to(node: CanvasItem, alpha: float, duration: float = 0.3) -> Tween:
 func pop_in(node: Node2D, duration: float = 0.4) -> Tween:
 	node.scale = Vector2.ZERO
 	node.visible = true
-	var tween := create_tween()
+	var tween := create_anim_tween()
 	tween.tween_property(node, "scale", Vector2.ONE, duration).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	_track_node_animation(node, tween)
 	return tween
@@ -178,7 +178,7 @@ func pop_in(node: Node2D, duration: float = 0.4) -> Tween:
 
 ## Pop out animation (scale 1 -> 0)
 func pop_out(node: Node2D, duration: float = 0.3) -> Tween:
-	var tween := create_tween()
+	var tween := create_anim_tween()
 	tween.tween_property(node, "scale", Vector2.ZERO, duration).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
 	tween.tween_callback(node.set_visible.bind(false))
 	_track_node_animation(node, tween)
@@ -198,7 +198,7 @@ func slide_in(node: Control, direction: String = "left", duration: float = 0.4, 
 
 	node.position = original_pos + offset
 	node.visible = true
-	var tween := create_tween()
+	var tween := create_anim_tween()
 	tween.tween_property(node, "position", original_pos, duration).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	_track_node_animation(node, tween)
 	return tween
@@ -207,7 +207,7 @@ func slide_in(node: Control, direction: String = "left", duration: float = 0.4, 
 ## Shake animation (for impact feedback)
 func shake(node: Node2D, intensity: float = 10.0, duration: float = 0.3) -> Tween:
 	var original_pos := node.position
-	var tween := create_tween()
+	var tween := create_anim_tween()
 	tween.set_parallel(true)
 
 	var steps := 6
@@ -224,7 +224,7 @@ func shake(node: Node2D, intensity: float = 10.0, duration: float = 0.3) -> Twee
 ## Pulse animation (scale up and down)
 func pulse(node: Node2D, scale_amount: float = 1.1, duration: float = 0.5) -> Tween:
 	var original_scale := node.scale
-	var tween := create_tween()
+	var tween := create_anim_tween()
 	tween.tween_property(node, "scale", original_scale * scale_amount, duration / 2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	tween.tween_property(node, "scale", original_scale, duration / 2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	_track_node_animation(node, tween)
@@ -234,7 +234,7 @@ func pulse(node: Node2D, scale_amount: float = 1.1, duration: float = 0.5) -> Tw
 ## Flash animation (modulate to white and back)
 func flash(node: CanvasItem, duration: float = 0.2, color: Color = Color.WHITE) -> Tween:
 	var original_modulate := node.modulate
-	var tween := create_tween()
+	var tween := create_anim_tween()
 	tween.tween_property(node, "modulate", color, duration / 2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	tween.tween_property(node, "modulate", original_modulate, duration / 2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	_track_node_animation(node, tween)
@@ -417,14 +417,14 @@ func run_sequence(animations: Array, on_complete_target: Object = null, on_compl
 	if animations.is_empty():
 		return
 
-	var tween := create_tween()
+	var tween := create_anim_tween()
 	for anim in animations:
 		var target: Object = anim["target"]
 		var property: String = anim["property"]
 		var final_value = anim["final_value"]
 		var duration: float = anim.get("duration", 0.3)
 		var transition: String = anim.get("transition", "sine")
-		var trans_type := _trans_map.get(transition, Tween.TRANS_SINE)
+		var trans_type: int = int(_trans_map.get(transition, Tween.TRANS_SINE))
 		tween.tween_property(target, property, final_value, duration).set_trans(trans_type).set_ease(Tween.EASE_OUT)
 
 	if on_complete_target and is_instance_valid(on_complete_target) and not on_complete_method.is_empty():

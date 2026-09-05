@@ -168,13 +168,13 @@ func _update_display() -> void:
 	]
 
 	# System (audio, locale, errors, memory)
-	var audio_stats := AudioManager.get_stats()
-	var locale_lang := LocalizationManager.get_language()
-	var error_stats := ErrorHandler.get_stats()
-	var mem_static := Performance.get_monitor(Performance.MEMORY_STATIC) / 1048576.0
-	var mem_orphan := Performance.get_monitor(Performance.OBJECT_ORPHAN_NODE_COUNT)
-	var mem_render := Performance.get_monitor(12)
-	var draw_calls := Performance.get_monitor(13)
+	var audio_stats: Dictionary = AudioManager.get_stats()
+	var locale_lang: String = LocalizationManager.get_language()
+	var error_stats: Dictionary = ErrorHandler.get_stats()
+	var mem_static: float = Performance.get_monitor(Performance.MEMORY_STATIC) / 1048576.0
+	var mem_orphan: float = Performance.get_monitor(Performance.OBJECT_ORPHAN_NODE_COUNT)
+	var mem_render: float = Performance.get_monitor(12)
+	var draw_calls: float = Performance.get_monitor(13)
 	_system_label.text = "Audio: SFX %d/%d playing | Music: %s | Master: %.0f%%\nLocale: %s | Missing keys: %d\nErrors: %d total (%d critical) | Pending: %d\nMem: %.1fMB static | Orphans: %d | Draw calls: %d | Render objs: %d" % [
 		audio_stats["sfx_playing"], audio_stats["sfx_pool_size"],
 		("yes" if audio_stats["music_playing"] else "no"),

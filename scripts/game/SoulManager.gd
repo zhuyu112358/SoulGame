@@ -69,9 +69,10 @@ func start_creation(description: String) -> void:
 	EventBus.emit("soul_creation_started", {"description": description})
 
 
+
 ## Generate personality traits from description keywords
 func _generate_personality_from_description(description: String) -> Dictionary:
-	var personality := {
+	var personality: Dictionary = {
 		"openness": 50,
 		"conscientiousness": 50,
 		"extraversion": 50,
@@ -81,11 +82,9 @@ func _generate_personality_from_description(description: String) -> Dictionary:
 		"bravery": 50,
 		"warmth": 50
 	}
-
-	var desc_lower = description.to_lower()
-
+	var desc_lower: String = description.to_lower()
 	# Keyword-based personality adjustment
-	var keywords := {
+	var keyword_map: Dictionary = {
 		"brave": {"bravery": 20, "extraversion": 10},
 		"coward": {"bravery": -20, "neuroticism": 10},
 		"outgoing": {"extraversion": 20, "warmth": 10},
@@ -103,12 +102,13 @@ func _generate_personality_from_description(description: String) -> Dictionary:
 		"calm": {"extraversion": 10, "neuroticism": -15},
 		"organized": {"conscientiousness": 15, "bravery": -5}
 	}
-
-	for keyword in keywords:
-		if desc_lower.find(keyword) >= 0:
-			for trait in keywords[keyword]:
-				personality[trait] = clamp(personality[trait] + keywords[keyword][trait], 5, 95)
-
+	var kw_keys: Array = keyword_map.keys()
+	for kw in kw_keys:
+		if desc_lower.find(kw) >= 0:
+			var tdict: Dictionary = keyword_map[kw]
+			var tkeys: Array = tdict.keys()
+			for t in tkeys:
+				personality[t] = clamp(personality[t] + tdict[t], 5, 95)
 	return personality
 
 
@@ -258,7 +258,7 @@ func deploy_soul(soul_id: String, world_id: String, world_name: String) -> bool:
 		"worldName": world_name,
 		"communicationMedium": "direct_api"
 	}
-	SoulArenaClient.enter_world(soul_id, body, self, "_on_deploy_result")
+	SoulArenaClient.enter_world(soul_id, world_id, "", self, "_on_deploy_result")
 
 	GameLog.info("SoulManager: Deploying %s to %s" % [soul.soul_name, world_name], "SoulManager")
 	return true

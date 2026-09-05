@@ -7,7 +7,7 @@ extends Node
 ##
 ## Usage:
 ##   LocalizationManager.set_language("zh")
-##   var text = LocalizationManager.tr("HELLO_WORLD")
+##   var text = LocalizationManager.translate("HELLO_WORLD")
 ##   LocalizationManager.load_translations("res://translations/")
 
 ## Current language code (e.g., "en", "zh")
@@ -73,7 +73,7 @@ func get_available_languages() -> Dictionary:
 
 ## Translate a key to current language
 ## Falls back to default language, then to the key itself
-func tr(key: String) -> String:
+func translate(key: String) -> String:
 	_stats["text_translated"] += 1
 
 	# Try current language

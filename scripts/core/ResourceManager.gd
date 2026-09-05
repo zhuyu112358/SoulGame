@@ -277,7 +277,7 @@ func _on_group_resource_loaded(path: String, resource: Resource) -> void:
 		var group = _loading_groups[group_id]
 		if group["paths"].has(path):
 			group["loaded"] += 1
-			var progress := float(group["loaded"]) / max(group["total"], 1)
+			var progress: float = float(group["loaded"]) / max(group["total"], 1)
 
 			if group["callback_target"] and is_instance_valid(group["callback_target"]) and not group["callback_method"].is_empty():
 				group["callback_target"].call(group["callback_method"], {

@@ -251,7 +251,7 @@ func _is_suppressed(category: String) -> bool:
 	if not _suppression_state.has(category):
 		return false
 	var state = _suppression_state[category]
-	var elapsed := (Time.get_ticks_msec() / 1000.0) - state["first_time"]
+	var elapsed: float = (Time.get_ticks_msec() / 1000.0) - float(state["first_time"])
 	if elapsed > 60.0:
 		# Reset after 60 seconds
 		_suppression_state.erase(category)

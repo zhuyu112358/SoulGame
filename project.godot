@@ -95,11 +95,15 @@ driver/output_latency=0.05
 settings/fps/force_fps=0
 settings/print_to_console=true
 settings/stdout/verbose_stdout=false
+
+[editor]
+
 gdscript/warnings/untyped_declaration=0
 gdscript/warnings/integer_division=0
 gdscript/warnings/unsafe_call=0
 gdscript/warnings/unsafe_property_access=0
 gdscript/warnings/native_method_override=0
+gdscript/warnings/treat_warnings_as_errors=false
 gdscript/completion/add_type_hints=true
 gdscript/places_capitalization=false
 
