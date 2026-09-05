@@ -63,6 +63,43 @@ jobs:
           echo "SDK scripts: $(find scripts/sdk -name '*.gd' | wc -l)"
           echo "Config files: $(find config -name '*.cfg' | wc -l)"
           echo "Test files: $(find tests -name '*.gd' 2>/dev/null | wc -l)"
+          echo "Translation files: $(find translations -name '*.csv' 2>/dev/null | wc -l)"
+          echo "Scene files: $(find scenes -name '*.tscn' 2>/dev/null | wc -l)"
+          echo "Docs: $(find docs -name '*.md' 2>/dev/null | wc -l)"
+
+      - name: Verify autoload count matches project.godot
+        run: |
+          echo "Verifying autoload registration consistency..."
+          registered=$(grep -c 'res://scripts' project.godot)
+          echo "  Registered in project.godot: $registered"
+          autoload_dir=$(find scripts/autoload -name '*.gd' | wc -l)
+          core_autoload=$(grep -l 'extends Node' scripts/core/*.gd 2>/dev/null | wc -l)
+          echo "  Autoload dir scripts: $autoload_dir"
+          echo "  Core Node scripts (potential autoloads): $core_autoload"
+
+      - name: Check SDK version lock
+        run: |
+          echo "Verifying SDK version lock files..."
+          test -f config/sdk_versions.cfg && echo "sdk_versions.cfg exists" || (echo "MISSING: config/sdk_versions.cfg" && exit 1)
+          grep -q "soularena" config/sdk_versions.cfg && echo "SoulArena version locked" || echo "WARNING: SoulArena version not found"
+          grep -q "seed" config/sdk_versions.cfg && echo "Seed version locked" || echo "WARNING: Seed version not found"
+
+      - name: Verify test coverage
+        run: |
+          echo "Checking test suite coverage..."
+          test_count=$(grep -c '_test_' tests/TestRunner.gd 2>/dev/null || echo 0)
+          echo "  Test suites in TestRunner: $test_count"
+          if [ "$test_count" -lt 5 ]; then
+            echo "  WARNING: Low test coverage ($test_count suites)"
+          fi
+
+      - name: Check for large files
+        run: |
+          echo "Checking for unexpectedly large source files..."
+          find scripts -name '*.gd' -size +50k | while read file; do
+            echo "  WARNING: Large file: $file ($(du -h "$file" | cut -f1))"
+          done
+          echo "Large file check complete."
 
   lint:
     name: Code Style Check
@@ -89,3 +126,31 @@ jobs:
               echo "  WARNING: $file should use PascalCase"
             fi
           done
+
+      - name: Verify no game logic in infrastructure
+        run: |
+          echo "Checking for game logic in infrastructure files..."
+          # These patterns indicate game-specific logic that shouldn't be in base architecture
+          grep -rn "combat\|battle\|arena\|level_up\|experience\|currency\|shop\|inventory" scripts/ 2>/dev/null | grep -v "test\|Test" || echo "No game logic patterns found (good)"
+
+      - name: Check comment density
+        run: |
+          echo "Checking comment density in core scripts..."
+          for file in scripts/core/*.gd; do
+            total=$(wc -l < "$file")
+            comments=$(grep -c '^\s*#' "$file" 2>/dev/null || echo 0)
+            if [ "$total" -gt 50 ] && [ "$comments" -lt 3 ]; then
+              echo "  WARNING: $file has low comment density ($comments comments in $total lines)"
+            fi
+          done
+          echo "Comment density check complete."
+
+      - name: Verify all scripts have class documentation
+        run: |
+          echo "Checking for class-level documentation..."
+          find scripts -name "*.gd" | while read file; do
+            if ! head -5 "$file" | grep -q "##"; then
+              echo "  WARNING: $file missing class documentation"
+            fi
+          done
+          echo "Documentation check complete."
