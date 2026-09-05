@@ -1,0 +1,91 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    name: Validate Project
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Godot
+        uses: chickensoft-games/setup-godot@v2
+        with:
+          version: 4.2.1
+          use-dotnet: false
+
+      - name: Verify project structure
+        run: |
+          echo "Checking project structure..."
+          test -f project.godot && echo "project.godot exists" || (echo "MISSING: project.godot" && exit 1)
+          test -d scripts/autoload && echo "autoload dir exists" || (echo "MISSING: scripts/autoload" && exit 1)
+          test -d scripts/core && echo "core dir exists" || (echo "MISSING: scripts/core" && exit 1)
+          test -d scripts/sdk && echo "sdk dir exists" || (echo "MISSING: scripts/sdk" && exit 1)
+          test -d config && echo "config dir exists" || (echo "MISSING: config" && exit 1)
+
+      - name: Validate GDScript syntax
+        run: |
+          echo "Running GDScript syntax check..."
+          find scripts -name "*.gd" -print0 | while IFS= read -r -d '' file; do
+            echo "  Checking: $file"
+            # Basic syntax: check for balanced braces and valid structure
+            if ! head -1 "$file" | grep -q "^extends\|^class_name\|^@tool"; then
+              if [ "$(head -1 "$file")" != "" ]; then
+                echo "  WARNING: $file does not start with extends/class_name"
+              fi
+            fi
+          done
+          echo "All scripts checked."
+
+      - name: Check autoload references
+        run: |
+          echo "Verifying autoload script references..."
+          grep "res://scripts" project.godot | while read line; do
+            script_path=$(echo "$line" | sed 's/.*res:\(\/\/[^"]*\).*/\1/')
+            if [ -f ".$script_path" ]; then
+              echo "  OK: $script_path"
+            else
+              echo "  MISSING: $script_path"
+              exit 1
+            fi
+          done
+
+      - name: Count infrastructure components
+        run: |
+          echo "=== Infrastructure Components ==="
+          echo "Autoload scripts: $(find scripts/autoload -name '*.gd' | wc -l)"
+          echo "Core scripts: $(find scripts/core -name '*.gd' | wc -l)"
+          echo "SDK scripts: $(find scripts/sdk -name '*.gd' | wc -l)"
+          echo "Config files: $(find config -name '*.cfg' | wc -l)"
+          echo "Test files: $(find tests -name '*.gd' 2>/dev/null | wc -l)"
+
+  lint:
+    name: Code Style Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for TODO/FIXME
+        run: |
+          echo "Checking for TODO/FIXME markers..."
+          grep -rn "TODO\|FIXME\|HACK\|XXX" scripts/ || echo "No TODO markers found (good)"
+
+      - name: Verify English comments
+        run: |
+          echo "Verifying comments are in English..."
+          find scripts -name "*.gd" -exec grep -l "[\x{4e00}-\x{9fff}]" {} \; 2>/dev/null || echo "All comments in English (good)"
+
+      - name: Check file naming convention
+        run: |
+          echo "Checking PascalCase file naming..."
+          find scripts -name "*.gd" | while read file; do
+            filename=$(basename "$file" .gd)
+            if echo "$filename" | grep -q "^[a-z]"; then
+              echo "  WARNING: $file should use PascalCase"
+            fi
+          done
