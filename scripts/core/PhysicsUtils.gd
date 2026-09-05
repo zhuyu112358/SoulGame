@@ -8,6 +8,9 @@ extends RefCounted
 ## Usage:
 ##   var hit = PhysicsUtils.ray_cast(origin, direction, 100)
 ##   var collision = PhysicsUtils.check_circle_collision(a, b, radius)
+
+## MathUtils preload (class_name may not be registered in all contexts)
+const MathUtils = preload("res://scripts/core/MathUtils.gd")
 ##   var velocity = PhysicsUtils.apply_friction(velocity, 0.9, delta)
 
 ## Ray cast in 2D space
@@ -17,7 +20,7 @@ static func ray_cast(space_state: PhysicsDirectSpaceState2D, from: Vector2, dire
 	if space_state == null:
 		return {}
 
-	var query := PhysicsRayQueryParameters2D.create(from, from + direction.normalized() * distance, collision_mask)
+	var query = PhysicsRayQueryParameters2D.create(from, from + direction.normalized() * distance, collision_mask)
 	query.exclude = exclude
 	var result = space_state.intersect_ray(query)
 	return result
@@ -46,23 +49,23 @@ static func point_in_rect(point: Vector2, rect: Rect2) -> bool:
 ## Distance from point to line segment
 ## Returns closest point on segment and distance
 static func distance_to_segment(point: Vector2, segment_start: Vector2, segment_end: Vector2) -> Dictionary:
-	var ap := point - segment_start
-	var ab := segment_end - segment_start
-	var ab2 := ab.dot(ab)
+	var ap = point - segment_start
+	var ab = segment_end - segment_start
+	var ab2 = ab.dot(ab)
 
 	if ab2 == 0.0:
-		var dist := point.distance_to(segment_start)
+		var dist: float = point.distance_to(segment_start)
 		return {"closest_point": segment_start, "distance": dist}
 
-	var t := clamp(ap.dot(ab) / ab2, 0.0, 1.0)
-	var closest := segment_start + ab * t
-	var dist := point.distance_to(closest)
+	var t: float = clamp(ap.dot(ab) / ab2, 0.0, 1.0)
+	var closest: Vector2 = segment_start + ab * t
+	var dist: float = point.distance_to(closest)
 	return {"closest_point": closest, "distance": dist, "t": t}
 
 
 ## Apply friction/drag to velocity
 static func apply_friction(velocity: Vector2, friction: float, delta: float) -> Vector2:
-	var decay := pow(friction, delta)
+	var decay = pow(friction, delta)
 	return velocity * decay
 
 
@@ -85,33 +88,33 @@ static func bounce(velocity: Vector2, normal: Vector2, bounciness: float = 1.0) 
 
 ## Calculate steering force (for AI movement)
 static func seek(current_pos: Vector2, target_pos: Vector2, current_velocity: Vector2, max_speed: float, max_force: float) -> Vector2:
-	var desired := (target_pos - current_pos).normalized() * max_speed
-	var steering := desired - current_velocity
+	var desired = (target_pos - current_pos).normalized() * max_speed
+	var steering = desired - current_velocity
 	return clamp_velocity(steering, max_force)
 
 
 ## Calculate arrival steering (slows down near target)
 static func arrive(current_pos: Vector2, target_pos: Vector2, current_velocity: Vector2, max_speed: float, max_force: float, slowing_radius: float = 50.0) -> Vector2:
-	var to_target := target_pos - current_pos
-	var distance := to_target.length()
+	var to_target = target_pos - current_pos
+	var distance = to_target.length()
 
-	var desired := to_target.normalized() * max_speed
+	var desired = to_target.normalized() * max_speed
 	if distance < slowing_radius:
 		desired *= distance / slowing_radius
 
-	var steering := desired - current_velocity
+	var steering = desired - current_velocity
 	return clamp_velocity(steering, max_force)
 
 
 ## Calculate separation force (avoid crowding)
 static func separation(current_pos: Vector2, neighbors: Array, desired_separation: float) -> Vector2:
-	var steer := Vector2.ZERO
-	var count := 0
+	var steer = Vector2.ZERO
+	var count = 0
 
 	for neighbor in neighbors:
-		var d := current_pos.distance_to(neighbor)
+		var d = current_pos.distance_to(neighbor)
 		if d > 0 and d < desired_separation:
-			var diff := (current_pos - neighbor).normalized() / d
+			var diff: Vector2 = (current_pos - neighbor).normalized() / d
 			steer += diff
 			count += 1
 
@@ -123,20 +126,20 @@ static func separation(current_pos: Vector2, neighbors: Array, desired_separatio
 ## Line-line intersection
 ## Returns intersection point or null if parallel
 static func line_intersection(a1: Vector2, a2: Vector2, b1: Vector2, b2: Vector2) -> Vector2:
-	var denom := (a1.x - a2.x) * (b1.y - b2.y) - (a1.y - a2.y) * (b1.x - b2.x)
+	var denom = (a1.x - a2.x) * (b1.y - b2.y) - (a1.y - a2.y) * (b1.x - b2.x)
 	if abs(denom) < 0.0001:
 		return Vector2.ZERO
 
-	var t := ((a1.x - b1.x) * (b1.y - b2.y) - (a1.y - b1.y) * (b1.x - b2.x)) / denom
+	var t = ((a1.x - b1.x) * (b1.y - b2.y) - (a1.y - b1.y) * (b1.x - b2.x)) / denom
 	return a1 + (a2 - a1) * t
 
 
 ## Check if lines intersect (within segments)
 static func segments_intersect(a1: Vector2, a2: Vector2, b1: Vector2, b2: Vector2) -> bool:
-	var d1 := _cross(b2 - b1, a1 - b1)
-	var d2 := _cross(b2 - b1, a2 - b1)
-	var d3 := _cross(a2 - a1, b1 - a1)
-	var d4 := _cross(a2 - a1, b2 - a1)
+	var d1 = _cross(b2 - b1, a1 - b1)
+	var d2 = _cross(b2 - b1, a2 - b1)
+	var d3 = _cross(a2 - a1, b1 - a1)
+	var d4 = _cross(a2 - a1, b2 - a1)
 
 	if ((d1 > 0 and d2 < 0) or (d1 < 0 and d2 > 0)) and ((d3 > 0 and d4 < 0) or (d3 < 0 and d4 > 0)):
 		return true
@@ -155,15 +158,15 @@ static func move_and_slide(space_state: PhysicsDirectSpaceState2D, position: Vec
 	if space_state == null:
 		return {"position": position + velocity * delta, "velocity": velocity, "collision": false}
 
-	var motion := velocity * delta
+	var motion = velocity * delta
 	var result = space_state.intersect_ray(PhysicsRayQueryParameters2D.create(position, position + motion, collision_layer))
 
 	if not result.is_empty():
 		var hit_pos: Vector2 = result["position"]
 		var normal: Vector2 = result["normal"]
 		# Slide along surface
-		var remaining := (position + motion) - hit_pos
-		var slide := remaining - normal * remaining.dot(normal)
+		var remaining = (position + motion) - hit_pos
+		var slide = remaining - normal * remaining.dot(normal)
 		return {
 			"position": hit_pos + slide * 0.99,
 			"velocity": velocity.slide(normal),
@@ -177,8 +180,8 @@ static func move_and_slide(space_state: PhysicsDirectSpaceState2D, position: Vec
 
 ## Calculate angular velocity to face target
 static func look_at_rotation(current_rotation: float, target_angle: float, rotation_speed: float, delta: float) -> float:
-	var diff := MathUtils.normalize_angle(target_angle - current_rotation)
-	var max_rotation := rotation_speed * delta
+	var diff: float = MathUtils.normalize_angle(target_angle - current_rotation)
+	var max_rotation = rotation_speed * delta
 	if abs(diff) <= max_rotation:
 		return target_angle
 	return current_rotation + sign(diff) * max_rotation
@@ -192,35 +195,35 @@ static func projectile_position(start: Vector2, velocity: Vector2, gravity: floa
 
 ## Projectile velocity needed to hit target (angle-based)
 static func projectile_velocity(start: Vector2, target: Vector2, angle: float, gravity: float) -> Vector2:
-	var dx := target.x - start.x
-	var dy := target.y - start.y
-	var cos_a := cos(angle)
-	var sin_a := sin(angle)
+	var dx = target.x - start.x
+	var dy = target.y - start.y
+	var cos_a = cos(angle)
+	var sin_a = sin(angle)
 
 	if cos_a == 0:
 		return Vector2.ZERO
 
-	var v2 := gravity * dx * dx / (2.0 * cos_a * cos_a * (dx * tan(angle) - dy))
+	var v2 = gravity * dx * dx / (2.0 * cos_a * cos_a * (dx * tan(angle) - dy))
 	if v2 <= 0:
 		return Vector2.ZERO
 
-	var v := sqrt(v2)
+	var v = sqrt(v2)
 	return Vector2(v * cos_a, v * sin_a)
 
 
 ## Spring physics (damped harmonic oscillator)
 static func spring_damper(current: float, target: float, velocity: float, stiffness: float, damping: float, delta: float) -> Dictionary:
-	var force := -stiffness * (current - target) - damping * velocity
-	var new_velocity := velocity + force * delta
-	var new_position := current + new_velocity * delta
+	var force = -stiffness * (current - target) - damping * velocity
+	var new_velocity = velocity + force * delta
+	var new_position = current + new_velocity * delta
 	return {"position": new_position, "velocity": new_velocity}
 
 
 ## 2D spring damper
 static func spring_damper_2d(current: Vector2, target: Vector2, velocity: Vector2, stiffness: float, damping: float, delta: float) -> Dictionary:
-	var force := -stiffness * (current - target) - damping * velocity
-	var new_velocity := velocity + force * delta
-	var new_position := current + new_velocity * delta
+	var force = -stiffness * (current - target) - damping * velocity
+	var new_velocity = velocity + force * delta
+	var new_position = current + new_velocity * delta
 	return {"position": new_position, "velocity": new_velocity}
 
 

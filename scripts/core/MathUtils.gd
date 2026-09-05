@@ -83,8 +83,8 @@ static func rotate_vector(v: Vector2, angle: float) -> Vector2:
 
 ## Move a point towards target by max distance
 static func move_toward(current: Vector2, target: Vector2, max_distance: float) -> Vector2:
-	var diff := target - current
-	var dist := diff.length()
+	var diff: Vector2 = target - current
+	var dist: float = diff.length()
 	if dist <= max_distance or dist == 0.0:
 		return target
 	return current + diff / dist * max_distance
@@ -109,7 +109,7 @@ static func approx_vector(a: Vector2, b: Vector2, epsilon: float = 0.001) -> boo
 
 ## Wrap a value within [min, max)
 static func wrap(value: float, min_value: float, max_value: float) -> float:
-	var range := max_value - min_value
+	var range: float = max_value - min_value
 	if range == 0:
 		return min_value
 	return value - range * floor((value - min_value) / range)
@@ -127,26 +127,26 @@ static func random_int(min_value: int, max_value: int) -> int:
 
 ## Random point in circle
 static func random_in_circle(radius: float = 1.0) -> Vector2:
-	var angle := randf() * TAU
-	var r := sqrt(randf()) * radius
+	var angle: float = randf() * TAU
+	var r: float = sqrt(randf()) * radius
 	return Vector2(cos(angle), sin(angle)) * r
 
 
 ## Random point on circle edge
 static func random_on_circle(radius: float = 1.0) -> Vector2:
-	var angle := randf() * TAU
+	var angle: float = randf() * TAU
 	return Vector2(cos(angle), sin(angle)) * radius
 
 
 ## Smoothstep interpolation
 static func smoothstep(from: float, to: float, t: float) -> float:
-	var x := clamp((t - from) / (to - from), 0.0, 1.0)
+	var x: float = clamp((t - from) / (to - from), 0.0, 1.0)
 	return x * x * (3.0 - 2.0 * x)
 
 
 ## Smootherstep (Ken Perlin's improved)
 static func smootherstep(from: float, to: float, t: float) -> float:
-	var x := clamp((t - from) / (to - from), 0.0, 1.0)
+	var x: float = clamp((t - from) / (to - from), 0.0, 1.0)
 	return x * x * x * (x * (x * 6.0 - 15.0) + 10.0)
 
 
@@ -189,7 +189,7 @@ static func inverse_lerp(a: float, b: float, value: float) -> float:
 
 ## Remap with clamping
 static func remap_clamped(value: float, in_min: float, in_max: float, out_min: float, out_max: float) -> float:
-	var t := inverse_lerp(in_min, in_max, value)
+	var t: float = inverse_lerp(in_min, in_max, value)
 	return lerp(out_min, out_max, t)
 
 
@@ -212,7 +212,7 @@ static func ease_in_out(t: float) -> float:
 
 ## Elastic ease-out
 static func elastic_out(t: float) -> float:
-	var c4 := (2.0 * PI) / 3.0
+	var c4: float = (2.0 * PI) / 3.0
 	if t == 0.0 or t == 1.0:
 		return t
 	return pow(2.0, -10.0 * t) * sin((t * 10.0 - 0.75) * c4) + 1.0
@@ -220,8 +220,8 @@ static func elastic_out(t: float) -> float:
 
 ## Bounce ease-out
 static func bounce_out(t: float) -> float:
-	var n1 := 7.5625
-	var d1 := 2.75
+	var n1: float = 7.5625
+	var d1: float = 2.75
 	if t < 1.0 / d1:
 		return n1 * t * t
 	elif t < 2.0 / d1:
