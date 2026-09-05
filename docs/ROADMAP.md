@@ -68,9 +68,9 @@ Now developing actual game features: Soul Home + Soul Growth foundation.
 - [x] soul_home.tscn - M1 scene foundation
 - [x] CLI-based player interface (main menu, soul home UI, soul management)
 - [x] SDK connectivity verification (all 7 SoulArena API endpoints)
+- [x] Soul home interaction system (dialogue, pet, feed, play with soul reactions)
 - [ ] Soul home pixel art (128x128 soul sprite, room backgrounds)
 - [ ] Soul growth visualization (radar charts, progress bars, level up animations)
-- [ ] Soul home interaction system (dialogue, pet, feed, play with soul reactions)
 - [ ] Soul growth persistence integration
 - [ ] M1 integration tests
 

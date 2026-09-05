@@ -18,6 +18,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   - Confirmed plural `/api/souls/` path for all endpoints
   - Documented correct request body formats
   - SoulArenaClient implementation matches actual API specification
+- **Soul Home Scene Enhancement** (`scenes/soul_home.tscn`, `scripts/game/SoulHomeController.gd`)
+  - Complete UI layout: status panel, growth panel, interaction buttons, chat panel
+  - 5 interaction buttons: Chat, Pet, Feed, Play, Train
+  - Chat system with message history and color-coded senders
+  - Real-time status display: level, XP, cognitive/emotional/skills levels, energy, mood, milestones
+  - Growth progress display: perception, memory, reasoning, decision, empathy, expression, attachment
+  - Event log for interaction feedback
+  - Back to CLI navigation
+  - Fixed enter_world() API call parameter (world_id string, not body dict)
+  - Fixed exit_world() API call parameter (reason string, not dict)
+  - Added get_mood() method to SoulGrowthData
 
 ### Fixed
 - **Godot 4.7.2 Compatibility** (BUG-010 through BUG-015) - Project now fully loads with 0 script errors

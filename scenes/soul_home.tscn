@@ -6,40 +6,201 @@
 script = ExtResource("1_controller")
 
 [node name="Background" type="ColorRect" parent="."]
-offset_right = 800.0
-offset_bottom = 600.0
-color = Color(0.12, 0.1, 0.18, 1)
+offset_right = 1280.0
+offset_bottom = 720.0
+color = Color(0.08, 0.06, 0.12, 1)
 
 [node name="RoomLabel" type="Label" parent="."]
 offset_left = 20.0
 offset_top = 10.0
-offset_right = 200.0
+offset_right = 300.0
 offset_bottom = 40.0
-text = "主房间"
+text = "Soul Home - Main Room"
 theme_override_colors/font_color = Color(0.9, 0.9, 0.95, 1)
+theme_override_font_sizes/font_size = 18
 
 [node name="SoulDisplayArea" type="Node2D" parent="."]
-position = Vector2(400, 300)
+position = Vector2(640, 320)
 
-[node name="InteractionHint" type="Label" parent="."]
-offset_left = 250.0
-offset_top = 500.0
-offset_right = 550.0
-offset_bottom = 530.0
-text = "点击互动: 对话 | 抚摸 | 喂食 | 玩耍"
-theme_override_colors/font_color = Color(0.7, 0.7, 0.8, 1)
+[node name="SoulPlaceholder" type="ColorRect" parent="SoulDisplayArea"]
+offset_left = -64.0
+offset_top = -64.0
+offset_right = 64.0
+offset_bottom = 64.0
+color = Color(0.4, 0.4, 1.0, 0.8)
+
+[node name="SoulNameLabel" type="Label" parent="SoulDisplayArea"]
+offset_left = -100.0
+offset_top = 80.0
+offset_right = 100.0
+offset_bottom = 110.0
+text = "Soul"
 horizontal_alignment = 1
+theme_override_colors/font_color = Color(0.9, 0.9, 0.95, 1)
+theme_override_font_sizes/font_size = 16
 
 [node name="StatusPanel" type="Panel" parent="."]
 offset_left = 10.0
-offset_top = 540.0
-offset_right = 300.0
-offset_bottom = 590.0
+offset_top = 50.0
+offset_right = 280.0
+offset_bottom = 280.0
+
+[node name="StatusTitle" type="Label" parent="StatusPanel"]
+offset_left = 10.0
+offset_top = 5.0
+offset_right = 260.0
+offset_bottom = 30.0
+text = "=== Soul Status ==="
+theme_override_colors/font_color = Color(0.9, 0.9, 0.95, 1)
+theme_override_font_sizes/font_size = 14
 
 [node name="StatusLabel" type="Label" parent="StatusPanel"]
 offset_left = 10.0
+offset_top = 35.0
+offset_right = 260.0
+offset_bottom = 220.0
+text = "Level: 1
+XP: 0/100
+Cognitive: Lv.1
+Emotional: Lv.1
+Skills: Lv.1
+Energy: 100
+Mood: Neutral
+Milestones: 0"
+theme_override_colors/font_color = Color(0.8, 0.8, 0.85, 1)
+theme_override_font_sizes/font_size = 12
+
+[node name="GrowthPanel" type="Panel" parent="."]
+offset_left = 1000.0
+offset_top = 50.0
+offset_right = 1270.0
+offset_bottom = 280.0
+
+[node name="GrowthTitle" type="Label" parent="GrowthPanel"]
+offset_left = 10.0
 offset_top = 5.0
+offset_right = 250.0
+offset_bottom = 30.0
+text = "=== Growth Progress ==="
+theme_override_colors/font_color = Color(0.9, 0.9, 0.95, 1)
+theme_override_font_sizes/font_size = 14
+
+[node name="GrowthLabel" type="Label" parent="GrowthPanel"]
+offset_left = 10.0
+offset_top = 35.0
+offset_right = 250.0
+offset_bottom = 220.0
+text = "Perception: 10
+Memory: 10
+Reasoning: 10
+Decision: 10
+Empathy: 10
+Expression: 10
+Attachment: 10
+Session Time: 0s"
+theme_override_colors/font_color = Color(0.8, 0.8, 0.85, 1)
+theme_override_font_sizes/font_size = 12
+
+[node name="InteractionPanel" type="Panel" parent="."]
+offset_left = 300.0
+offset_top = 550.0
+offset_right = 980.0
+offset_bottom = 640.0
+
+[node name="ChatButton" type="Button" parent="InteractionPanel"]
+offset_left = 20.0
+offset_top = 15.0
+offset_right = 140.0
+offset_bottom = 55.0
+text = "Chat"
+
+[node name="PetButton" type="Button" parent="InteractionPanel"]
+offset_left = 160.0
+offset_top = 15.0
 offset_right = 280.0
-offset_bottom = 45.0
-text = "灵魂状态: Lv.1 | 情绪: 中性 | 精力: 100"
-theme_override_colors/font_color = Color(0.85, 0.85, 0.9, 1)
+offset_bottom = 55.0
+text = "Pet"
+
+[node name="FeedButton" type="Button" parent="InteractionPanel"]
+offset_left = 300.0
+offset_top = 15.0
+offset_right = 420.0
+offset_bottom = 55.0
+text = "Feed"
+
+[node name="PlayButton" type="Button" parent="InteractionPanel"]
+offset_left = 440.0
+offset_top = 15.0
+offset_right = 560.0
+offset_bottom = 55.0
+text = "Play"
+
+[node name="TrainButton" type="Button" parent="InteractionPanel"]
+offset_left = 580.0
+offset_top = 15.0
+offset_right = 700.0
+offset_bottom = 55.0
+text = "Train"
+
+[node name="ChatPanel" type="Panel" parent="."]
+visible = false
+offset_left = 300.0
+offset_top = 350.0
+offset_right = 980.0
+offset_bottom = 540.0
+
+[node name="ChatHistory" type="RichTextLabel" parent="ChatPanel"]
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 660.0
+offset_bottom = 140.0
+bbcode_enabled = true
+text = "Chat started. Type a message to talk to your soul."
+
+[node name="ChatInput" type="LineEdit" parent="ChatPanel"]
+offset_left = 10.0
+offset_top = 150.0
+offset_right = 560.0
+offset_bottom = 180.0
+placeholder_text = "Type message..."
+
+[node name="ChatSend" type="Button" parent="ChatPanel"]
+offset_left = 570.0
+offset_top = 150.0
+offset_right = 660.0
+offset_bottom = 180.0
+text = "Send"
+
+[node name="ChatClose" type="Button" parent="ChatPanel"]
+offset_left = 620.0
+offset_top = 10.0
+offset_right = 660.0
+offset_bottom = 40.0
+text = "X"
+
+[node name="EventLog" type="Label" parent="."]
+offset_left = 300.0
+offset_top = 650.0
+offset_right = 980.0
+offset_bottom = 710.0
+text = "Welcome to Soul Home. Interact with your soul using the buttons below."
+horizontal_alignment = 1
+theme_override_colors/font_color = Color(0.7, 0.7, 0.75, 1)
+theme_override_font_sizes/font_size = 12
+
+[node name="BackButton" type="Button" parent="."]
+offset_left = 1150.0
+offset_top = 10.0
+offset_right = 1270.0
+offset_bottom = 40.0
+text = "Back to CLI"
+
+[connection signal="pressed" from="InteractionPanel/ChatButton" to="." method="_on_chat_button"]
+[connection signal="pressed" from="InteractionPanel/PetButton" to="." method="_on_pet_button"]
+[connection signal="pressed" from="InteractionPanel/FeedButton" to="." method="_on_feed_button"]
+[connection signal="pressed" from="InteractionPanel/PlayButton" to="." method="_on_play_button"]
+[connection signal="pressed" from="InteractionPanel/TrainButton" to="." method="_on_train_button"]
+[connection signal="pressed" from="ChatPanel/ChatSend" to="." method="_on_chat_send"]
+[connection signal="pressed" from="ChatPanel/ChatClose" to="." method="_on_chat_close"]
+[connection signal="text_submitted" from="ChatPanel/ChatInput" to="." method="_on_chat_send"]
+[connection signal="pressed" from="BackButton" to="." method="_on_back_button"]

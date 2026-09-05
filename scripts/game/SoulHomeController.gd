@@ -185,7 +185,7 @@ func _exit_soul_world() -> void:
 	if not soul_in_world or soul_id.is_empty():
 		return
 
-	SoulArenaClient.exit_world(soul_id, {"reason": "left_home"}, self, "_on_world_exited")
+	SoulArenaClient.exit_world(soul_id, "left_home", self, "_on_world_exited")
 	soul_in_world = false
 
 
