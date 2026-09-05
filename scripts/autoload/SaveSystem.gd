@@ -19,6 +19,12 @@ var _settings_path: String = "user://settings.cfg"
 ## Maximum save slots
 var _max_slots: int = 10
 
+## Current save format version
+const SAVE_VERSION: int = 2
+
+## Minimum supported save version (older will be migrated)
+const MIN_SUPPORTED_VERSION: int = 1
+
 ## Auto-save interval in seconds (0 = disabled)
 var _auto_save_interval: float = 0.0
 
@@ -31,8 +37,15 @@ var _auto_save_enabled: bool = false
 ## Cached settings
 var _settings: ConfigFile = null
 
-## Save metadata cache: { slot: {timestamp, name, playtime} }
+## Save metadata cache: { slot: {timestamp, name, playtime, version} }
 var _save_metadata: Dictionary = {}
+
+## Migration statistics
+var _migration_stats: Dictionary = {
+	"total_migrated": 0,
+	"failed_migrations": 0,
+	"last_migration": ""
+}
 
 
 func _ready() -> void:
@@ -62,7 +75,8 @@ func save_game(slot: int, data: Dictionary, slot_name: String = "") -> bool:
 	# Store metadata
 	save_file.set_value("meta", "timestamp", Time.get_datetime_string_from_system())
 	save_file.set_value("meta", "slot_name", slot_name if not slot_name.is_empty() else "Save %d" % slot)
-	save_file.set_value("meta", "version", "1")
+	save_file.set_value("meta", "version", SAVE_VERSION)
+	save_file.set_value("meta", "engine_version", Engine.get_version_info()["string"])
 
 	# Store game data (flatten dictionary to sections)
 	_serialize_dict(save_file, "data", data)
@@ -85,6 +99,7 @@ func save_game(slot: int, data: Dictionary, slot_name: String = "") -> bool:
 
 
 ## Load game data from a slot
+## Automatically migrates old save formats to current version
 func load_game(slot: int) -> Dictionary:
 	if slot < 0 or slot >= _max_slots:
 		Logger.error("SaveSystem: Invalid slot %d" % slot, "Save")
@@ -101,9 +116,22 @@ func load_game(slot: int) -> Dictionary:
 		Logger.error("SaveSystem: Failed to load slot %d: error %d" % [slot, error_code], "Save")
 		return {}
 
+	# Check version and migrate if needed
+	var save_version := int(save_file.get_value("meta", "version", "1"))
+	if save_version < SAVE_VERSION:
+		Logger.info("SaveSystem: Migrating save slot %d from v%d to v%d" % [slot, save_version, SAVE_VERSION], "Save")
+		var migrated := _migrate_save(save_file, save_version)
+		if migrated:
+			save_file.save(save_path)
+			_migration_stats["total_migrated"] += 1
+			_migration_stats["last_migration"] = "slot %d: v%d -> v%d" % [slot, save_version, SAVE_VERSION]
+		else:
+			_migration_stats["failed_migrations"] += 1
+			Logger.error("SaveSystem: Migration failed for slot %d" % slot, "Save")
+
 	var data := _deserialize_dict(save_file, "data")
-	EventBus.emit("game_loaded", {"slot": slot})
-	Logger.info("SaveSystem: Loaded game from slot %d" % slot, "Save")
+	EventBus.emit("game_loaded", {"slot": slot, "version": SAVE_VERSION})
+	Logger.info("SaveSystem: Loaded game from slot %d (v%d)" % [slot, SAVE_VERSION], "Save")
 	return data
 
 
@@ -250,5 +278,69 @@ func _load_save_metadata() -> void:
 				_save_metadata[slot] = {
 					"timestamp": config.get_value("meta", "timestamp", "unknown"),
 					"name": config.get_value("meta", "slot_name", "Save %d" % slot),
-					"size": FileAccess.get_file_as_bytes(save_path).size()
+					"size": FileAccess.get_file_as_bytes(save_path).size(),
+					"version": int(config.get_value("meta", "version", "1"))
 				}
+
+
+## --- Save Migration ---
+
+## Migrate a save file from an older version to current
+## Returns true if migration was successful
+func _migrate_save(config: ConfigFile, from_version: int) -> bool:
+	var current := from_version
+
+	# Migration chain: each step upgrades one version
+	while current < SAVE_VERSION:
+		match current:
+			1:
+				if not _migrate_v1_to_v2(config):
+					return false
+			_:
+				Logger.warning("SaveSystem: No migration path for v%d" % current, "Save")
+				return false
+		current += 1
+
+	config.set_value("meta", "version", SAVE_VERSION)
+	return true
+
+
+## Migration from v1 to v2
+## v2 adds: playtime tracking, schema version, normalized data sections
+func _migrate_v1_to_v2(config: ConfigFile) -> bool:
+	# Add playtime if missing
+	if not config.has_section_key("meta", "playtime"):
+		config.set_value("meta", "playtime", 0.0)
+
+	# Add schema version
+	if not config.has_section_key("meta", "schema_version"):
+		config.set_value("meta", "schema_version", "2.0")
+
+	# Ensure data section exists
+	if not config.has_section("data"):
+		config.set_value("data", "migrated", true)
+
+	Logger.info("SaveSystem: Migrated v1 -> v2", "Save")
+	return true
+
+
+## Get migration statistics
+func get_migration_stats() -> Dictionary:
+	return _migration_stats.duplicate()
+
+
+## Get save format version
+func get_save_version() -> int:
+	return SAVE_VERSION
+
+
+## Check if a save needs migration
+func needs_migration(slot: int) -> bool:
+	var save_path := _get_save_path(slot)
+	if not FileAccess.file_exists(save_path):
+		return false
+	var config := ConfigFile.new()
+	if config.load(save_path) != OK:
+		return false
+	var version := int(config.get_value("meta", "version", "1"))
+	return version < SAVE_VERSION

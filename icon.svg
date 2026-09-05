@@ -1,0 +1,49 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="128" height="128" rx="16" fill="#0d0d1a"/>
+  
+  <!-- Outer glow ring -->
+  <circle cx="64" cy="64" r="48" fill="none" stroke="#6366f1" stroke-width="2" opacity="0.6"/>
+  <circle cx="64" cy="64" r="42" fill="none" stroke="#8b5cf6" stroke-width="1" opacity="0.4"/>
+  
+  <!-- Soul orb -->
+  <defs>
+    <radialGradient id="soulGlow" cx="50%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="#a78bfa" stop-opacity="0.9"/>
+      <stop offset="50%" stop-color="#6366f1" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#312e81" stop-opacity="0.2"/>
+    </radialGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Main soul orb -->
+  <circle cx="64" cy="60" r="28" fill="url(#soulGlow)" filter="url(#glow)"/>
+  
+  <!-- Inner core -->
+  <circle cx="64" cy="58" r="12" fill="#e0e7ff" opacity="0.8"/>
+  <circle cx="60" cy="54" r="4" fill="#ffffff" opacity="0.9"/>
+  
+  <!-- Soul tail -->
+  <path d="M64 88 Q58 100 52 108 Q64 104 76 108 Q70 100 64 88" fill="#8b5cf6" opacity="0.5"/>
+  
+  <!-- Floating particles -->
+  <circle cx="32" cy="40" r="2" fill="#a78bfa" opacity="0.7"/>
+  <circle cx="96" cy="48" r="1.5" fill="#c4b5fd" opacity="0.6"/>
+  <circle cx="40" cy="90" r="1.5" fill="#818cf8" opacity="0.5"/>
+  <circle cx="90" cy="88" r="2" fill="#a78bfa" opacity="0.6"/>
+  <circle cx="24" cy="64" r="1" fill="#c4b5fd" opacity="0.4"/>
+  <circle cx="104" cy="68" r="1" fill="#818cf8" opacity="0.4"/>
+  
+  <!-- Connection nodes -->
+  <circle cx="32" cy="40" r="4" fill="none" stroke="#6366f1" stroke-width="1" opacity="0.5"/>
+  <circle cx="96" cy="48" r="3" fill="none" stroke="#8b5cf6" stroke-width="1" opacity="0.4"/>
+  
+  <!-- Title text -->
+  <text x="64" y="118" text-anchor="middle" font-family="monospace" font-size="10" fill="#a5b4fc" opacity="0.8">SOUL</text>
+</svg>
