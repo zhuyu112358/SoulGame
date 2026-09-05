@@ -1,4 +1,4 @@
-extends Node
+﻿extends Node
 ## SceneManager - Scene switching, loading, and transition management
 ##
 ## Handles scene lifecycle with fade transitions, loading screens,
@@ -65,7 +65,7 @@ func change_scene(scene_path: String, use_transition: bool = true) -> void:
 		return
 
 	_transitioning = true
-	GameState.set("game", "current_scene", resolved_path)
+	GameState.set_value("game", "current_scene", resolved_path)
 
 	if use_transition:
 		_play_transition(resolved_path, false)

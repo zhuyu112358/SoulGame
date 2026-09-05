@@ -1,4 +1,4 @@
-extends Node
+﻿extends Node
 ## Bootstrap - Initialization entry point
 ##
 ## This is the first script that runs. It initializes all core systems
@@ -30,9 +30,9 @@ func _initialize_config() -> void:
 
 func _initialize_state() -> void:
 	Logger.info("Initializing game state...", "Bootstrap")
-	GameState.set("game", "current_scene", "main")
-	GameState.set("game", "infrastructure_ready", true)
-	GameState.set("game", "design_frozen", false)
+	GameState.set_value("game", "current_scene", "main")
+	GameState.set_value("game", "infrastructure_ready", true)
+	GameState.set_value("game", "design_frozen", false)
 
 
 func _verify_sdk_connectivity() -> void:
@@ -41,12 +41,12 @@ func _verify_sdk_connectivity() -> void:
 	# Check SoulArena
 	var sa_reachable = SoulArenaClient.check_connection()
 	Logger.info("SoulArena (%s): %s" % [SoulArenaClient.get_base_url(), "reachable" if sa_reachable else "NOT reachable"], "Bootstrap")
-	GameState.set("game", "soularena_connected", sa_reachable)
+	GameState.set_value("game", "soularena_connected", sa_reachable)
 
 	# Check Seed
 	var seed_reachable = SeedClient.check_connection()
 	Logger.info("Seed (%s): %s" % [SeedClient.get_base_url(), "reachable" if seed_reachable else "NOT reachable"], "Bootstrap")
-	GameState.set("game", "seed_connected", seed_reachable)
+	GameState.set_value("game", "seed_connected", seed_reachable)
 
 	if not sa_reachable:
 		Logger.warning("SoulArena not reachable - API calls will fail until server starts", "Bootstrap")

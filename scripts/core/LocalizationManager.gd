@@ -1,4 +1,4 @@
-extends Node
+﻿extends Node
 ## LocalizationManager - Multi-language text localization
 ##
 ## Manages language files, text translation, and language switching.
@@ -52,7 +52,7 @@ func set_language(lang_code: String) -> void:
 		return
 
 	_current_language = lang_code
-	GameState.set("game", "language", lang_code)
+	GameState.set_value("game", "language", lang_code)
 
 	# Update Godot's translation server
 	TranslationServer.set_locale(lang_code)

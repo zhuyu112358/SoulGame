@@ -1,4 +1,4 @@
-extends Node
+﻿extends Node
 ## TimeManager - Game time management, tick scheduling, timers, and time events
 ##
 ## Manages game time scaling, fixed timestep ticks, scheduled callbacks,
@@ -346,7 +346,7 @@ func set_tick_rate(ticks_per_second: int) -> void:
 ## Pause game time
 func pause() -> void:
 	_paused = true
-	GameState.set("game", "paused", true)
+	GameState.set_value("game", "paused", true)
 	EventBus.emit("game_paused", {})
 	Logger.info("TimeManager: Paused", "Time")
 
@@ -354,7 +354,7 @@ func pause() -> void:
 ## Resume game time
 func resume() -> void:
 	_paused = false
-	GameState.set("game", "paused", false)
+	GameState.set_value("game", "paused", false)
 	EventBus.emit("game_resumed", {})
 	Logger.info("TimeManager: Resumed", "Time")
 

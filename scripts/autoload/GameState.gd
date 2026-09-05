@@ -1,11 +1,11 @@
-extends Node
+﻿extends Node
 ## GameState - Global state management for game, soul, and world states
 ##
 ## Provides a centralized state store with change notifications.
 ## States are organized into namespaces (game, soul, world, ui).
 ##
 ## Usage:
-##   GameState.set("game", "current_scene", "main_menu")
+##   GameState.set_value("game", "current_scene", "main_menu")
 ##   var scene = GameState.get("game", "current_scene")
 ##   GameState.subscribe("game", "current_scene", self, "_on_scene_changed")
 ##   GameState.get_soul_state("soul_001", "emotion")
@@ -36,7 +36,7 @@ func _ready() -> void:
 
 
 ## Set a state value and notify subscribers
-func set(namespace: String, key: String, value) -> void:
+func set_value(namespace: String, key: String, value: Variant) -> void:
 	if not _states.has(namespace):
 		_states[namespace] = {}
 
