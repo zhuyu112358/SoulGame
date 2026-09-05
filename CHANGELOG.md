@@ -48,18 +48,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 - **Godot 4.7.2 Compatibility** (BUG-010 through BUG-015) - Project now fully loads with 0 script errors
   - Renamed `Logger` autoload to `GameLog` (conflict with internal symbol)
-  - Renamed built-in method conflicts: `get/set/connect/disconnect/load/preload` 鈫?prefixed versions
-  - Renamed `create_tween()` 鈫?`create_anim_tween()`, `tr()` 鈫?`translate()`
+  - Renamed built-in method conflicts: `get/set/connect/disconnect/load/preload` 閳?prefixed versions
+  - Renamed `create_tween()` 閳?`create_anim_tween()`, `tr()` 閳?`translate()`
   - Fixed Performance API: `get_monitor(index)` with numeric indices for removed RENDER_* enums
   - Fixed HTTPRequest API: 4-parameter `request()` (removed ssl_verify_domain)
   - Fixed AudioServer: `is_bus_mute()` (not `is_bus_muted()`)
   - Fixed ConfigFile: string values must be quoted
   - Fixed encoding corruption: replaced all damaged Chinese strings with English
-  - Fixed `trait` parameter name conflict (Godot 4.7.2 reserved word) 鈫?`trait_name`
-  - Fixed lambda function parsing issues 鈫?named functions
-  - Fixed for-loop iteration over Dictionary/Array 鈫?index-based iteration
-  - Fixed class_name global registration issue 鈫?preload constants
-  - Fixed SaveSystem API: `get_value/set_value` 鈫?`get_setting/set_setting`
+  - Fixed `trait` parameter name conflict (Godot 4.7.2 reserved word) 閳?`trait_name`
+  - Fixed lambda function parsing issues 閳?named functions
+  - Fixed for-loop iteration over Dictionary/Array 閳?index-based iteration
+  - Fixed class_name global registration issue 閳?preload constants
+  - Fixed SaveSystem API: `get_value/set_value` 閳?`get_setting/set_setting`
   - Fixed stats dictionary missing keys (sfx_playing, critical_count, pending_count)
   - All 20 autoloads initialize successfully
 
