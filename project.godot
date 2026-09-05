@@ -33,6 +33,8 @@ InputManager="*res://scripts/core/InputManager.gd"
 ErrorHandler="*res://scripts/core/ErrorHandler.gd"
 TimeManager="*res://scripts/core/TimeManager.gd"
 AudioManager="*res://scripts/core/AudioManager.gd"
+LocalizationManager="*res://scripts/core/LocalizationManager.gd"
+AnimationManager="*res://scripts/core/AnimationManager.gd"
 
 [display]
 
