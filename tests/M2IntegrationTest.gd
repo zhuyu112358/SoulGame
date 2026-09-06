@@ -2663,6 +2663,41 @@ func _test_monetization_manager() -> void:
 	_assert(typeof(MonetizationManager._currency) == TYPE_DICTIONARY, "_currency is dictionary")
 	_assert(MonetizationManager._currency.has("soft"), "_currency has soft")
 
+
+	# Test 38: _is_subscriber field
+	_assert(typeof(MonetizationManager._is_subscriber) == TYPE_BOOL, "_is_subscriber is bool")
+
+	# Test 39: _owned_items is dictionary
+	_assert(typeof(MonetizationManager._owned_items) == TYPE_DICTIONARY, "_owned_items is dictionary")
+
+	# Test 40: _season_pass is dictionary
+	_assert(typeof(MonetizationManager._season_pass) == TYPE_DICTIONARY, "_season_pass is dictionary")
+	_assert(MonetizationManager._season_pass.has("tier"), "_season_pass has tier")
+
+	# Test 41: is_subscriber returns bool
+	var is_sub_new = MonetizationManager.is_subscriber()
+	_assert(typeof(is_sub_new) == TYPE_BOOL, "is_subscriber returns bool")
+
+	# Test 42: get_subscription_tier returns string
+	var sub_tier_new = MonetizationManager.get_subscription_tier()
+	_assert(typeof(sub_tier_new) == TYPE_STRING, "get_subscription_tier returns string")
+
+	# Test 43: has_item returns bool
+	var has_item_new = MonetizationManager.has_item("nonexistent_item")
+	_assert(typeof(has_item_new) == TYPE_BOOL, "has_item returns bool")
+
+	# Test 44: get_owned_items returns array
+	var owned_items_new = MonetizationManager.get_owned_items()
+	_assert(typeof(owned_items_new) == TYPE_ARRAY, "get_owned_items returns array")
+
+	# Test 45: get_shop_items returns array
+	var shop_items_new = MonetizationManager.get_shop_items()
+	_assert(typeof(shop_items_new) == TYPE_ARRAY, "get_shop_items returns array")
+	_assert(shop_items_new.size() > 0, "shop_items not empty")
+
+	# Test 46: get_season_pass_info returns dictionary
+	var season_info_new = MonetizationManager.get_season_pass_info()
+	_assert(typeof(season_info_new) == TYPE_DICTIONARY, "get_season_pass_info returns dictionary")
 ## ============================================
 ## PlatformSDK System Tests
 ## ============================================
