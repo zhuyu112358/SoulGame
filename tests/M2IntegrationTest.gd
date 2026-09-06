@@ -7,6 +7,7 @@ extends Node2D
 # Preload scripts without class_name
 const SoulUnit = preload("res://scripts/game/SoulUnit.gd")
 const Minimap = preload("res://scripts/ui/Minimap.gd")
+const PixelSpriteGenerator = preload("res://scripts/game/PixelSpriteGenerator.gd")
 
 ## Test counters
 var _tests_run: int = 0
@@ -32,6 +33,7 @@ func _ready() -> void:
 	_test_arena_map_system()
 	_test_minimap_system()
 	_test_audio_manager()
+	_test_pixel_sprite_generator()
 
 	# Print summary
 	print("\n=== M2 TEST SUMMARY ===")
@@ -1222,3 +1224,106 @@ func _test_audio_manager() -> void:
 		if not p.begins_with("res://assets/audio/"):
 			invalid_paths += 1
 	_assert(invalid_paths == 0, "All sound paths in assets/audio/: %d invalid" % invalid_paths)
+
+
+## ============================================
+## PixelSpriteGenerator System Tests
+## ============================================
+func _test_pixel_sprite_generator() -> void:
+	print("\n--- PixelSpriteGenerator System Tests ---")
+
+	# Create generator instance (RefCounted)
+	var generator = PixelSpriteGenerator.new()
+
+	# Test 1: SPRITE_SIZE constant
+	_assert(PixelSpriteGenerator.SPRITE_SIZE == 64, "SPRITE_SIZE = 64")
+
+	# Test 2: ELEMENT_PALETTES has entries
+	_assert(PixelSpriteGenerator.ELEMENT_PALETTES.size() > 0, "ELEMENT_PALETTES has entries: %d" % PixelSpriteGenerator.ELEMENT_PALETTES.size())
+
+	# Test 3: PERSONALITY_MODIFIERS has entries
+	_assert(PixelSpriteGenerator.PERSONALITY_MODIFIERS.size() > 0, "PERSONALITY_MODIFIERS has entries: %d" % PixelSpriteGenerator.PERSONALITY_MODIFIERS.size())
+
+	# Test 4: get_supported_elements returns array
+	var elements = generator.get_supported_elements()
+	_assert(typeof(elements) == TYPE_ARRAY, "get_supported_elements returns array")
+	_assert(elements.size() > 0, "Supported elements > 0: %d" % elements.size())
+
+	# Test 5: Common elements supported
+	_assert(elements.has("fire"), "fire element supported")
+	_assert(elements.has("water"), "water element supported")
+	_assert(elements.has("neutral"), "neutral element supported")
+
+	# Test 6: generate_soul_sprite returns ImageTexture for fire
+	var fire_sprite = generator.generate_soul_sprite("fire")
+	_assert(fire_sprite != null, "Fire sprite generated")
+	_assert(fire_sprite is ImageTexture, "Fire sprite is ImageTexture")
+
+	# Test 7: generate_soul_sprite returns ImageTexture for water
+	var water_sprite = generator.generate_soul_sprite("water")
+	_assert(water_sprite != null, "Water sprite generated")
+	_assert(water_sprite is ImageTexture, "Water sprite is ImageTexture")
+
+	# Test 8: generate_soul_sprite returns ImageTexture for neutral
+	var neutral_sprite = generator.generate_soul_sprite("neutral")
+	_assert(neutral_sprite != null, "Neutral sprite generated")
+	_assert(neutral_sprite is ImageTexture, "Neutral sprite is ImageTexture")
+
+	# Test 9: generate_soul_sprite with personality
+	var personality = {"aggression": 0.8, "courage": 0.6, "loyalty": 0.9}
+	var personality_sprite = generator.generate_soul_sprite("fire", personality)
+	_assert(personality_sprite != null, "Personality sprite generated")
+	_assert(personality_sprite is ImageTexture, "Personality sprite is ImageTexture")
+
+	# Test 10: generate_soul_sprite with empty personality
+	var empty_personality_sprite = generator.generate_soul_sprite("water", {})
+	_assert(empty_personality_sprite != null, "Empty personality sprite generated")
+
+	# Test 11: generate_soul_sprite with invalid element falls back
+	var invalid_sprite = generator.generate_soul_sprite("nonexistent_element")
+	_assert(invalid_sprite != null, "Invalid element falls back to default")
+
+	# Test 12: generate_color_swatch returns ImageTexture
+	var swatch = generator.generate_color_swatch("fire")
+	_assert(swatch != null, "Color swatch generated")
+	_assert(swatch is ImageTexture, "Color swatch is ImageTexture")
+
+	# Test 13: generate_color_swatch with custom size
+	var custom_swatch = generator.generate_color_swatch("water", 64)
+	_assert(custom_swatch != null, "Custom size color swatch generated")
+
+	# Test 14: generate_color_swatch for all elements
+	for element in elements:
+		var s = generator.generate_color_swatch(element)
+		_assert(s != null, "Color swatch for %s generated" % element)
+
+	# Test 15: Different elements produce different palettes
+	var fire_palette = generator._get_palette("fire", {})
+	var water_palette = generator._get_palette("water", {})
+	_assert(fire_palette != water_palette, "Fire and water palettes differ")
+
+	# Test 16: Palette has required color keys
+	_assert(fire_palette.has("primary"), "Palette has primary color")
+	_assert(fire_palette.has("secondary"), "Palette has secondary color")
+	_assert(fire_palette.has("glow"), "Palette has glow color")
+
+	# Test 17: _hash_string returns consistent hash
+	var hash1 = generator._hash_string("test")
+	var hash2 = generator._hash_string("test")
+	_assert(hash1 == hash2, "Hash is consistent")
+
+	# Test 18: _hash_string different for different strings
+	var hash3 = generator._hash_string("test1")
+	var hash4 = generator._hash_string("test2")
+	_assert(hash3 != hash4, "Different strings have different hashes")
+
+	# Test 19: All elements can generate sprites
+	for element in elements:
+		var sprite = generator.generate_soul_sprite(element)
+		_assert(sprite != null, "Sprite for %s generated" % element)
+
+	# Test 20: Personality modifiers affect palette
+	var base_palette = generator._get_palette("fire", {})
+	var aggro_palette = generator._get_palette("fire", {"aggression": 1.0})
+	_assert(typeof(base_palette) == TYPE_DICTIONARY, "Base palette is dictionary")
+	_assert(typeof(aggro_palette) == TYPE_DICTIONARY, "Aggro palette is dictionary")
