@@ -2452,6 +2452,32 @@ func _test_server_authority() -> void:
 	_assert(new_auth._sequence_number == 0, "_sequence_number starts at 0")
 	# RefCounted objects are freed automatically
 
+
+	# Test 36: AuthorityMode enum values
+	_assert(ServerAuthority.AuthorityMode.LOCAL_SIMULATION == 0, "LOCAL_SIMULATION = 0")
+	_assert(ServerAuthority.AuthorityMode.CLIENT_PREDICT == 1, "CLIENT_PREDICT = 1")
+	_assert(ServerAuthority.AuthorityMode.SERVER_ONLY == 2, "SERVER_ONLY = 2")
+
+	# Test 37: _max_snapshots constant
+	_assert(authority._max_snapshots == 60, "_max_snapshots = 60")
+
+	# Test 38: get_pending_count returns int
+	var pending_count_new = authority.get_pending_count()
+	_assert(typeof(pending_count_new) == TYPE_INT, "get_pending_count returns int")
+
+	# Test 39: get_sequence returns int
+	var seq_num_new = authority.get_sequence()
+	_assert(typeof(seq_num_new) == TYPE_INT, "get_sequence returns int")
+
+	# Test 40: take_snapshot and get_latest_snapshot
+	authority.take_snapshot({"player_hp": 100, "ai_hp": 80})
+	var latest_snap_new = authority.get_latest_snapshot()
+	_assert(typeof(latest_snap_new) == TYPE_DICTIONARY, "get_latest_snapshot returns dictionary")
+
+	# Test 41: verify_state returns bool
+	var verify_result_new = authority.verify_state({"player_hp": 100}, {"player_hp": 100})
+	_assert(typeof(verify_result_new) == TYPE_BOOL, "verify_state returns bool")
+	_assert(verify_result_new == true, "matching state verifies")
 ## ============================================
 ## MonetizationManager System Tests
 ## ============================================
