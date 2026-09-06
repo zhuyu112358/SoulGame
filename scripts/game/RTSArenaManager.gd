@@ -142,6 +142,17 @@ func start_battle(p_player_soul: Dictionary, p_ai_soul: Dictionary, p_map_name: 
 		ai_unit.personality["aggression"], ai_unit.personality["courage"], ai_unit.personality["loyalty"]
 	])
 
+	# Play battle start audio (design doc: audio feedback for battle events)
+	AudioManager.play_sfx("ui_battle_start")
+	AudioManager.play_bgm("bgm_battle")
+	# Play soul emotion sound based on AI personality
+	if ai_unit.personality["aggression"] > 70:
+		AudioManager.play_sfx("soul_angry_roar", 0.5)
+	elif ai_unit.personality["courage"] > 70:
+		AudioManager.play_sfx("soul_brave_courage", 0.5)
+	else:
+		AudioManager.play_sfx("soul_determined_resolve", 0.5)
+
 	emit_signal("battle_started", {
 		"player": player_unit.get_info(),
 		"ai": ai_unit.get_info(),
@@ -282,6 +293,15 @@ func _finish_battle(p_winner_id: String, p_result: String) -> void:
 		loser_id = player_unit.soul_id
 
 	_add_log("Battle finished! Result: %s" % p_result.to_upper())
+
+	# Play battle end audio (design doc: audio feedback for battle events)
+	AudioManager.play_sfx("ui_battle_end")
+	AudioManager.stop_bgm()
+	if p_result == "victory":
+		AudioManager.play_sfx("bat_victory")
+		AudioManager.play_sfx("soul_confident", 0.6)
+	else:
+		AudioManager.play_sfx("bat_defeat")
 
 	# Process battle result and growth feedback
 	var battle_data: Dictionary = {

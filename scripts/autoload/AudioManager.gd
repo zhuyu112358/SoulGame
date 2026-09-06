@@ -82,6 +82,22 @@ func _init_sound_paths() -> void:
 	for track_name in bgm_tracks:
 		_sound_paths["bgm_%s" % track_name] = "res://assets/audio/bgm/bgm_%s.wav" % track_name
 
+	# Environment sounds (ambient arena backgrounds)
+	var env_sounds: Array = [
+		"ancient_battlefield", "canyon", "cave", "cliff",
+		"forest", "lava", "wind_chimes"
+	]
+	for sound_name in env_sounds:
+		_sound_paths["env_%s" % sound_name] = "res://assets/audio/environment/env_%s.wav" % sound_name
+
+	# Soul emotion sounds (design doc: emotion affects battle)
+	var soul_sounds: Array = [
+		"angry_roar", "brave_courage", "confident", "determined_resolve",
+		"communication_blip", "curious_blip"
+	]
+	for sound_name in soul_sounds:
+		_sound_paths["soul_%s" % sound_name] = "res://assets/audio/soul/soul_%s.wav" % sound_name
+
 	GameLog.info("AudioManager: Registered %d sound paths" % _sound_paths.size(), "Audio")
 
 
