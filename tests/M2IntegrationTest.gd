@@ -3217,6 +3217,37 @@ func _test_soul_snapshot() -> void:
 	# Test 29: inventory field exists
 	_assert(typeof(snapshot.inventory) == TYPE_DICTIONARY, "inventory is dictionary")
 
+
+	# Test 30: SNAPSHOT_VERSION constant
+	_assert(typeof(SoulSnapshot.SNAPSHOT_VERSION) == TYPE_STRING, "SNAPSHOT_VERSION is string")
+	_assert(SoulSnapshot.SNAPSHOT_VERSION.length() > 0, "SNAPSHOT_VERSION not empty")
+
+	# Test 31: created_at field
+	_assert(typeof(snapshot.created_at) == TYPE_INT, "created_at is int")
+
+	# Test 32: modified_at field
+	_assert(typeof(snapshot.modified_at) == TYPE_INT, "modified_at is int")
+
+	# Test 33: origin_game field
+	_assert(typeof(snapshot.origin_game) == TYPE_STRING, "origin_game is string")
+
+	# Test 34: origin_world field
+	_assert(typeof(snapshot.origin_world) == TYPE_STRING, "origin_world is string")
+
+	# Test 35: current_game field
+	_assert(typeof(snapshot.current_game) == TYPE_STRING, "current_game is string")
+
+	# Test 36: current_world field
+	_assert(typeof(snapshot.current_world) == TYPE_STRING, "current_world is string")
+
+	# Test 37: signature field
+	_assert(typeof(snapshot.signature) == TYPE_STRING, "signature is string")
+
+	# Test 38: metadata field
+	_assert(typeof(snapshot.metadata) == TYPE_DICTIONARY, "metadata is dictionary")
+
+	# Test 39: migration_history field
+	_assert(typeof(snapshot.migration_history) == TYPE_ARRAY, "migration_history is array")
 ## ============================================
 ## WorldPlugin System Tests
 ## ============================================
