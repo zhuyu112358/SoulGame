@@ -2110,6 +2110,57 @@ func _test_monetization_manager() -> void:
 	var after_neg = MonetizationManager.get_currency("soft")
 	_assert(after_neg == before_neg - 10, "Negative currency add works: %d -> %d" % [before_neg, after_neg])
 
+	# Test 21: get_subscription_tier returns string
+	var sub_tier = MonetizationManager.get_subscription_tier()
+	_assert(typeof(sub_tier) == TYPE_STRING, "get_subscription_tier returns string")
+	_assert(sub_tier == "none", "Default tier = none")
+
+	# Test 22: has_item for nonexistent returns false
+	_assert(MonetizationManager.has_item("nonexistent_item") == false, "has_item nonexistent = false")
+
+	# Test 23: has_skin for nonexistent returns false
+	_assert(MonetizationManager.has_skin("nonexistent_skin") == false, "has_skin nonexistent = false")
+
+	# Test 24: get_owned_items returns array
+	var owned_list = MonetizationManager.get_owned_items()
+	_assert(typeof(owned_list) == TYPE_ARRAY, "get_owned_items returns array")
+
+	# Test 25: get_shop_items returns array
+	var shop_list = MonetizationManager.get_shop_items()
+	_assert(typeof(shop_list) == TYPE_ARRAY, "get_shop_items returns array")
+	_assert(shop_list.size() > 0, "Shop has items")
+
+	# Test 26: purchase_item nonexistent returns error
+	var purchase_resp = MonetizationManager.purchase_item("nonexistent_item")
+	_assert(typeof(purchase_resp) == TYPE_DICTIONARY, "purchase_item returns dictionary")
+	_assert(purchase_resp.has("success"), "purchase_result has success")
+	_assert(purchase_resp["success"] == false, "Purchase nonexistent fails")
+
+	# Test 27: equip_item nonexistent returns error
+	var equip_resp = MonetizationManager.equip_item("nonexistent_item", "skin")
+	_assert(typeof(equip_resp) == TYPE_DICTIONARY, "equip_item returns dictionary")
+	_assert(equip_resp.has("success"), "equip_result has success")
+	_assert(equip_resp["success"] == false, "Equip nonexistent fails")
+
+	# Test 28: get_equipped_item returns dictionary
+	var equipped_item = MonetizationManager.get_equipped_item("skin")
+	_assert(typeof(equipped_item) == TYPE_DICTIONARY, "get_equipped_item returns dictionary")
+
+	# Test 29: get_season_pass_info returns dictionary
+	var season_data = MonetizationManager.get_season_pass_info()
+	_assert(typeof(season_data) == TYPE_DICTIONARY, "get_season_pass_info returns dictionary")
+	_assert(season_data.has("tier"), "Season pass has tier")
+	_assert(season_data.has("xp"), "Season pass has xp")
+	_assert(season_data.has("active"), "Season pass has active")
+
+	# Test 30: get_info returns all required fields
+	var mon_data = MonetizationManager.get_info()
+	_assert(typeof(mon_data) == TYPE_DICTIONARY, "get_info returns dictionary")
+	_assert(mon_data.has("subscriber"), "get_info has subscriber")
+	_assert(mon_data.has("owned_items"), "get_info has owned_items")
+	_assert(mon_data.has("shop_items"), "get_info has shop_items")
+	_assert(mon_data.has("currency"), "get_info has currency")
+
 
 ## ============================================
 ## PlatformSDK System Tests
