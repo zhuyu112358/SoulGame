@@ -2998,6 +2998,30 @@ func _test_home_api() -> void:
 	_assert(typeof(invalid_interact) == TYPE_DICTIONARY, "interact invalid returns dictionary")
 
 
+	# Test 26: _home_state is dictionary
+	_assert(typeof(HomeAPI._home_state) == TYPE_DICTIONARY, "_home_state is dictionary")
+
+	# Test 27: _home_loaded is bool
+	_assert(typeof(HomeAPI._home_loaded) == TYPE_BOOL, "_home_loaded is bool")
+
+	# Test 28: _home_soul_id is string
+	_assert(typeof(HomeAPI._home_soul_id) == TYPE_STRING, "_home_soul_id is string")
+
+	# Test 29: _interaction_cooldown is float
+	_assert(typeof(HomeAPI._interaction_cooldown) == TYPE_FLOAT, "_interaction_cooldown is float")
+
+	# Test 30: get_soul_mood returns string
+	var soul_mood = HomeAPI.get_soul_mood()
+	_assert(typeof(soul_mood) == TYPE_STRING, "get_soul_mood returns string")
+
+	# Test 31: set_decoration returns bool
+	var decor_resp = HomeAPI.set_decoration("wall", "painting_01")
+	_assert(typeof(decor_resp) == TYPE_BOOL, "set_decoration returns bool")
+
+	# Test 32: set_room_theme returns bool
+	var theme_resp = HomeAPI.set_room_theme("forest")
+	_assert(typeof(theme_resp) == TYPE_BOOL, "set_room_theme returns bool")
+
 ## ============================================
 ## SoulSnapshot System Tests
 ## ============================================
