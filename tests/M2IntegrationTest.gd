@@ -1882,6 +1882,36 @@ func _test_audio_manager() -> void:
 	_assert(typeof(available_sounds) == TYPE_ARRAY, "get_available_sounds returns array")
 	_assert(available_sounds.size() > 0, "available_sounds not empty")
 ## ============================================
+
+	# Test 41: play_ui can be called
+	AudioManager.play_ui("ui_click")
+	_assert(true, "play_ui callable")
+
+	# Test 42: play_sfx can be called
+	AudioManager.play_sfx("ui_click")
+	_assert(true, "play_sfx callable")
+
+	# Test 43: play_battle can be called
+	AudioManager.play_battle("ui_click")
+	_assert(true, "play_battle callable")
+
+	# Test 44: get_info returns dictionary
+	var audio_info = AudioManager.get_info()
+	_assert(typeof(audio_info) == TYPE_DICTIONARY, "get_info returns dictionary")
+	_assert(audio_info.has("registered_sounds"), "audio_info has registered_sounds")
+
+	# Test 45: _get_stream returns AudioStream or null
+	var stream = AudioManager._get_stream("nonexistent_sound")
+	_assert(stream == null, "_get_stream returns null for nonexistent")
+
+	# Test 46: master_volume is float
+	_assert(typeof(AudioManager.master_volume) == TYPE_FLOAT, "master_volume is float")
+
+	# Test 47: sfx_volume is float
+	_assert(typeof(AudioManager.sfx_volume) == TYPE_FLOAT, "sfx_volume is float")
+
+	# Test 48: bgm_volume is float
+	_assert(typeof(AudioManager.bgm_volume) == TYPE_FLOAT, "bgm_volume is float")
 ## PixelSpriteGenerator System Tests
 ## ============================================
 func _test_pixel_sprite_generator() -> void:
