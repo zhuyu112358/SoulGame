@@ -2855,6 +2855,31 @@ func _test_world_loader() -> void:
 	_assert(not registered_after.has("test_world_c"), "test_world_c unregistered")
 
 
+	# Test 26: _registered_plugins is dictionary
+	_assert(typeof(WorldLoader._registered_plugins) == TYPE_DICTIONARY, "_registered_plugins is dictionary")
+
+	# Test 27: _loaded_plugins is dictionary
+	_assert(typeof(WorldLoader._loaded_plugins) == TYPE_DICTIONARY, "_loaded_plugins is dictionary")
+
+	# Test 28: _current_world_id is string
+	_assert(typeof(WorldLoader._current_world_id) == TYPE_STRING, "_current_world_id is string")
+
+	# Test 29: _plugin_paths is array
+	_assert(typeof(WorldLoader._plugin_paths) == TYPE_ARRAY, "_plugin_paths is array")
+	_assert(WorldLoader._plugin_paths.size() > 0, "_plugin_paths not empty")
+
+	# Test 30: get_current_world_id returns string
+	var current_id = WorldLoader.get_current_world_id()
+	_assert(typeof(current_id) == TYPE_STRING, "get_current_world_id returns string")
+
+	# Test 31: get_registered_worlds returns array
+	var registered_worlds = WorldLoader.get_registered_worlds()
+	_assert(typeof(registered_worlds) == TYPE_ARRAY, "get_registered_worlds returns array")
+
+	# Test 32: get_loaded_worlds returns array
+	var loaded_worlds = WorldLoader.get_loaded_worlds()
+	_assert(typeof(loaded_worlds) == TYPE_ARRAY, "get_loaded_worlds returns array")
+
 ## ============================================
 ## HomeAPI System Tests
 ## ============================================
