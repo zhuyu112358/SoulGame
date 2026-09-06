@@ -289,7 +289,8 @@ func _test_cli_commands() -> void:
 	CLIManager.process_command("list_souls")
 	_assert(CLIManager.output_lines.size() > output_before, "list_souls command produces output")
 
-	# Test list_worlds command
+	# Test list_worlds command (clear buffer first to avoid max_lines truncation)
+	CLIManager.output_lines.clear()
 	output_before = CLIManager.output_lines.size()
 	CLIManager.process_command("list_worlds")
 	_assert(CLIManager.output_lines.size() > output_before, "list_worlds command produces output")

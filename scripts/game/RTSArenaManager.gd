@@ -369,9 +369,18 @@ func issue_player_command(p_command: String, p_target_position: Vector2 = Vector
 	if _player_ai_controller == null:
 		return {"success": false, "error": "AI controller not initialized"}
 
+	# Check if command is valid
+	var valid_commands = ["gather", "attack", "defend", "retreat"]
+	if not valid_commands.has(p_command):
+		return {"success": false, "error": "Invalid command: %s" % p_command}
+
+	# Check cooldown
+	if _player_ai_controller.command_cooldown > 0:
+		return {"success": false, "error": "Command on cooldown (30s)", "cooldown": _player_ai_controller.command_cooldown}
+
 	var issued: bool = _player_ai_controller.issue_command(p_command, p_target_position)
 	if not issued:
-		return {"success": false, "error": "Command on cooldown (30s)", "cooldown": _player_ai_controller.command_cooldown}
+		return {"success": false, "error": "Command rejected", "cooldown": _player_ai_controller.command_cooldown}
 
 	_add_log("Player issues command: %s" % p_command)
 	return {

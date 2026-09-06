@@ -23,6 +23,7 @@ func _ready() -> void:
 	_test_arena_map()
 	_test_soul_unit()
 	_test_rts_arena_manager()
+	_test_soul_ai_controller()
 
 	# Print summary
 	print("\n=== M2 TEST SUMMARY ===")
@@ -320,3 +321,150 @@ func _test_rts_arena_manager() -> void:
 	_assert(RTSArenaManager.battle_state == RTSArenaManager.BattleState.IDLE, "Battle cleaned up")
 	_assert(RTSArenaManager.player_unit == null, "Player unit removed")
 	_assert(RTSArenaManager.ai_unit == null, "AI unit removed")
+
+	# Test 12: Reset battle for rematch
+	var p2 = {"id": "test_p2", "name": "Player2", "element": "earth", "level": 3}
+	var a2 = {"id": "test_a2", "name": "AI2", "element": "wind", "level": 3}
+	RTSArenaManager.start_battle(p2, a2, "forest_arena")
+	_assert(RTSArenaManager.battle_state == RTSArenaManager.BattleState.ACTIVE, "Second battle started")
+	RTSArenaManager.reset_battle()
+	_assert(RTSArenaManager.battle_state == RTSArenaManager.BattleState.IDLE, "Battle reset to idle")
+	_assert(RTSArenaManager.player_unit == null, "Player unit removed after reset")
+	_assert(RTSArenaManager.ai_unit == null, "AI unit removed after reset")
+	_assert(RTSArenaManager.winner_id == "", "Winner cleared after reset")
+	_assert(RTSArenaManager.battle_result == "", "Result cleared after reset")
+
+	# Test 13: Player macro command (coach-style RTS)
+	var p3 = {"id": "test_p3", "name": "Coach", "element": "fire", "level": 5}
+	var a3 = {"id": "test_a3", "name": "Opponent", "element": "water", "level": 5}
+	RTSArenaManager.start_battle(p3, a3, "default_arena")
+	var cmd_result = RTSArenaManager.issue_player_command("attack")
+	_assert(cmd_result.get("success", false) == true, "Player command attack accepted")
+	_assert(cmd_result.has("command"), "Command result has command field")
+	_assert(cmd_result.get("command") == "attack", "Command is attack")
+
+	# Test 14: Command cooldown
+	var cmd2 = RTSArenaManager.issue_player_command("defend")
+	_assert(cmd2.get("success", false) == false, "Second command rejected during cooldown")
+	_assert(cmd2.has("error"), "Rejected command has error field")
+
+	# Test 15: Command cooldown getter
+	var cooldown = RTSArenaManager.get_player_command_cooldown()
+	_assert(cooldown > 0.0, "Command cooldown active after command")
+	_assert(cooldown <= 30.0, "Cooldown within 30 second limit")
+
+	# Test 16: All valid commands
+	var valid_commands = ["gather", "attack", "defend", "retreat"]
+	for cmd_name in valid_commands:
+		# Reset cooldown by starting new battle
+		RTSArenaManager.reset_battle()
+		RTSArenaManager.start_battle(p3, a3, "default_arena")
+		var r = RTSArenaManager.issue_player_command(cmd_name)
+		_assert(r.get("success", false) == true, "Command '%s' accepted" % cmd_name)
+	RTSArenaManager.reset_battle()
+
+	# Test 17: Invalid command
+	RTSArenaManager.start_battle(p3, a3, "default_arena")
+	var invalid = RTSArenaManager.issue_player_command("invalid_cmd")
+	_assert(invalid.get("success", false) == false, "Invalid command rejected")
+	RTSArenaManager.reset_battle()
+
+
+## ============================================
+## SoulAIController Tests
+## ============================================
+func _test_soul_ai_controller() -> void:
+	print("\n--- SoulAIController Tests ---")
+
+	# Preload AI controller
+	const SoulAIController = preload("res://scripts/game/SoulAIController.gd")
+
+	# Test 1: Create AI controller
+	var ai = SoulAIController.new()
+	_assert(ai != null, "SoulAIController created")
+
+	# Test 2: Default state
+	var state = ai.get_state_info()
+	_assert(state.has("decision"), "State has decision")
+	_assert(state.has("player_command"), "State has player_command")
+	_assert(state.has("command_cooldown"), "State has command_cooldown")
+	_assert(state["player_command"] == "", "No player command initially")
+	_assert(state["command_cooldown"] == 0.0, "No command cooldown initially")
+
+	# Test 3: Issue command
+	var issued = ai.issue_command("attack")
+	_assert(issued == true, "Command attack issued")
+	_assert(ai.player_command == "attack", "Player command set to attack")
+	_assert(ai.command_cooldown > 0.0, "Command cooldown active after issue")
+
+	# Test 4: Command cooldown blocks second command
+	var issued2 = ai.issue_command("defend")
+	_assert(issued2 == false, "Second command blocked during cooldown")
+
+	# Test 5: All valid commands
+	var valid_commands = ["gather", "attack", "defend", "retreat"]
+	for cmd_name in valid_commands:
+		var ai2 = SoulAIController.new()
+		var r = ai2.issue_command(cmd_name)
+		_assert(r == true, "Command '%s' is valid" % cmd_name)
+
+	# Test 6: Invalid command
+	var ai3 = SoulAIController.new()
+	var invalid = ai3.issue_command("invalid_cmd")
+	_assert(invalid == false, "Invalid command rejected")
+
+	# Test 7: Battle memory
+	_assert(ai.battle_memory.has("times_hit_by_heavy"), "Memory has times_hit_by_heavy")
+	_assert(ai.battle_memory.has("favorite_skill"), "Memory has favorite_skill")
+	_assert(ai.battle_memory["times_hit_by_heavy"] == 0, "Memory starts at 0")
+
+	# Test 8: Update battle memory
+	ai.battle_memory["times_hit_by_heavy"] = 3
+	ai.battle_memory["favorite_skill"] = "heavy_strike"
+	_assert(ai.battle_memory["times_hit_by_heavy"] == 3, "Memory updated")
+	_assert(ai.battle_memory["favorite_skill"] == "heavy_strike", "Favorite skill updated")
+
+	# Test 9: Decision cooldown
+	_assert(ai.decision_cooldown == 0.0, "Decision cooldown starts at 0")
+	_assert(ai.decision_interval == 1.5, "Decision interval is 1.5s")
+
+	# Test 10: Make decision with SoulUnit
+	var self_unit = SoulUnit.new()
+	self_unit.soul_id = "test_self"
+	self_unit.soul_name = "TestSelf"
+	self_unit.element = "fire"
+	self_unit.level = 5
+	self_unit.is_player_controlled = false
+	self_unit._init_stats()
+	self_unit.personality = {"aggression": 80, "courage": 70, "curiosity": 50, "patience": 50, "loyalty": 90, "intelligence": 60}
+	self_unit.emotion = {"anger": 0.0, "fear": 0.0, "joy": 0.0, "sadness": 0.0}
+
+	var enemy_unit = SoulUnit.new()
+	enemy_unit.soul_id = "test_enemy"
+	enemy_unit.soul_name = "TestEnemy"
+	enemy_unit.element = "water"
+	enemy_unit.level = 5
+	enemy_unit.is_player_controlled = true
+	enemy_unit._init_stats()
+
+	var ai4 = SoulAIController.new()
+	var decision = ai4.make_decision(self_unit, enemy_unit)
+	_assert(decision.has("action"), "Decision has action field")
+	_assert(decision.has("reason"), "Decision has reason field")
+	var valid_actions = ["IDLE", "MOVE_TO_TARGET", "ATTACK", "USE_SKILL", "DEFEND", "RETREAT", "EXPLORE", "FOLLOW_COMMAND"]
+	_assert(valid_actions.has(decision["action"]), "Decision action is valid: %s" % decision["action"])
+
+	# Test 11: Damage modifier with anger
+	self_unit.emotion["anger"] = 1.0
+	var dmg_mod = ai4.get_damage_modifier(self_unit)
+	_assert(dmg_mod >= 1.0, "Anger increases damage modifier (%.2f)" % dmg_mod)
+	_assert(dmg_mod <= 1.3, "Damage modifier within reasonable range")
+
+	# Test 12: Defense modifier with fear
+	self_unit.emotion["fear"] = 1.0
+	var def_mod = ai4.get_defense_modifier(self_unit)
+	_assert(def_mod >= 1.0, "Fear increases defense modifier (%.2f)" % def_mod)
+
+	# Cleanup
+	self_unit.queue_free()
+	enemy_unit.queue_free()

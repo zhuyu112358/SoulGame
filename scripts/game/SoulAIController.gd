@@ -236,6 +236,10 @@ func _execute_player_command(p_self, p_enemy):
 func issue_command(p_command: String, p_target: Vector2 = Vector2.ZERO) -> bool:
 	if command_cooldown > 0:
 		return false
+	# Validate command against allowed set (design doc: 4 macro commands)
+	var valid_commands = ["gather", "attack", "defend", "retreat"]
+	if not valid_commands.has(p_command):
+		return false
 	player_command = p_command
 	player_command_target = p_target
 	command_cooldown = COMMAND_COOLDOWN
