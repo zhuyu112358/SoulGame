@@ -294,10 +294,10 @@ func _test_cli_commands() -> void:
 	CLIManager.process_command("list_worlds")
 	_assert(CLIManager.output_lines.size() > output_before, "list_worlds command produces output")
 
-	# Test unknown command
-	output_before = CLIManager.output_lines.size()
+	# Test unknown command (clear buffer first to avoid max_lines truncation)
+	CLIManager.output_lines.clear()
 	CLIManager.process_command("nonexistent_command")
-	_assert(CLIManager.output_lines.size() > output_before, "Unknown command produces error message")
+	_assert(CLIManager.output_lines.size() > 0, "Unknown command produces error message")
 
 
 func _print_summary() -> void:

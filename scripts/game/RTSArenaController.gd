@@ -6,6 +6,9 @@ extends Node2D
 ##
 ## This is game-specific UI for RTS combat, not SDK kernel code.
 
+## Arena background generator (procedural pixel art)
+const ArenaBackgroundGenerator = preload("res://scripts/game/ArenaBackgroundGenerator.gd")
+
 ## UI node references
 var player_hp_bar = null
 var player_energy_bar = null
@@ -35,11 +38,49 @@ var _battle_active = false
 func _ready() -> void:
 	GameLog.info("RTSArenaController: RTS Arena scene ready", "Arena")
 	_setup_ui_refs()
+	_setup_arena_background()
 	_connect_signals()
 	_setup_skill_buttons()
 
 	# Auto-start battle if config is set in GameState
 	_try_auto_start_battle()
+
+
+## Setup procedural pixel art arena background
+func _setup_arena_background() -> void:
+	var bg_node = get_node_or_null("Background")
+	if bg_node == null:
+		return
+
+	# Get arena type from map config (default grass)
+	var map_name = GameState.get_value("battle", "map_name", "default_arena")
+	var arena_type = "grass"
+	match map_name:
+		"stone_arena":
+			arena_type = "stone"
+		"sand_arena":
+			arena_type = "sand"
+		"crystal_arena":
+			arena_type = "crystal"
+		"lava_arena":
+			arena_type = "lava"
+
+	# Generate background texture
+	var generator = ArenaBackgroundGenerator.new()
+	var texture = generator.generate_background(arena_type, hash(map_name))
+
+	# Replace ColorRect with TextureRect
+	var texture_rect = TextureRect.new()
+	texture_rect.texture = texture
+	texture_rect.position = Vector2(0, 80)  # Below top bar
+	texture_rect.size = Vector2(1280, 640)
+	texture_rect.name = "ArenaBackground"
+	add_child(texture_rect)
+
+	# Hide original ColorRect
+	bg_node.visible = false
+
+	GameLog.info("RTSArenaController: Arena background generated (%s)" % arena_type, "Arena")
 
 
 ## Try to auto-start battle from GameState configuration
