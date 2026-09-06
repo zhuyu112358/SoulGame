@@ -418,7 +418,7 @@ func _get_skill_energy_cost(p_skill_name: String) -> int:
 
 
 ## Take damage
-func take_damage(p_damage: int, p_attacker: Node2D) -> void:
+func take_damage(p_damage: int, p_attacker: Node2D = null) -> void:
 	if state == UnitState.DEAD:
 		return
 

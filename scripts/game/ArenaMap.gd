@@ -276,6 +276,19 @@ func is_position_valid(p_position: Vector2, p_unit_size: float = 32.0) -> bool:
 	return true
 
 
+## Get terrain type at position
+func get_terrain_type(p_position: Vector2) -> int:
+	var cell_x = int(p_position.x / grid_size)
+	var cell_y = int(p_position.y / grid_size)
+
+	if cell_y < 0 or cell_y >= terrain_grid.size():
+		return TerrainType.NORMAL
+	if cell_x < 0 or cell_x >= terrain_grid[cell_y].size():
+		return TerrainType.NORMAL
+
+	return terrain_grid[cell_y][cell_x]
+
+
 ## Get movement speed modifier for terrain at position
 func get_terrain_speed_modifier(p_position: Vector2) -> float:
 	var cell_x = int(p_position.x / grid_size)

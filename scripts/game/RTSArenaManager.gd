@@ -15,6 +15,9 @@ const SoulUnit = preload("res://scripts/game/SoulUnit.gd")
 ## SoulAIController preload (coach-style RTS AI)
 const SoulAIController = preload("res://scripts/game/SoulAIController.gd")
 
+## ArenaEnvironment preload (weather + terrain effects)
+const ArenaEnvironment = preload("res://scripts/game/ArenaEnvironment.gd")
+
 ## Battle state constants
 enum BattleState {
 	IDLE,
@@ -57,6 +60,9 @@ var _ai_controller: SoulAIController = null
 ## Player unit AI controller (for auto-battle mode)
 var _player_ai_controller: SoulAIController = null
 
+## Arena environment (weather + terrain effects)
+var _environment: ArenaEnvironment = null
+
 ## Battle mode: "manual" (player controls skills) or "auto" (AI controls both)
 var battle_mode: String = "manual"
 
@@ -97,6 +103,11 @@ func start_battle(p_player_soul: Dictionary, p_ai_soul: Dictionary, p_map_name: 
 		ArenaMap.load_map(p_map_name)
 		battle_config["player_spawn"] = ArenaMap.player_spawn
 		battle_config["ai_spawn"] = ArenaMap.ai_spawn
+
+	# Initialize arena environment (weather + terrain effects)
+	_environment = ArenaEnvironment.new()
+	_environment.setup_for_map(p_map_name)
+	battle_config["weather"] = _environment.get_weather_name()
 
 	# Spawn player unit
 	player_unit = SoulUnit.new()
@@ -209,6 +220,20 @@ func _process(delta: float) -> void:
 
 	# Update emotions based on battle state
 	_update_emotions()
+
+	# Update arena environment (weather changes, terrain effects)
+	if _environment:
+		var env_events = _environment.update(delta)
+		if env_events.get("weather_changed", false):
+			_add_log("Weather changed to: %s" % _environment.get_weather_name())
+			battle_config["weather"] = _environment.get_weather_name()
+		if env_events.get("lightning", false):
+			var lightning_pos = env_events.get("lightning_position", Vector2.ZERO)
+			_add_log("Lightning strikes at (%d, %d)!" % [int(lightning_pos.x), int(lightning_pos.y)])
+			_apply_lightning_damage(lightning_pos)
+
+	# Apply terrain damage (lava etc.)
+	_apply_terrain_damage(delta)
 
 	# Check battle time limit
 	if battle_time >= battle_config["max_battle_time"]:
@@ -437,7 +462,53 @@ func cleanup_battle() -> void:
 		ai_unit = null
 	battle_state = BattleState.IDLE
 	battle_time = 0.0
+	_environment = null
 	GameLog.info("RTSArenaManager: Battle cleaned up", "Arena")
+
+
+## Apply terrain damage to units (e.g., lava damage over time)
+func _apply_terrain_damage(delta: float) -> void:
+	if _environment == null:
+		return
+
+	# Player unit terrain damage
+	if player_unit and player_unit.state != SoulUnit.UnitState.DEAD:
+		var dmg = _environment.get_terrain_damage(player_unit.position)
+		if dmg > 0:
+			player_unit.take_damage(int(dmg * delta))
+			if randf() < 0.02:  # Log occasionally
+				_add_log("%s takes %.1f lava damage" % [player_unit.soul_name, dmg])
+
+	# AI unit terrain damage
+	if ai_unit and ai_unit.state != SoulUnit.UnitState.DEAD:
+		var dmg = _environment.get_terrain_damage(ai_unit.position)
+		if dmg > 0:
+			ai_unit.take_damage(int(dmg * delta))
+
+
+## Apply lightning damage at position (storm weather)
+func _apply_lightning_damage(p_position: Vector2) -> void:
+	var lightning_radius: float = 80.0
+	var lightning_damage: float = 15.0
+
+	# Check player unit
+	if player_unit and player_unit.state != SoulUnit.UnitState.DEAD:
+		if player_unit.position.distance_to(p_position) < lightning_radius:
+			player_unit.take_damage(lightning_damage)
+			_add_log("%s struck by lightning! (-%d HP)" % [player_unit.soul_name, int(lightning_damage)])
+
+	# Check AI unit
+	if ai_unit and ai_unit.state != SoulUnit.UnitState.DEAD:
+		if ai_unit.position.distance_to(p_position) < lightning_radius:
+			ai_unit.take_damage(lightning_damage)
+			_add_log("%s struck by lightning! (-%d HP)" % [ai_unit.soul_name, int(lightning_damage)])
+
+
+## Get current environment info (for UI display)
+func get_environment_info() -> Dictionary:
+	if _environment:
+		return _environment.get_environment_info()
+	return {"weather": "Clear", "weather_type": 0}
 
 
 ## Reset battle state for rematch (clears units and state)

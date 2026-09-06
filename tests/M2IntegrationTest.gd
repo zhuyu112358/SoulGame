@@ -430,38 +430,28 @@ func _test_soul_ai_controller() -> void:
 
 	# Test 10: Make decision with SoulUnit
 	var self_unit = SoulUnit.new()
-	self_unit.soul_id = "test_self"
-	self_unit.soul_name = "TestSelf"
-	self_unit.element = "fire"
-	self_unit.level = 5
-	self_unit.is_player_controlled = false
-	self_unit._init_stats()
+	self_unit.init_from_soul("test_self", "TestSelf", "fire", 5, false)
 	self_unit.personality = {"aggression": 80, "courage": 70, "curiosity": 50, "patience": 50, "loyalty": 90, "intelligence": 60}
-	self_unit.emotion = {"anger": 0.0, "fear": 0.0, "joy": 0.0, "sadness": 0.0}
+	self_unit.emotion = {"mood": "neutral", "intensity": 0.0}
 
 	var enemy_unit = SoulUnit.new()
-	enemy_unit.soul_id = "test_enemy"
-	enemy_unit.soul_name = "TestEnemy"
-	enemy_unit.element = "water"
-	enemy_unit.level = 5
-	enemy_unit.is_player_controlled = true
-	enemy_unit._init_stats()
+	enemy_unit.init_from_soul("test_enemy", "TestEnemy", "water", 5, true)
 
 	var ai4 = SoulAIController.new()
 	var decision = ai4.make_decision(self_unit, enemy_unit)
-	_assert(decision.has("action"), "Decision has action field")
-	_assert(decision.has("reason"), "Decision has reason field")
-	var valid_actions = ["IDLE", "MOVE_TO_TARGET", "ATTACK", "USE_SKILL", "DEFEND", "RETREAT", "EXPLORE", "FOLLOW_COMMAND"]
-	_assert(valid_actions.has(decision["action"]), "Decision action is valid: %s" % decision["action"])
+	_assert(decision.has("decision"), "Decision has decision field")
+	_assert(decision.has("target"), "Decision has target field")
+	_assert(typeof(decision["decision"]) == TYPE_INT, "Decision is integer enum")
+	_assert(decision["decision"] >= 0 and decision["decision"] <= 7, "Decision value in valid range (0-7): %d" % decision["decision"])
 
 	# Test 11: Damage modifier with anger
-	self_unit.emotion["anger"] = 1.0
+	self_unit.emotion = {"mood": "anger", "intensity": 1.0}
 	var dmg_mod = ai4.get_damage_modifier(self_unit)
 	_assert(dmg_mod >= 1.0, "Anger increases damage modifier (%.2f)" % dmg_mod)
 	_assert(dmg_mod <= 1.3, "Damage modifier within reasonable range")
 
 	# Test 12: Defense modifier with fear
-	self_unit.emotion["fear"] = 1.0
+	self_unit.emotion = {"mood": "fear", "intensity": 1.0}
 	var def_mod = ai4.get_defense_modifier(self_unit)
 	_assert(def_mod >= 1.0, "Fear increases defense modifier (%.2f)" % def_mod)
 
