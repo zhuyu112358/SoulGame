@@ -1516,6 +1516,37 @@ func _test_arena_map_system() -> void:
 	var damaging_new = ArenaMap.is_damaging_terrain(Vector2(200, 300))
 	_assert(typeof(damaging_new) == TYPE_BOOL, "is_damaging_terrain returns bool")
 ## ============================================
+
+	# Test 36: load_map can be called
+	ArenaMap.load_map("default_arena")
+	_assert(ArenaMap.map_name == "default_arena", "load_map sets map_name")
+
+	# Test 37: get_terrain_type returns int
+	var terrain_type_new = ArenaMap.get_terrain_type(Vector2(200, 300))
+	_assert(typeof(terrain_type_new) == TYPE_INT, "get_terrain_type returns int")
+
+	# Test 38: is_position_valid returns bool
+	var pos_valid_new = ArenaMap.is_position_valid(Vector2(200, 300))
+	_assert(typeof(pos_valid_new) == TYPE_BOOL, "is_position_valid returns bool")
+
+	# Test 39: get_obstacle_at returns dictionary
+	var obstacle_at_new = ArenaMap.get_obstacle_at(Vector2(200, 300))
+	_assert(typeof(obstacle_at_new) == TYPE_DICTIONARY, "get_obstacle_at returns dictionary")
+
+	# Test 40: get_map_info returns dictionary
+	var map_info_new = ArenaMap.get_map_info()
+	_assert(typeof(map_info_new) == TYPE_DICTIONARY, "get_map_info returns dictionary")
+	_assert(map_info_new.has("name"), "map_info has name")
+
+	# Test 41: reset_map can be called
+	ArenaMap.reset_map()
+	_assert(true, "reset_map callable")
+
+	# Test 42: arena_width is int
+	_assert(typeof(ArenaMap.arena_width) == TYPE_INT, "arena_width is int")
+
+	# Test 43: arena_height is int
+	_assert(typeof(ArenaMap.arena_height) == TYPE_INT, "arena_height is int")
 ## Minimap System Tests
 ## ============================================
 func _test_minimap_system() -> void:
