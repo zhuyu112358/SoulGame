@@ -40,6 +40,7 @@ WorldManager="*res://scripts/game/WorldManager.gd"
 CLIManager="*res://scripts/ui/CLIManager.gd"
 ArenaManager="*res://scripts/game/ArenaManager.gd"
 RTSArenaManager="*res://scripts/game/RTSArenaManager.gd"
+BattleResultManager="*res://scripts/game/BattleResultManager.gd"
 
 [display]
 

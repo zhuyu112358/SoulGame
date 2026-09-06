@@ -134,14 +134,34 @@ func _on_battle_started(p_battle_info: Dictionary) -> void:
 ## Handle battle finished
 func _on_battle_finished(p_result: String, p_winner_id: String, p_loser_id: String) -> void:
 	_battle_active = false
-	_add_log("Battle finished: %s!" % p_result.to_upper())
+
+	# Get battle result info
+	var stats = BattleResultManager.get_stats()
+	var history = BattleResultManager.get_history(1)
+	var exp_gained = 0
+	if history.size() > 0:
+		exp_gained = history[history.size() - 1].get("experience_gained", 0)
+
+	# Display result
+	var result_text = ""
+	match p_result:
+		"victory":
+			result_text = "VICTORY! +%d EXP" % exp_gained
+		"defeat":
+			result_text = "DEFEAT... +%d EXP" % exp_gained
+		"draw":
+			result_text = "DRAW. +%d EXP" % exp_gained
+
+	_add_log("=== %s ===" % result_text)
+	_add_log("Win Rate: %.1f%% (%d/%d)" % [stats.get("win_rate", 0), stats.get("victories", 0), stats.get("total_battles", 0)])
+	_add_log("Streak: %d (Best: %d)" % [stats.get("current_streak", 0), stats.get("best_streak", 0)])
 
 	# Disable all skill buttons
 	for skill_name in skill_buttons.keys():
 		if skill_buttons[skill_name]:
 			skill_buttons[skill_name].disabled = true
 
-	GameLog.info("RTSArenaController: Battle finished - %s" % p_result, "Arena")
+	GameLog.info("RTSArenaController: Battle finished - %s, EXP: +%d" % [p_result, exp_gained], "Arena")
 
 
 ## Handle battle time update

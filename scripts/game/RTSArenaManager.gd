@@ -211,6 +211,22 @@ func _finish_battle(p_winner_id: String, p_result: String) -> void:
 
 	_add_log("Battle finished! Result: %s" % p_result.to_upper())
 
+	# Process battle result and growth feedback
+	var battle_data: Dictionary = {
+		"result": p_result,
+		"player_soul_id": player_unit.soul_id,
+		"opponent_soul_id": ai_unit.soul_id,
+		"player_level": player_unit.level,
+		"opponent_level": ai_unit.level,
+		"player_hp_remaining": player_unit.current_hp,
+		"player_max_hp": player_unit.max_hp,
+		"duration": battle_time,
+		"damage_dealt": player_unit.max_hp - ai_unit.current_hp,
+		"damage_taken": player_unit.max_hp - player_unit.current_hp,
+		"skills_used": []
+	}
+	BattleResultManager.process_battle_result(battle_data)
+
 	emit_signal("battle_finished", p_result, p_winner_id, loser_id)
 
 	GameLog.info("RTSArenaManager: Battle finished - %s (winner: %s)" % [p_result, p_winner_id], "Arena")
