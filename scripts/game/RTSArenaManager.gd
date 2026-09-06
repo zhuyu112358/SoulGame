@@ -12,6 +12,9 @@ extends Node
 ## SoulUnit preload
 const SoulUnit = preload("res://scripts/game/SoulUnit.gd")
 
+## SoulAIController preload (coach-style RTS AI)
+const SoulAIController = preload("res://scripts/game/SoulAIController.gd")
+
 ## Battle state constants
 enum BattleState {
 	IDLE,
@@ -47,6 +50,15 @@ var battle_result: String = "pending"
 ## AI decision timer
 var _ai_decision_timer: float = 0.0
 var _ai_decision_interval: float = 1.5  # AI makes decision every 1.5 seconds
+
+## Soul AI Controller (coach-style RTS: autonomous decisions based on personality/emotion)
+var _ai_controller: SoulAIController = null
+
+## Player unit AI controller (for auto-battle mode)
+var _player_ai_controller: SoulAIController = null
+
+## Battle mode: "manual" (player controls skills) or "auto" (AI controls both)
+var battle_mode: String = "manual"
 
 ## Battle log
 var battle_log: Array = []
@@ -117,7 +129,18 @@ func start_battle(p_player_soul: Dictionary, p_ai_soul: Dictionary, p_map_name: 
 	# AI starts attacking player
 	ai_unit.set_attack_target(player_unit)
 
+	# Initialize AI controllers (coach-style RTS: autonomous decisions)
+	_ai_controller = SoulAIController.new()
+	_player_ai_controller = SoulAIController.new()
+
+	# Set AI personality based on soul data (design doc: 个性即战术)
+	_apply_soul_personality(ai_unit, p_ai_soul)
+	_apply_soul_personality(player_unit, p_player_soul)
+
 	_add_log("Battle started! %s vs %s" % [player_unit.soul_name, ai_unit.soul_name])
+	_add_log("AI Personality: aggression=%d, courage=%d, loyalty=%d" % [
+		ai_unit.personality["aggression"], ai_unit.personality["courage"], ai_unit.personality["loyalty"]
+	])
 
 	emit_signal("battle_started", {
 		"player": player_unit.get_info(),
@@ -128,6 +151,27 @@ func start_battle(p_player_soul: Dictionary, p_ai_soul: Dictionary, p_map_name: 
 	return true
 
 
+## Apply soul personality to unit (design doc: 个性即战术)
+func _apply_soul_personality(p_unit, p_soul_data: Dictionary) -> void:
+	if p_soul_data.has("personality"):
+		var personality_data: Dictionary = p_soul_data["personality"]
+		var trait_names: Array = personality_data.keys()
+		var i: int = 0
+		while i < trait_names.size():
+			var t_name = trait_names[i]
+			if p_unit.personality.has(t_name):
+				p_unit.personality[t_name] = personality_data[t_name]
+			i += 1
+	else:
+		# Generate random personality for prototype
+		p_unit.personality["aggression"] = randi_range(20, 80)
+		p_unit.personality["courage"] = randi_range(20, 80)
+		p_unit.personality["curiosity"] = randi_range(20, 80)
+		p_unit.personality["patience"] = randi_range(20, 80)
+		p_unit.personality["loyalty"] = randi_range(40, 90)
+		p_unit.personality["intelligence"] = randi_range(30, 80)
+
+
 ## Process real-time battle updates
 func _process(delta: float) -> void:
 	if battle_state != BattleState.ACTIVE:
@@ -136,49 +180,69 @@ func _process(delta: float) -> void:
 	battle_time += delta
 	emit_signal("battle_time_updated", battle_time)
 
-	# AI decision making
+	# Update AI controllers
+	if _ai_controller:
+		_ai_controller.update(delta)
+	if _player_ai_controller:
+		_player_ai_controller.update(delta)
+
+	# AI decision making (coach-style RTS: autonomous decisions)
 	_ai_decision_timer += delta
 	if _ai_decision_timer >= _ai_decision_interval:
 		_ai_decision_timer = 0.0
 		_update_ai()
+
+	# Auto-battle mode: player unit also controlled by AI
+	if battle_mode == "auto" and _player_ai_controller:
+		_update_player_ai()
+
+	# Update emotions based on battle state
+	_update_emotions()
 
 	# Check battle time limit
 	if battle_time >= battle_config["max_battle_time"]:
 		_finish_battle_by_time()
 
 
-## Update AI behavior
+## Update AI behavior using SoulAIController (coach-style RTS)
 func _update_ai() -> void:
 	if ai_unit == null or ai_unit.state == SoulUnit.UnitState.DEAD:
 		return
-
 	if player_unit == null or player_unit.state == SoulUnit.UnitState.DEAD:
 		return
+	if _ai_controller == null:
+		return
 
-	var distance: float = ai_unit.position.distance_to(player_unit.position)
+	# Make autonomous decision based on personality/emotion
+	var decision = _ai_controller.make_decision(ai_unit, player_unit)
+	_ai_controller.execute_decision(ai_unit, player_unit)
 
-	# Simple AI: use skills when available, otherwise basic attack
-	var skills: Array = ["heavy_strike", "quick_strike", "heal", "defend"]
-	for skill_name in skills:
-		if ai_unit.skill_cooldowns.get(skill_name, 999) <= 0:
-			if skill_name == "heal" and ai_unit.current_hp < ai_unit.max_hp * 0.4:
-				ai_unit.use_skill(skill_name, ai_unit)
-				_add_log("%s uses %s!" % [ai_unit.soul_name, skill_name])
-				return
-			elif skill_name == "defend" and ai_unit.current_hp < ai_unit.max_hp * 0.6:
-				ai_unit.use_skill(skill_name)
-				_add_log("%s uses %s!" % [ai_unit.soul_name, skill_name])
-				return
-			elif skill_name in ["heavy_strike", "quick_strike"] and distance <= ai_unit.attack_range:
-				ai_unit.use_skill(skill_name, player_unit)
-				_add_log("%s uses %s on %s!" % [ai_unit.soul_name, skill_name, player_unit.soul_name])
-				return
+	# Log significant decisions
+	if decision["decision"] == SoulAIController.Decision.USE_SKILL:
+		_add_log("%s makes a tactical decision!" % ai_unit.soul_name)
 
-	# Default: attack player
-	if distance <= ai_unit.attack_range:
-		ai_unit.set_attack_target(player_unit)
-	else:
-		ai_unit.move_to(player_unit.position)
+
+## Update player AI (auto-battle mode)
+func _update_player_ai() -> void:
+	if player_unit == null or player_unit.state == SoulUnit.UnitState.DEAD:
+		return
+	if _player_ai_controller == null:
+		return
+
+	var decision = _player_ai_controller.make_decision(player_unit, ai_unit)
+	_player_ai_controller.execute_decision(player_unit, ai_unit)
+
+
+## Update emotional states based on battle events
+func _update_emotions() -> void:
+	if ai_unit == null or player_unit == null:
+		return
+
+	# Low HP triggers fear
+	if float(ai_unit.current_hp) / float(ai_unit.max_hp) < 0.3:
+		_ai_controller.update_emotion(ai_unit, "low_hp", 0.05)
+	if float(player_unit.current_hp) / float(player_unit.max_hp) < 0.3:
+		_player_ai_controller.update_emotion(player_unit, "low_hp", 0.05)
 
 
 ## Handle unit death
@@ -273,6 +337,42 @@ func player_use_skill(p_skill_name: String, p_target: SoulUnit = null) -> bool:
 	if success:
 		_add_log("%s uses %s!" % [player_unit.soul_name, p_skill_name])
 	return success
+
+
+## Player macro command (design doc: coach-style RTS, one command per 30s)
+## Commands: "gather", "retreat", "attack", "defend"
+## Soul may disobey based on loyalty/courage personality
+func issue_player_command(p_command: String, p_target_position: Vector2 = Vector2.ZERO) -> Dictionary:
+	if player_unit == null or battle_state != BattleState.ACTIVE:
+		return {"success": false, "error": "No active battle"}
+
+	if _player_ai_controller == null:
+		return {"success": false, "error": "AI controller not initialized"}
+
+	var issued: bool = _player_ai_controller.issue_command(p_command, p_target_position)
+	if not issued:
+		return {"success": false, "error": "Command on cooldown (30s)", "cooldown": _player_ai_controller.command_cooldown}
+
+	_add_log("Player issues command: %s" % p_command)
+	return {
+		"success": true,
+		"command": p_command,
+		"cooldown": SoulAIController.COMMAND_COOLDOWN
+	}
+
+
+## Get player command cooldown
+func get_player_command_cooldown() -> float:
+	if _player_ai_controller == null:
+		return 0.0
+	return _player_ai_controller.command_cooldown
+
+
+## Set battle mode: "manual" (player controls skills) or "auto" (AI controls both)
+func set_battle_mode(p_mode: String) -> void:
+	battle_mode = p_mode
+	_add_log("Battle mode: %s" % p_mode)
+	GameLog.info("RTSArenaManager: Battle mode set to %s" % p_mode, "Arena")
 
 
 ## Pause battle

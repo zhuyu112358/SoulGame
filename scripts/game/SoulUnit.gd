@@ -25,6 +25,28 @@ var soul_name: String = ""
 var element: String = "neutral"
 var level: int = 1
 
+## Personality traits (0-100 scale, influence AI decision-making)
+## Design doc: "个性即战术" - personality directly affects battle behavior
+var personality: Dictionary = {
+	"aggression": 50,      # 激进 vs 谨慎 - higher = more likely to attack
+	"courage": 50,         # 勇敢 vs 怯懦 - higher = more likely to engage
+	"curiosity": 50,       # 好奇 vs 保守 - higher = more exploration
+	"patience": 50,        # 耐心 vs 急躁 - higher = waits for better opportunities
+	"loyalty": 50,         # 忠诚 vs 独立 - higher = more likely to follow player commands
+	"intelligence": 50     # 智力 - higher = better tactical decisions
+}
+
+## Emotional state (influences decision-making and skill effectiveness)
+## Design doc: emotion affects skill effects (anger: +20% attack, fear: +20% defense)
+var emotion: Dictionary = {
+	"mood": "calm",        # calm/excited/fear/anger/sad/happy
+	"intensity": 0.0,      # 0-1, how strong the current emotion is
+	"anger": 0.0,          # 0-1
+	"fear": 0.0,           # 0-1
+	"excitement": 0.0,     # 0-1
+	"calmness": 1.0        # 0-1
+}
+
 ## Combat stats
 var max_hp: int = 100
 var current_hp: int = 100
