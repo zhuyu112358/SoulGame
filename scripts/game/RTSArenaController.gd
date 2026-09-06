@@ -40,6 +40,10 @@ var _command_buttons = {}
 var _command_cooldown_label = null
 var _command_cooldown_timer = 0.0
 
+## Weather/environment display
+var _weather_label = null
+var _weather_icon = null
+
 
 func _ready() -> void:
 	GameLog.info("RTSArenaController: RTS Arena scene ready", "Arena")
@@ -48,6 +52,7 @@ func _ready() -> void:
 	_connect_signals()
 	_setup_skill_buttons()
 	_setup_macro_commands()
+	_setup_weather_display()
 
 	# Auto-start battle if config is set in GameState
 	_try_auto_start_battle()
@@ -248,6 +253,73 @@ func _on_macro_command(p_command: String) -> void:
 		_add_log("指令失败: %s" % result.get("error", "unknown"))
 
 
+## Setup weather/environment display UI
+func _setup_weather_display() -> void:
+	# Weather label (top-right, below battle time)
+	_weather_label = Label.new()
+	_weather_label.position = Vector2(1050, 50)
+	_weather_label.size = Vector2(200, 30)
+	_weather_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_weather_label.add_theme_font_size_override("font_size", 14)
+	_weather_label.modulate = Color(0.8, 0.9, 1.0)
+	_weather_label.text = "Weather: --"
+	add_child(_weather_label)
+
+	# Weather effect indicators (small labels below weather name)
+	var effect_label = Label.new()
+	effect_label.name = "WeatherEffects"
+	effect_label.position = Vector2(1050, 75)
+	effect_label.size = Vector2(200, 50)
+	effect_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	effect_label.add_theme_font_size_override("font_size", 10)
+	effect_label.modulate = Color(0.7, 0.7, 0.8)
+	effect_label.text = ""
+	add_child(effect_label)
+
+	GameLog.info("RTSArenaController: Weather display setup", "Arena")
+
+
+## Update weather display from RTSArenaManager environment
+func _update_weather_display() -> void:
+	if _weather_label == null:
+		return
+
+	var env_info = RTSArenaManager.get_environment_info()
+	var weather_name = env_info.get("weather", "Clear")
+	_weather_label.text = "Weather: %s" % weather_name
+
+	# Weather color coding
+	match weather_name:
+		"Clear":
+			_weather_label.modulate = Color(1.0, 0.95, 0.7)
+		"Rain":
+			_weather_label.modulate = Color(0.6, 0.8, 1.0)
+		"Fog":
+			_weather_label.modulate = Color(0.75, 0.75, 0.8)
+		"Snow":
+			_weather_label.modulate = Color(0.85, 0.95, 1.0)
+		"Storm":
+			_weather_label.modulate = Color(1.0, 0.6, 0.5)
+		_:
+			_weather_label.modulate = Color(0.8, 0.9, 1.0)
+
+	# Update effect indicators
+	var effect_label = get_node_or_null("WeatherEffects")
+	if effect_label:
+		var move_mod = env_info.get("movement_mod", 1.0)
+		var acc_mod = env_info.get("accuracy_mod", 1.0)
+		var effects = []
+		if move_mod < 1.0:
+			effects.append("SPD %.0f%%" % (move_mod * 100))
+		if acc_mod < 1.0:
+			effects.append("ACC %.0f%%" % (acc_mod * 100))
+		if weather_name == "Storm":
+			effects.append("⚡ Lightning")
+		if weather_name == "Snow":
+			effects.append("DEF +10%")
+		effect_label.text = "  ".join(effects)
+
+
 ## Process real-time UI updates
 func _process(delta: float) -> void:
 	if not _battle_active:
@@ -255,6 +327,7 @@ func _process(delta: float) -> void:
 	_update_unit_display()
 	_update_skill_cooldowns()
 	_update_command_cooldown(delta)
+	_update_weather_display()
 	if minimap:
 		minimap.update_minimap()
 
