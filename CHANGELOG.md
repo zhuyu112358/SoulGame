@@ -62,6 +62,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   - Fixed SaveSystem API: `get_value/set_value` 闂?`get_setting/set_setting`
   - Fixed stats dictionary missing keys (sfx_playing, critical_count, pending_count)
   - All 20 autoloads initialize successfully
+- **M1 Test Infrastructure** (BUG-016, BUG-017, BUG-018) - All 184 tests passing
+  - BUG-016: M1IntegrationTest compilation failure - Created `tests/m1_test_runner.gd` (extends SceneTree) to load full project with autoloads, 73 M1 integration tests passing
+  - BUG-017: TestRunner compilation failure - Fixed nested functions, deprecated API calls (Logger->GameLog, get/set->get_value/set_value), string multiplication, type inference warnings, 111 unit tests passing
+  - BUG-018: LocalizationManager `tr()` method conflict with Godot native `Object.tr()` - Removed custom `tr()` alias, all call sites use `translate()`, 0 script errors
+  - Fixed Logger warning count bug: `_level_to_string` returns "WARN" but `_counts` key was "warning", added key mapping
+  - Fixed zh translations: replaced English placeholders with proper Chinese text
+  - Final: 184 tests passing (111 unit + 73 integration), 0 script errors
 
 ### Planned
 - M1 Soul Home full interaction system
