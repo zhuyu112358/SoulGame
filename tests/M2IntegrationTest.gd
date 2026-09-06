@@ -1226,6 +1226,38 @@ func _test_soul_unit_combat() -> void:
 	unit2.queue_free()
 
 
+	# Test 34: UnitState enum values
+	_assert(unit1.UnitState.IDLE == 0, "IDLE state = 0")
+	_assert(unit1.UnitState.MOVING == 1, "MOVING state = 1")
+	_assert(unit1.UnitState.ATTACKING == 2, "ATTACKING state = 2")
+	_assert(unit1.UnitState.CASTING == 3, "CASTING state = 3")
+	_assert(unit1.UnitState.DEAD == 4, "DEAD state = 4")
+	# Test 35: get_element returns element
+	var test_unit = SoulUnit.new()
+	test_unit.element = "fire"
+	_assert(test_unit.get_element() == "fire", "get_element returns fire")
+	test_unit.queue_free()
+
+	# Test 36: _get_skill_energy_cost
+	var heavy_cost = unit1._get_skill_energy_cost("heavy_strike")
+	_assert(heavy_cost == 15, "heavy_strike energy cost = 15")
+	var quick_cost = unit1._get_skill_energy_cost("quick_strike")
+	_assert(quick_cost == 3, "quick_strike energy cost = 3")
+	var heal_cost = unit1._get_skill_energy_cost("heal")
+	_assert(heal_cost == 10, "heal energy cost = 10")
+	var defend_cost = unit1._get_skill_energy_cost("defend")
+	_assert(defend_cost == 2, "defend energy cost = 2")
+
+	# Test 37: _calculate_damage
+	var calc_dmg = unit1._calculate_damage(10, 1.5)
+	_assert(calc_dmg == 15, "_calculate_damage 10 * 1.5 = 15")
+
+	# Test 38: _get_element_multiplier
+	var mult = unit1._get_element_multiplier("water", "fire")
+	_assert(mult == 1.5, "water vs fire = 1.5")
+	var neutral_mult = unit1._get_element_multiplier("neutral", "fire")
+	_assert(neutral_mult == 1.0, "neutral vs fire = 1.0")
+
 ## ============================================
 ## ArenaMap System Tests
 ## ============================================
