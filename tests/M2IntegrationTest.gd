@@ -3515,6 +3515,36 @@ func _test_soul_snapshot() -> void:
 	# Test 39: migration_history field
 	_assert(typeof(snapshot.migration_history) == TYPE_ARRAY, "migration_history is array")
 ## ============================================
+
+	# Test 40: to_dict returns dictionary
+	var dict_result_new = snapshot.to_dict()
+	_assert(typeof(dict_result_new) == TYPE_DICTIONARY, "to_dict returns dictionary")
+	_assert(dict_result_new.has("soul_id"), "dict_result has soul_id")
+
+	# Test 41: to_json returns string
+	var json_result_new = snapshot.to_json()
+	_assert(typeof(json_result_new) == TYPE_STRING, "to_json returns string")
+	_assert(json_result_new.length() > 0, "json_result not empty")
+
+	# Test 42: load_from_json returns bool
+	var load_result_new = snapshot.load_from_json(json_result_new)
+	_assert(typeof(load_result_new) == TYPE_BOOL, "load_from_json returns bool")
+
+	# Test 43: record_migration callable
+	snapshot.record_migration("battleplan", "arena", "enter")
+	_assert(snapshot.migration_history.size() > 0, "record_migration adds entry")
+
+	# Test 44: validate returns dictionary
+	var validate_result_new = snapshot.validate()
+	_assert(typeof(validate_result_new) == TYPE_DICTIONARY, "validate returns dictionary")
+
+	# Test 45: get_power_level returns int
+	var power_level_new = snapshot.get_power_level()
+	_assert(typeof(power_level_new) == TYPE_INT, "get_power_level returns int")
+
+	# Test 46: get_summary returns dictionary
+	var summary_result_new = snapshot.get_summary()
+	_assert(typeof(summary_result_new) == TYPE_DICTIONARY, "get_summary returns dictionary")
 ## WorldPlugin System Tests
 ## ============================================
 func _test_world_plugin() -> void:
