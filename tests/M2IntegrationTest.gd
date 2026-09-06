@@ -1276,6 +1276,37 @@ func _test_arena_map_system() -> void:
 	ArenaMap.load_map("default_arena")
 
 
+	# Test 21: get_terrain_speed_modifier returns float
+	var speed_new = ArenaMap.get_terrain_speed_modifier(Vector2(100, 100))
+	_assert(typeof(speed_new) == TYPE_FLOAT, "get_terrain_speed_modifier returns float")
+	_assert(speed_new > 0, "speed modifier > 0")
+
+	# Test 22: get_map_info returns dictionary
+	var map_info = ArenaMap.get_map_info()
+	_assert(typeof(map_info) == TYPE_DICTIONARY, "get_map_info returns dictionary")
+	_assert(map_info.has("name"), "map_info has name")
+
+	# Test 23: is_position_valid returns bool
+	var pos_valid = ArenaMap.is_position_valid(Vector2(200, 300))
+	_assert(typeof(pos_valid) == TYPE_BOOL, "is_position_valid returns bool")
+
+	# Test 24: player_spawn and ai_spawn fields
+	_assert(typeof(ArenaMap.player_spawn) == TYPE_VECTOR2, "player_spawn is Vector2")
+	_assert(typeof(ArenaMap.ai_spawn) == TYPE_VECTOR2, "ai_spawn is Vector2")
+	_assert(ArenaMap.player_spawn != ArenaMap.ai_spawn, "player and ai spawn different")
+
+	# Test 25: arena_width and arena_height fields
+	_assert(ArenaMap.arena_width == 1280, "arena_width = 1280")
+	_assert(ArenaMap.arena_height == 600, "arena_height = 600")
+
+	# Test 26: get_obstacle_at returns dictionary
+	var obs_at = ArenaMap.get_obstacle_at(Vector2(0, 0))
+	_assert(typeof(obs_at) == TYPE_DICTIONARY, "get_obstacle_at returns dictionary")
+
+	# Test 27: damage_obstacle with nonexistent id returns dictionary
+	var dmg_result = ArenaMap.damage_obstacle("nonexistent_obs", 10)
+	_assert(typeof(dmg_result) == TYPE_DICTIONARY, "damage_obstacle returns dictionary")
+
 ## ============================================
 ## Minimap System Tests
 ## ============================================
