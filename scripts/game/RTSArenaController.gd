@@ -18,9 +18,11 @@ var battle_log = null
 var skill_buttons = {}
 var back_button = null
 var arena_viewport = null
+var minimap = null
 
 ## SoulUnit preload
 const SoulUnit = preload("res://scripts/game/SoulUnit.gd")
+const Minimap = preload("res://scripts/ui/Minimap.gd")
 
 ## Visual unit nodes
 var _player_visual = null
@@ -69,6 +71,7 @@ func _setup_ui_refs() -> void:
 	battle_log = get_node_or_null("BattleLog/LogText")
 	back_button = get_node_or_null("BottomBar/BackButton")
 	arena_viewport = get_node_or_null("ArenaViewport")
+	minimap = get_node_or_null("Minimap")
 
 	# Skill buttons
 	skill_buttons["heavy_strike"] = get_node_or_null("BottomBar/SkillButtons/HeavyStrike")
@@ -108,6 +111,8 @@ func _process(delta: float) -> void:
 		return
 	_update_unit_display()
 	_update_skill_cooldowns()
+	if minimap:
+		minimap.update_minimap()
 
 
 ## Update unit HP/energy display
@@ -157,6 +162,13 @@ func _on_battle_started(p_battle_info: Dictionary) -> void:
 		ArenaMap.get_parent().remove_child(ArenaMap)
 		ArenaMap.position = Vector2(20, 90)
 		add_child(ArenaMap)
+
+	# Setup minimap
+	if minimap:
+		minimap.set_player_unit(RTSArenaManager.player_unit)
+		minimap.set_ai_unit(RTSArenaManager.ai_unit)
+		minimap.set_arena_map(ArenaMap)
+		minimap.set_arena_size(Vector2(1280, 600))
 
 	GameLog.info("RTSArenaController: Battle started", "Arena")
 
