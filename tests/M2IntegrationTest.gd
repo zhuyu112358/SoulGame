@@ -1430,6 +1430,35 @@ func _test_minimap_system() -> void:
 	test_ai.queue_free()
 
 
+	# Test 29: background_color field
+	_assert(typeof(minimap.background_color) == TYPE_COLOR, "background_color is Color")
+	minimap.background_color = Color(0.2, 0.2, 0.2, 0.8)
+	_assert(abs(minimap.background_color.r - 0.2) < 0.01, "background_color.r set")
+
+	# Test 30: border_color field
+	_assert(typeof(minimap.border_color) == TYPE_COLOR, "border_color is Color")
+
+	# Test 31: player_color field
+	_assert(typeof(minimap.player_color) == TYPE_COLOR, "player_color is Color")
+
+	# Test 32: ai_color field
+	_assert(typeof(minimap.ai_color) == TYPE_COLOR, "ai_color is Color")
+
+	# Test 33: obstacle_color field
+	_assert(typeof(minimap.obstacle_color) == TYPE_COLOR, "obstacle_color is Color")
+
+	# Test 34: _terrain_to_color returns Color
+	var terrain_col = minimap._terrain_to_color(0)
+	_assert(typeof(terrain_col) == TYPE_COLOR, "_terrain_to_color returns Color")
+
+	# Test 35: set_arena_map can be called
+	minimap.set_arena_map(null)
+# No assertion needed, just verify no crash
+
+	# Test 36: update_minimap can be called
+	minimap.update_minimap()
+# No assertion needed, just verify no crash
+
 ## ============================================
 ## AudioManager System Tests
 ## ============================================
