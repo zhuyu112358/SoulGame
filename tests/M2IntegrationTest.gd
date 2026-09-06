@@ -13,6 +13,7 @@ const ServerAuthority = preload("res://scripts/network/ServerAuthority.gd")
 const SoulSnapshot = preload("res://platform/soul/SoulSnapshot.gd")
 const WorldPlugin = preload("res://platform/world/WorldPlugin.gd")
 const ArenaEnvironment = preload("res://scripts/game/ArenaEnvironment.gd")
+const SoulAIController = preload("res://scripts/game/SoulAIController.gd")
 
 ## Test counters
 var _tests_run: int = 0
@@ -444,9 +445,6 @@ func _test_rts_arena_manager() -> void:
 func _test_soul_ai_controller() -> void:
 	print("\n--- SoulAIController Tests ---")
 
-	# Preload AI controller
-	const SoulAIController = preload("res://scripts/game/SoulAIController.gd")
-
 	# Test 1: Create AI controller
 	var ai = SoulAIController.new()
 	_assert(ai != null, "SoulAIController created")
@@ -522,6 +520,63 @@ func _test_soul_ai_controller() -> void:
 	self_unit.emotion = {"mood": "fear", "intensity": 1.0}
 	var def_mod = ai4.get_defense_modifier(self_unit)
 	_assert(def_mod >= 1.0, "Fear increases defense modifier (%.2f)" % def_mod)
+
+	# Test 13: issue_command valid commands
+	var ai5 = SoulAIController.new()
+	_assert(ai5.issue_command("gather") == true, "issue_command gather succeeds")
+	_assert(ai5.player_command == "gather", "player_command set to gather")
+	ai5.command_cooldown = 0.0  # Reset cooldown for next test
+	_assert(ai5.issue_command("attack") == true, "issue_command attack succeeds")
+	_assert(ai5.player_command == "attack", "player_command set to attack")
+	ai5.command_cooldown = 0.0
+	_assert(ai5.issue_command("defend") == true, "issue_command defend succeeds")
+	_assert(ai5.player_command == "defend", "player_command set to defend")
+	ai5.command_cooldown = 0.0
+	_assert(ai5.issue_command("retreat") == true, "issue_command retreat succeeds")
+	_assert(ai5.player_command == "retreat", "player_command set to retreat")
+
+	# Test 14: issue_command invalid command
+	ai5.command_cooldown = 0.0
+	_assert(ai5.issue_command("invalid") == false, "issue_command invalid returns false")
+	_assert(ai5.issue_command("") == false, "issue_command empty returns false")
+
+	# Test 15: command_cooldown after issue_command
+	ai5.command_cooldown = 0.0
+	ai5.issue_command("gather")
+	var cooldown_after = ai5.command_cooldown
+	_assert(cooldown_after > 0.0, "command_cooldown > 0 after command: %.1f" % cooldown_after)
+	_assert(ai5.issue_command("gather") == false, "issue_command on cooldown returns false")
+
+	# Test 16: update reduces cooldowns
+	ai5.decision_cooldown = 5.0
+	ai5.command_cooldown = 10.0
+	ai5.update(2.0)
+	_assert(ai5.decision_cooldown < 5.0, "decision_cooldown reduced after update: %.1f" % ai5.decision_cooldown)
+	_assert(ai5.command_cooldown < 10.0, "command_cooldown reduced after update: %.1f" % ai5.command_cooldown)
+
+	# Test 17: update_emotion changes mood (event is "took_damage", emotion needs anger/fear/excitement keys)
+	self_unit.emotion = {"mood": "calm", "intensity": 0.0, "anger": 0.0, "fear": 0.0, "excitement": 0.0}
+	ai5.update_emotion(self_unit, "took_damage", 0.5)
+	_assert(self_unit.emotion["fear"] > 0.0 or self_unit.emotion["anger"] > 0.0, "Emotion changed after took_damage event")
+
+	# Test 18: get_state_info returns dictionary
+	var state_info = ai5.get_state_info()
+	_assert(typeof(state_info) == TYPE_DICTIONARY, "get_state_info returns dictionary")
+	_assert(state_info.has("decision"), "state_info has decision")
+	_assert(state_info.has("player_command"), "state_info has player_command")
+	_assert(state_info.has("command_cooldown"), "state_info has command_cooldown")
+	_assert(state_info.has("decision_cooldown"), "state_info has decision_cooldown")
+	_assert(state_info.has("last_command_obeyed"), "state_info has last_command_obeyed")
+
+	# Test 19: battle_memory initialized
+	_assert(typeof(ai5.battle_memory) == TYPE_DICTIONARY, "battle_memory is dictionary")
+	_assert(ai5.battle_memory.has("times_hit_by_heavy"), "battle_memory has times_hit_by_heavy")
+	_assert(ai5.battle_memory.has("times_hit_by_quick"), "battle_memory has times_hit_by_quick")
+	_assert(ai5.battle_memory.has("times_killed"), "battle_memory has times_killed")
+	_assert(ai5.battle_memory.has("favorite_skill"), "battle_memory has favorite_skill")
+
+	# Test 20: last_command_obeyed flag
+	_assert(typeof(ai5.last_command_obeyed) == TYPE_BOOL, "last_command_obeyed is boolean")
 
 	# Cleanup
 	self_unit.queue_free()
