@@ -154,6 +154,11 @@ func _on_battle_started(p_battle_info: Dictionary) -> void:
 	_battle_active = true
 	_add_log("Battle started!")
 
+	# Play battle start sound and BGM
+	if AudioManager:
+		AudioManager.play_sfx("ui_battle_start")
+		AudioManager.play_bgm("battle")
+
 	# Add ArenaMap to scene for rendering
 	if ArenaMap and not is_instance_valid(ArenaMap.get_parent()):
 		ArenaMap.position = Vector2(20, 90)
@@ -189,10 +194,18 @@ func _on_battle_finished(p_result: String, p_winner_id: String, p_loser_id: Stri
 	match p_result:
 		"victory":
 			result_text = "VICTORY! +%d EXP" % exp_gained
+			if AudioManager:
+				AudioManager.play_sfx("bat_victory")
 		"defeat":
 			result_text = "DEFEAT... +%d EXP" % exp_gained
+			if AudioManager:
+				AudioManager.play_sfx("bat_defeat")
 		"draw":
 			result_text = "DRAW. +%d EXP" % exp_gained
+
+	# Stop battle BGM
+	if AudioManager:
+		AudioManager.stop_bgm()
 
 	_add_log("=== %s ===" % result_text)
 	_add_log("Win Rate: %.1f%% (%d/%d)" % [stats.get("win_rate", 0), stats.get("victories", 0), stats.get("total_battles", 0)])
@@ -252,20 +265,31 @@ func _add_log(p_message: String) -> void:
 ## Skill button handlers
 func _on_heavy_strike_pressed() -> void:
 	RTSArenaManager.player_use_skill("heavy_strike")
+	if AudioManager:
+		AudioManager.play_sfx("bat_skill_cast")
 
 func _on_quick_strike_pressed() -> void:
 	RTSArenaManager.player_use_skill("quick_strike")
+	if AudioManager:
+		AudioManager.play_sfx("bat_skill_cast")
 
 func _on_heal_pressed() -> void:
 	RTSArenaManager.player_use_skill("heal")
+	if AudioManager:
+		AudioManager.play_sfx("bat_skill_cast")
 
 func _on_defend_pressed() -> void:
 	RTSArenaManager.player_use_skill("defend")
+	if AudioManager:
+		AudioManager.play_sfx("bat_defend")
 
 
 ## Handle back button
 func _on_back_pressed() -> void:
 	RTSArenaManager.cleanup_battle()
+	if AudioManager:
+		AudioManager.play_sfx("ui_cancel")
+		AudioManager.stop_bgm()
 	# Remove ArenaMap from scene (keep as autoload)
 	if ArenaMap and ArenaMap.get_parent() == self:
 		remove_child(ArenaMap)
