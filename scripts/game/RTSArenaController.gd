@@ -36,6 +36,26 @@ func _ready() -> void:
 	_connect_signals()
 	_setup_skill_buttons()
 
+	# Auto-start battle if config is set in GameState
+	_try_auto_start_battle()
+
+
+## Try to auto-start battle from GameState configuration
+func _try_auto_start_battle() -> void:
+	var player_soul = GameState.get_value("battle", "player_soul", null)
+	var ai_soul = GameState.get_value("battle", "ai_soul", null)
+	var map_name = GameState.get_value("battle", "map_name", "default_arena")
+
+	if player_soul != null and ai_soul != null:
+		GameLog.info("RTSArenaController: Auto-starting battle with config from GameState", "Arena")
+		RTSArenaManager.start_battle(player_soul, ai_soul, map_name)
+		# Clear battle config after use
+		GameState.set_value("battle", "player_soul", null)
+		GameState.set_value("battle", "ai_soul", null)
+	else:
+		_add_log("No battle config found. Use CLI 'rts_battle' to set up a battle.")
+		_add_log("Or call start_test_battle() for a quick test.")
+
 
 ## Setup UI node references
 func _setup_ui_refs() -> void:

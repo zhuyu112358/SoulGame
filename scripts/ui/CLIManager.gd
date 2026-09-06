@@ -125,7 +125,8 @@ func _show_help() -> void:
 	add_line("  list_worlds       - List all worlds")
 	add_line("  start_world <id>  - Start world simulation")
 	add_line("  stop_world        - Stop current world simulation")
-	add_line("  rts_arena         - Enter RTS battle arena")
+	add_line("  rts_arena [soul] [map] - Enter RTS battle arena")
+	add_line("                       Maps: default/forest/crystal")
 	add_line("  save              - Save game state")
 	add_line("  load              - Load game state")
 	add_line("  clear             - Clear screen")
@@ -402,11 +403,106 @@ func _show_battle_status() -> void:
 		add_line("Result: %s" % battle.get_summary())
 
 
-## Open RTS arena scene
+## Open RTS arena scene with optional soul and map selection
+## Usage: rts_arena [soul_id] [map_name]
+## Examples:
+##   rts_arena                    - Use active soul vs random AI on default map
+##   rts_arena soul_123           - Use soul_123 vs AI on default map
+##   rts_arena soul_123 forest     - Use soul_123 vs AI on forest map
+##   rts_arena soul_1 soul_2 crystal - soul_1 vs soul_2 on crystal map
 func _open_rts_arena(p_parts: Array) -> void:
+	add_line("=== RTS Battle Arena ===")
+
+	# Determine player soul
+	var player_soul = null
+	if p_parts.size() >= 1:
+		var soul_id = p_parts[0]
+		var soul_details = SoulManager.get_soul_details(soul_id)
+		if not soul_details.is_empty():
+			player_soul = soul_details
+			add_line("Player soul: %s" % player_soul.get("name", soul_id))
+		else:
+			add_line("Soul '%s' not found, using active soul" % soul_id)
+
+	if player_soul == null:
+		if SoulManager.active_soul != null:
+			player_soul = {
+				"id": SoulManager.active_soul.soul_id,
+				"name": SoulManager.active_soul.soul_name,
+				"element": SoulManager.active_soul.element,
+				"level": SoulManager.active_soul.level if "level" in SoulManager.active_soul else 1
+			}
+			add_line("Player soul: %s (active)" % player_soul["name"])
+		else:
+			# Default test soul
+			player_soul = {"id": "test_player", "name": "Player Soul", "element": "fire", "level": 5}
+			add_line("Player soul: %s (default)" % player_soul["name"])
+
+	# Determine AI opponent soul
+	var ai_soul = null
+	if p_parts.size() >= 2:
+		var second_id = p_parts[1]
+		# Check if second arg is a map name
+		var maps = ["default_arena", "forest_arena", "crystal_arena"]
+		if maps.has(second_id):
+			# Second arg is map, generate random AI
+			ai_soul = _generate_ai_soul()
+		else:
+			# Second arg is soul id
+			var soul_details = SoulManager.get_soul_details(second_id)
+			if not soul_details.is_empty():
+				ai_soul = soul_details
+				add_line("Opponent soul: %s" % ai_soul.get("name", second_id))
+			else:
+				add_line("Soul '%s' not found, using random AI" % second_id)
+				ai_soul = _generate_ai_soul()
+	else:
+		ai_soul = _generate_ai_soul()
+
+	if ai_soul == null:
+		ai_soul = _generate_ai_soul()
+
+	add_line("Opponent soul: %s" % ai_soul.get("name", "AI"))
+
+	# Determine map
+	var map_name = "default_arena"
+	if p_parts.size() >= 3:
+		map_name = p_parts[2]
+	elif p_parts.size() == 2:
+		var second_arg = p_parts[1]
+		var maps = ["default_arena", "forest_arena", "crystal_arena"]
+		if maps.has(second_arg):
+			map_name = second_arg
+
+	var available_maps = ["default_arena", "forest_arena", "crystal_arena"]
+	if not available_maps.has(map_name):
+		add_line("Map '%s' not found, using default_arena" % map_name)
+		map_name = "default_arena"
+
+	add_line("Map: %s" % map_name)
+	add_line("")
+
+	# Store battle config in GameState for RTSArenaController
+	GameState.set_value("battle", "player_soul", player_soul)
+	GameState.set_value("battle", "ai_soul", ai_soul)
+	GameState.set_value("battle", "map_name", map_name)
+
 	add_line("Entering RTS Arena...")
-	add_line("RTS battle system: real-time combat with movement and skills")
 	SceneManager.change_scene("res://scenes/rts_arena.tscn")
+
+
+## Generate a random AI opponent soul
+func _generate_ai_soul() -> Dictionary:
+	var elements = ["fire", "water", "earth", "wind", "light", "dark"]
+	var names = ["Blaze", "Aqua", "Terra", "Gale", "Lumina", "Shadow"]
+	var idx = randi() % elements.size()
+	var level = 3 + randi() % 5  # Level 3-7
+	return {
+		"id": "ai_%d" % Time.get_unix_time_from_system(),
+		"name": names[idx],
+		"element": elements[idx],
+		"level": level
+	}
 
 
 ## Show battle log
