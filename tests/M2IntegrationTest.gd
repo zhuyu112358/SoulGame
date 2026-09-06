@@ -3402,3 +3402,33 @@ func _test_world_plugin() -> void:
 	plugin.author = "test_author"
 	_assert(plugin.author == "test_author", "author set works")
 	_assert(plugin.api_version == "1.1.0", "api_version updated to 1.1.0")
+
+	# Test 26: plugin_id field
+	_assert(typeof(plugin.plugin_id) == TYPE_STRING, "plugin_id is string")
+
+	# Test 27: plugin_name field
+	_assert(typeof(plugin.plugin_name) == TYPE_STRING, "plugin_name is string")
+
+	# Test 28: plugin_version field
+	_assert(typeof(plugin.plugin_version) == TYPE_STRING, "plugin_version is string")
+	_assert(plugin.plugin_version.length() > 0, "plugin_version not empty")
+
+	# Test 29: world_type field
+	_assert(typeof(plugin.world_type) == TYPE_STRING, "world_type is string")
+
+	# Test 30: _loaded field
+	_assert(typeof(plugin._loaded) == TYPE_BOOL, "_loaded is bool")
+
+	# Test 31: _active field
+	_assert(typeof(plugin._active) == TYPE_BOOL, "_active is bool")
+
+	# Test 32: world_state field
+	_assert(typeof(plugin.world_state) == TYPE_DICTIONARY, "world_state is dictionary")
+
+	# Test 33: serialize_state returns dictionary
+	var serialized = plugin.serialize_state()
+	_assert(typeof(serialized) == TYPE_DICTIONARY, "serialize_state returns dictionary")
+
+	# Test 34: deserialize_state can be called
+	plugin.deserialize_state({"world_state": {"test_key": "test_value"}})
+	_assert(plugin.world_state.has("test_key"), "deserialize_state works")
