@@ -54,6 +54,8 @@ tmp/
 temp/
 *.tmp
 *.bak
+build_r*.txt
+check_*.txt
 
 # Test coverage
 coverage/
