@@ -7,6 +7,93 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- **M2: RTS Real-Time Battle Arena System**
+  - **SoulUnit** (`scripts/game/SoulUnit.gd`) - Real-time combat unit
+    - Movement, attack, skills, cooldowns, status effects
+    - Element-based damage calculation (fire/water/earth/wind/light/dark)
+    - Level-scaled stats (HP, attack, defense, energy)
+    - 4 skills: basic_attack, heavy_strike, quick_strike, heal, defend
+    - Obstacle collision detection with sliding
+    - Terrain speed modifiers (grass 0.85x, water 0.6x, sand 0.75x)
+  - **RTSArenaManager** (`scripts/game/RTSArenaManager.gd`, autoload) - Real-time battle manager
+    - Battle state machine (IDLE/ACTIVE/FINISHED)
+    - Player vs AI combat with real-time updates
+    - AI decision system (move/attack/skill/heal)
+    - Battle time limit and forfeit
+    - Player commands: move, attack, skill
+  - **RTSArenaController** (`scripts/game/RTSArenaController.gd`) - Arena scene controller
+    - Real-time HP/energy bar updates
+    - Skill buttons with cooldown display
+    - Battle log with color-coded events
+    - Unit visual representation
+    - Battle result display (victory/defeat, XP, stats)
+    - Minimap integration
+  - **rts_arena.tscn** (`scenes/rts_arena.tscn`) - RTS arena scene (1280x720)
+    - Top bar: player/AI panels, HP/energy bars, timer
+    - Arena area: combat space with map rendering
+    - Bottom bar: skill buttons, back button
+    - Battle log panel
+    - Minimap (top-right)
+  - **ArenaMap** (`scripts/game/ArenaMap.gd`, autoload) - Arena map system
+    - 3 map layouts: default_arena, forest_arena, crystal_arena
+    - 6 terrain types: NORMAL, GRASS, STONE, WATER, LAVA, SAND
+    - 5 obstacle types: ROCK, TREE, WALL, CRYSTAL, PILLAR
+    - Destructible obstacles with HP and buff effects
+    - Terrain speed modifiers and lava damage
+    - Collision detection with obstacle sliding
+    - Per-map spawn points
+    - Visual rendering of terrain and obstacles
+  - **BattleResultManager** (`scripts/game/BattleResultManager.gd`, autoload) - Battle results and growth
+    - Experience calculation (victory/defeat/draw, level difference)
+    - Soul growth feedback (cognitive/emotional/skill XP)
+    - Battle history recording
+    - Win/loss statistics and win rate
+    - Streak tracking (win/loss streaks)
+    - Per-soul battle records
+    - Persistence via SaveSystem
+  - **Minimap** (`scripts/ui/Minimap.gd`) - RTS arena minimap
+    - Top-down arena overview (150x150)
+    - Player/AI unit positions (blue/red dots)
+    - Obstacle and terrain display
+    - Real-time updates
+    - Click-to-move camera hook (reserved)
+  - **Complete Battle Flow** - Soul selection to arena entry
+    - CLI command: `rts_arena [soul_id] [opponent|map] [map]`
+    - GameState-based battle configuration passing
+    - Auto-start battle on scene load
+    - 3 selectable maps
+    - Random AI opponent generation
+- **M2: Server-Authority Architecture** (`scripts/network/ServerAuthority.gd`)
+  - 3 authority modes: LOCAL_SIMULATION (M2), CLIENT_PREDICT, SERVER_ONLY
+  - Input command submission with sequence numbers and timestamps
+  - Pending command queue for server validation
+  - State snapshot history for anti-cheat verification
+  - State verification with critical field comparison
+  - Signature fields reserved for cryptographic signing
+  - Rollback hooks for client prediction correction
+- **M2: Monetization System Stubs** (`scripts/monetization/`)
+  - **IItem** - Base item interface (cosmetic-only invariant)
+  - **ISkin** - Soul skin interface (visual resources by ID, no stats)
+  - **MonetizationManager** (autoload) - Payment and cosmetic manager
+    - is_subscriber() / has_skin() (M2 mock)
+    - Purchase flow with soft currency (M2 mock)
+    - Equipment system with slot management
+    - 3 currency types: soft/hard/premium
+    - Season pass data structure reserved
+    - All items cosmetic-only (no pay-to-win)
+- **M2: Integration Tests** (`tests/M2IntegrationTest.gd`)
+  - 81 tests covering all M2 features
+  - BattleResultManager: 7 tests
+  - ArenaMap: 10 tests
+  - SoulUnit: 10 tests
+  - RTSArenaManager: 11 tests
+  - m2_test_runner.gd + m2_test.tscn (SceneTree wrapper)
+- **THIRD_PARTY_LICENSES.md** - Third-party license compliance document
+  - Godot Engine (MIT)
+  - SDK dependencies (internal)
+  - Font/audio/visual asset policy
+  - Compliance checklist
+  - Update process
 - **CLIManager** (`scripts/ui/CLIManager.gd`) - Text-based command line interface for M1
   - 18 commands: help, status, create_soul, list_souls, select_soul, soul_home, train, deploy, create_world, list_worlds, start_world, stop_world, save, load, clear, quit
   - Soul management: create, list, select, train, deploy
