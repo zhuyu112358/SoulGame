@@ -2574,6 +2574,36 @@ func _test_home_api() -> void:
 	# Test 18: Cleanup soul
 	PlatformSDK.delete_soul(soul.soul_id)
 
+	# Test 19: set_decoration returns bool
+	var deco_new = HomeAPI.set_decoration("wall", "painting_01")
+	_assert(typeof(deco_new) == TYPE_BOOL, "set_decoration returns bool")
+
+	# Test 20: set_room_theme returns bool
+	var theme_new = HomeAPI.set_room_theme("cozy")
+	_assert(typeof(theme_new) == TYPE_BOOL, "set_room_theme returns bool")
+
+	# Test 21: get_home_state returns dictionary
+	var home_state = HomeAPI.get_home_state()
+	_assert(typeof(home_state) == TYPE_DICTIONARY, "get_home_state returns dictionary")
+
+	# Test 22: get_info has all required fields
+	var home_info = HomeAPI.get_info()
+	_assert(home_info.has("home_loaded"), "get_info has home_loaded")
+	_assert(home_info.has("active_soul"), "get_info has active_soul")
+	_assert(home_info.has("interaction_cooldown"), "get_info has interaction_cooldown")
+
+	# Test 23: interact with play type
+	var play_new = HomeAPI.interact("play", {"toy": "ball"} )
+	_assert(typeof(play_new) == TYPE_DICTIONARY, "interact play returns dictionary")
+
+	# Test 24: interact with feed type
+	var feed_new = HomeAPI.interact("feed", {"food": "soul_cake"} )
+	_assert(typeof(feed_new) == TYPE_DICTIONARY, "interact feed returns dictionary")
+
+	# Test 25: interact with invalid type
+	var invalid_interact = HomeAPI.interact("invalid_type", {})
+	_assert(typeof(invalid_interact) == TYPE_DICTIONARY, "interact invalid returns dictionary")
+
 
 ## ============================================
 ## SoulSnapshot System Tests
