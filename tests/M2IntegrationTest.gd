@@ -3728,3 +3728,36 @@ func _test_world_plugin() -> void:
 	# Test 34: deserialize_state can be called
 	plugin.deserialize_state({"world_state": {"test_key": "test_value"}})
 	_assert(plugin.world_state.has("test_key"), "deserialize_state works")
+
+	# Test 35: load_world returns bool
+	var load_world_result_new = plugin.load_world()
+	_assert(typeof(load_world_result_new) == TYPE_BOOL, "load_world returns bool")
+
+	# Test 36: get_world_info returns dictionary
+	var world_info_new = plugin.get_world_info()
+	_assert(typeof(world_info_new) == TYPE_DICTIONARY, "get_world_info returns dictionary")
+	_assert(world_info_new.has("id"), "world_info has id")
+
+	# Test 37: supports_feature returns bool
+	var feature_result_new = plugin.supports_feature("combat")
+	_assert(typeof(feature_result_new) == TYPE_BOOL, "supports_feature returns bool")
+
+	# Test 38: get_supported_features returns array
+	var features_new2 = plugin.get_supported_features()
+	_assert(typeof(features_new2) == TYPE_ARRAY, "get_supported_features returns array")
+
+	# Test 39: enter_world returns dictionary
+	var enter_result_new = plugin.enter_world(null)
+	_assert(typeof(enter_result_new) == TYPE_DICTIONARY, "enter_world returns dictionary")
+
+	# Test 40: exit_world returns dictionary
+	var exit_result_new = plugin.exit_world(null)
+	_assert(typeof(exit_result_new) == TYPE_DICTIONARY, "exit_world returns dictionary")
+
+	# Test 41: update_world callable
+	plugin.update_world(0.016)
+	_assert(true, "update_world callable")
+
+	# Test 42: unload_world callable
+	plugin.unload_world()
+	_assert(plugin._loaded == false, "unload_world sets _loaded false")
