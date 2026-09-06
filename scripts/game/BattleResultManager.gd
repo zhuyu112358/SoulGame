@@ -54,6 +54,9 @@ func _ready() -> void:
 func process_battle_result(p_battle_data: Dictionary) -> Dictionary:
 	GameLog.info("BattleResultManager: Processing battle result - %s" % p_battle_data.get("result", "unknown"), "Arena")
 
+	# Play battle result open sound
+	AudioManager.play_ui("battle_result_open")
+
 	var result: String = p_battle_data.get("result", "draw")
 	var player_soul_id: String = p_battle_data.get("player_soul_id", "")
 	var opponent_soul_id: String = p_battle_data.get("opponent_soul_id", "")
@@ -115,6 +118,10 @@ func process_battle_result(p_battle_data: Dictionary) -> Dictionary:
 	GameLog.info("BattleResultManager: Battle processed - %s, EXP: +%d, Level up: %s" % [
 		result, experience_gained, str(leveled_up)
 	], "Arena")
+
+	# Play victory sound on win
+	if result == "win":
+		AudioManager.play_ui("battle_victory")
 
 	return result_data
 
