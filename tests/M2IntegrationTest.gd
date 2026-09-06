@@ -2476,6 +2476,34 @@ func _test_monetization_manager() -> void:
 	_assert(mon_data.has("currency"), "get_info has currency")
 
 
+	# Test 31: get_currency returns int
+	var soft_currency_new = MonetizationManager.get_currency("soft")
+	_assert(typeof(soft_currency_new) == TYPE_INT, "get_currency returns int")
+	_assert(soft_currency_new >= 0, "Currency >= 0")
+
+	# Test 32: add_currency increases balance
+	var before_currency = MonetizationManager.get_currency("soft")
+	MonetizationManager.add_currency(100, "soft")
+	var after_currency = MonetizationManager.get_currency("soft")
+	_assert(after_currency == before_currency + 100, "add_currency increases by 100")
+
+	# Test 33: _subscription_tier field
+	_assert(typeof(MonetizationManager._subscription_tier) == TYPE_STRING, "_subscription_tier is string")
+
+	# Test 34: _subscription_expiry field
+	_assert(typeof(MonetizationManager._subscription_expiry) == TYPE_INT, "_subscription_expiry is int")
+
+	# Test 35: _equipped_items is dictionary
+	_assert(typeof(MonetizationManager._equipped_items) == TYPE_DICTIONARY, "_equipped_items is dictionary")
+
+	# Test 36: _shop_items is dictionary
+	_assert(typeof(MonetizationManager._shop_items) == TYPE_DICTIONARY, "_shop_items is dictionary")
+	_assert(MonetizationManager._shop_items.size() > 0, "_shop_items not empty")
+
+	# Test 37: _currency is dictionary
+	_assert(typeof(MonetizationManager._currency) == TYPE_DICTIONARY, "_currency is dictionary")
+	_assert(MonetizationManager._currency.has("soft"), "_currency has soft")
+
 ## ============================================
 ## PlatformSDK System Tests
 ## ============================================
