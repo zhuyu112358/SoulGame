@@ -272,6 +272,9 @@ func _test_persistence() -> void:
 func _test_cli_commands() -> void:
 	print("\n--- CLI Commands ---")
 
+	# Clear output buffer to avoid max_lines limit affecting tests
+	CLIManager.output_lines.clear()
+
 	# Test help command (should not crash)
 	CLIManager.process_command("help")
 	_assert(CLIManager.output_lines.size() > 0, "help command produces output")

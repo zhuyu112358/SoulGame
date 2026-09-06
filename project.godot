@@ -44,6 +44,9 @@ BattleResultManager="*res://scripts/game/BattleResultManager.gd"
 ArenaMap="*res://scripts/game/ArenaMap.gd"
 MonetizationManager="*res://scripts/monetization/MonetizationManager.gd"
 AudioManager="*res://scripts/autoload/AudioManager.gd"
+PlatformSDK="*res://platform/sdk/PlatformSDK.gd"
+WorldLoader="*res://platform/world/WorldLoader.gd"
+HomeAPI="*res://platform/home/HomeAPI.gd"
 
 [display]
 
