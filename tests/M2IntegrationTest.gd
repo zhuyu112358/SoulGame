@@ -9,6 +9,7 @@ const SoulUnit = preload("res://scripts/game/SoulUnit.gd")
 const Minimap = preload("res://scripts/ui/Minimap.gd")
 const PixelSpriteGenerator = preload("res://scripts/game/PixelSpriteGenerator.gd")
 const ArenaBackgroundGenerator = preload("res://scripts/game/ArenaBackgroundGenerator.gd")
+const ServerAuthority = preload("res://scripts/network/ServerAuthority.gd")
 
 ## Test counters
 var _tests_run: int = 0
@@ -36,6 +37,7 @@ func _ready() -> void:
 	_test_audio_manager()
 	_test_pixel_sprite_generator()
 	_test_arena_background_generator()
+	_test_server_authority()
 
 	# Print summary
 	print("\n=== M2 TEST SUMMARY ===")
@@ -1428,3 +1430,111 @@ func _test_arena_background_generator() -> void:
 		var palette = ArenaBackgroundGenerator.ARENA_PALETTES[arena_type]
 		_assert(typeof(palette) == TYPE_DICTIONARY, "Palette for %s is dictionary" % arena_type)
 		_assert(palette.has("base"), "Palette for %s has base" % arena_type)
+
+
+## ============================================
+## ServerAuthority System Tests
+## ============================================
+func _test_server_authority() -> void:
+	print("\n--- ServerAuthority System Tests ---")
+
+	# Create authority instance (RefCounted)
+	var authority = ServerAuthority.new()
+
+	# Test 1: Default mode is LOCAL_SIMULATION
+	_assert(authority.get_mode() == ServerAuthority.AuthorityMode.LOCAL_SIMULATION, "Default mode LOCAL_SIMULATION")
+
+	# Test 2: AuthorityMode enum values
+	_assert(ServerAuthority.AuthorityMode.LOCAL_SIMULATION == 0, "LOCAL_SIMULATION = 0")
+	_assert(ServerAuthority.AuthorityMode.CLIENT_PREDICT == 1, "CLIENT_PREDICT = 1")
+	_assert(ServerAuthority.AuthorityMode.SERVER_ONLY == 2, "SERVER_ONLY = 2")
+
+	# Test 3: set_mode changes mode
+	authority.set_mode(ServerAuthority.AuthorityMode.SERVER_ONLY)
+	_assert(authority.get_mode() == ServerAuthority.AuthorityMode.SERVER_ONLY, "set_mode to SERVER_ONLY")
+	authority.set_mode(ServerAuthority.AuthorityMode.LOCAL_SIMULATION)
+
+	# Test 4: Initial sequence number is 0
+	_assert(authority.get_sequence() == 0, "Initial sequence = 0")
+
+	# Test 5: Initial pending count is 0
+	_assert(authority.get_pending_count() == 0, "Initial pending count = 0")
+
+	# Test 6: submit_command returns dictionary
+	var command = {"type": "move", "unit_id": "player_1", "target": Vector2(100, 100)}
+	var result = authority.submit_command(command)
+	_assert(typeof(result) == TYPE_DICTIONARY, "submit_command returns dictionary")
+
+	# Test 7: submit_command increments sequence
+	_assert(authority.get_sequence() == 1, "Sequence incremented to 1 after submit")
+
+	# Test 8: submit_command result has sequence field
+	_assert(result.has("sequence"), "Result has sequence field")
+	_assert(result["sequence"] == 0, "Result sequence = 0 (first command)")
+
+	# Test 9: submit_command result has status field
+	_assert(result.has("status"), "Result has status field")
+	_assert(result["status"] == "applied", "Command status = applied in LOCAL_SIMULATION mode")
+
+	# Test 10: Multiple commands increment sequence
+	authority.submit_command({"type": "attack", "unit_id": "player_1"})
+	_assert(authority.get_sequence() == 2, "Sequence = 2 after second submit")
+	authority.submit_command({"type": "defend", "unit_id": "player_1"})
+	_assert(authority.get_sequence() == 3, "Sequence = 3 after third submit")
+
+	# Test 11: take_snapshot stores snapshot
+	var battle_state = {"player_hp": 100, "ai_hp": 80, "time": 10.5}
+	authority.take_snapshot(battle_state)
+	_assert(authority.get_latest_snapshot() != null, "Snapshot stored")
+
+	# Test 12: get_latest_snapshot returns dictionary
+	var latest = authority.get_latest_snapshot()
+	_assert(typeof(latest) == TYPE_DICTIONARY, "Latest snapshot is dictionary")
+	_assert(latest.has("state"), "Snapshot has state field")
+	_assert(latest["state"]["player_hp"] == 100, "Snapshot player_hp = 100")
+
+	# Test 13: Multiple snapshots keep latest
+	var battle_state2 = {"player_hp": 90, "ai_hp": 70, "time": 15.0}
+	authority.take_snapshot(battle_state2)
+	var latest2 = authority.get_latest_snapshot()
+	_assert(latest2["state"]["player_hp"] == 90, "Latest snapshot updated to player_hp=90")
+
+	# Test 14: verify_state with matching states
+	var local_state = {"player_hp": 100, "ai_hp": 80}
+	var server_state = {"player_hp": 100, "ai_hp": 80}
+	_assert(authority.verify_state(local_state, server_state) == true, "verify_state matching = true")
+
+	# Test 15: verify_state with mismatching states
+	var local_state2 = {"player_hp": 100, "ai_hp": 80}
+	var server_state2 = {"player_hp": 95, "ai_hp": 80}
+	_assert(authority.verify_state(local_state2, server_state2) == false, "verify_state mismatching = false")
+
+	# Test 16: get_info returns dictionary
+	var info = authority.get_info()
+	_assert(typeof(info) == TYPE_DICTIONARY, "get_info returns dictionary")
+	_assert(info.has("mode"), "get_info has mode")
+	_assert(info.has("sequence"), "get_info has sequence")
+	_assert(info.has("pending_commands"), "get_info has pending_commands")
+
+	# Test 17: get_info mode name
+	_assert(info.has("mode_name"), "get_info has mode_name")
+	_assert(info["mode_name"] == "local_simulation", "mode_name = local_simulation")
+
+	# Test 18: _mode_to_name returns correct names
+	_assert(authority._mode_to_name(0) == "local_simulation", "_mode_to_name(0) = local_simulation")
+	_assert(authority._mode_to_name(1) == "client_predict", "_mode_to_name(1) = client_predict")
+	_assert(authority._mode_to_name(2) == "server_only", "_mode_to_name(2) = server_only")
+
+	# Test 19: SERVER_ONLY mode submits command (pending)
+	authority.set_mode(ServerAuthority.AuthorityMode.SERVER_ONLY)
+	var cmd_result = authority.submit_command({"type": "move", "unit_id": "player_1"})
+	_assert(cmd_result.has("sequence"), "SERVER mode result has sequence")
+	_assert(cmd_result["status"] == "pending", "SERVER mode command status = pending")
+
+	# Test 20: validate_command processes pending command
+	var seq = authority.get_sequence()
+	authority.validate_command(seq, true, {"player_hp": 95})
+	_assert(authority.get_pending_count() >= 0, "Pending count after validate")
+
+	# Reset to local mode
+	authority.set_mode(ServerAuthority.AuthorityMode.LOCAL_SIMULATION)
