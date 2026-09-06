@@ -2297,6 +2297,28 @@ func _test_server_authority() -> void:
 	authority.set_mode(ServerAuthority.AuthorityMode.LOCAL_SIMULATION)
 
 
+	# Test 31: _mode_to_name returns string
+	var mode_name = authority._mode_to_name(ServerAuthority.AuthorityMode.LOCAL_SIMULATION)
+	_assert(typeof(mode_name) == TYPE_STRING, "_mode_to_name returns string")
+	_assert(mode_name.length() > 0, "mode_name not empty")
+
+	# Test 32: get_info returns dictionary
+	var auth_info = authority.get_info()
+	_assert(typeof(auth_info) == TYPE_DICTIONARY, "get_info returns dictionary")
+	_assert(auth_info.has("mode"), "auth_info has mode")
+	_assert(auth_info.has("pending_commands"), "auth_info has pending_commands")
+
+	# Test 33: _pending_commands is array
+	_assert(typeof(authority._pending_commands) == TYPE_ARRAY, "_pending_commands is array")
+
+	# Test 34: _snapshot_history is array
+	_assert(typeof(authority._snapshot_history) == TYPE_ARRAY, "_snapshot_history is array")
+
+	# Test 35: _sequence_number starts at 0
+	var new_auth = ServerAuthority.new()
+	_assert(new_auth._sequence_number == 0, "_sequence_number starts at 0")
+	# RefCounted objects are freed automatically
+
 ## ============================================
 ## MonetizationManager System Tests
 ## ============================================
