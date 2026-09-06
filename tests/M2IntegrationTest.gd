@@ -8,6 +8,7 @@ extends Node2D
 const SoulUnit = preload("res://scripts/game/SoulUnit.gd")
 const Minimap = preload("res://scripts/ui/Minimap.gd")
 const PixelSpriteGenerator = preload("res://scripts/game/PixelSpriteGenerator.gd")
+const ArenaBackgroundGenerator = preload("res://scripts/game/ArenaBackgroundGenerator.gd")
 
 ## Test counters
 var _tests_run: int = 0
@@ -34,6 +35,7 @@ func _ready() -> void:
 	_test_minimap_system()
 	_test_audio_manager()
 	_test_pixel_sprite_generator()
+	_test_arena_background_generator()
 
 	# Print summary
 	print("\n=== M2 TEST SUMMARY ===")
@@ -1327,3 +1329,102 @@ func _test_pixel_sprite_generator() -> void:
 	var aggro_palette = generator._get_palette("fire", {"aggression": 1.0})
 	_assert(typeof(base_palette) == TYPE_DICTIONARY, "Base palette is dictionary")
 	_assert(typeof(aggro_palette) == TYPE_DICTIONARY, "Aggro palette is dictionary")
+
+
+## ============================================
+## ArenaBackgroundGenerator System Tests
+## ============================================
+func _test_arena_background_generator() -> void:
+	print("\n--- ArenaBackgroundGenerator System Tests ---")
+
+	# Create generator instance (RefCounted)
+	var generator = ArenaBackgroundGenerator.new()
+
+	# Test 1: TILE_SIZE constant
+	_assert(ArenaBackgroundGenerator.TILE_SIZE == 32, "TILE_SIZE = 32")
+
+	# Test 2: ARENA_WIDTH constant
+	_assert(ArenaBackgroundGenerator.ARENA_WIDTH == 1280, "ARENA_WIDTH = 1280")
+
+	# Test 3: ARENA_HEIGHT constant
+	_assert(ArenaBackgroundGenerator.ARENA_HEIGHT == 640, "ARENA_HEIGHT = 640")
+
+	# Test 4: ARENA_PALETTES has entries
+	_assert(ArenaBackgroundGenerator.ARENA_PALETTES.size() > 0, "ARENA_PALETTES has entries: %d" % ArenaBackgroundGenerator.ARENA_PALETTES.size())
+
+	# Test 5: get_arena_types returns array
+	var arena_types = generator.get_arena_types()
+	_assert(typeof(arena_types) == TYPE_ARRAY, "get_arena_types returns array")
+	_assert(arena_types.size() > 0, "Arena types > 0: %d" % arena_types.size())
+
+	# Test 6: Common arena types
+	_assert(arena_types.has("grass"), "grass arena type available")
+	_assert(arena_types.has("stone"), "stone arena type available")
+
+	# Test 7: generate_background for grass returns ImageTexture
+	var grass_bg = generator.generate_background("grass")
+	_assert(grass_bg != null, "Grass background generated")
+	_assert(grass_bg is ImageTexture, "Grass background is ImageTexture")
+
+	# Test 8: generate_background for stone returns ImageTexture
+	var stone_bg = generator.generate_background("stone")
+	_assert(stone_bg != null, "Stone background generated")
+	_assert(stone_bg is ImageTexture, "Stone background is ImageTexture")
+
+	# Test 9: generate_background with seed
+	var seeded_bg = generator.generate_background("grass", 42)
+	_assert(seeded_bg != null, "Seeded background generated")
+	_assert(seeded_bg is ImageTexture, "Seeded background is ImageTexture")
+
+	# Test 10: Same seed produces consistent result (same type)
+	var seeded_bg2 = generator.generate_background("grass", 42)
+	_assert(seeded_bg2 != null, "Second seeded background generated")
+
+	# Test 11: generate_background with invalid type falls back
+	var invalid_bg = generator.generate_background("nonexistent_arena")
+	_assert(invalid_bg != null, "Invalid arena type falls back to default")
+
+	# Test 12: generate_background with default params
+	var default_bg = generator.generate_background()
+	_assert(default_bg != null, "Default background generated")
+	_assert(default_bg is ImageTexture, "Default background is ImageTexture")
+
+	# Test 13: All arena types can generate background
+	for arena_type in arena_types:
+		var bg = generator.generate_background(arena_type)
+		_assert(bg != null, "Background for %s generated" % arena_type)
+
+	# Test 14: Different arena types produce different palettes
+	var grass_palette = ArenaBackgroundGenerator.ARENA_PALETTES["grass"]
+	var stone_palette = ArenaBackgroundGenerator.ARENA_PALETTES["stone"]
+	_assert(grass_palette != stone_palette, "Grass and stone palettes differ")
+
+	# Test 15: Palette has required color keys
+	_assert(grass_palette.has("base"), "Palette has base color")
+	_assert(grass_palette.has("accent"), "Palette has accent color")
+	_assert(grass_palette.has("border"), "Palette has border color")
+
+	# Test 16: Background dimensions match arena size
+	var bg_image = grass_bg.get_image()
+	_assert(bg_image != null, "Background image accessible")
+	_assert(bg_image.get_width() == 1280, "Background width 1280: %d" % bg_image.get_width())
+	_assert(bg_image.get_height() == 640, "Background height 640: %d" % bg_image.get_height())
+
+	# Test 17: Multiple generations don't crash
+	for i in range(5):
+		var bg = generator.generate_background("grass", i)
+		_assert(bg != null, "Generation %d succeeds" % i)
+
+	# Test 18: Negative seed handled
+	var neg_seed_bg = generator.generate_background("grass", -1)
+	_assert(neg_seed_bg != null, "Negative seed handled")
+
+	# Test 19: Large seed handled
+	var large_seed_bg = generator.generate_background("grass", 999999)
+	_assert(large_seed_bg != null, "Large seed handled")
+
+	# Test 20: ARENA_PALETTES all have required structure
+	for arena_type in ArenaBackgroundGenerator.ARENA_PALETTES:
+		var palette = ArenaBackgroundGenerator.ARENA_PALETTES[arena_type]
+		_assert(typeof(palette) == TYPE_DICTIONARY, "Palette for %s is dictionary" % arena_type)
+		_assert(palette.has("base"), "Palette for %s has base" % arena_type)
