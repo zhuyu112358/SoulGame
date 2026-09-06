@@ -1954,6 +1954,56 @@ func _test_server_authority() -> void:
 	# Reset to local mode
 	authority.set_mode(ServerAuthority.AuthorityMode.LOCAL_SIMULATION)
 
+	# Test 21: take_snapshot stores battle state
+	authority.take_snapshot({"player_hp": 100, "ai_hp": 80, "time": 10.0})
+	_assert(authority._snapshot_history.size() > 0, "Snapshot history not empty after take_snapshot")
+
+	# Test 22: get_latest_snapshot returns dictionary
+	var latest_snap = authority.get_latest_snapshot()
+	_assert(typeof(latest_snap) == TYPE_DICTIONARY, "get_latest_snapshot returns dictionary")
+	_assert(latest_snap.has("state"), "Latest snapshot has state")
+	_assert(latest_snap["state"].has("player_hp"), "Snapshot state has player_hp")
+	_assert(latest_snap["state"]["player_hp"] == 100, "Latest snapshot player_hp = 100")
+
+	# Test 23: Multiple snapshots
+	authority.take_snapshot({"player_hp": 90, "ai_hp": 70})
+	authority.take_snapshot({"player_hp": 80, "ai_hp": 60})
+	var latest_snap2 = authority.get_latest_snapshot()
+	_assert(latest_snap2["state"]["player_hp"] == 80, "Latest snapshot after multiple = 80")
+
+	# Test 24: verify_state with matching states
+	var state_match = authority.verify_state({"player_hp": 100}, {"player_hp": 100})
+	_assert(state_match == true, "verify_state returns true for matching states")
+
+	# Test 25: verify_state with mismatching states
+	var state_mismatch = authority.verify_state({"player_hp": 100}, {"player_hp": 90})
+	_assert(state_mismatch == false, "verify_state returns false for mismatching states")
+
+	# Test 26: get_pending_count returns int
+	var pending_count = authority.get_pending_count()
+	_assert(typeof(pending_count) == TYPE_INT, "get_pending_count returns int")
+	_assert(pending_count >= 0, "Pending count >= 0")
+
+	# Test 27: get_sequence returns int
+	var seq_num = authority.get_sequence()
+	_assert(typeof(seq_num) == TYPE_INT, "get_sequence returns int")
+	_assert(seq_num >= 0, "Sequence >= 0")
+
+	# Test 28: AuthorityMode enum values
+	_assert(ServerAuthority.AuthorityMode.LOCAL_SIMULATION == 0, "LOCAL_SIMULATION = 0")
+	_assert(ServerAuthority.AuthorityMode.CLIENT_PREDICT == 1, "CLIENT_PREDICT = 1")
+	_assert(ServerAuthority.AuthorityMode.SERVER_ONLY == 2, "SERVER_ONLY = 2")
+
+	# Test 29: _max_snapshots constant
+	_assert(authority._max_snapshots == 60, "_max_snapshots = 60")
+
+	# Test 30: set_mode to CLIENT_PREDICT
+	authority.set_mode(ServerAuthority.AuthorityMode.CLIENT_PREDICT)
+	_assert(authority.get_mode() == ServerAuthority.AuthorityMode.CLIENT_PREDICT, "Mode set to CLIENT_PREDICT")
+	var client_cmd = authority.submit_command({"type": "attack", "unit_id": "player_1"})
+	_assert(client_cmd.has("status"), "CLIENT_PREDICT command has status")
+	authority.set_mode(ServerAuthority.AuthorityMode.LOCAL_SIMULATION)
+
 
 ## ============================================
 ## MonetizationManager System Tests
