@@ -64,12 +64,14 @@ func _ready() -> void:
 
 
 ## Start a new RTS battle
-func start_battle(p_player_soul: Dictionary, p_ai_soul: Dictionary) -> bool:
+func start_battle(p_player_soul: Dictionary, p_ai_soul: Dictionary, p_map_name: String = "default_arena") -> bool:
 	if battle_state == BattleState.ACTIVE:
 		GameLog.warning("RTSArenaManager: Battle already active", "Arena")
 		return false
 
-	GameLog.info("RTSArenaManager: Starting RTS battle between %s and %s" % [p_player_soul.get("name", "Player"), p_ai_soul.get("name", "AI")], "Arena")
+	GameLog.info("RTSArenaManager: Starting RTS battle between %s and %s on map %s" % [
+		p_player_soul.get("name", "Player"), p_ai_soul.get("name", "AI"), p_map_name
+	], "Arena")
 
 	# Reset state
 	battle_state = BattleState.ACTIVE
@@ -77,6 +79,12 @@ func start_battle(p_player_soul: Dictionary, p_ai_soul: Dictionary) -> bool:
 	winner_id = ""
 	battle_result = "pending"
 	battle_log.clear()
+
+	# Load arena map
+	if ArenaMap and ArenaMap.has_method("load_map"):
+		ArenaMap.load_map(p_map_name)
+		battle_config["player_spawn"] = ArenaMap.player_spawn
+		battle_config["ai_spawn"] = ArenaMap.ai_spawn
 
 	# Spawn player unit
 	player_unit = SoulUnit.new()

@@ -128,6 +128,16 @@ func _update_skill_cooldowns() -> void:
 func _on_battle_started(p_battle_info: Dictionary) -> void:
 	_battle_active = true
 	_add_log("Battle started!")
+
+	# Add ArenaMap to scene for rendering
+	if ArenaMap and not is_instance_valid(ArenaMap.get_parent()):
+		ArenaMap.position = Vector2(20, 90)
+		add_child(ArenaMap)
+	elif ArenaMap and ArenaMap.get_parent() != self:
+		ArenaMap.get_parent().remove_child(ArenaMap)
+		ArenaMap.position = Vector2(20, 90)
+		add_child(ArenaMap)
+
 	GameLog.info("RTSArenaController: Battle started", "Arena")
 
 
@@ -224,6 +234,9 @@ func _on_defend_pressed() -> void:
 ## Handle back button
 func _on_back_pressed() -> void:
 	RTSArenaManager.cleanup_battle()
+	# Remove ArenaMap from scene (keep as autoload)
+	if ArenaMap and ArenaMap.get_parent() == self:
+		remove_child(ArenaMap)
 	SceneManager.change_scene("res://scenes/cli.tscn")
 
 

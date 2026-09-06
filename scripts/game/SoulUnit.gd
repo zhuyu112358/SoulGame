@@ -148,13 +148,44 @@ func _update_movement(delta: float) -> void:
 		emit_signal("state_changed", state)
 		return
 
-	var move_amount: float = move_speed * delta
+	# Apply terrain speed modifier
+	var speed_modifier: float = 1.0
+	if ArenaMap and ArenaMap.has_method("get_terrain_speed_modifier"):
+		speed_modifier = ArenaMap.get_terrain_speed_modifier(position)
+
+	var actual_speed: float = move_speed * speed_modifier
+	var move_amount: float = actual_speed * delta
+
 	if move_amount >= distance:
-		position = target_position
+		# Check if target position is valid
+		if _is_position_valid(target_position):
+			position = target_position
 		state = UnitState.IDLE
 		emit_signal("state_changed", state)
 	else:
-		position += direction.normalized() * move_amount
+		var new_position: Vector2 = position + direction.normalized() * move_amount
+		# Check obstacle collision, slide along obstacle if blocked
+		if _is_position_valid(new_position):
+			position = new_position
+		else:
+			# Try sliding along X or Y axis
+			var slide_x: Vector2 = Vector2(new_position.x, position.y)
+			var slide_y: Vector2 = Vector2(position.x, new_position.y)
+			if _is_position_valid(slide_x):
+				position = slide_x
+			elif _is_position_valid(slide_y):
+				position = slide_y
+			else:
+				# Blocked completely, stop moving
+				state = UnitState.IDLE
+				emit_signal("state_changed", state)
+
+
+## Check if position is valid (not colliding with obstacles or out of bounds)
+func _is_position_valid(p_position: Vector2) -> bool:
+	if ArenaMap and ArenaMap.has_method("is_position_valid"):
+		return ArenaMap.is_position_valid(p_position, 32.0)
+	return true
 
 
 ## Update attack behavior
