@@ -1952,6 +1952,33 @@ func _test_pixel_sprite_generator() -> void:
 	_assert(default_element_sprite.get_width() == 64, "Default sprite width 64")
 
 
+	# Test 30: SPRITE_SIZE constant
+	_assert(PixelSpriteGenerator.SPRITE_SIZE == 64, "SPRITE_SIZE = 64")
+
+	# Test 31: ELEMENT_PALETTES dictionary
+	_assert(typeof(PixelSpriteGenerator.ELEMENT_PALETTES) == TYPE_DICTIONARY, "ELEMENT_PALETTES is dictionary")
+	_assert(PixelSpriteGenerator.ELEMENT_PALETTES.size() > 0, "ELEMENT_PALETTES not empty")
+	_assert(PixelSpriteGenerator.ELEMENT_PALETTES.has("fire"), "ELEMENT_PALETTES has fire")
+
+	# Test 32: _hash_string returns int
+	var hash_val = generator._hash_string("test")
+	_assert(typeof(hash_val) == TYPE_INT, "_hash_string returns int")
+
+	# Test 33: _get_palette returns dictionary
+	var palette = generator._get_palette("fire", {})
+	_assert(typeof(palette) == TYPE_DICTIONARY, "_get_palette returns dictionary")
+	_assert(palette.size() > 0, "palette not empty")
+
+	# Test 34: generate_color_swatch default size
+	var swatch_new = generator.generate_color_swatch("fire")
+	_assert(swatch_new != null, "color swatch generated")
+	_assert(swatch_new.get_width() == 32, "default swatch width 32")
+
+	# Test 35: generate_color_swatch custom size
+	var custom_swatch_new = generator.generate_color_swatch("water", 64)
+	_assert(custom_swatch_new != null, "custom color swatch generated")
+	_assert(custom_swatch_new.get_width() == 64, "custom swatch width 64")
+
 ## ============================================
 ## ArenaBackgroundGenerator System Tests
 ## ============================================
