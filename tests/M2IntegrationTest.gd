@@ -27,6 +27,7 @@ func _ready() -> void:
 	_test_arena_environment()
 	_test_arena_manager_environment()
 	_test_battle_result_growth()
+	_test_soul_unit_combat()
 
 	# Print summary
 	print("\n=== M2 TEST SUMMARY ===")
@@ -757,3 +758,117 @@ func _test_battle_result_growth() -> void:
 	_assert(cleared.size() == 0, "History cleared: %d records" % cleared.size())
 	var cleared_stats = BattleResultManager.get_stats()
 	_assert(cleared_stats["total_battles"] == 0, "Stats reset after clear: %d" % cleared_stats["total_battles"])
+
+
+## ============================================
+## SoulUnit Combat Tests
+## ============================================
+func _test_soul_unit_combat() -> void:
+	print("\n--- SoulUnit Combat Tests ---")
+
+	# Create test units
+	var unit1 = SoulUnit.new()
+	unit1.init_from_soul("test_u1", "FireSoul", "fire", 5, true)
+	var unit2 = SoulUnit.new()
+	unit2.init_from_soul("test_u2", "WaterSoul", "water", 5, false)
+
+	# Test 1: init_from_soul sets properties correctly
+	_assert(unit1.soul_id == "test_u1", "Unit1 soul_id correct")
+	_assert(unit1.soul_name == "FireSoul", "Unit1 soul_name correct")
+	_assert(unit1.element == "fire", "Unit1 element correct")
+	_assert(unit1.level == 5, "Unit1 level correct")
+	_assert(unit1.is_player_controlled == true, "Unit1 is player controlled")
+	_assert(unit2.is_player_controlled == false, "Unit2 is AI controlled")
+
+	# Test 2: Initial HP and energy
+	_assert(unit1.current_hp == unit1.max_hp, "Unit1 HP full at init: %d/%d" % [unit1.current_hp, unit1.max_hp])
+	_assert(unit1.current_energy == unit1.max_energy, "Unit1 energy full at init: %d/%d" % [unit1.current_energy, unit1.max_energy])
+
+	# Test 3: take_damage reduces HP
+	var hp_before = unit1.current_hp
+	unit1.take_damage(20)
+	_assert(unit1.current_hp == hp_before - 20, "take_damage reduces HP by 20: %d -> %d" % [hp_before, unit1.current_hp])
+
+	# Test 4: take_damage with attacker
+	var hp_before2 = unit2.current_hp
+	unit2.take_damage(15, unit1)
+	_assert(unit2.current_hp == hp_before2 - 15, "take_damage with attacker reduces HP")
+
+	# Test 5: HP cannot go below 0
+	unit1.take_damage(1000)
+	_assert(unit1.current_hp == 0, "HP clamped to 0: %d" % unit1.current_hp)
+	_assert(unit1.state == SoulUnit.UnitState.DEAD, "Unit enters DEAD state at 0 HP")
+
+	# Test 6: Dead unit cannot take more damage
+	unit1.take_damage(50)
+	_assert(unit1.current_hp == 0, "Dead unit HP stays 0")
+
+	# Test 7: get_info returns correct data
+	var info = unit2.get_info()
+	_assert(info.has("id"), "get_info has id")
+	_assert(info.has("name"), "get_info has name")
+	_assert(info.has("element"), "get_info has element")
+	_assert(info.has("hp"), "get_info has hp")
+	_assert(info.has("max_hp"), "get_info has max_hp")
+	_assert(info["id"] == "test_u2", "get_info id correct")
+	_assert(info["name"] == "WaterSoul", "get_info name correct")
+
+	# Test 8: move_to sets target position
+	unit2.move_to(Vector2(500, 300))
+	_assert(unit2.target_position == Vector2(500, 300), "move_to sets target position")
+	_assert(unit2.state == SoulUnit.UnitState.MOVING, "Unit enters MOVING state")
+
+	# Test 9: stop stops movement
+	unit2.stop()
+	_assert(unit2.state == SoulUnit.UnitState.IDLE, "stop returns to IDLE state")
+
+	# Test 10: Element multiplier - fire vs water (no advantage defined = 1.0)
+	var mult_fire_vs_water = unit2._get_element_multiplier("fire", "water")
+	_assert(mult_fire_vs_water == 1.0, "Fire vs Water multiplier is 1.0 (no advantage): %.2f" % mult_fire_vs_water)
+
+	# Test 11: Element multiplier - water vs fire (water strong vs fire)
+	var mult_water_vs_fire = unit2._get_element_multiplier("water", "fire")
+	_assert(mult_water_vs_fire == 1.5, "Water vs Fire multiplier is 1.5: %.2f" % mult_water_vs_fire)
+
+	# Test 12: Element multiplier - neutral (no advantage)
+	var mult_neutral = unit2._get_element_multiplier("neutral", "fire")
+	_assert(mult_neutral == 1.0, "Neutral multiplier is 1.0: %.2f" % mult_neutral)
+
+	# Test 13: Element multiplier - same element
+	var mult_same = unit2._get_element_multiplier("fire", "fire")
+	_assert(mult_same == 1.0, "Same element multiplier is 1.0: %.2f" % mult_same)
+
+	# Test 14: use_skill requires energy
+	unit2.current_energy = 0
+	var skill_result = unit2.use_skill("heavy_strike", unit1)
+	_assert(skill_result == false, "use_skill fails with 0 energy")
+
+	# Test 15: use_skill with enough energy
+	unit2.current_energy = unit2.max_energy
+	var skill_result2 = unit2.use_skill("heavy_strike", unit1)
+	_assert(skill_result2 == true, "use_skill succeeds with enough energy")
+
+	# Test 16: use_skill on dead unit fails
+	var dead_skill = unit1.use_skill("heavy_strike", unit2)
+	_assert(dead_skill == false, "Dead unit cannot use skill")
+
+	# Test 17: use_skill invalid skill name
+	var invalid_skill = unit2.use_skill("nonexistent_skill", unit1)
+	_assert(invalid_skill == false, "Invalid skill name returns false")
+
+	# Test 18: Personality defaults
+	_assert(unit2.personality.has("aggression"), "Personality has aggression")
+	_assert(unit2.personality.has("loyalty"), "Personality has loyalty")
+	_assert(unit2.personality.has("intelligence"), "Personality has intelligence")
+
+	# Test 19: Emotion defaults
+	_assert(unit2.emotion.has("mood"), "Emotion has mood")
+	_assert(unit2.emotion.has("intensity"), "Emotion has intensity")
+	_assert(unit2.emotion["mood"] == "calm", "Default mood is calm")
+
+	# Test 20: get_element returns element
+	_assert(unit2.get_element() == "water", "get_element returns water")
+
+	# Cleanup
+	unit1.queue_free()
+	unit2.queue_free()
