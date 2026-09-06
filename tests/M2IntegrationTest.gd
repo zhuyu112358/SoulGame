@@ -391,6 +391,51 @@ func _test_rts_arena_manager() -> void:
 	_assert(invalid.get("success", false) == false, "Invalid command rejected")
 	RTSArenaManager.reset_battle()
 
+	# Test 18: set_battle_mode
+	RTSArenaManager.start_battle(p3, a3, "default_arena")
+	RTSArenaManager.set_battle_mode("auto")
+	_assert(RTSArenaManager.battle_mode == "auto", "Battle mode set to auto")
+	RTSArenaManager.set_battle_mode("manual")
+	_assert(RTSArenaManager.battle_mode == "manual", "Battle mode set to manual")
+	RTSArenaManager.reset_battle()
+
+	# Test 19: pause_battle and resume_battle
+	RTSArenaManager.start_battle(p3, a3, "default_arena")
+	RTSArenaManager.pause_battle()
+	_assert(RTSArenaManager.battle_state == RTSArenaManager.BattleState.PAUSED, "Battle paused")
+	RTSArenaManager.resume_battle()
+	_assert(RTSArenaManager.battle_state == RTSArenaManager.BattleState.ACTIVE, "Battle resumed")
+	RTSArenaManager.reset_battle()
+
+	# Test 20: get_player_command_cooldown
+	RTSArenaManager.start_battle(p3, a3, "default_arena")
+	var cmd_cooldown = RTSArenaManager.get_player_command_cooldown()
+	_assert(typeof(cmd_cooldown) == TYPE_FLOAT, "get_player_command_cooldown returns float")
+	_assert(cmd_cooldown >= 0.0, "Cooldown >= 0")
+	RTSArenaManager.reset_battle()
+
+	# Test 21: get_recent_log
+	RTSArenaManager.start_battle(p3, a3, "default_arena")
+	RTSArenaManager._add_log("Test log entry")
+	var logs = RTSArenaManager.get_recent_log(5)
+	_assert(typeof(logs) == TYPE_ARRAY, "get_recent_log returns array")
+	_assert(logs.size() <= 5, "get_recent_log respects count limit")
+	RTSArenaManager.reset_battle()
+
+	# Test 22: cleanup_battle
+	RTSArenaManager.start_battle(p3, a3, "default_arena")
+	_assert(RTSArenaManager.player_unit != null, "Player unit exists before cleanup")
+	_assert(RTSArenaManager.ai_unit != null, "AI unit exists before cleanup")
+	RTSArenaManager.cleanup_battle()
+	_assert(RTSArenaManager.battle_state == RTSArenaManager.BattleState.IDLE, "Battle state IDLE after cleanup")
+	_assert(RTSArenaManager.battle_time == 0.0, "Battle time reset after cleanup")
+
+	# Test 23: forfeit_battle
+	RTSArenaManager.start_battle(p3, a3, "default_arena")
+	RTSArenaManager.forfeit_battle()
+	_assert(RTSArenaManager.battle_state == RTSArenaManager.BattleState.FINISHED, "Battle finished after forfeit")
+	RTSArenaManager.cleanup_battle()
+
 
 ## ============================================
 ## SoulAIController Tests
