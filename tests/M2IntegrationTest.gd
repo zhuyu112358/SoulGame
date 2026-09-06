@@ -6,6 +6,7 @@ extends Node2D
 
 # Preload scripts without class_name
 const SoulUnit = preload("res://scripts/game/SoulUnit.gd")
+const Minimap = preload("res://scripts/ui/Minimap.gd")
 
 ## Test counters
 var _tests_run: int = 0
@@ -29,6 +30,7 @@ func _ready() -> void:
 	_test_battle_result_growth()
 	_test_soul_unit_combat()
 	_test_arena_map_system()
+	_test_minimap_system()
 
 	# Print summary
 	print("\n=== M2 TEST SUMMARY ===")
@@ -981,3 +983,113 @@ func _test_arena_map_system() -> void:
 
 	# Reset to default
 	ArenaMap.load_map("default_arena")
+
+
+## ============================================
+## Minimap System Tests
+## ============================================
+func _test_minimap_system() -> void:
+	print("\n--- Minimap System Tests ---")
+
+	# Create minimap instance
+	var minimap = Minimap.new()
+
+	# Test 1: Default minimap size
+	_assert(minimap.minimap_size == Vector2(150, 150), "Default minimap size 150x150")
+
+	# Test 2: Default arena size
+	_assert(minimap.arena_size == Vector2(1280, 600), "Default arena size 1280x600")
+
+	# Test 3: set_arena_size updates arena_size
+	minimap.set_arena_size(Vector2(1024, 768))
+	_assert(minimap.arena_size == Vector2(1024, 768), "set_arena_size updates size")
+
+	# Test 4: set_arena_size recalculates scale
+	minimap.set_arena_size(Vector2(1280, 600))
+	_assert(minimap._scale.x > 0, "Scale X positive after set_arena_size")
+	_assert(minimap._scale.y > 0, "Scale Y positive after set_arena_size")
+
+	# Test 5: _arena_to_minimap converts coordinates
+	minimap.set_arena_size(Vector2(1280, 600))
+	var minimap_pos = minimap._arena_to_minimap(Vector2(640, 300))
+	_assert(minimap_pos.x > 0, "Minimap X positive: %.1f" % minimap_pos.x)
+	_assert(minimap_pos.y > 0, "Minimap Y positive: %.1f" % minimap_pos.y)
+	_assert(minimap_pos.x <= 150, "Minimap X within bounds: %.1f" % minimap_pos.x)
+	_assert(minimap_pos.y <= 150, "Minimap Y within bounds: %.1f" % minimap_pos.y)
+
+	# Test 6: _arena_to_minimap for corner positions
+	var top_left = minimap._arena_to_minimap(Vector2(0, 0))
+	_assert(top_left.x >= 0, "Top-left X >= 0: %.1f" % top_left.x)
+	_assert(top_left.y >= 0, "Top-left Y >= 0: %.1f" % top_left.y)
+
+	var bottom_right = minimap._arena_to_minimap(Vector2(1280, 600))
+	_assert(bottom_right.x <= 150, "Bottom-right X <= 150: %.1f" % bottom_right.x)
+	_assert(bottom_right.y <= 150, "Bottom-right Y <= 150: %.1f" % bottom_right.y)
+
+	# Test 7: Colors are valid
+	_assert(minimap.background_color.a > 0, "Background color has alpha")
+	_assert(minimap.border_color.a > 0, "Border color has alpha")
+	_assert(minimap.player_color.r > 0, "Player color has red")
+	_assert(minimap.ai_color.r > 0, "AI color has red")
+
+	# Test 8: Player color is blue-ish
+	_assert(minimap.player_color.b > minimap.player_color.r, "Player color is blue-ish")
+
+	# Test 9: AI color is red-ish
+	_assert(minimap.ai_color.r > minimap.ai_color.b, "AI color is red-ish")
+
+	# Test 10: dot_radius positive
+	_assert(minimap.dot_radius > 0, "Dot radius positive: %.1f" % minimap.dot_radius)
+
+	# Test 11: show_terrain default true
+	_assert(minimap.show_terrain == true, "show_terrain default true")
+
+	# Test 12: set_player_unit stores reference
+	var test_unit = SoulUnit.new()
+	test_unit.init_from_soul("test_minimap", "Test", "fire", 1, true)
+	minimap.set_player_unit(test_unit)
+	_assert(minimap._player_unit != null, "Player unit stored")
+
+	# Test 13: set_ai_unit stores reference
+	var test_ai = SoulUnit.new()
+	test_ai.init_from_soul("test_ai_minimap", "TestAI", "water", 1, false)
+	minimap.set_ai_unit(test_ai)
+	_assert(minimap._ai_unit != null, "AI unit stored")
+
+	# Test 14: set_arena_map stores reference
+	minimap.set_arena_map(ArenaMap)
+	_assert(minimap._arena_map != null, "Arena map stored")
+
+	# Test 15: update_minimap doesn't crash with units set
+	minimap.update_minimap()
+	_assert(true, "update_minimap runs without crash")
+
+	# Test 16: update_minimap doesn't crash without units
+	var minimap2 = Minimap.new()
+	minimap2.update_minimap()
+	_assert(true, "update_minimap runs without units")
+
+	# Test 17: _terrain_to_color returns Color for all terrain types
+	for terrain_type in range(6):
+		var color = minimap._terrain_to_color(terrain_type)
+		_assert(typeof(color) == TYPE_COLOR, "Terrain %d returns Color" % terrain_type)
+
+	# Test 18: _terrain_to_color for invalid terrain returns default
+	var invalid_color = minimap._terrain_to_color(999)
+	_assert(typeof(invalid_color) == TYPE_COLOR, "Invalid terrain returns Color")
+
+	# Test 19: Custom minimap size
+	var minimap3 = Minimap.new()
+	minimap3.minimap_size = Vector2(200, 200)
+	_assert(minimap3.minimap_size == Vector2(200, 200), "Custom minimap size")
+
+	# Test 20: Scale calculation correct
+	minimap.set_arena_size(Vector2(1280, 600))
+	var expected_scale_x = 150.0 / 1280.0
+	var expected_scale_y = 150.0 / 600.0
+	_assert(abs(minimap._scale.x - expected_scale_x) < 0.001, "Scale X correct: %.4f vs %.4f" % [minimap._scale.x, expected_scale_x])
+	_assert(abs(minimap._scale.y - expected_scale_y) < 0.001, "Scale Y correct: %.4f vs %.4f" % [minimap._scale.y, expected_scale_y])
+
+	# Cleanup
+	test_unit.queue_free()
+	test_ai.queue_free()
