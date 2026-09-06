@@ -10,6 +10,7 @@ const Minimap = preload("res://scripts/ui/Minimap.gd")
 const PixelSpriteGenerator = preload("res://scripts/game/PixelSpriteGenerator.gd")
 const ArenaBackgroundGenerator = preload("res://scripts/game/ArenaBackgroundGenerator.gd")
 const ServerAuthority = preload("res://scripts/network/ServerAuthority.gd")
+const SoulSnapshot = preload("res://platform/soul/SoulSnapshot.gd")
 
 ## Test counters
 var _tests_run: int = 0
@@ -42,6 +43,7 @@ func _ready() -> void:
 	_test_platform_sdk()
 	_test_world_loader()
 	_test_home_api()
+	_test_soul_snapshot()
 
 	# Print summary
 	print("\n=== M2 TEST SUMMARY ===")
@@ -1964,3 +1966,157 @@ func _test_home_api() -> void:
 
 	# Test 18: Cleanup soul
 	PlatformSDK.delete_soul(soul.soul_id)
+
+
+## ============================================
+## SoulSnapshot System Tests
+## ============================================
+func _test_soul_snapshot() -> void:
+	print("\n--- SoulSnapshot System Tests ---")
+
+	# Test 1: SNAPSHOT_VERSION constant
+	_assert(SoulSnapshot.SNAPSHOT_VERSION == "1.0.0", "SNAPSHOT_VERSION = 1.0.0")
+
+	# Test 2: Create new snapshot
+	var snapshot = SoulSnapshot.new()
+	_assert(snapshot != null, "SoulSnapshot created")
+	_assert(snapshot is SoulSnapshot, "snapshot is SoulSnapshot")
+
+	# Test 3: Default values
+	_assert(snapshot.soul_id == "", "Default soul_id = empty")
+	_assert(snapshot.soul_name == "", "Default soul_name = empty")
+	_assert(snapshot.element == "", "Default element = empty")
+	_assert(snapshot.level == 1, "Default level = 1")
+	_assert(snapshot.experience == 0, "Default experience = 0")
+	_assert(snapshot.experience_to_next == 100, "Default experience_to_next = 100")
+
+	# Test 4: Default cognition stats
+	_assert(snapshot.cognition.has("perception"), "cognition has perception")
+	_assert(snapshot.cognition.has("memory"), "cognition has memory")
+	_assert(snapshot.cognition.has("reasoning"), "cognition has reasoning")
+	_assert(snapshot.cognition.has("decision"), "cognition has decision")
+	_assert(snapshot.cognition.has("learning"), "cognition has learning")
+	_assert(snapshot.cognition.has("creativity"), "cognition has creativity")
+
+	# Test 5: Default emotion stats
+	_assert(snapshot.emotion.has("empathy"), "emotion has empathy")
+	_assert(snapshot.emotion.has("expression"), "emotion has expression")
+	_assert(snapshot.emotion.has("attachment"), "emotion has attachment")
+	_assert(snapshot.emotion.has("emotional_range"), "emotion has emotional_range")
+	_assert(snapshot.emotion.has("emotional_depth"), "emotion has emotional_depth")
+
+	# Test 6: Default collections
+	_assert(typeof(snapshot.skills) == TYPE_DICTIONARY, "skills is dictionary")
+	_assert(typeof(snapshot.personality) == TYPE_DICTIONARY, "personality is dictionary")
+	_assert(typeof(snapshot.memories) == TYPE_ARRAY, "memories is array")
+	_assert(typeof(snapshot.achievements) == TYPE_DICTIONARY, "achievements is dictionary")
+	_assert(typeof(snapshot.appearance) == TYPE_DICTIONARY, "appearance is dictionary")
+	_assert(typeof(snapshot.relationships) == TYPE_DICTIONARY, "relationships is dictionary")
+	_assert(typeof(snapshot.inventory) == TYPE_DICTIONARY, "inventory is dictionary")
+	_assert(typeof(snapshot.migration_history) == TYPE_ARRAY, "migration_history is array")
+
+	# Test 7: Set properties
+	snapshot.soul_id = "soul_test_001"
+	snapshot.soul_name = "TestSoul"
+	snapshot.element = "fire"
+	snapshot.level = 5
+	snapshot.experience = 500
+	_assert(snapshot.soul_id == "soul_test_001", "soul_id set correctly")
+	_assert(snapshot.soul_name == "TestSoul", "soul_name set correctly")
+	_assert(snapshot.element == "fire", "element set correctly")
+	_assert(snapshot.level == 5, "level set correctly")
+	_assert(snapshot.experience == 500, "experience set correctly")
+
+	# Test 8: to_dict returns dictionary
+	var dict = snapshot.to_dict()
+	_assert(typeof(dict) == TYPE_DICTIONARY, "to_dict returns dictionary")
+	_assert(dict.has("soul_id"), "dict has soul_id")
+	_assert(dict["soul_id"] == "soul_test_001", "dict soul_id matches")
+	_assert(dict.has("soul_name"), "dict has soul_name")
+	_assert(dict["soul_name"] == "TestSoul", "dict soul_name matches")
+	_assert(dict.has("level"), "dict has level")
+	_assert(dict["level"] == 5, "dict level matches")
+	_assert(dict.has("cognition"), "dict has cognition")
+	_assert(dict.has("emotion"), "dict has emotion")
+
+	# Test 9: load_from_dict works
+	var snapshot2 = SoulSnapshot.new()
+	snapshot2.load_from_dict(dict)
+	_assert(snapshot2.soul_id == "soul_test_001", "load_from_dict soul_id matches")
+	_assert(snapshot2.soul_name == "TestSoul", "load_from_dict soul_name matches")
+	_assert(snapshot2.element == "fire", "load_from_dict element matches")
+	_assert(snapshot2.level == 5, "load_from_dict level matches")
+	_assert(snapshot2.experience == 500, "load_from_dict experience matches")
+
+	# Test 10: to_json returns string
+	var json = snapshot.to_json()
+	_assert(typeof(json) == TYPE_STRING, "to_json returns string")
+	_assert(json.length() > 0, "json not empty")
+	_assert(json.find("soul_test_001") >= 0, "json contains soul_id")
+
+	# Test 11: load_from_json works
+	var snapshot3 = SoulSnapshot.new()
+	var load_result = snapshot3.load_from_json(json)
+	_assert(load_result == true, "load_from_json returns true")
+	_assert(snapshot3.soul_id == "soul_test_001", "load_from_json soul_id matches")
+	_assert(snapshot3.soul_name == "TestSoul", "load_from_json soul_name matches")
+
+	# Test 12: record_migration works
+	snapshot.record_migration("battleplan", "arena_01", "enter")
+	_assert(snapshot.migration_history.size() == 1, "migration_history has 1 entry")
+	_assert(snapshot.current_game == "battleplan", "current_game updated")
+	_assert(snapshot.current_world == "arena_01", "current_world updated")
+
+	# Test 13: migration_history entry structure
+	var migration = snapshot.migration_history[0]
+	_assert(typeof(migration) == TYPE_DICTIONARY, "migration entry is dictionary")
+	_assert(migration.has("game"), "migration has game")
+	_assert(migration["game"] == "battleplan", "migration game = battleplan")
+	_assert(migration.has("world"), "migration has world")
+	_assert(migration.has("action"), "migration has action")
+	_assert(migration.has("timestamp"), "migration has timestamp")
+
+	# Test 14: Multiple migrations
+	snapshot.record_migration("home", "living_room", "exit")
+	_assert(snapshot.migration_history.size() == 2, "migration_history has 2 entries")
+	_assert(snapshot.current_game == "home", "current_game updated to home")
+
+	# Test 15: validate returns dictionary
+	var validation = snapshot.validate()
+	_assert(typeof(validation) == TYPE_DICTIONARY, "validate returns dictionary")
+	_assert(validation.has("valid"), "validation has valid field")
+
+	# Test 16: get_power_level returns int
+	var power = snapshot.get_power_level()
+	_assert(typeof(power) == TYPE_INT, "get_power_level returns int")
+	_assert(power >= 0, "power_level >= 0")
+
+	# Test 17: get_summary returns dictionary
+	var summary = snapshot.get_summary()
+	_assert(typeof(summary) == TYPE_DICTIONARY, "get_summary returns dictionary")
+	_assert(summary.has("id"), "summary has id")
+	_assert(summary["id"] == "soul_test_001", "summary id matches")
+	_assert(summary.has("name"), "summary has name")
+	_assert(summary["name"] == "TestSoul", "summary name matches")
+	_assert(summary.has("level"), "summary has level")
+	_assert(summary.has("element"), "summary has element")
+	_assert(summary.has("power"), "summary has power")
+	_assert(summary.has("migrations"), "summary has migrations")
+
+	# Test 18: Round-trip to_dict -> load_from_dict preserves data
+	var dict2 = snapshot.to_dict()
+	var snapshot4 = SoulSnapshot.new()
+	snapshot4.load_from_dict(dict2)
+	_assert(snapshot4.soul_id == snapshot.soul_id, "round-trip soul_id preserved")
+	_assert(snapshot4.level == snapshot.level, "round-trip level preserved")
+	_assert(snapshot4.migration_history.size() == snapshot.migration_history.size(), "round-trip migration_history preserved")
+
+	# Test 19: signature field exists
+	_assert(typeof(snapshot.signature) == TYPE_STRING, "signature is string")
+	snapshot.signature = "sig_12345"
+	_assert(snapshot.signature == "sig_12345", "signature set correctly")
+
+	# Test 20: metadata field exists
+	_assert(typeof(snapshot.metadata) == TYPE_DICTIONARY, "metadata is dictionary")
+	snapshot.metadata["custom_key"] = "custom_value"
+	_assert(snapshot.metadata["custom_key"] == "custom_value", "metadata custom key works")
