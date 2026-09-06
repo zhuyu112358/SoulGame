@@ -865,6 +865,35 @@ func _test_arena_manager_environment() -> void:
 	_assert(env.weather_timer >= 0.0, "weather_timer valid after weather change check")
 
 
+
+	# Test 23: WeatherType enum values
+	_assert(ArenaEnvironment.WeatherType.CLEAR == 0, "CLEAR weather = 0")
+	_assert(ArenaEnvironment.WeatherType.RAIN == 1, "RAIN weather = 1")
+	_assert(ArenaEnvironment.WeatherType.FOG == 2, "FOG weather = 2")
+	_assert(ArenaEnvironment.WeatherType.SNOW == 3, "SNOW weather = 3")
+	_assert(ArenaEnvironment.WeatherType.STORM == 4, "STORM weather = 4")
+
+	# Test 24: LIGHTNING_INTERVAL constant
+	_assert(ArenaEnvironment.LIGHTNING_INTERVAL == 8.0, "LIGHTNING_INTERVAL = 8.0")
+
+	# Test 25: weather_duration field
+	_assert(env.weather_duration == 60.0, "weather_duration = 60.0")
+
+	# Test 26: _map_default_weather has entries
+	_assert(env._map_default_weather.size() > 0, "_map_default_weather has entries")
+	_assert(env._map_default_weather.has("default_arena"), "_map_default_weather has default_arena")
+
+	# Test 27: _weather_names has all weather types
+	_assert(env._weather_names.size() == 5, "_weather_names has 5 entries")
+	_assert(env._weather_names[0] == "Clear", "weather_names[0] = Clear")
+
+	# Test 28: Multiple ArenaEnvironment instances independent
+	var env_a = ArenaEnvironment.new()
+	var env_b = ArenaEnvironment.new()
+	env_a.set_weather(ArenaEnvironment.WeatherType.RAIN)
+	env_b.set_weather(ArenaEnvironment.WeatherType.SNOW)
+	_assert(env_a.current_weather == ArenaEnvironment.WeatherType.RAIN, "env_a weather independent")
+	_assert(env_b.current_weather == ArenaEnvironment.WeatherType.SNOW, "env_b weather independent")
 ## ============================================
 ## Battle Result Growth Feedback Tests
 ## ============================================
