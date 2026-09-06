@@ -2912,6 +2912,34 @@ func _test_platform_sdk() -> void:
 	var soul_list_new = PlatformSDK.list_souls()
 	_assert(typeof(soul_list_new) == TYPE_ARRAY, "list_souls returns array")
 
+
+	# Test 38: create_soul returns SoulSnapshot
+	var new_soul_new = PlatformSDK.create_soul("TestSoul", "fire", {})
+	_assert(new_soul_new != null, "create_soul returns non-null")
+	_assert(new_soul_new.soul_name == "TestSoul", "soul name correct")
+
+	# Test 39: get_soul returns SoulSnapshot
+	var retrieved_soul_new = PlatformSDK.get_soul(new_soul_new.soul_id)
+	_assert(retrieved_soul_new != null, "get_soul returns non-null")
+
+	# Test 40: set_active_soul and get_active_soul
+	var set_result_new = PlatformSDK.set_active_soul(new_soul_new.soul_id)
+	_assert(set_result_new == true, "set_active_soul returns true")
+	var active_soul_new = PlatformSDK.get_active_soul()
+	_assert(active_soul_new != null, "get_active_soul returns non-null")
+
+	# Test 41: add_skill returns bool
+	var skill_result_new = PlatformSDK.add_skill(new_soul_new.soul_id, "fireball", 1)
+	_assert(typeof(skill_result_new) == TYPE_BOOL, "add_skill returns bool")
+
+	# Test 42: add_memory returns bool
+	var memory_result_new = PlatformSDK.add_memory(new_soul_new.soul_id, {"event": "test"})
+	_assert(typeof(memory_result_new) == TYPE_BOOL, "add_memory returns bool")
+
+	# Test 43: get_info returns dictionary
+	var sdk_info_new = PlatformSDK.get_info()
+	_assert(typeof(sdk_info_new) == TYPE_DICTIONARY, "get_info returns dictionary")
+	_assert(sdk_info_new.has("cached_souls"), "sdk_info has cached_souls")
 ## ============================================
 ## WorldLoader System Tests
 ## ============================================
