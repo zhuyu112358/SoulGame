@@ -41,6 +41,7 @@ func _ready() -> void:
 	_test_monetization_manager()
 	_test_platform_sdk()
 	_test_world_loader()
+	_test_home_api()
 
 	# Print summary
 	print("\n=== M2 TEST SUMMARY ===")
@@ -1872,6 +1873,94 @@ func _test_world_loader() -> void:
 	var registered5 = WorldLoader.get_registered_worlds()
 	_assert(not registered5.has("world_a"), "world_a unregistered")
 	_assert(not registered5.has("world_b"), "world_b unregistered")
+
+	# Test 18: Cleanup soul
+	PlatformSDK.delete_soul(soul.soul_id)
+
+
+## ============================================
+## HomeAPI System Tests
+## ============================================
+func _test_home_api() -> void:
+	print("\n--- HomeAPI System Tests ---")
+
+	# Test 1: get_info returns dictionary
+	var info = HomeAPI.get_info()
+	_assert(typeof(info) == TYPE_DICTIONARY, "get_info returns dictionary")
+	_assert(info.has("home_loaded"), "get_info has home_loaded")
+	_assert(info["home_loaded"] == false, "home_loaded = false initially")
+
+	# Test 2: get_home_state returns dictionary
+	var state = HomeAPI.get_home_state()
+	_assert(typeof(state) == TYPE_DICTIONARY, "get_home_state returns dictionary")
+
+	# Test 3: get_soul_mood returns string
+	var mood = HomeAPI.get_soul_mood()
+	_assert(typeof(mood) == TYPE_STRING, "get_soul_mood returns string")
+
+	# Test 4: load_home works
+	var soul = PlatformSDK.create_soul("HomeSoul", "fire", {})
+	var load_result = HomeAPI.load_home(soul.soul_id)
+	_assert(typeof(load_result) == TYPE_DICTIONARY, "load_home returns dictionary")
+	_assert(load_result.has("success"), "load_result has success field")
+
+	# Test 5: After load, home_loaded = true
+	var info2 = HomeAPI.get_info()
+	_assert(info2["home_loaded"] == true, "home_loaded = true after load")
+
+	# Test 6: get_home_state has soul_id after load
+	var state2 = HomeAPI.get_home_state()
+	_assert(state2.has("soul_id"), "home state has soul_id after load")
+	_assert(state2["soul_id"] == soul.soul_id, "home state soul_id matches")
+
+	# Test 7: get_soul_mood after load
+	var mood2 = HomeAPI.get_soul_mood()
+	_assert(typeof(mood2) == TYPE_STRING, "get_soul_mood returns string after load")
+	_assert(mood2 != "", "soul mood not empty after load")
+
+	# Test 8: interact with "chat"
+	var chat_result = HomeAPI.interact("chat", {"message": "hello"})
+	_assert(typeof(chat_result) == TYPE_DICTIONARY, "interact chat returns dictionary")
+	_assert(chat_result.has("success"), "chat result has success field")
+
+	# Test 9: interact with "pet"
+	var pet_result = HomeAPI.interact("pet", {})
+	_assert(typeof(pet_result) == TYPE_DICTIONARY, "interact pet returns dictionary")
+	_assert(pet_result.has("success"), "pet result has success field")
+
+	# Test 10: interact with "play"
+	var play_result = HomeAPI.interact("play", {})
+	_assert(typeof(play_result) == TYPE_DICTIONARY, "interact play returns dictionary")
+
+	# Test 11: interact with "feed"
+	var feed_result = HomeAPI.interact("feed", {})
+	_assert(typeof(feed_result) == TYPE_DICTIONARY, "interact feed returns dictionary")
+
+	# Test 12: interact with unknown type
+	var unknown_result = HomeAPI.interact("unknown_type", {})
+	_assert(typeof(unknown_result) == TYPE_DICTIONARY, "interact unknown returns dictionary")
+	_assert(unknown_result.has("success"), "unknown result has success field")
+
+	# Test 13: set_decoration works
+	var deco_result = HomeAPI.set_decoration("wall", "painting_01")
+	_assert(typeof(deco_result) == TYPE_BOOL, "set_decoration returns bool")
+
+	# Test 14: set_room_theme works
+	var theme_result = HomeAPI.set_room_theme("cozy")
+	_assert(typeof(theme_result) == TYPE_BOOL, "set_room_theme returns bool")
+
+	# Test 15: unload_home works
+	HomeAPI.unload_home()
+	var info3 = HomeAPI.get_info()
+	_assert(info3["home_loaded"] == false, "home_loaded = false after unload")
+
+	# Test 16: interact after unload
+	var chat_after_unload = HomeAPI.interact("chat", {"message": "test"})
+	_assert(typeof(chat_after_unload) == TYPE_DICTIONARY, "interact after unload returns dictionary")
+
+	# Test 17: get_soul_mood after unload returns default
+	var mood3 = HomeAPI.get_soul_mood()
+	_assert(typeof(mood3) == TYPE_STRING, "get_soul_mood returns string after unload")
 
 	# Test 18: Cleanup soul
 	PlatformSDK.delete_soul(soul.soul_id)
