@@ -42,6 +42,7 @@ ArenaManager="*res://scripts/game/ArenaManager.gd"
 RTSArenaManager="*res://scripts/game/RTSArenaManager.gd"
 BattleResultManager="*res://scripts/game/BattleResultManager.gd"
 ArenaMap="*res://scripts/game/ArenaMap.gd"
+MonetizationManager="*res://scripts/monetization/MonetizationManager.gd"
 
 [display]
 
