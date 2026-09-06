@@ -68,7 +68,8 @@ func _init_sound_paths() -> void:
 		"settings_open", "settings_save",
 		"quest_open", "quest_complete",
 		"inventory_open", "item_use",
-		"achievement_open"
+		"achievement_open", "shop_sell",
+		"teleport_cast", "teleport_open"
 	]
 	for sound_name in ui_sounds:
 		_sound_paths["ui_%s" % sound_name] = "res://assets/audio/ui/ui_%s.wav" % sound_name
@@ -91,7 +92,8 @@ func _init_sound_paths() -> void:
 		"ancient_battlefield", "canyon", "cave", "cliff",
 		"forest", "lava", "wind_chimes",
 		"frozen_forest", "lava_cave", "ancient_ruins", "mushroom_swamp",
-		"lavender_field"
+		"lavender_field", "autumn_forest", "rainforest", "rainforest_canopy",
+		"snow_mountain_lake", "starfield_grassland"
 	]
 	for sound_name in env_sounds:
 		_sound_paths["env_%s" % sound_name] = "res://assets/audio/environment/env_%s.wav" % sound_name
@@ -101,7 +103,8 @@ func _init_sound_paths() -> void:
 		"angry_roar", "brave_courage", "confident", "determined_resolve",
 		"communication_blip", "curious_blip",
 		"overwhelmed", "envious", "energetic", "relaxed",
-		"drowsy", "alert", "melancholic", "compassionate"
+		"drowsy", "alert", "melancholic", "compassionate",
+		"anticipating", "astonished", "contemplative", "empathetic"
 	]
 	for sound_name in soul_sounds:
 		_sound_paths["soul_%s" % sound_name] = "res://assets/audio/soul/soul_%s.wav" % sound_name
