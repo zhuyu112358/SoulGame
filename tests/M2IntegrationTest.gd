@@ -152,6 +152,31 @@ func _test_battle_result_manager() -> void:
 	_assert(BattleResultManager.get_stats()["draws"] >= 1, "Draws count updated")
 
 
+	# Test 8: exp_config field exists
+	_assert(typeof(BattleResultManager.exp_config) == TYPE_DICTIONARY, "exp_config is dictionary")
+	_assert(BattleResultManager.exp_config.has("victory_base"), "exp_config has victory_base")
+	_assert(BattleResultManager.exp_config.has("defeat_base"), "exp_config has defeat_base")
+	_assert(BattleResultManager.exp_config.has("draw_base"), "exp_config has draw_base")
+
+	# Test 9: stats field exists
+	_assert(typeof(BattleResultManager.stats) == TYPE_DICTIONARY, "stats is dictionary")
+	_assert(BattleResultManager.stats.has("total_battles"), "stats has total_battles")
+	_assert(BattleResultManager.stats.has("victories"), "stats has victories")
+	_assert(BattleResultManager.stats.has("defeats"), "stats has defeats")
+	_assert(BattleResultManager.stats.has("total_experience_gained"), "stats has total_experience_gained")
+
+	# Test 10: battle_history is array
+	_assert(typeof(BattleResultManager.battle_history) == TYPE_ARRAY, "battle_history is array")
+
+	# Test 11: get_history with limit
+	var history_limited = BattleResultManager.get_history(2)
+	_assert(typeof(history_limited) == TYPE_ARRAY, "get_history returns array")
+	_assert(history_limited.size() <= 2, "get_history respects limit")
+
+	# Test 12: clear_history works
+	BattleResultManager.clear_history()
+	_assert(BattleResultManager.battle_history.size() == 0, "clear_history empties history")
+
 ## ============================================
 ## ArenaMap Tests
 ## ============================================
