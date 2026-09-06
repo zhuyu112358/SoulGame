@@ -1058,6 +1058,33 @@ func _test_battle_result_growth() -> void:
 	_assert(cleared_stats["total_battles"] == 0, "Stats reset after clear: %d" % cleared_stats["total_battles"])
 
 
+	# Test 11: exp_config has expected keys
+	_assert(BattleResultManager.exp_config.has("victory_base"), "exp_config has victory_base")
+	_assert(BattleResultManager.exp_config.has("defeat_base"), "exp_config has defeat_base")
+	_assert(BattleResultManager.exp_config.has("draw_base"), "exp_config has draw_base")
+
+	# Test 12: stats has expected keys
+	_assert(BattleResultManager.stats.has("total_battles"), "stats has total_battles")
+	_assert(BattleResultManager.stats.has("victories"), "stats has victories")
+	_assert(BattleResultManager.stats.has("defeats"), "stats has defeats")
+	_assert(BattleResultManager.stats.has("total_experience_gained"), "stats has total_experience_gained")
+
+	# Test 13: battle_history is array
+	_assert(typeof(BattleResultManager.battle_history) == TYPE_ARRAY, "battle_history is array")
+
+	# Test 14: _calculate_experience returns int
+	var calc_exp = BattleResultManager._calculate_experience("victory", 5, 5, 80, 100, 60.0)
+	_assert(typeof(calc_exp) == TYPE_INT, "_calculate_experience returns int")
+	_assert(calc_exp > 0, "_calculate_experience victory > 0")
+
+	# Test 15: _update_stats increments counters
+	var before_stats = BattleResultManager.get_stats()
+	var before_battles = before_stats["total_battles"]
+	BattleResultManager._update_stats("victory", 50, 100, 50)
+	var after_stats = BattleResultManager.get_stats()
+	_assert(after_stats["total_battles"] == before_battles + 1, "_update_stats increments total_battles")
+	_assert(after_stats["victories"] > before_stats["victories"], "_update_stats increments victories")
+
 ## ============================================
 ## SoulUnit Combat Tests
 ## ============================================
