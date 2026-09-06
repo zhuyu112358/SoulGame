@@ -26,6 +26,7 @@ func _ready() -> void:
 	_test_soul_ai_controller()
 	_test_arena_environment()
 	_test_arena_manager_environment()
+	_test_battle_result_growth()
 
 	# Print summary
 	print("\n=== M2 TEST SUMMARY ===")
@@ -654,3 +655,105 @@ func _test_arena_manager_environment() -> void:
 	_assert(typeof(ui_info["movement_mod"]) == TYPE_FLOAT, "movement_mod is float for UI")
 	_assert(typeof(ui_info["accuracy_mod"]) == TYPE_FLOAT, "accuracy_mod is float for UI")
 	RTSArenaManager.cleanup_battle()
+
+
+## ============================================
+## Battle Result Growth Feedback Tests
+## ============================================
+func _test_battle_result_growth() -> void:
+	print("\n--- Battle Result Growth Feedback Tests ---")
+
+	# Clear history first for clean test
+	BattleResultManager.clear_history()
+
+	# Test 1: Victory gives more experience than defeat
+	var victory_data = {
+		"result": "victory",
+		"player_soul_id": "growth_test_1",
+		"opponent_soul_id": "ai_test_1",
+		"player_level": 5,
+		"opponent_level": 5,
+		"player_hp_remaining": 80,
+		"player_max_hp": 100,
+		"duration": 60.0,
+		"damage_dealt": 120,
+		"damage_taken": 20,
+		"skills_used": ["fireball", "shield"]
+	}
+	var victory_result = BattleResultManager.process_battle_result(victory_data)
+	_assert(victory_result.has("experience_gained"), "Victory result has experience_gained")
+	var victory_exp = victory_result["experience_gained"]
+	_assert(victory_exp > 0, "Victory gives positive experience: %d" % victory_exp)
+
+	var defeat_data = victory_data.duplicate()
+	defeat_data["result"] = "defeat"
+	defeat_data["player_soul_id"] = "growth_test_2"
+	var defeat_result = BattleResultManager.process_battle_result(defeat_data)
+	var defeat_exp = defeat_result["experience_gained"]
+	_assert(defeat_exp >= 0, "Defeat gives non-negative experience: %d" % defeat_exp)
+	_assert(victory_exp > defeat_exp, "Victory gives more EXP than defeat (%d > %d)" % [victory_exp, defeat_exp])
+
+	# Test 2: Higher level opponent gives more experience
+	var low_opponent = victory_data.duplicate()
+	low_opponent["opponent_level"] = 1
+	low_opponent["player_soul_id"] = "growth_test_3"
+	var low_result = BattleResultManager.process_battle_result(low_opponent)
+
+	var high_opponent = victory_data.duplicate()
+	high_opponent["opponent_level"] = 10
+	high_opponent["player_soul_id"] = "growth_test_4"
+	var high_result = BattleResultManager.process_battle_result(high_opponent)
+	_assert(high_result["experience_gained"] >= low_result["experience_gained"],
+		"Higher level opponent gives >= EXP (%d >= %d)" % [high_result["experience_gained"], low_result["experience_gained"]])
+
+	# Test 3: Battle history records battles
+	var history = BattleResultManager.get_history()
+	_assert(history.size() >= 4, "Battle history has at least 4 records: %d" % history.size())
+	var latest = history[history.size() - 1]
+	_assert(latest.has("battle_id"), "History record has battle_id")
+	_assert(latest.has("result"), "History record has result")
+	_assert(latest.has("experience_gained"), "History record has experience_gained")
+	_assert(latest.has("timestamp"), "History record has timestamp")
+
+	# Test 4: get_history with limit
+	var limited = BattleResultManager.get_history(2)
+	_assert(limited.size() <= 2, "get_history(2) returns at most 2 records: %d" % limited.size())
+
+	# Test 5: Statistics tracking
+	var stats = BattleResultManager.get_stats()
+	_assert(stats.has("total_battles"), "Stats has total_battles")
+	_assert(stats.has("victories"), "Stats has victories")
+	_assert(stats.has("defeats"), "Stats has defeats")
+	_assert(stats.has("total_experience_gained"), "Stats has total_experience_gained")
+	_assert(stats["total_battles"] >= 4, "Total battles >= 4: %d" % stats["total_battles"])
+	_assert(stats["total_experience_gained"] > 0, "Total experience > 0: %d" % stats["total_experience_gained"])
+
+	# Test 6: Soul record tracking
+	var soul_record = BattleResultManager.get_soul_record("growth_test_1")
+	_assert(soul_record.has("battles"), "Soul record has battles")
+	_assert(soul_record.has("victories"), "Soul record has victories")
+	_assert(soul_record["battles"] >= 1, "Soul growth_test_1 has >= 1 battle")
+
+	# Test 7: Nonexistent soul returns empty record
+	var empty_record = BattleResultManager.get_soul_record("nonexistent_soul")
+	_assert(empty_record.get("battles", 0) == 0, "Nonexistent soul has 0 battles")
+
+	# Test 8: Draw result gives experience
+	var draw_data = victory_data.duplicate()
+	draw_data["result"] = "draw"
+	draw_data["player_soul_id"] = "growth_test_5"
+	var draw_result = BattleResultManager.process_battle_result(draw_data)
+	_assert(draw_result["experience_gained"] >= 0, "Draw gives non-negative experience")
+
+	# Test 9: Battle record includes skills used
+	var skill_history = BattleResultManager.get_history()
+	var with_skills = skill_history[skill_history.size() - 1]
+	_assert(with_skills.has("skills_used"), "Battle record has skills_used")
+	_assert(with_skills["skills_used"].size() == 2, "Battle record has 2 skills used")
+
+	# Test 10: Clear history works
+	BattleResultManager.clear_history()
+	var cleared = BattleResultManager.get_history()
+	_assert(cleared.size() == 0, "History cleared: %d records" % cleared.size())
+	var cleared_stats = BattleResultManager.get_stats()
+	_assert(cleared_stats["total_battles"] == 0, "Stats reset after clear: %d" % cleared_stats["total_battles"])
