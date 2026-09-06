@@ -2115,6 +2115,30 @@ func _test_arena_background_generator() -> void:
 	_assert(invalid_type_bg != null, "Invalid arena type handled gracefully")
 
 
+
+	# Test 27: TILE_SIZE constant
+	_assert(ArenaBackgroundGenerator.TILE_SIZE == 32, "TILE_SIZE = 32")
+
+	# Test 28: ARENA_WIDTH constant
+	_assert(ArenaBackgroundGenerator.ARENA_WIDTH == 1280, "ARENA_WIDTH = 1280")
+
+	# Test 29: ARENA_HEIGHT constant
+	_assert(ArenaBackgroundGenerator.ARENA_HEIGHT == 640, "ARENA_HEIGHT = 640")
+
+	# Test 30: ARENA_PALETTES dictionary
+	_assert(typeof(ArenaBackgroundGenerator.ARENA_PALETTES) == TYPE_DICTIONARY, "ARENA_PALETTES is dictionary")
+	_assert(ArenaBackgroundGenerator.ARENA_PALETTES.size() > 0, "ARENA_PALETTES not empty")
+	_assert(ArenaBackgroundGenerator.ARENA_PALETTES.has("grass"), "ARENA_PALETTES has grass")
+
+	# Test 31: get_arena_types returns array
+	var arena_types_new = generator.get_arena_types()
+	_assert(typeof(arena_types_new) == TYPE_ARRAY, "get_arena_types returns array")
+	_assert(arena_types_new.size() >= 5, "At least 5 arena types: %d" % arena_types_new.size())
+	_assert(arena_types_new.has("grass"), "arena_types includes grass")
+	_assert(arena_types_new.has("stone"), "arena_types includes stone")
+	_assert(arena_types_new.has("sand"), "arena_types includes sand")
+	_assert(arena_types_new.has("crystal"), "arena_types includes crystal")
+	_assert(arena_types_new.has("lava"), "arena_types includes lava")
 ## ============================================
 ## ServerAuthority System Tests
 ## ============================================
