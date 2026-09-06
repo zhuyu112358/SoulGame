@@ -335,23 +335,27 @@ func _on_battle_finished(p_result: String, p_winner_id: String, p_loser_id: Stri
 
 	# Display result
 	var result_text = ""
+	var result_color = Color.WHITE
 	match p_result:
 		"victory":
-			result_text = "VICTORY! +%d EXP" % exp_gained
+			result_text = "VICTORY!"
+			result_color = Color(0.4, 0.9, 0.5)
 			if AudioManager:
 				AudioManager.play_sfx("bat_victory")
 		"defeat":
-			result_text = "DEFEAT... +%d EXP" % exp_gained
+			result_text = "DEFEAT..."
+			result_color = Color(0.9, 0.4, 0.4)
 			if AudioManager:
 				AudioManager.play_sfx("bat_defeat")
 		"draw":
-			result_text = "DRAW. +%d EXP" % exp_gained
+			result_text = "DRAW"
+			result_color = Color(0.8, 0.8, 0.4)
 
 	# Stop battle BGM
 	if AudioManager:
 		AudioManager.stop_bgm()
 
-	_add_log("=== %s ===" % result_text)
+	_add_log("=== %s +%d EXP ===" % [result_text, exp_gained])
 	_add_log("Win Rate: %.1f%% (%d/%d)" % [stats.get("win_rate", 0), stats.get("victories", 0), stats.get("total_battles", 0)])
 	_add_log("Streak: %d (Best: %d)" % [stats.get("current_streak", 0), stats.get("best_streak", 0)])
 
@@ -360,7 +364,139 @@ func _on_battle_finished(p_result: String, p_winner_id: String, p_loser_id: Stri
 		if skill_buttons[skill_name]:
 			skill_buttons[skill_name].disabled = true
 
+	# Disable macro command buttons
+	_set_commands_enabled(false)
+
+	# Show battle result modal
+	_show_result_modal(p_result, result_text, result_color, exp_gained, stats)
+
 	GameLog.info("RTSArenaController: Battle finished - %s, EXP: +%d" % [p_result, exp_gained], "Arena")
+
+
+## Show battle result modal dialog
+func _show_result_modal(p_result: String, p_title: String, p_title_color: Color, p_exp: int, p_stats: Dictionary) -> void:
+	# Create modal background (semi-transparent dark overlay)
+	var modal_bg = ColorRect.new()
+	modal_bg.color = Color(0, 0, 0, 0.75)
+	modal_bg.size = Vector2(1280, 720)
+	modal_bg.name = "ResultModalBG"
+	add_child(modal_bg)
+
+	# Create result panel
+	var panel = Panel.new()
+	panel.position = Vector2(390, 180)
+	panel.size = Vector2(500, 360)
+	panel.name = "ResultModal"
+	add_child(panel)
+
+	# Title
+	var title = Label.new()
+	title.text = p_title
+	title.position = Vector2(0, 25)
+	title.size = Vector2(500, 50)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 36)
+	title.modulate = p_title_color
+	panel.add_child(title)
+
+	# EXP gained
+	var exp_label = Label.new()
+	exp_label.text = "Experience Gained: +%d" % p_exp
+	exp_label.position = Vector2(0, 85)
+	exp_label.size = Vector2(500, 30)
+	exp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	exp_label.add_theme_font_size_override("font_size", 18)
+	exp_label.modulate = Color(0.9, 0.8, 0.4)
+	panel.add_child(exp_label)
+
+	# Separator
+	var sep = HSeparator.new()
+	sep.position = Vector2(50, 125)
+	sep.size = Vector2(400, 10)
+	panel.add_child(sep)
+
+	# Stats
+	var stats_text = "Win Rate: %.1f%%  (%d/%d)\n" % [
+		p_stats.get("win_rate", 0),
+		p_stats.get("victories", 0),
+		p_stats.get("total_battles", 0)
+	]
+	stats_text += "Current Streak: %d  (Best: %d)\n" % [
+		p_stats.get("current_streak", 0),
+		p_stats.get("best_streak", 0)
+	]
+	stats_text += "Total EXP: %d" % p_stats.get("total_experience", 0)
+
+	var stats_label = Label.new()
+	stats_label.text = stats_text
+	stats_label.position = Vector2(50, 145)
+	stats_label.size = Vector2(400, 100)
+	stats_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	stats_label.add_theme_font_size_override("font_size", 14)
+	stats_label.modulate = Color(0.85, 0.85, 0.9)
+	panel.add_child(stats_label)
+
+	# Buttons
+	var btn_y = 280
+
+	# Rematch button
+	var rematch_btn = Button.new()
+	rematch_btn.text = "再战一局"
+	rematch_btn.position = Vector2(80, btn_y)
+	rematch_btn.size = Vector2(150, 45)
+	rematch_btn.add_theme_font_size_override("font_size", 16)
+	rematch_btn.modulate = Color(0.4, 0.7, 0.9)
+	rematch_btn.pressed.connect(_on_rematch_pressed)
+	panel.add_child(rematch_btn)
+
+	# Back to menu button
+	var back_btn = Button.new()
+	back_btn.text = "返回主菜单"
+	back_btn.position = Vector2(270, btn_y)
+	back_btn.size = Vector2(150, 45)
+	back_btn.add_theme_font_size_override("font_size", 16)
+	back_btn.modulate = Color(0.7, 0.7, 0.7)
+	back_btn.pressed.connect(_on_back_to_menu_pressed)
+	panel.add_child(back_btn)
+
+	GameLog.info("RTSArenaController: Result modal shown", "Arena")
+
+
+## Handle rematch button press
+func _on_rematch_pressed() -> void:
+	AudioManager.play_sfx("ui_button_click")
+	# Remove modal
+	var modal = get_node_or_null("ResultModal")
+	var modal_bg = get_node_or_null("ResultModalBG")
+	if modal:
+		modal.queue_free()
+	if modal_bg:
+		modal_bg.queue_free()
+
+	# Restart battle with same config
+	var player_soul = GameState.get_value("battle", "player_soul", null)
+	var ai_soul = GameState.get_value("battle", "ai_soul", null)
+	var map_name = GameState.get_value("battle", "map_name", "default_arena")
+
+	if player_soul != null and ai_soul != null:
+		# Reset and restart battle
+		RTSArenaManager.reset_battle()
+		RTSArenaManager.start_battle(player_soul, ai_soul, map_name)
+		_battle_active = true
+		# Re-enable skill buttons
+		for skill_name in skill_buttons.keys():
+			if skill_buttons[skill_name]:
+				skill_buttons[skill_name].disabled = false
+	else:
+		_add_log("No battle config found for rematch")
+
+
+## Handle back to menu button press
+func _on_back_to_menu_pressed() -> void:
+	AudioManager.play_sfx("ui_button_click")
+	# Return to main scene (CLI menu)
+	RTSArenaManager.reset_battle()
+	SceneManager.change_scene("res://scenes/main.tscn")
 
 
 ## Handle battle time update

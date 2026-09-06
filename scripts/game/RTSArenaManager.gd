@@ -431,6 +431,17 @@ func cleanup_battle() -> void:
 	GameLog.info("RTSArenaManager: Battle cleaned up", "Arena")
 
 
+## Reset battle state for rematch (clears units and state)
+func reset_battle() -> void:
+	cleanup_battle()
+	_ai_controller = null
+	_player_ai_controller = null
+	winner_id = ""
+	battle_result = ""
+	_ai_decision_timer = 0.0
+	GameLog.info("RTSArenaManager: Battle reset for rematch", "Arena")
+
+
 ## Add log entry
 func _add_log(p_message: String) -> void:
 	battle_log.append({
