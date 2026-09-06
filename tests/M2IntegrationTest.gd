@@ -1381,6 +1381,50 @@ func _test_minimap_system() -> void:
 	_assert(abs(minimap._scale.x - expected_scale_x) < 0.001, "Scale X correct: %.4f vs %.4f" % [minimap._scale.x, expected_scale_x])
 	_assert(abs(minimap._scale.y - expected_scale_y) < 0.001, "Scale Y correct: %.4f vs %.4f" % [minimap._scale.y, expected_scale_y])
 
+	# Test 21: _calculate_scale recalculates scale
+	minimap.minimap_size = Vector2(100, 100)
+	minimap.arena_size = Vector2(1000, 500)
+	minimap._calculate_scale()
+	_assert(abs(minimap._scale.x - 0.1) < 0.001, "_calculate_scale X correct: %.4f" % minimap._scale.x)
+	_assert(abs(minimap._scale.y - 0.2) < 0.001, "_calculate_scale Y correct: %.4f" % minimap._scale.y)
+
+	# Test 22: obstacle_color valid
+	_assert(typeof(minimap.obstacle_color) == TYPE_COLOR, "obstacle_color is Color")
+	_assert(minimap.obstacle_color.a > 0, "obstacle_color has alpha")
+
+	# Test 23: Custom colors can be set
+	minimap.background_color = Color(0.2, 0.2, 0.2, 0.8)
+	_assert(abs(minimap.background_color.r - 0.2) < 0.01, "Custom background color set")
+	minimap.player_color = Color(0.0, 1.0, 0.0, 1.0)
+	_assert(abs(minimap.player_color.g - 1.0) < 0.01, "Custom player color set")
+
+	# Test 24: show_terrain can be toggled
+	minimap.show_terrain = false
+	_assert(minimap.show_terrain == false, "show_terrain can be set to false")
+	minimap.show_terrain = true
+	_assert(minimap.show_terrain == true, "show_terrain can be set to true")
+
+	# Test 25: dot_radius can be changed
+	minimap.dot_radius = 6.0
+	_assert(minimap.dot_radius == 6.0, "dot_radius can be changed")
+
+	# Test 26: _arena_to_minimap with zero position
+	var zero_pos = minimap._arena_to_minimap(Vector2.ZERO)
+	_assert(typeof(zero_pos) == TYPE_VECTOR2, "_arena_to_minimap returns Vector2")
+
+	# Test 27: set_arena_size with zero size (edge case)
+	minimap.set_arena_size(Vector2(1, 1))
+	_assert(minimap.arena_size == Vector2(1, 1), "set_arena_size with 1x1 works")
+	_assert(minimap._scale.x > 0, "Scale positive with 1x1 arena")
+
+	# Test 28: Multiple minimap instances independent
+	var m1 = Minimap.new()
+	var m2 = Minimap.new()
+	m1.minimap_size = Vector2(100, 100)
+	m2.minimap_size = Vector2(200, 200)
+	_assert(m1.minimap_size == Vector2(100, 100), "m1 size independent")
+	_assert(m2.minimap_size == Vector2(200, 200), "m2 size independent")
+
 	# Cleanup
 	test_unit.queue_free()
 	test_ai.queue_free()
