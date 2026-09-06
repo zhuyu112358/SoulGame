@@ -2290,6 +2290,65 @@ func _test_platform_sdk() -> void:
 	PlatformSDK.delete_soul(soul3.soul_id)
 	PlatformSDK.delete_soul(soul_with_personality.soul_id)
 
+	# Test 22: set_mock_mode toggles
+	PlatformSDK.set_mock_mode(false)
+	var info_after_off = PlatformSDK.get_info()
+	_assert(info_after_off["mock_mode"] == false, "mock_mode set to false")
+	PlatformSDK.set_mock_mode(true)
+	var info_after_on = PlatformSDK.get_info()
+	_assert(info_after_on["mock_mode"] == true, "mock_mode set to true")
+
+	# Test 23: list_souls returns array
+	var soul_list = PlatformSDK.list_souls()
+	_assert(typeof(soul_list) == TYPE_ARRAY, "list_souls returns array")
+
+	# Test 24: create and get soul roundtrip
+	var roundtrip_soul = PlatformSDK.create_soul("TestSoul", "fire")
+	_assert(roundtrip_soul != null, "create_soul returns non-null")
+	_assert(roundtrip_soul.soul_name == "TestSoul", "Soul name = TestSoul")
+	var fetched_soul = PlatformSDK.get_soul(roundtrip_soul.soul_id)
+	_assert(fetched_soul != null, "get_soul returns non-null")
+	_assert(fetched_soul.soul_name == "TestSoul", "Retrieved soul name matches")
+
+	# Test 25: set_active_soul and get_active_soul
+	var set_active_resp = PlatformSDK.set_active_soul(roundtrip_soul.soul_id)
+	_assert(set_active_resp == true, "set_active_soul returns true")
+	var current_active = PlatformSDK.get_active_soul()
+	_assert(current_active != null, "get_active_soul returns non-null")
+	_assert(current_active.soul_id == roundtrip_soul.soul_id, "Active soul id matches")
+
+	# Test 26: update_soul_stats
+	var stats_update_resp = PlatformSDK.update_soul_stats(roundtrip_soul.soul_id, {"experience": 50})
+	_assert(stats_update_resp != null, "update_soul_stats returns non-null")
+	var soul_after_update = PlatformSDK.get_soul(roundtrip_soul.soul_id)
+	_assert(soul_after_update.experience >= 50, "Soul experience updated: %d" % soul_after_update.experience)
+
+	# Test 27: add_skill
+	var add_skill_resp = PlatformSDK.add_skill(roundtrip_soul.soul_id, "fireball", 1)
+	_assert(add_skill_resp == true, "add_skill returns true")
+	var soul_after_skill = PlatformSDK.get_soul(roundtrip_soul.soul_id)
+	_assert(soul_after_skill.skills.has("fireball"), "Soul has fireball skill")
+
+	# Test 28: add_memory
+	var add_memory_resp = PlatformSDK.add_memory(roundtrip_soul.soul_id, {"type": "battle", "content": "won a fight"})
+	_assert(add_memory_resp == true, "add_memory returns true")
+	var soul_after_memory = PlatformSDK.get_soul(roundtrip_soul.soul_id)
+	_assert(soul_after_memory.memories.size() > 0, "Soul has memories")
+
+	# Test 29: migrate_soul
+	var migrate_resp = PlatformSDK.migrate_soul(roundtrip_soul.soul_id, "battleplan", "arena_1")
+	_assert(migrate_resp != null, "migrate_soul returns non-null")
+
+	# Test 30: get_info has all required fields
+	var platform_info = PlatformSDK.get_info()
+	_assert(platform_info.has("cached_souls"), "get_info has cached_souls")
+	_assert(platform_info.has("active_soul"), "get_info has active_soul")
+	_assert(platform_info.has("sdk_version"), "get_info has sdk_version")
+	_assert(platform_info.has("mock_mode"), "get_info has mock_mode")
+
+	# Cleanup
+	PlatformSDK.delete_soul(roundtrip_soul.soul_id)
+
 
 ## ============================================
 ## WorldLoader System Tests
