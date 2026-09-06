@@ -2692,6 +2692,32 @@ func _test_platform_sdk() -> void:
 	PlatformSDK.delete_soul(roundtrip_soul.soul_id)
 
 
+	# Test 31: _soul_cache is dictionary
+	_assert(typeof(PlatformSDK._soul_cache) == TYPE_DICTIONARY, "_soul_cache is dictionary")
+
+	# Test 32: _active_soul_id is string
+	_assert(typeof(PlatformSDK._active_soul_id) == TYPE_STRING, "_active_soul_id is string")
+
+	# Test 33: _api_base_url is string
+	_assert(typeof(PlatformSDK._api_base_url) == TYPE_STRING, "_api_base_url is string")
+	_assert(PlatformSDK._api_base_url.length() > 0, "_api_base_url not empty")
+
+	# Test 34: _mock_mode is bool
+	_assert(typeof(PlatformSDK._mock_mode) == TYPE_BOOL, "_mock_mode is bool")
+
+	# Test 35: _pending_requests is array
+	_assert(typeof(PlatformSDK._pending_requests) == TYPE_ARRAY, "_pending_requests is array")
+
+	# Test 36: set_mock_mode toggles mode
+	var original_mock = PlatformSDK._mock_mode
+	PlatformSDK.set_mock_mode(false)
+	_assert(PlatformSDK._mock_mode == false, "set_mock_mode(false) works")
+	PlatformSDK.set_mock_mode(original_mock)
+
+	# Test 37: list_souls returns array
+	var soul_list_new = PlatformSDK.list_souls()
+	_assert(typeof(soul_list_new) == TYPE_ARRAY, "list_souls returns array")
+
 ## ============================================
 ## WorldLoader System Tests
 ## ============================================
