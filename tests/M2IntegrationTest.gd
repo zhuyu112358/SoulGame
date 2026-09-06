@@ -1457,6 +1457,39 @@ func _test_arena_map_system() -> void:
 	var dmg_result = ArenaMap.damage_obstacle("nonexistent_obs", 10)
 	_assert(typeof(dmg_result) == TYPE_DICTIONARY, "damage_obstacle returns dictionary")
 
+
+	# Test 28: TerrainType enum values
+	_assert(ArenaMap.TerrainType.NORMAL == 0, "TerrainType.NORMAL = 0")
+	_assert(ArenaMap.TerrainType.GRASS == 1, "TerrainType.GRASS = 1")
+	_assert(ArenaMap.TerrainType.STONE == 2, "TerrainType.STONE = 2")
+	_assert(ArenaMap.TerrainType.WATER == 3, "TerrainType.WATER = 3")
+	_assert(ArenaMap.TerrainType.LAVA == 4, "TerrainType.LAVA = 4")
+	_assert(ArenaMap.TerrainType.SAND == 5, "TerrainType.SAND = 5")
+
+	# Test 29: grid_size field
+	_assert(ArenaMap.grid_size == 40, "grid_size = 40")
+
+	# Test 30: terrain_grid is array
+	_assert(typeof(ArenaMap.terrain_grid) == TYPE_ARRAY, "terrain_grid is array")
+
+	# Test 31: obstacles is array
+	_assert(typeof(ArenaMap.obstacles) == TYPE_ARRAY, "obstacles is array")
+
+	# Test 32: map_name is string
+	_assert(typeof(ArenaMap.map_name) == TYPE_STRING, "map_name is string")
+
+	# Test 33: get_available_maps returns array
+	var available_maps_new = ArenaMap.get_available_maps()
+	_assert(typeof(available_maps_new) == TYPE_ARRAY, "get_available_maps returns array")
+	_assert(available_maps_new.size() > 0, "available_maps not empty")
+
+	# Test 34: get_terrain_speed_modifier returns float
+	var speed_mod_new = ArenaMap.get_terrain_speed_modifier(Vector2(200, 300))
+	_assert(typeof(speed_mod_new) == TYPE_FLOAT, "get_terrain_speed_modifier returns float")
+
+	# Test 35: is_damaging_terrain returns bool
+	var damaging_new = ArenaMap.is_damaging_terrain(Vector2(200, 300))
+	_assert(typeof(damaging_new) == TYPE_BOOL, "is_damaging_terrain returns bool")
 ## ============================================
 ## Minimap System Tests
 ## ============================================
