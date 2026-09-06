@@ -583,6 +583,35 @@ func _test_soul_ai_controller() -> void:
 	enemy_unit.queue_free()
 
 
+	# Test 21: Decision enum values
+	_assert(SoulAIController.Decision.IDLE == 0, "IDLE decision = 0")
+	_assert(SoulAIController.Decision.MOVE_TO_TARGET == 1, "MOVE_TO_TARGET decision = 1")
+	_assert(SoulAIController.Decision.ATTACK == 2, "ATTACK decision = 2")
+	_assert(SoulAIController.Decision.USE_SKILL == 3, "USE_SKILL decision = 3")
+	_assert(SoulAIController.Decision.DEFEND == 4, "DEFEND decision = 4")
+	_assert(SoulAIController.Decision.RETREAT == 5, "RETREAT decision = 5")
+	_assert(SoulAIController.Decision.EXPLORE == 6, "EXPLORE decision = 6")
+	_assert(SoulAIController.Decision.FOLLOW_COMMAND == 7, "FOLLOW_COMMAND decision = 7")
+
+	# Test 23: decision_interval field
+	_assert(ai5.decision_interval == 1.5, "decision_interval = 1.5")
+
+	# Test 24: player_command_target field
+	_assert(typeof(ai5.player_command_target) == TYPE_VECTOR2, "player_command_target is Vector2")
+
+	# Test 25: update advances cooldowns
+	ai5.command_cooldown = 5.0
+	ai5.update(1.0)
+	_assert(ai5.command_cooldown < 5.0, "command_cooldown decreased after update")
+
+	# Test 26: get_damage_modifier returns float
+	var dmg_new = ai5.get_damage_modifier(self_unit)
+	_assert(typeof(dmg_new) == TYPE_FLOAT, "get_damage_modifier returns float")
+
+	# Test 27: get_defense_modifier returns float
+	var def_new = ai5.get_defense_modifier(self_unit)
+	_assert(typeof(def_new) == TYPE_FLOAT, "get_defense_modifier returns float")
+
 ## ============================================
 ## ArenaEnvironment Tests
 ## ============================================
