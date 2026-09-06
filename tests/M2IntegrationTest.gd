@@ -1660,6 +1660,56 @@ func _test_pixel_sprite_generator() -> void:
 	_assert(typeof(base_palette) == TYPE_DICTIONARY, "Base palette is dictionary")
 	_assert(typeof(aggro_palette) == TYPE_DICTIONARY, "Aggro palette is dictionary")
 
+	# Test 21: generate_color_swatch returns ImageTexture
+	var color_swatch = generator.generate_color_swatch("fire", 32)
+	_assert(color_swatch != null, "Color swatch generated")
+	_assert(color_swatch.get_width() == 32, "Color swatch width 32")
+	_assert(color_swatch.get_height() == 32, "Color swatch height 32")
+
+	# Test 22: generate_color_swatch default size
+	var default_swatch = generator.generate_color_swatch("water")
+	_assert(default_swatch != null, "Default color swatch generated")
+	_assert(default_swatch.get_width() == 32, "Default swatch width 32")
+
+	# Test 23: get_supported_elements returns array
+	var supported = generator.get_supported_elements()
+	_assert(typeof(supported) == TYPE_ARRAY, "get_supported_elements returns array")
+	_assert(supported.size() > 0, "Supported elements > 0")
+	_assert(supported.has("fire"), "fire is supported")
+	_assert(supported.has("water"), "water is supported")
+	_assert(supported.has("neutral"), "neutral is supported")
+
+	# Test 24: SPRITE_SIZE constant
+	_assert(PixelSpriteGenerator.SPRITE_SIZE == 64, "SPRITE_SIZE = 64")
+
+	# Test 25: ELEMENT_PALETTES has all elements
+	_assert(PixelSpriteGenerator.ELEMENT_PALETTES.has("fire"), "ELEMENT_PALETTES has fire")
+	_assert(PixelSpriteGenerator.ELEMENT_PALETTES.has("water"), "ELEMENT_PALETTES has water")
+	_assert(PixelSpriteGenerator.ELEMENT_PALETTES.has("neutral"), "ELEMENT_PALETTES has neutral")
+
+	# Test 26: PERSONALITY_MODIFIERS dictionary
+	_assert(typeof(PixelSpriteGenerator.PERSONALITY_MODIFIERS) == TYPE_DICTIONARY, "PERSONALITY_MODIFIERS is dictionary")
+	_assert(PixelSpriteGenerator.PERSONALITY_MODIFIERS.size() > 0, "PERSONALITY_MODIFIERS not empty")
+
+	# Test 27: Different personalities generate different sprites
+	var sprite_calm = generator.generate_soul_sprite("fire", {"aggression": 0.0, "courage": 0.5})
+	var sprite_aggro = generator.generate_soul_sprite("fire", {"aggression": 1.0, "courage": 1.0})
+	_assert(sprite_calm != null, "Calm sprite generated")
+	_assert(sprite_aggro != null, "Aggro sprite generated")
+	# Both should be valid 64x64 textures
+	_assert(sprite_calm.get_width() == 64, "Calm sprite width 64")
+	_assert(sprite_aggro.get_width() == 64, "Aggro sprite width 64")
+
+	# Test 28: generate_soul_sprite with empty personality
+	var neutral_empty_sprite = generator.generate_soul_sprite("neutral", {})
+	_assert(neutral_empty_sprite != null, "Empty personality sprite generated")
+	_assert(neutral_empty_sprite.get_width() == 64, "Empty personality sprite width 64")
+
+	# Test 29: generate_soul_sprite default element
+	var default_element_sprite = generator.generate_soul_sprite()
+	_assert(default_element_sprite != null, "Default element sprite generated")
+	_assert(default_element_sprite.get_width() == 64, "Default sprite width 64")
+
 
 ## ============================================
 ## ArenaBackgroundGenerator System Tests
