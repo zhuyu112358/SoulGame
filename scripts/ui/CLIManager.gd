@@ -92,6 +92,8 @@ func process_command(command: String) -> void:
 			_show_battle_log()
 		"battle_status":
 			_show_battle_status()
+		"rts_arena":
+			_open_rts_arena(parts)
 		"save":
 			_save_game()
 		"load":
@@ -123,6 +125,7 @@ func _show_help() -> void:
 	add_line("  list_worlds       - List all worlds")
 	add_line("  start_world <id>  - Start world simulation")
 	add_line("  stop_world        - Stop current world simulation")
+	add_line("  rts_arena         - Enter RTS battle arena")
 	add_line("  save              - Save game state")
 	add_line("  load              - Load game state")
 	add_line("  clear             - Clear screen")
@@ -397,6 +400,13 @@ func _show_battle_status() -> void:
 	if battle.status == "finished":
 		add_line("")
 		add_line("Result: %s" % battle.get_summary())
+
+
+## Open RTS arena scene
+func _open_rts_arena(p_parts: Array) -> void:
+	add_line("Entering RTS Arena...")
+	add_line("RTS battle system: real-time combat with movement and skills")
+	SceneManager.change_scene("res://scenes/rts_arena.tscn")
 
 
 ## Show battle log

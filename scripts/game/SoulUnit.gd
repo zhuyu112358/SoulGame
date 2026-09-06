@@ -1,0 +1,350 @@
+extends Node2D
+## SoulUnit - RTS battle unit representing a soul in the arena
+##
+## Handles real-time movement, attack, skills, and status effects.
+## This is game-specific logic for RTS combat, not SDK kernel code.
+##
+## Properties:
+##   - Position: Vector2 in arena coordinates
+##   - Movement: speed, target position, pathfinding
+##   - Combat: attack range, attack speed, damage, cooldowns
+##   - Status: HP, energy, buffs/debuffs
+
+## Unit state constants
+enum UnitState {
+	IDLE,
+	MOVING,
+	ATTACKING,
+	CASTING,
+	DEAD
+}
+
+## Soul data reference
+var soul_id: String = ""
+var soul_name: String = ""
+var element: String = "neutral"
+var level: int = 1
+
+## Combat stats
+var max_hp: int = 100
+var current_hp: int = 100
+var max_energy: int = 50
+var current_energy: int = 50
+var attack_damage: int = 10
+var attack_range: float = 100.0
+var attack_speed: float = 1.0  # attacks per second
+var move_speed: float = 150.0  # pixels per second
+
+## Real-time state
+var state: int = UnitState.IDLE
+var target_position: Vector2 = Vector2.ZERO
+var attack_target: Node2D = null
+var attack_cooldown: float = 0.0
+var is_player_controlled: bool = false
+
+## Skill cooldowns (skill_name -> remaining seconds)
+var skill_cooldowns: Dictionary = {}
+
+## Status effects (effect_name -> remaining seconds)
+var status_effects: Dictionary = {}
+
+## Visual sprite
+var _sprite: Node2D = null
+
+## Signal for state changes
+signal hp_changed(current_hp, max_hp)
+signal energy_changed(current_energy, max_energy)
+signal state_changed(new_state)
+signal unit_died(unit)
+signal attack_performed(target, damage)
+signal skill_used(skill_name, target)
+
+
+func _ready() -> void:
+	GameLog.info("SoulUnit: %s initialized (HP:%d, ATK:%d)" % [soul_name, max_hp, attack_damage], "Arena")
+	_setup_skill_cooldowns()
+
+
+## Initialize unit from soul data
+func init_from_soul(p_soul_id: String, p_soul_name: String, p_element: String, p_level: int, p_is_player: bool = false) -> void:
+	soul_id = p_soul_id
+	soul_name = p_soul_name
+	element = p_element
+	level = p_level
+	is_player_controlled = p_is_player
+
+	# Scale stats by level
+	max_hp = 100 + level * 20
+	current_hp = max_hp
+	max_energy = 50 + level * 5
+	current_energy = max_energy
+	attack_damage = 10 + level * 3
+	attack_range = 100.0 + level * 2
+	move_speed = 150.0 + level * 5
+
+	_setup_skill_cooldowns()
+	GameLog.info("SoulUnit: %s initialized from soul data (Lvl %d, HP:%d)" % [soul_name, level, max_hp], "Arena")
+
+
+## Setup initial skill cooldowns
+func _setup_skill_cooldowns() -> void:
+	skill_cooldowns = {
+		"basic_attack": 0.0,
+		"heavy_strike": 0.0,
+		"quick_strike": 0.0,
+		"heal": 0.0,
+		"defend": 0.0
+	}
+
+
+## Process real-time updates
+func _process(delta: float) -> void:
+	if state == UnitState.DEAD:
+		return
+
+	_update_cooldowns(delta)
+	_update_status_effects(delta)
+	_update_energy_regen(delta)
+
+	match state:
+		UnitState.MOVING:
+			_update_movement(delta)
+		UnitState.ATTACKING:
+			_update_attack(delta)
+
+
+## Update skill cooldowns
+func _update_cooldowns(delta: float) -> void:
+	for skill_name in skill_cooldowns.keys():
+		if skill_cooldowns[skill_name] > 0:
+			skill_cooldowns[skill_name] = max(0.0, skill_cooldowns[skill_name] - delta)
+
+
+## Update status effects
+func _update_status_effects(delta: float) -> void:
+	var effects_to_remove: Array = []
+	for effect_name in status_effects.keys():
+		status_effects[effect_name] -= delta
+		if status_effects[effect_name] <= 0:
+			effects_to_remove.append(effect_name)
+	for effect_name in effects_to_remove:
+		status_effects.erase(effect_name)
+
+
+## Update energy regeneration
+func _update_energy_regen(delta: float) -> void:
+	if current_energy < max_energy:
+		current_energy = min(max_energy, current_energy + delta * 2.0)
+		emit_signal("energy_changed", current_energy, max_energy)
+
+
+## Update movement toward target position
+func _update_movement(delta: float) -> void:
+	var direction: Vector2 = target_position - position
+	var distance: float = direction.length()
+
+	if distance < 5.0:
+		state = UnitState.IDLE
+		emit_signal("state_changed", state)
+		return
+
+	var move_amount: float = move_speed * delta
+	if move_amount >= distance:
+		position = target_position
+		state = UnitState.IDLE
+		emit_signal("state_changed", state)
+	else:
+		position += direction.normalized() * move_amount
+
+
+## Update attack behavior
+func _update_attack(delta: float) -> void:
+	if attack_target == null or not is_instance_valid(attack_target):
+		state = UnitState.IDLE
+		emit_signal("state_changed", state)
+		return
+
+	var distance: float = position.distance_to(attack_target.position)
+
+	# Move into range if too far
+	if distance > attack_range:
+		target_position = attack_target.position
+		_update_movement(delta)
+		return
+
+	# Attack if cooldown ready
+	if attack_cooldown <= 0:
+		_perform_basic_attack()
+
+
+## Move to a position
+func move_to(p_position: Vector2) -> void:
+	if state == UnitState.DEAD:
+		return
+	target_position = p_position
+	state = UnitState.MOVING
+	attack_target = null
+	emit_signal("state_changed", state)
+
+
+## Set attack target
+func set_attack_target(p_target: Node2D) -> void:
+	if state == UnitState.DEAD:
+		return
+	attack_target = p_target
+	state = UnitState.ATTACKING
+	emit_signal("state_changed", state)
+
+
+## Perform basic attack
+func _perform_basic_attack() -> void:
+	if attack_target == null or not is_instance_valid(attack_target):
+		return
+
+	var damage: int = _calculate_damage(attack_damage, 1.0)
+	attack_target.take_damage(damage, self)
+	attack_cooldown = 1.0 / attack_speed
+	emit_signal("attack_performed", attack_target, damage)
+
+	GameLog.debug("SoulUnit: %s attacks %s for %d damage" % [soul_name, attack_target.soul_name, damage], "Arena")
+
+
+## Calculate damage with element advantage
+func _calculate_damage(p_base_damage: int, p_multiplier: float) -> int:
+	var element_mult: float = 1.0
+	if attack_target != null and attack_target.has_method("get_element"):
+		element_mult = _get_element_multiplier(element, attack_target.get_element())
+
+	var final_damage: int = int(p_base_damage * p_multiplier * element_mult)
+	return max(1, final_damage)
+
+
+## Get element advantage multiplier
+func _get_element_multiplier(p_attacker_element: String, p_defender_element: String) -> float:
+	var advantages: Dictionary = {
+		"fire": {"wood": 1.5, "ice": 1.5, "wind": 0.75},
+		"water": {"fire": 1.5, "earth": 0.75, "electric": 1.5},
+		"earth": {"water": 1.5, "electric": 0.75, "fire": 0.75},
+		"wind": {"earth": 1.5, "fire": 1.5, "water": 0.75},
+		"light": {"dark": 1.5, "water": 0.75},
+		"dark": {"light": 0.75, "earth": 1.5},
+		"neutral": {}
+	}
+	if advantages.has(p_attacker_element) and advantages[p_attacker_element].has(p_defender_element):
+		return advantages[p_attacker_element][p_defender_element]
+	return 1.0
+
+
+## Use a skill
+func use_skill(p_skill_name: String, p_target: Node2D = null) -> bool:
+	if state == UnitState.DEAD:
+		return false
+
+	if not skill_cooldowns.has(p_skill_name):
+		return false
+
+	if skill_cooldowns[p_skill_name] > 0:
+		GameLog.debug("SoulUnit: %s skill %s on cooldown (%.1fs)" % [soul_name, p_skill_name, skill_cooldowns[p_skill_name]], "Arena")
+		return false
+
+	var energy_cost: int = _get_skill_energy_cost(p_skill_name)
+	if current_energy < energy_cost:
+		GameLog.debug("SoulUnit: %s not enough energy for %s" % [soul_name, p_skill_name], "Arena")
+		return false
+
+	current_energy -= energy_cost
+	emit_signal("energy_changed", current_energy, max_energy)
+
+	match p_skill_name:
+		"heavy_strike":
+			if p_target != null:
+				var damage: int = _calculate_damage(attack_damage, 1.5)
+				p_target.take_damage(damage, self)
+				skill_cooldowns[p_skill_name] = 5.0
+				emit_signal("skill_used", p_skill_name, p_target)
+				return true
+		"quick_strike":
+			if p_target != null:
+				var damage: int = _calculate_damage(attack_damage, 0.7)
+				p_target.take_damage(damage, self)
+				skill_cooldowns[p_skill_name] = 2.0
+				emit_signal("skill_used", p_skill_name, p_target)
+				return true
+		"heal":
+			var heal_amount: int = 15 + level * 2
+			current_hp = min(max_hp, current_hp + heal_amount)
+			emit_signal("hp_changed", current_hp, max_hp)
+			skill_cooldowns[p_skill_name] = 8.0
+			emit_signal("skill_used", p_skill_name, self)
+			return true
+		"defend":
+			status_effects["defense_up"] = 3.0
+			skill_cooldowns[p_skill_name] = 6.0
+			emit_signal("skill_used", p_skill_name, self)
+			return true
+
+	return false
+
+
+## Get skill energy cost
+func _get_skill_energy_cost(p_skill_name: String) -> int:
+	match p_skill_name:
+		"basic_attack": return 0
+		"heavy_strike": return 15
+		"quick_strike": return 3
+		"heal": return 10
+		"defend": return 2
+	return 5
+
+
+## Take damage
+func take_damage(p_damage: int, p_attacker: Node2D) -> void:
+	if state == UnitState.DEAD:
+		return
+
+	# Apply defense buff
+	var actual_damage: int = p_damage
+	if status_effects.has("defense_up"):
+		actual_damage = int(p_damage * 0.5)
+
+	current_hp -= actual_damage
+	emit_signal("hp_changed", current_hp, max_hp)
+
+	GameLog.debug("SoulUnit: %s takes %d damage (HP: %d/%d)" % [soul_name, actual_damage, current_hp, max_hp], "Arena")
+
+	if current_hp <= 0:
+		current_hp = 0
+		state = UnitState.DEAD
+		emit_signal("state_changed", state)
+		emit_signal("unit_died", self)
+		GameLog.info("SoulUnit: %s has been defeated!" % soul_name, "Arena")
+
+
+## Get element (for damage calculation)
+func get_element() -> String:
+	return element
+
+
+## Stop all actions
+func stop() -> void:
+	state = UnitState.IDLE
+	attack_target = null
+	emit_signal("state_changed", state)
+
+
+## Get unit info as dictionary
+func get_info() -> Dictionary:
+	return {
+		"id": soul_id,
+		"name": soul_name,
+		"element": element,
+		"level": level,
+		"hp": current_hp,
+		"max_hp": max_hp,
+		"energy": current_energy,
+		"max_energy": max_energy,
+		"state": state,
+		"position": position,
+		"attack_range": attack_range,
+		"is_alive": state != UnitState.DEAD
+	}
