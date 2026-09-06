@@ -28,6 +28,7 @@ func _ready() -> void:
 	_test_arena_manager_environment()
 	_test_battle_result_growth()
 	_test_soul_unit_combat()
+	_test_arena_map_system()
 
 	# Print summary
 	print("\n=== M2 TEST SUMMARY ===")
@@ -872,3 +873,111 @@ func _test_soul_unit_combat() -> void:
 	# Cleanup
 	unit1.queue_free()
 	unit2.queue_free()
+
+
+## ============================================
+## ArenaMap System Tests
+## ============================================
+func _test_arena_map_system() -> void:
+	print("\n--- ArenaMap System Tests ---")
+
+	# Test 1: Available maps list
+	var maps = ArenaMap.get_available_maps()
+	_assert(maps.size() >= 3, "At least 3 available maps: %d" % maps.size())
+	_assert(maps.has("default_arena"), "default_arena available")
+	_assert(maps.has("forest_arena"), "forest_arena available")
+	_assert(maps.has("crystal_arena"), "crystal_arena available")
+
+	# Test 2: Load default arena
+	ArenaMap.load_map("default_arena")
+	_assert(ArenaMap.map_name == "default_arena", "Map name set to default_arena")
+	_assert(ArenaMap.arena_width == 1280, "Default arena width 1280")
+	_assert(ArenaMap.arena_height == 600, "Default arena height 600")
+
+	# Test 3: Spawn positions
+	_assert(ArenaMap.player_spawn.x < ArenaMap.ai_spawn.x, "Player spawn left of AI spawn")
+	_assert(ArenaMap.player_spawn.y > 0, "Player spawn valid Y")
+	_assert(ArenaMap.ai_spawn.y > 0, "AI spawn valid Y")
+
+	# Test 4: Terrain grid generated
+	_assert(ArenaMap.terrain_grid.size() > 0, "Terrain grid generated: %d rows" % ArenaMap.terrain_grid.size())
+
+	# Test 5: get_terrain_type returns valid type
+	var terrain = ArenaMap.get_terrain_type(Vector2(100, 100))
+	_assert(terrain >= 0, "Terrain type valid: %d" % terrain)
+	_assert(terrain <= 5, "Terrain type in range 0-5: %d" % terrain)
+
+	# Test 6: get_terrain_speed_modifier returns positive value
+	var speed_mod = ArenaMap.get_terrain_speed_modifier(Vector2(100, 100))
+	_assert(speed_mod > 0, "Speed modifier positive: %.2f" % speed_mod)
+	_assert(speed_mod <= 1.0, "Speed modifier <= 1.0: %.2f" % speed_mod)
+
+	# Test 7: is_position_valid returns bool for in-bounds position
+	var valid_result = ArenaMap.is_position_valid(Vector2(100, 100))
+	_assert(typeof(valid_result) == TYPE_BOOL, "is_position_valid returns bool")
+
+	# Test 8: is_position_valid for out-of-bounds
+	var invalid = ArenaMap.is_position_valid(Vector2(-100, -100))
+	_assert(invalid == false, "Out-of-bounds position invalid")
+
+	# Test 9: is_position_valid for far out-of-bounds
+	var invalid2 = ArenaMap.is_position_valid(Vector2(2000, 2000))
+	_assert(invalid2 == false, "Far out-of-bounds invalid")
+
+	# Test 10: get_map_info returns required fields
+	var info = ArenaMap.get_map_info()
+	_assert(info.has("name"), "Map info has name")
+	_assert(info.has("width"), "Map info has width")
+	_assert(info.has("height"), "Map info has height")
+	_assert(info.has("obstacle_count"), "Map info has obstacle_count")
+	_assert(info["name"] == "default_arena", "Map info name correct")
+
+	# Test 11: Load forest arena
+	ArenaMap.load_map("forest_arena")
+	_assert(ArenaMap.map_name == "forest_arena", "Map name set to forest_arena")
+	var forest_info = ArenaMap.get_map_info()
+	_assert(forest_info["obstacle_count"] > 0, "Forest arena has obstacles")
+
+	# Test 12: Load crystal arena
+	ArenaMap.load_map("crystal_arena")
+	_assert(ArenaMap.map_name == "crystal_arena", "Map name set to crystal_arena")
+
+	# Test 13: Obstacles array
+	_assert(ArenaMap.obstacles.size() >= 0, "Obstacles array valid: %d" % ArenaMap.obstacles.size())
+
+	# Test 14: get_obstacle_at returns dictionary (empty if none)
+	var obstacle = ArenaMap.get_obstacle_at(Vector2(640, 300))
+	_assert(typeof(obstacle) == TYPE_DICTIONARY, "get_obstacle_at returns dictionary")
+
+	# Test 15: reset_map resets obstacles (doesn't clear map)
+	ArenaMap.reset_map()
+	_assert(ArenaMap.map_name == "crystal_arena", "Map name preserved after reset")
+	_assert(ArenaMap.terrain_grid.size() > 0, "Terrain grid preserved after reset")
+
+	# Test 16: Reload after reset
+	ArenaMap.load_map("default_arena")
+	_assert(ArenaMap.map_name == "default_arena", "Map reloads after reset")
+	_assert(ArenaMap.terrain_grid.size() > 0, "Terrain grid regenerated after reload")
+
+	# Test 17: Grid size
+	_assert(ArenaMap.grid_size == 40, "Grid size is 40")
+
+	# Test 18: Terrain type enum values
+	_assert(ArenaMap.TerrainType.NORMAL == 0, "NORMAL terrain = 0")
+	_assert(ArenaMap.TerrainType.GRASS == 1, "GRASS terrain = 1")
+	_assert(ArenaMap.TerrainType.STONE == 2, "STONE terrain = 2")
+	_assert(ArenaMap.TerrainType.WATER == 3, "WATER terrain = 3")
+	_assert(ArenaMap.TerrainType.LAVA == 4, "LAVA terrain = 4")
+	_assert(ArenaMap.TerrainType.SAND == 5, "SAND terrain = 5")
+
+	# Test 19: is_damaging_terrain for normal position
+	var damaging = ArenaMap.is_damaging_terrain(Vector2(100, 100))
+	_assert(typeof(damaging) == TYPE_BOOL, "is_damaging_terrain returns bool")
+
+	# Test 20: Multiple map loads don't crash
+	for map_name in ArenaMap.get_available_maps():
+		ArenaMap.load_map(map_name)
+		_assert(ArenaMap.map_name == map_name, "Loaded map %s correctly" % map_name)
+
+	# Reset to default
+	ArenaMap.load_map("default_arena")
