@@ -2061,6 +2061,29 @@ func _test_pixel_sprite_generator() -> void:
 	_assert(custom_swatch_new != null, "custom color swatch generated")
 	_assert(custom_swatch_new.get_width() == 64, "custom swatch width 64")
 
+
+	# Test 36: PERSONALITY_MODIFIERS dictionary
+	_assert(typeof(PixelSpriteGenerator.PERSONALITY_MODIFIERS) == TYPE_DICTIONARY, "PERSONALITY_MODIFIERS is dictionary")
+	_assert(PixelSpriteGenerator.PERSONALITY_MODIFIERS.size() > 0, "PERSONALITY_MODIFIERS not empty")
+
+	# Test 37: get_supported_elements returns array
+	var supported_elements = generator.get_supported_elements()
+	_assert(typeof(supported_elements) == TYPE_ARRAY, "get_supported_elements returns array")
+	_assert(supported_elements.size() > 0, "supported_elements not empty")
+
+	# Test 38: generate_soul_sprite with personality
+	var sprite_with_personality = generator.generate_soul_sprite("fire", {"aggression": 0.8})
+	_assert(sprite_with_personality != null, "sprite with personality generated")
+	_assert(sprite_with_personality.get_width() == 64, "sprite width 64")
+
+	# Test 39: generate_soul_sprite neutral element
+	var neutral_sprite_new = generator.generate_soul_sprite("neutral")
+	_assert(neutral_sprite_new != null, "neutral sprite generated")
+
+	# Test 40: generate_soul_sprite water element
+	var water_sprite_new = generator.generate_soul_sprite("water")
+	_assert(water_sprite_new != null, "water sprite generated")
+	_assert(water_sprite_new.get_height() == 64, "sprite height 64")
 ## ============================================
 ## ArenaBackgroundGenerator System Tests
 ## ============================================
