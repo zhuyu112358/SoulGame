@@ -2920,3 +2920,37 @@ func _test_world_plugin() -> void:
 	_assert(plugin.api_version == "1.0.0", "api_version = 1.0.0")
 	plugin.api_version = "1.1.0"
 	_assert(plugin.api_version == "1.1.0", "api_version updated to 1.1.0")
+
+	# Test 19: supports_feature returns bool
+	var supports = plugin.supports_feature("combat")
+	_assert(typeof(supports) == TYPE_BOOL, "supports_feature returns bool")
+
+	# Test 20: get_supported_features returns array
+	var features_new = plugin.get_supported_features()
+	_assert(typeof(features_new) == TYPE_ARRAY, "get_supported_features returns array")
+
+	# Test 21: enter_world returns dictionary
+	var test_snapshot = SoulSnapshot.new()
+	test_snapshot.soul_id = "test_soul_001"
+	var enter_new = plugin.enter_world(test_snapshot)
+	_assert(typeof(enter_new) == TYPE_DICTIONARY, "enter_world returns dictionary")
+
+	# Test 22: exit_world returns dictionary
+	var exit_new = plugin.exit_world(test_snapshot)
+	_assert(typeof(exit_new) == TYPE_DICTIONARY, "exit_world returns dictionary")
+
+	# Test 23: update_world can be called
+	plugin.update_world(0.016)
+# No assertion needed, just verify no crash
+
+	# Test 24: config field exists
+	_assert(typeof(plugin.config) == TYPE_DICTIONARY, "config is dictionary")
+	plugin.config["difficulty"] = "hard"
+	_assert(plugin.config["difficulty"] == "hard", "config set works")
+
+	# Test 25: author and description fields
+	_assert(typeof(plugin.author) == TYPE_STRING, "author is string")
+	_assert(typeof(plugin.description) == TYPE_STRING, "description is string")
+	plugin.author = "test_author"
+	_assert(plugin.author == "test_author", "author set works")
+	_assert(plugin.api_version == "1.1.0", "api_version updated to 1.1.0")
