@@ -439,6 +439,39 @@ func _test_rts_arena_manager() -> void:
 	RTSArenaManager.cleanup_battle()
 
 
+	# Test 24: BattleState enum values
+	_assert(RTSArenaManager.BattleState.IDLE == 0, "IDLE battle state = 0")
+	_assert(RTSArenaManager.BattleState.ACTIVE == 1, "ACTIVE battle state = 1")
+	_assert(RTSArenaManager.BattleState.PAUSED == 2, "PAUSED battle state = 2")
+	_assert(RTSArenaManager.BattleState.FINISHED == 3, "FINISHED battle state = 3")
+	_assert(RTSArenaManager.BattleState.FINISHED == 3, "FINISHED battle state = 3")
+
+	# Test 25: battle_config has expected keys
+	_assert(RTSArenaManager.battle_config.has("battle_type"), "battle_config has battle_type")
+	_assert(RTSArenaManager.battle_config.has("battle_type"), "battle_config has battle_type")
+
+	# Test 26: battle_mode field
+	_assert(typeof(RTSArenaManager.battle_mode) == TYPE_STRING, "battle_mode is string")
+
+	# Test 27: _ai_decision_interval field
+	_assert(RTSArenaManager._ai_decision_interval == 1.5, "_ai_decision_interval = 1.5")
+
+	# Test 28: get_battle_info returns dictionary
+	RTSArenaManager.start_battle(p3, a3, "default_arena")
+	var battle_info = RTSArenaManager.get_battle_info()
+	_assert(typeof(battle_info) == TYPE_DICTIONARY, "get_battle_info returns dictionary")
+	_assert(battle_info.has("state"), "battle_info has state")
+	_assert(battle_info.has("time"), "battle_info has time")
+	RTSArenaManager.cleanup_battle()
+
+	# Test 29: pause_battle and resume_battle
+	RTSArenaManager.start_battle(p3, a3, "default_arena")
+	RTSArenaManager.pause_battle()
+	_assert(RTSArenaManager.battle_state == RTSArenaManager.BattleState.PAUSED, "Battle paused")
+	_assert(RTSArenaManager.battle_state == RTSArenaManager.BattleState.PAUSED, "Battle paused")
+	RTSArenaManager.resume_battle()
+	_assert(RTSArenaManager.battle_state == RTSArenaManager.BattleState.ACTIVE, "Battle resumed")
+
 ## ============================================
 ## SoulAIController Tests
 ## ============================================
