@@ -38,6 +38,7 @@ func _ready() -> void:
 	_test_pixel_sprite_generator()
 	_test_arena_background_generator()
 	_test_server_authority()
+	_test_monetization_manager()
 
 	# Print summary
 	print("\n=== M2 TEST SUMMARY ===")
@@ -1538,3 +1539,109 @@ func _test_server_authority() -> void:
 
 	# Reset to local mode
 	authority.set_mode(ServerAuthority.AuthorityMode.LOCAL_SIMULATION)
+
+
+## ============================================
+## MonetizationManager System Tests
+## ============================================
+func _test_monetization_manager() -> void:
+	print("\n--- MonetizationManager System Tests ---")
+
+	# Test 1: Default is_subscriber = false (M2 mock)
+	_assert(MonetizationManager.is_subscriber() == false, "Default is_subscriber = false")
+
+	# Test 2: Default subscription tier = none
+	_assert(MonetizationManager.get_subscription_tier() == "none", "Default tier = none")
+
+	# Test 3: get_shop_items returns array
+	var shop_items = MonetizationManager.get_shop_items()
+	_assert(typeof(shop_items) == TYPE_ARRAY, "get_shop_items returns array")
+	_assert(shop_items.size() > 0, "Shop has items: %d" % shop_items.size())
+
+	# Test 4: get_owned_items returns array
+	var owned_items = MonetizationManager.get_owned_items()
+	_assert(typeof(owned_items) == TYPE_ARRAY, "get_owned_items returns array")
+
+	# Test 5: has_item for nonexistent item = false
+	_assert(MonetizationManager.has_item("nonexistent_item") == false, "has_item nonexistent = false")
+
+	# Test 6: has_skin for nonexistent skin = false
+	_assert(MonetizationManager.has_skin("nonexistent_skin") == false, "has_skin nonexistent = false")
+
+	# Test 7: get_currency default soft currency > 0
+	var soft_currency = MonetizationManager.get_currency("soft")
+	_assert(soft_currency >= 0, "Soft currency >= 0: %d" % soft_currency)
+
+	# Test 8: get_currency default hard currency >= 0
+	var hard_currency = MonetizationManager.get_currency("hard")
+	_assert(hard_currency >= 0, "Hard currency >= 0: %d" % hard_currency)
+
+	# Test 9: add_currency increases soft currency
+	var before = MonetizationManager.get_currency("soft")
+	MonetizationManager.add_currency(100, "soft")
+	var after = MonetizationManager.get_currency("soft")
+	_assert(after == before + 100, "add_currency works: %d -> %d" % [before, after])
+
+	# Test 10: add_currency increases hard currency
+	var before_hard = MonetizationManager.get_currency("hard")
+	MonetizationManager.add_currency(50, "hard")
+	var after_hard = MonetizationManager.get_currency("hard")
+	_assert(after_hard == before_hard + 50, "add_currency hard works: %d -> %d" % [before_hard, after_hard])
+
+	# Test 11: purchase_item with nonexistent item fails
+	var purchase_result = MonetizationManager.purchase_item("nonexistent_item")
+	_assert(typeof(purchase_result) == TYPE_DICTIONARY, "purchase_item returns dictionary")
+	_assert(purchase_result.has("success"), "purchase_result has success field")
+	_assert(purchase_result["success"] == false, "Purchase nonexistent fails")
+
+	# Test 12: get_equipped_item returns dictionary
+	var equipped = MonetizationManager.get_equipped_item("skin")
+	_assert(typeof(equipped) == TYPE_DICTIONARY, "get_equipped_item returns dictionary")
+
+	# Test 13: equip_item with nonexistent item fails
+	var equip_result = MonetizationManager.equip_item("nonexistent_item", "skin")
+	_assert(typeof(equip_result) == TYPE_DICTIONARY, "equip_item returns dictionary")
+	_assert(equip_result.has("success"), "equip_result has success field")
+
+	# Test 14: get_season_pass_info returns dictionary
+	var season_pass = MonetizationManager.get_season_pass_info()
+	_assert(typeof(season_pass) == TYPE_DICTIONARY, "get_season_pass_info returns dictionary")
+	_assert(season_pass.has("active"), "Season pass has active field")
+
+	# Test 15: get_info returns dictionary
+	var info = MonetizationManager.get_info()
+	_assert(typeof(info) == TYPE_DICTIONARY, "get_info returns dictionary")
+	_assert(info.has("subscriber"), "get_info has subscriber")
+	_assert(info.has("subscription_tier"), "get_info has subscription_tier")
+	_assert(info.has("owned_items"), "get_info has owned_items")
+	_assert(info.has("cosmetic_only"), "get_info has cosmetic_only")
+	_assert(info["cosmetic_only"] == true, "cosmetic_only = true (no pay-to-win)")
+	_assert(info.has("mock_mode"), "get_info has mock_mode")
+	_assert(info["mock_mode"] == true, "mock_mode = true (M2 prototype)")
+
+	# Test 16: Shop items have required fields
+	if shop_items.size() > 0:
+		var first_item = shop_items[0]
+		_assert(typeof(first_item) == TYPE_DICTIONARY, "First shop item is dictionary")
+		_assert(first_item.has("id"), "Shop item has id")
+		_assert(first_item.has("name"), "Shop item has name")
+		_assert(first_item.has("price"), "Shop item has price")
+
+	# Test 17: Shop items are cosmetic only (no stat bonuses)
+	if shop_items.size() > 0:
+		for item in shop_items:
+			_assert(not item.has("stat_bonus"), "Shop item %s has no stat_bonus (cosmetic only)" % item.get("id", "unknown"))
+			_assert(not item.has("damage_boost"), "Shop item %s has no damage_boost" % item.get("id", "unknown"))
+
+	# Test 18: ISkin interface preload exists
+	_assert(MonetizationManager.ISkin != null, "ISkin interface preloaded")
+
+	# Test 19: Currency types exist
+	_assert(MonetizationManager.get_currency("soft") >= 0, "Soft currency type exists")
+	_assert(MonetizationManager.get_currency("hard") >= 0, "Hard currency type exists")
+
+	# Test 20: Negative currency add doesn't break
+	var before_neg = MonetizationManager.get_currency("soft")
+	MonetizationManager.add_currency(-10, "soft")
+	var after_neg = MonetizationManager.get_currency("soft")
+	_assert(after_neg == before_neg - 10, "Negative currency add works: %d -> %d" % [before_neg, after_neg])
