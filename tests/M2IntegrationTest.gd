@@ -1558,6 +1558,37 @@ func _test_audio_manager() -> void:
 	_assert(invalid_paths == 0, "All sound paths in assets/audio/: %d invalid" % invalid_paths)
 
 
+	# Test 26: set_master_volume works
+	AudioManager.set_master_volume(0.5)
+	_assert(AudioManager.master_volume == 0.5, "master_volume set to 0.5")
+
+	# Test 27: set_sfx_volume works
+	AudioManager.set_sfx_volume(0.7)
+	_assert(AudioManager.sfx_volume == 0.7, "sfx_volume set to 0.7")
+
+	# Test 28: set_bgm_volume works
+	AudioManager.set_bgm_volume(0.4)
+	_assert(AudioManager.bgm_volume == 0.4, "bgm_volume set to 0.4")
+
+	# Test 29: get_volume returns float
+	var vol = AudioManager.get_volume("Master")
+	_assert(typeof(vol) == TYPE_FLOAT, "get_volume returns float")
+
+	# Test 30: get_stats returns dictionary
+	var stats_new = AudioManager.get_stats()
+	_assert(typeof(stats_new) == TYPE_DICTIONARY, "get_stats returns dictionary")
+
+	# Test 31: stop_bgm can be called
+	AudioManager.stop_bgm()
+# No assertion needed, just verify no crash
+
+	# Test 32: _max_sfx_players constant
+	_assert(AudioManager._max_sfx_players == 16, "_max_sfx_players = 16")
+
+	# Test 33: _sfx_players pool initialized
+	_assert(typeof(AudioManager._sfx_players) == TYPE_ARRAY, "_sfx_players is array")
+	_assert(AudioManager._sfx_players.size() > 0, "_sfx_players pool non-empty")
+
 ## ============================================
 ## PixelSpriteGenerator System Tests
 ## ============================================
