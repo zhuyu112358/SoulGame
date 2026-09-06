@@ -11,6 +11,7 @@ const PixelSpriteGenerator = preload("res://scripts/game/PixelSpriteGenerator.gd
 const ArenaBackgroundGenerator = preload("res://scripts/game/ArenaBackgroundGenerator.gd")
 const ServerAuthority = preload("res://scripts/network/ServerAuthority.gd")
 const SoulSnapshot = preload("res://platform/soul/SoulSnapshot.gd")
+const WorldPlugin = preload("res://platform/world/WorldPlugin.gd")
 
 ## Test counters
 var _tests_run: int = 0
@@ -44,6 +45,7 @@ func _ready() -> void:
 	_test_world_loader()
 	_test_home_api()
 	_test_soul_snapshot()
+	_test_world_plugin()
 
 	# Print summary
 	print("\n=== M2 TEST SUMMARY ===")
@@ -2120,3 +2122,125 @@ func _test_soul_snapshot() -> void:
 	_assert(typeof(snapshot.metadata) == TYPE_DICTIONARY, "metadata is dictionary")
 	snapshot.metadata["custom_key"] = "custom_value"
 	_assert(snapshot.metadata["custom_key"] == "custom_value", "metadata custom key works")
+
+
+## ============================================
+## WorldPlugin System Tests
+## ============================================
+func _test_world_plugin() -> void:
+	print("\n--- WorldPlugin System Tests ---")
+
+	# Test 1: Create new plugin
+	var plugin = WorldPlugin.new()
+	_assert(plugin != null, "WorldPlugin created")
+	_assert(plugin is WorldPlugin, "plugin is WorldPlugin")
+
+	# Test 2: Default values
+	_assert(plugin.plugin_id == "", "Default plugin_id = empty")
+	_assert(plugin.plugin_name == "", "Default plugin_name = empty")
+	_assert(plugin.plugin_version == "1.0.0", "Default plugin_version = 1.0.0")
+	_assert(plugin.author == "", "Default author = empty")
+	_assert(plugin.description == "", "Default description = empty")
+	_assert(plugin.world_type == "exploration", "Default world_type = exploration")
+	_assert(plugin.api_version == "1.0.0", "Default api_version = 1.0.0")
+
+	# Test 3: Set properties
+	plugin.plugin_id = "test_world_01"
+	plugin.plugin_name = "Test World"
+	plugin.author = "Test Author"
+	plugin.description = "A test world for plugin system"
+	plugin.world_type = "battle"
+	_assert(plugin.plugin_id == "test_world_01", "plugin_id set correctly")
+	_assert(plugin.plugin_name == "Test World", "plugin_name set correctly")
+	_assert(plugin.author == "Test Author", "author set correctly")
+	_assert(plugin.description == "A test world for plugin system", "description set correctly")
+	_assert(plugin.world_type == "battle", "world_type set correctly")
+
+	# Test 4: config dictionary
+	_assert(typeof(plugin.config) == TYPE_DICTIONARY, "config is dictionary")
+	plugin.config["max_players"] = 4
+	plugin.config["difficulty"] = "normal"
+	_assert(plugin.config["max_players"] == 4, "config max_players = 4")
+	_assert(plugin.config["difficulty"] == "normal", "config difficulty = normal")
+
+	# Test 5: world_state dictionary
+	_assert(typeof(plugin.world_state) == TYPE_DICTIONARY, "world_state is dictionary")
+	plugin.world_state["time"] = 100
+	plugin.world_state["weather"] = "clear"
+	_assert(plugin.world_state["time"] == 100, "world_state time = 100")
+	_assert(plugin.world_state["weather"] == "clear", "world_state weather = clear")
+
+	# Test 6: load_world works
+	var load_result = plugin.load_world()
+	_assert(load_result == true, "load_world returns true")
+
+	# Test 7: get_world_info returns dictionary
+	var info = plugin.get_world_info()
+	_assert(typeof(info) == TYPE_DICTIONARY, "get_world_info returns dictionary")
+	_assert(info.has("id"), "info has id")
+	_assert(info["id"] == "test_world_01", "info id matches")
+	_assert(info.has("name"), "info has name")
+	_assert(info.has("version"), "info has version")
+	_assert(info.has("type"), "info has type")
+	_assert(info.has("loaded"), "info has loaded field")
+	_assert(info["loaded"] == true, "info loaded = true after load")
+
+	# Test 8: get_supported_features returns array
+	var features = plugin.get_supported_features()
+	_assert(typeof(features) == TYPE_ARRAY, "get_supported_features returns array")
+
+	# Test 9: supports_feature works
+	var supports_weather = plugin.supports_feature("weather")
+	_assert(typeof(supports_weather) == TYPE_BOOL, "supports_feature returns bool")
+
+	# Test 10: enter_world returns dictionary
+	var soul = SoulSnapshot.new()
+	soul.soul_id = "soul_for_plugin_test"
+	soul.soul_name = "PluginTestSoul"
+	var enter_result = plugin.enter_world(soul)
+	_assert(typeof(enter_result) == TYPE_DICTIONARY, "enter_world returns dictionary")
+	_assert(enter_result.has("success"), "enter_result has success field")
+
+	# Test 11: exit_world returns dictionary
+	var exit_result = plugin.exit_world(soul)
+	_assert(typeof(exit_result) == TYPE_DICTIONARY, "exit_world returns dictionary")
+	_assert(exit_result.has("success"), "exit_result has success field")
+
+	# Test 12: update_world works
+	plugin.update_world(0.016)
+	# No assertion needed, just verify no crash
+
+	# Test 13: serialize_state returns dictionary
+	var state = plugin.serialize_state()
+	_assert(typeof(state) == TYPE_DICTIONARY, "serialize_state returns dictionary")
+	_assert(state.has("world_state"), "serialized state has world_state")
+
+	# Test 14: deserialize_state works
+	var new_plugin = WorldPlugin.new()
+	new_plugin.deserialize_state(state)
+	_assert(new_plugin.world_state.has("time"), "deserialized world_state has time")
+	_assert(new_plugin.world_state["time"] == 100, "deserialized time = 100")
+
+	# Test 15: unload_world works
+	plugin.unload_world()
+	var info2 = plugin.get_world_info()
+	_assert(info2["loaded"] == false, "info loaded = false after unload")
+
+	# Test 16: Multiple plugin instances independent
+	var plugin_a = WorldPlugin.new()
+	var plugin_b = WorldPlugin.new()
+	plugin_a.plugin_id = "plugin_a"
+	plugin_b.plugin_id = "plugin_b"
+	_assert(plugin_a.plugin_id == "plugin_a", "plugin_a id independent")
+	_assert(plugin_b.plugin_id == "plugin_b", "plugin_b id independent")
+	plugin_a.world_state["shared"] = "a_value"
+	_assert(not plugin_b.world_state.has("shared"), "plugin_b world_state independent")
+
+	# Test 17: _init_plugin can be called
+	plugin_a._init_plugin()
+	# No assertion needed, just verify no crash
+
+	# Test 18: api_version compatibility
+	_assert(plugin.api_version == "1.0.0", "api_version = 1.0.0")
+	plugin.api_version = "1.1.0"
+	_assert(plugin.api_version == "1.1.0", "api_version updated to 1.1.0")
