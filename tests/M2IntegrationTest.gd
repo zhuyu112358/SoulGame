@@ -1799,6 +1799,30 @@ func _test_audio_manager() -> void:
 	_assert(typeof(AudioManager._sfx_players) == TYPE_ARRAY, "_sfx_players is array")
 	_assert(AudioManager._sfx_players.size() > 0, "_sfx_players pool non-empty")
 
+
+	# Test 34: BUS_MASTER constant
+	_assert(AudioManager.BUS_MASTER == "Master", "BUS_MASTER = Master")
+
+	# Test 35: BUS_SFX constant
+	_assert(AudioManager.BUS_SFX == "SFX", "BUS_SFX = SFX")
+
+	# Test 36: BUS_BGM constant
+	_assert(AudioManager.BUS_BGM == "BGM", "BUS_BGM = BGM")
+
+	# Test 37: _current_bgm_name is string
+	_assert(typeof(AudioManager._current_bgm_name) == TYPE_STRING, "_current_bgm_name is string")
+
+	# Test 38: _stream_cache is dictionary
+	_assert(typeof(AudioManager._stream_cache) == TYPE_DICTIONARY, "_stream_cache is dictionary")
+
+	# Test 39: _sound_paths is dictionary
+	_assert(typeof(AudioManager._sound_paths) == TYPE_DICTIONARY, "_sound_paths is dictionary")
+	_assert(AudioManager._sound_paths.size() > 0, "_sound_paths not empty")
+
+	# Test 40: get_available_sounds returns array
+	var available_sounds = AudioManager.get_available_sounds()
+	_assert(typeof(available_sounds) == TYPE_ARRAY, "get_available_sounds returns array")
+	_assert(available_sounds.size() > 0, "available_sounds not empty")
 ## ============================================
 ## PixelSpriteGenerator System Tests
 ## ============================================
