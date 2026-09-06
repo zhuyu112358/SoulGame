@@ -2245,6 +2245,34 @@ func _test_arena_background_generator() -> void:
 	_assert(arena_types_new.has("crystal"), "arena_types includes crystal")
 	_assert(arena_types_new.has("lava"), "arena_types includes lava")
 ## ============================================
+
+	# Test 32: generate_background with seed
+	var bg_with_seed = generator.generate_background("grass", 42)
+	_assert(bg_with_seed != null, "background with seed generated")
+	_assert(bg_with_seed.get_width() == 1280, "background width 1280")
+	_assert(bg_with_seed.get_height() == 640, "background height 640")
+
+	# Test 33: generate_background stone type
+	var stone_bg_new = generator.generate_background("stone")
+	_assert(stone_bg_new != null, "stone background generated")
+
+	# Test 34: generate_background sand type
+	var sand_bg_new = generator.generate_background("sand")
+	_assert(sand_bg_new != null, "sand background generated")
+
+	# Test 35: generate_background crystal type
+	var crystal_bg_new = generator.generate_background("crystal")
+	_assert(crystal_bg_new != null, "crystal background generated")
+
+	# Test 36: generate_background lava type
+	var lava_bg_new = generator.generate_background("lava")
+	_assert(lava_bg_new != null, "lava background generated")
+
+	# Test 37: same seed produces same background
+	var bg_seed_a_new = generator.generate_background("grass", 123)
+	var bg_seed_b_new = generator.generate_background("grass", 123)
+	_assert(bg_seed_a_new != null, "seeded background A generated")
+	_assert(bg_seed_b_new != null, "seeded background B generated")
 ## ServerAuthority System Tests
 ## ============================================
 func _test_server_authority() -> void:
