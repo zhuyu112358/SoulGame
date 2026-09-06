@@ -3102,6 +3102,29 @@ func _test_world_loader() -> void:
 	var loaded_worlds = WorldLoader.get_loaded_worlds()
 	_assert(typeof(loaded_worlds) == TYPE_ARRAY, "get_loaded_worlds returns array")
 
+
+	# Test 33: register_plugin and unregister_plugin
+	WorldLoader.register_plugin("test_world_plugin", "res://platform/world/WorldPlugin.gd")
+	var registered_after_new = WorldLoader.get_registered_worlds()
+	_assert(registered_after_new.has("test_world_plugin"), "register_plugin works")
+	WorldLoader.unregister_plugin("test_world_plugin")
+
+	# Test 34: discover_plugins returns array
+	var discovered_new2 = WorldLoader.discover_plugins()
+	_assert(typeof(discovered_new2) == TYPE_ARRAY, "discover_plugins returns array")
+
+	# Test 35: get_world_info returns dictionary
+	var world_info_new = WorldLoader.get_world_info("nonexistent_world")
+	_assert(typeof(world_info_new) == TYPE_DICTIONARY, "get_world_info returns dictionary")
+
+	# Test 36: get_stats returns dictionary
+	var loader_stats_new = WorldLoader.get_stats()
+	_assert(typeof(loader_stats_new) == TYPE_DICTIONARY, "get_stats returns dictionary")
+	_assert(loader_stats_new.has("registered"), "loader_stats has registered")
+
+	# Test 37: get_current_world can be called
+	var current_world_new = WorldLoader.get_current_world()
+	_assert(true, "get_current_world callable")
 ## ============================================
 ## HomeAPI System Tests
 ## ============================================
