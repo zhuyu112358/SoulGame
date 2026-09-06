@@ -31,6 +31,7 @@ func _ready() -> void:
 	_test_soul_unit_combat()
 	_test_arena_map_system()
 	_test_minimap_system()
+	_test_audio_manager()
 
 	# Print summary
 	print("\n=== M2 TEST SUMMARY ===")
@@ -1093,3 +1094,131 @@ func _test_minimap_system() -> void:
 	# Cleanup
 	test_unit.queue_free()
 	test_ai.queue_free()
+
+
+## ============================================
+## AudioManager System Tests
+## ============================================
+func _test_audio_manager() -> void:
+	print("\n--- AudioManager System Tests ---")
+
+	# Test 1: Default volumes
+	_assert(AudioManager.master_volume == 1.0, "Default master volume 1.0")
+	_assert(AudioManager.sfx_volume == 0.8, "Default SFX volume 0.8")
+	_assert(AudioManager.bgm_volume == 0.5, "Default BGM volume 0.5")
+
+	# Test 2: Sound paths registered
+	_assert(AudioManager._sound_paths.size() > 0, "Sound paths registered: %d" % AudioManager._sound_paths.size())
+	_assert(AudioManager._sound_paths.size() >= 90, "At least 90 sound paths: %d" % AudioManager._sound_paths.size())
+
+	# Test 3: SFX player pool initialized
+	_assert(AudioManager._sfx_players.size() == 16, "SFX player pool size 16")
+	_assert(AudioManager._max_sfx_players == 16, "Max SFX players 16")
+
+	# Test 4: get_available_sounds returns array
+	var available = AudioManager.get_available_sounds()
+	_assert(typeof(available) == TYPE_ARRAY, "get_available_sounds returns array")
+	_assert(available.size() > 0, "Available sounds > 0: %d" % available.size())
+
+	# Test 5: UI sounds registered
+	_assert(AudioManager._sound_paths.has("ui_button_click"), "ui_button_click registered")
+	_assert(AudioManager._sound_paths.has("ui_confirm"), "ui_confirm registered")
+	_assert(AudioManager._sound_paths.has("ui_cancel"), "ui_cancel registered")
+
+	# Test 6: Battle sounds registered
+	_assert(AudioManager._sound_paths.has("bat_attack_hit"), "bat_attack_hit registered")
+	_assert(AudioManager._sound_paths.has("bat_victory"), "bat_victory registered")
+	_assert(AudioManager._sound_paths.has("bat_defeat"), "bat_defeat registered")
+
+	# Test 7: BGM tracks registered
+	_assert(AudioManager._sound_paths.has("bgm_battle"), "bgm_battle registered")
+	_assert(AudioManager._sound_paths.has("bgm_menu"), "bgm_menu registered")
+
+	# Test 8: Environment sounds registered
+	_assert(AudioManager._sound_paths.has("env_forest"), "env_forest registered")
+	_assert(AudioManager._sound_paths.has("env_cave"), "env_cave registered")
+
+	# Test 9: Soul sounds registered
+	_assert(AudioManager._sound_paths.has("soul_angry_roar"), "soul_angry_roar registered")
+	_assert(AudioManager._sound_paths.has("soul_confident"), "soul_confident registered")
+
+	# Test 10: New achievement sounds registered
+	_assert(AudioManager._sound_paths.has("ui_achievement_open"), "ui_achievement_open registered")
+	_assert(AudioManager._sound_paths.has("ui_achievement_unlock"), "ui_achievement_unlock registered")
+
+	# Test 11: New soul sounds registered
+	_assert(AudioManager._sound_paths.has("soul_melancholic"), "soul_melancholic registered")
+	_assert(AudioManager._sound_paths.has("soul_compassionate"), "soul_compassionate registered")
+
+	# Test 12: New environment sound registered
+	_assert(AudioManager._sound_paths.has("env_lavender_field"), "env_lavender_field registered")
+
+	# Test 13: set_master_volume
+	AudioManager.set_master_volume(0.5)
+	_assert(AudioManager.master_volume == 0.5, "set_master_volume works")
+	AudioManager.set_master_volume(1.0)
+
+	# Test 14: set_sfx_volume
+	AudioManager.set_sfx_volume(0.3)
+	_assert(AudioManager.sfx_volume == 0.3, "set_sfx_volume works")
+	AudioManager.set_sfx_volume(0.8)
+
+	# Test 15: set_bgm_volume
+	AudioManager.set_bgm_volume(0.7)
+	_assert(AudioManager.bgm_volume == 0.7, "set_bgm_volume works")
+	AudioManager.set_bgm_volume(0.5)
+
+	# Test 16: get_info returns dictionary
+	var info = AudioManager.get_info()
+	_assert(typeof(info) == TYPE_DICTIONARY, "get_info returns dictionary")
+	_assert(info.has("registered_sounds"), "get_info has registered_sounds")
+	_assert(info.has("master_volume"), "get_info has master_volume")
+	_assert(info["registered_sounds"] > 0, "registered_sounds > 0: %d" % info["registered_sounds"])
+
+	# Test 17: get_stats returns dictionary
+	var stats = AudioManager.get_stats()
+	_assert(typeof(stats) == TYPE_DICTIONARY, "get_stats returns dictionary")
+
+	# Test 18: play_ui doesn't crash
+	AudioManager.play_ui("button_click")
+	_assert(true, "play_ui runs without crash")
+
+	# Test 19: play_battle doesn't crash
+	AudioManager.play_battle("attack_hit")
+	_assert(true, "play_battle runs without crash")
+
+	# Test 20: play_sfx with invalid name doesn't crash
+	AudioManager.play_sfx("nonexistent_sound")
+	_assert(true, "play_sfx with invalid name doesn't crash")
+
+	# Test 21: play_ui with invalid name doesn't crash
+	AudioManager.play_ui("nonexistent_ui")
+	_assert(true, "play_ui with invalid name doesn't crash")
+
+	# Test 22: _get_stream returns null for nonexistent sound
+	var null_stream = AudioManager._get_stream("nonexistent_sound_xyz")
+	_assert(null_stream == null, "_get_stream returns null for nonexistent sound")
+
+	# Test 22b: _get_stream caches successful loads (if file exists)
+	var before_cache = AudioManager._stream_cache.size()
+	AudioManager._get_stream("ui_button_click")
+	var after_cache = AudioManager._stream_cache.size()
+	_assert(after_cache >= before_cache, "Stream cache non-decreasing after get")
+
+	# Test 23: Bus constants
+	_assert(AudioManager.BUS_MASTER == "Master", "BUS_MASTER = Master")
+	_assert(AudioManager.BUS_SFX == "SFX", "BUS_SFX = SFX")
+	_assert(AudioManager.BUS_BGM == "BGM", "BUS_BGM = BGM")
+
+	# Test 24: Sound path format correct
+	var path = AudioManager._sound_paths["ui_button_click"]
+	_assert(path.begins_with("res://"), "Sound path begins with res://")
+	_assert(path.ends_with(".wav"), "Sound path ends with .wav")
+
+	# Test 25: All sound paths point to existing files (check format)
+	var invalid_paths = 0
+	for sound_name in AudioManager._sound_paths:
+		var p = AudioManager._sound_paths[sound_name]
+		if not p.begins_with("res://assets/audio/"):
+			invalid_paths += 1
+	_assert(invalid_paths == 0, "All sound paths in assets/audio/: %d invalid" % invalid_paths)
