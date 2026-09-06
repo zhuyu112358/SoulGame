@@ -39,6 +39,7 @@ func _ready() -> void:
 	_test_arena_background_generator()
 	_test_server_authority()
 	_test_monetization_manager()
+	_test_platform_sdk()
 
 	# Print summary
 	print("\n=== M2 TEST SUMMARY ===")
@@ -1645,3 +1646,132 @@ func _test_monetization_manager() -> void:
 	MonetizationManager.add_currency(-10, "soft")
 	var after_neg = MonetizationManager.get_currency("soft")
 	_assert(after_neg == before_neg - 10, "Negative currency add works: %d -> %d" % [before_neg, after_neg])
+
+
+## ============================================
+## PlatformSDK System Tests
+## ============================================
+func _test_platform_sdk() -> void:
+	print("\n--- PlatformSDK System Tests ---")
+
+	# Test 1: Default mock mode = true (M2 prototype)
+	var info = PlatformSDK.get_info()
+	_assert(typeof(info) == TYPE_DICTIONARY, "get_info returns dictionary")
+	_assert(info.has("mock_mode"), "get_info has mock_mode")
+	_assert(info["mock_mode"] == true, "mock_mode = true (M2 prototype)")
+
+	# Test 2: set_mock_mode works
+	PlatformSDK.set_mock_mode(false)
+	var info2 = PlatformSDK.get_info()
+	_assert(info2["mock_mode"] == false, "set_mock_mode(false) works")
+	PlatformSDK.set_mock_mode(true)
+	var info3 = PlatformSDK.get_info()
+	_assert(info3["mock_mode"] == true, "set_mock_mode(true) works")
+
+	# Test 3: get_soul for nonexistent creates default in mock mode (test before creating souls)
+	var nonexistent = PlatformSDK.get_soul("nonexistent_soul_id")
+	_assert(nonexistent != null, "get_soul nonexistent creates default in mock mode")
+	_assert(nonexistent.soul_id == "nonexistent_soul_id", "Created soul has requested id")
+	# Cleanup the auto-created soul
+	PlatformSDK.delete_soul("nonexistent_soul_id")
+
+	# Test 4: create_soul returns soul snapshot
+	var soul = PlatformSDK.create_soul("TestSoul", "fire", {"aggression": 0.5})
+	_assert(soul != null, "create_soul returns non-null")
+	_assert(soul is PlatformSDK.SoulSnapshotClass, "create_soul returns SoulSnapshot")
+	_assert(soul.soul_id != "", "Created soul has soul_id")
+	_assert(soul.soul_name == "TestSoul", "Created soul name = TestSoul")
+	_assert(soul.element == "fire", "Created soul element = fire")
+
+	# Test 5: get_soul returns created soul
+	var soul_id = soul.soul_id
+	var retrieved = PlatformSDK.get_soul(soul_id)
+	_assert(retrieved != null, "get_soul returns non-null")
+	_assert(retrieved.soul_id == soul_id, "Retrieved soul id matches")
+	_assert(retrieved.soul_name == "TestSoul", "Retrieved soul name matches")
+
+	# Test 6: list_souls returns array
+	var souls = PlatformSDK.list_souls()
+	_assert(typeof(souls) == TYPE_ARRAY, "list_souls returns array")
+	_assert(souls.size() >= 1, "list_souls has at least 1 soul: %d" % souls.size())
+
+	# Test 7: set_active_soul works
+	var set_result = PlatformSDK.set_active_soul(soul_id)
+	_assert(set_result == true, "set_active_soul returns true")
+
+	# Test 8: get_active_soul returns active soul
+	var active = PlatformSDK.get_active_soul()
+	_assert(active != null, "get_active_soul returns non-null")
+	_assert(active.soul_id == soul_id, "Active soul id matches")
+
+	# Test 9: save_soul works
+	var save_result = PlatformSDK.save_soul(soul)
+	_assert(save_result == true, "save_soul returns true")
+
+	# Test 10: update_soul_stats works
+	var before_exp = PlatformSDK.get_soul(soul_id).experience
+	var update_result = PlatformSDK.update_soul_stats(soul_id, {"experience": 1000})
+	_assert(update_result != null, "update_soul_stats returns non-null")
+	_assert(update_result is PlatformSDK.SoulSnapshotClass, "update_soul_stats returns SoulSnapshot")
+	_assert(update_result.experience > before_exp, "Soul experience increased: %d -> %d" % [before_exp, update_result.experience])
+
+	# Test 11: add_skill works
+	var skill_result = PlatformSDK.add_skill(soul_id, "fireball", 1)
+	_assert(skill_result == true, "add_skill returns true")
+
+	# Test 12: add_memory works
+	var memory_result = PlatformSDK.add_memory(soul_id, {"event": "first_battle", "result": "victory"})
+	_assert(memory_result == true, "add_memory returns true")
+
+	# Test 13: migrate_soul works
+	var migrate_result = PlatformSDK.migrate_soul(soul_id, "battleplan", "arena_01")
+	_assert(migrate_result != null, "migrate_soul returns non-null")
+	_assert(migrate_result is PlatformSDK.SoulSnapshotClass, "migrate_soul returns SoulSnapshot")
+	_assert(migrate_result.current_game == "battleplan", "Migrated soul current_game = battleplan")
+
+	# Test 14: SoulSnapshot class preloaded
+	_assert(PlatformSDK.SoulSnapshotClass != null, "SoulSnapshot class preloaded")
+
+	# Test 15: get_info has cached_souls and active_soul
+	var info4 = PlatformSDK.get_info()
+	_assert(info4.has("cached_souls"), "get_info has cached_souls")
+	_assert(info4.has("active_soul"), "get_info has active_soul")
+	_assert(info4.has("api_base_url"), "get_info has api_base_url")
+	_assert(info4.has("sdk_version"), "get_info has sdk_version")
+	_assert(info4["sdk_version"] == "1.0.0", "sdk_version = 1.0.0")
+
+	# Test 16: API base URL is localhost (M2 mock)
+	_assert(info4["api_base_url"].find("localhost") >= 0, "API base URL is localhost")
+
+	# Test 17: Create multiple souls
+	var soul2 = PlatformSDK.create_soul("Soul2", "water", {})
+	var soul3 = PlatformSDK.create_soul("Soul3", "earth", {})
+	_assert(soul2 != null, "Second soul created")
+	_assert(soul3 != null, "Third soul created")
+	_assert(soul2.soul_name == "Soul2", "Soul2 name correct")
+	_assert(soul3.soul_name == "Soul3", "Soul3 name correct")
+	var souls2 = PlatformSDK.list_souls()
+	_assert(souls2.size() >= 1, "list_souls has souls: %d" % souls2.size())
+
+	# Test 18: Soul has personality
+	var soul_with_personality = PlatformSDK.create_soul("PersonalitySoul", "wind", {"loyalty": 0.8, "intelligence": 0.6})
+	_assert(soul_with_personality.personality.has("loyalty"), "Soul has loyalty personality")
+	_assert(soul_with_personality.personality["loyalty"] == 0.8, "Soul loyalty = 0.8")
+
+	# Test 19: Soul has default stats
+	_assert(soul_with_personality.level >= 1, "Soul has level >= 1")
+	_assert(soul_with_personality.experience >= 0, "Soul has experience >= 0")
+	_assert(typeof(soul_with_personality.skills) == TYPE_DICTIONARY, "Soul has skills dict")
+	_assert(typeof(soul_with_personality.memories) == TYPE_ARRAY, "Soul has memories array")
+
+	# Test 20: delete_soul removes from cache
+	var cache_before_delete = PlatformSDK.get_info()["cached_souls"]
+	var delete_result = PlatformSDK.delete_soul(soul_id)
+	_assert(delete_result == true, "delete_soul returns true")
+	var cache_after_delete = PlatformSDK.get_info()["cached_souls"]
+	_assert(cache_after_delete < cache_before_delete, "Soul removed from cache: %d -> %d" % [cache_before_delete, cache_after_delete])
+
+	# Test 21: Cleanup test souls
+	PlatformSDK.delete_soul(soul2.soul_id)
+	PlatformSDK.delete_soul(soul3.soul_id)
+	PlatformSDK.delete_soul(soul_with_personality.soul_id)
