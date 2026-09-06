@@ -9,6 +9,10 @@ extends Node2D
 ##   - Movement: speed, target position, pathfinding
 ##   - Combat: attack range, attack speed, damage, cooldowns
 ##   - Status: HP, energy, buffs/debuffs
+##   - Visual: procedurally generated pixel sprite (64x64, art spec compliant)
+
+## Pixel sprite generator (procedural 64x64 pixel art)
+const PixelSpriteGenerator = preload("res://scripts/game/PixelSpriteGenerator.gd")
 
 ## Unit state constants
 enum UnitState {
@@ -85,6 +89,54 @@ signal skill_used(skill_name, target)
 func _ready() -> void:
 	GameLog.info("SoulUnit: %s initialized (HP:%d, ATK:%d)" % [soul_name, max_hp, attack_damage], "Arena")
 	_setup_skill_cooldowns()
+	_create_visual()
+
+
+## Create visual representation (pixel sprite + name label + HP bar)
+func _create_visual() -> void:
+	# Create pixel sprite using procedural generator
+	var generator = PixelSpriteGenerator.new()
+	var texture = generator.generate_soul_sprite(element, personality)
+
+	_sprite = Sprite2D.new()
+	_sprite.texture = texture
+	_sprite.scale = Vector2(1.5, 1.5)  # Scale up for visibility (64x64 -> 96x96)
+	_sprite.centered = true
+	add_child(_sprite)
+
+	# Create name label
+	var name_label = Label.new()
+	name_label.text = soul_name
+	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name_label.position = Vector2(-40, -55)
+	name_label.add_theme_font_size_override("font_size", 12)
+	name_label.modulate = Color(1, 1, 1, 0.9)
+	add_child(name_label)
+
+	# Create HP bar background
+	var hp_bg = ColorRect.new()
+	hp_bg.size = Vector2(50, 5)
+	hp_bg.position = Vector2(-25, -48)
+	hp_bg.color = Color(0.2, 0.2, 0.2, 0.8)
+	add_child(hp_bg)
+
+	# Create HP bar fill
+	var hp_fill = ColorRect.new()
+	hp_fill.size = Vector2(50, 5)
+	hp_fill.position = Vector2(-25, -48)
+	hp_fill.color = Color(0.2, 0.8, 0.3, 1.0)
+	hp_fill.name = "HPBar"
+	add_child(hp_fill)
+
+	# Player indicator
+	if is_player_controlled:
+		var indicator = Label.new()
+		indicator.text = "▼"
+		indicator.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		indicator.position = Vector2(-8, -68)
+		indicator.add_theme_font_size_override("font_size", 10)
+		indicator.modulate = Color(0.4, 0.8, 1.0)
+		add_child(indicator)
 
 
 ## Initialize unit from soul data
@@ -106,6 +158,21 @@ func init_from_soul(p_soul_id: String, p_soul_name: String, p_element: String, p
 
 	_setup_skill_cooldowns()
 	GameLog.info("SoulUnit: %s initialized from soul data (Lvl %d, HP:%d)" % [soul_name, level, max_hp], "Arena")
+
+
+## Update HP bar visual
+func _update_hp_bar() -> void:
+	var hp_bar = get_node_or_null("HPBar")
+	if hp_bar:
+		var ratio = float(current_hp) / float(max_hp) if max_hp > 0 else 0.0
+		hp_bar.size.x = 50.0 * ratio
+		# Color changes based on HP ratio
+		if ratio > 0.5:
+			hp_bar.color = Color(0.2, 0.8, 0.3, 1.0)
+		elif ratio > 0.25:
+			hp_bar.color = Color(0.9, 0.7, 0.2, 1.0)
+		else:
+			hp_bar.color = Color(0.9, 0.3, 0.2, 1.0)
 
 
 ## Setup initial skill cooldowns
@@ -362,6 +429,7 @@ func take_damage(p_damage: int, p_attacker: Node2D) -> void:
 
 	current_hp -= actual_damage
 	emit_signal("hp_changed", current_hp, max_hp)
+	_update_hp_bar()
 
 	GameLog.debug("SoulUnit: %s takes %d damage (HP: %d/%d)" % [soul_name, actual_damage, current_hp, max_hp], "Arena")
 
