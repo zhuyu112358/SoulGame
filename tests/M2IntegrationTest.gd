@@ -932,6 +932,93 @@ func _test_soul_unit_combat() -> void:
 	# Test 20: get_element returns element
 	_assert(unit2.get_element() == "water", "get_element returns water")
 
+	# Reset unit1 for new tests (was killed in Test 16)
+	unit1.current_hp = unit1.max_hp
+	unit1.current_energy = unit1.max_energy
+	unit1.state = unit1.UnitState.IDLE
+	for skill_name in unit1.skill_cooldowns.keys():
+		unit1.skill_cooldowns[skill_name] = 0.0
+	unit1.status_effects.clear()
+
+	# Test 21: use_skill heal
+	var heal_hp_before = unit1.current_hp
+	unit1.current_hp = 50
+	var heal_result = unit1.use_skill("heal")
+	_assert(heal_result == true, "heal skill returns true")
+	_assert(unit1.current_hp > 50, "HP increased after heal")
+	_assert(unit1.current_energy < unit1.max_energy, "Energy consumed after heal")
+
+	# Test 22: use_skill defend
+	var defend_result = unit1.use_skill("defend")
+	_assert(defend_result == true, "defend skill returns true")
+	_assert(unit1.status_effects.has("defense_up"), "defense_up status applied")
+
+	# Test 23: use_skill heavy_strike on target
+	var target_hp_before = unit2.current_hp
+	var heavy_result = unit1.use_skill("heavy_strike", unit2)
+	_assert(heavy_result == true, "heavy_strike returns true")
+	_assert(unit2.current_hp < target_hp_before, "Target HP decreased after heavy_strike")
+
+	# Test 24: use_skill quick_strike on target
+	var target_hp_before2 = unit2.current_hp
+	unit1.skill_cooldowns["quick_strike"] = 0.0
+	var quick_result = unit1.use_skill("quick_strike", unit2)
+	_assert(quick_result == true, "quick_strike returns true")
+	_assert(unit2.current_hp < target_hp_before2, "Target HP decreased after quick_strike")
+
+	# Test 25: use_skill on cooldown returns false
+	unit1.skill_cooldowns["heal"] = 5.0
+	var cooldown_result = unit1.use_skill("heal")
+	_assert(cooldown_result == false, "Skill on cooldown returns false")
+
+	# Test 26: use_skill invalid skill returns false
+	var invalid_result = unit1.use_skill("invalid_skill")
+	_assert(invalid_result == false, "Invalid skill returns false")
+
+	# Test 27: use_skill not enough energy
+	unit1.current_energy = 0
+	unit1.skill_cooldowns["heal"] = 0.0
+	var no_energy_result = unit1.use_skill("heal")
+	_assert(no_energy_result == false, "No energy returns false")
+	unit1.current_energy = 50
+
+	# Test 28: get_info returns dictionary
+	var unit_info = unit1.get_info()
+	_assert(typeof(unit_info) == TYPE_DICTIONARY, "get_info returns dictionary")
+	_assert(unit_info.has("id"), "info has id")
+	_assert(unit_info.has("name"), "info has name")
+	_assert(unit_info.has("element"), "info has element")
+	_assert(unit_info.has("level"), "info has level")
+	_assert(unit_info.has("hp"), "info has hp")
+	_assert(unit_info.has("max_hp"), "info has max_hp")
+	_assert(unit_info.has("is_alive"), "info has is_alive")
+
+	# Test 29: stop sets state to IDLE
+	unit1.state = unit1.UnitState.MOVING
+	unit1.stop()
+	_assert(unit1.state == unit1.UnitState.IDLE, "stop sets state to IDLE")
+
+	# Test 30: move_to sets target position and state
+	unit1.move_to(Vector2(100, 200))
+	_assert(unit1.target_position == Vector2(100, 200), "move_to sets target_position")
+	_assert(unit1.state == unit1.UnitState.MOVING, "move_to sets state to MOVING")
+
+	# Test 31: take_damage reduces HP
+	unit1.status_effects.clear()  # Clear defense_up from Test 22
+	var hp_before_damage = unit1.current_hp
+	unit1.take_damage(20)
+	_assert(unit1.current_hp == hp_before_damage - 20, "take_damage reduces HP by 20")
+
+	# Test 32: take_damage to 0 sets DEAD
+	unit1.current_hp = 5
+	unit1.take_damage(10)
+	_assert(unit1.current_hp == 0, "HP clamped to 0")
+	_assert(unit1.state == unit1.UnitState.DEAD, "State set to DEAD")
+
+	# Test 33: Dead unit cannot use skill
+	var dead_skill_result = unit1.use_skill("heal")
+	_assert(dead_skill_result == false, "Dead unit cannot use skill")
+
 	# Cleanup
 	unit1.queue_free()
 	unit2.queue_free()
