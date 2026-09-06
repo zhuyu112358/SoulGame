@@ -2759,6 +2759,47 @@ func _test_soul_snapshot() -> void:
 	_assert(snapshot.metadata["custom_key"] == "custom_value", "metadata custom key works")
 
 
+	# Test 21: to_json returns valid JSON string
+	var json_str = snapshot.to_json()
+	_assert(typeof(json_str) == TYPE_STRING, "to_json returns string")
+	_assert(json_str.length() > 0, "JSON string is non-empty")
+
+	# Test 22: load_from_json round-trip
+	var snapshot_from_json = SoulSnapshot.new()
+	var load_json_result = snapshot_from_json.load_from_json(json_str)
+	_assert(load_json_result == true, "load_from_json returns true")
+	_assert(snapshot_from_json.soul_id == snapshot.soul_id, "JSON round-trip soul_id preserved")
+
+	# Test 23: record_migration adds to history
+	var mig_count_before = snapshot.migration_history.size()
+	snapshot.record_migration("battleplan", "arena_1", "enter")
+	_assert(snapshot.migration_history.size() == mig_count_before + 1, "migration recorded")
+
+	# Test 24: validate returns dictionary with errors array
+	var validation_new = snapshot.validate()
+	_assert(typeof(validation_new) == TYPE_DICTIONARY, "validate returns dictionary")
+	_assert(validation_new.has("valid"), "validation has valid field")
+	_assert(validation_new.has("errors"), "validation has errors field")
+
+	# Test 25: get_power_level returns positive int
+	var power_new = snapshot.get_power_level()
+	_assert(typeof(power_new) == TYPE_INT, "get_power_level returns int")
+	_assert(power_new > 0, "power level > 0")
+
+	# Test 26: achievements field exists
+	_assert(typeof(snapshot.achievements) == TYPE_DICTIONARY, "achievements is dictionary")
+	snapshot.achievements["first_battle"] = true
+	_assert(snapshot.achievements["first_battle"] == true, "achievement set works")
+
+	# Test 27: appearance field exists
+	_assert(typeof(snapshot.appearance) == TYPE_DICTIONARY, "appearance is dictionary")
+
+	# Test 28: relationships field exists
+	_assert(typeof(snapshot.relationships) == TYPE_DICTIONARY, "relationships is dictionary")
+
+	# Test 29: inventory field exists
+	_assert(typeof(snapshot.inventory) == TYPE_DICTIONARY, "inventory is dictionary")
+
 ## ============================================
 ## WorldPlugin System Tests
 ## ============================================
