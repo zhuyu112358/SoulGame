@@ -24,6 +24,7 @@ func _ready() -> void:
 	_test_soul_unit()
 	_test_rts_arena_manager()
 	_test_soul_ai_controller()
+	_test_arena_environment()
 
 	# Print summary
 	print("\n=== M2 TEST SUMMARY ===")
@@ -458,3 +459,120 @@ func _test_soul_ai_controller() -> void:
 	# Cleanup
 	self_unit.queue_free()
 	enemy_unit.queue_free()
+
+
+## ============================================
+## ArenaEnvironment Tests
+## ============================================
+func _test_arena_environment() -> void:
+	print("\n--- ArenaEnvironment Tests ---")
+
+	# Preload environment
+	const ArenaEnvironment = preload("res://scripts/game/ArenaEnvironment.gd")
+
+	# Test 1: Create environment
+	var env = ArenaEnvironment.new()
+	_assert(env != null, "ArenaEnvironment created")
+
+	# Test 2: Default weather is CLEAR
+	_assert(env.current_weather == ArenaEnvironment.WeatherType.CLEAR, "Default weather is CLEAR")
+
+	# Test 3: Setup for default_arena map
+	env.setup_for_map("default_arena")
+	_assert(env.current_weather == ArenaEnvironment.WeatherType.CLEAR, "default_arena weather is CLEAR")
+
+	# Test 4: Setup for forest_arena map
+	env.setup_for_map("forest_arena")
+	_assert(env.current_weather == ArenaEnvironment.WeatherType.RAIN, "forest_arena weather is RAIN")
+
+	# Test 5: Setup for crystal_arena map
+	env.setup_for_map("crystal_arena")
+	_assert(env.current_weather == ArenaEnvironment.WeatherType.SNOW, "crystal_arena weather is SNOW")
+
+	# Test 6: Unknown map defaults to CLEAR
+	env.setup_for_map("unknown_map")
+	_assert(env.current_weather == ArenaEnvironment.WeatherType.CLEAR, "Unknown map defaults to CLEAR")
+
+	# Test 7: Weather movement modifiers
+	env.current_weather = ArenaEnvironment.WeatherType.CLEAR
+	_assert(env.get_weather_movement_modifier() == 1.0, "CLEAR movement mod is 1.0")
+	env.current_weather = ArenaEnvironment.WeatherType.RAIN
+	_assert(env.get_weather_movement_modifier() == 0.9, "RAIN movement mod is 0.9")
+	env.current_weather = ArenaEnvironment.WeatherType.FOG
+	_assert(env.get_weather_movement_modifier() == 1.0, "FOG movement mod is 1.0")
+	env.current_weather = ArenaEnvironment.WeatherType.SNOW
+	_assert(env.get_weather_movement_modifier() == 0.85, "SNOW movement mod is 0.85")
+	env.current_weather = ArenaEnvironment.WeatherType.STORM
+	_assert(env.get_weather_movement_modifier() == 0.8, "STORM movement mod is 0.8")
+
+	# Test 8: Weather accuracy modifiers
+	env.current_weather = ArenaEnvironment.WeatherType.CLEAR
+	_assert(env.get_weather_accuracy_modifier() == 1.0, "CLEAR accuracy mod is 1.0")
+	env.current_weather = ArenaEnvironment.WeatherType.RAIN
+	_assert(env.get_weather_accuracy_modifier() == 0.95, "RAIN accuracy mod is 0.95")
+	env.current_weather = ArenaEnvironment.WeatherType.FOG
+	_assert(env.get_weather_accuracy_modifier() == 0.9, "FOG accuracy mod is 0.9")
+	env.current_weather = ArenaEnvironment.WeatherType.STORM
+	_assert(env.get_weather_accuracy_modifier() == 0.85, "STORM accuracy mod is 0.85")
+
+	# Test 9: Weather visibility modifiers
+	env.current_weather = ArenaEnvironment.WeatherType.CLEAR
+	_assert(env.get_visibility_modifier() == 1.0, "CLEAR visibility mod is 1.0")
+	env.current_weather = ArenaEnvironment.WeatherType.FOG
+	_assert(env.get_visibility_modifier() == 0.7, "FOG visibility mod is 0.7")
+	env.current_weather = ArenaEnvironment.WeatherType.STORM
+	_assert(env.get_visibility_modifier() == 0.6, "STORM visibility mod is 0.6")
+
+	# Test 10: Weather defense modifiers
+	env.current_weather = ArenaEnvironment.WeatherType.SNOW
+	_assert(env.get_weather_defense_modifier() == 1.1, "SNOW defense mod is 1.1")
+	env.current_weather = ArenaEnvironment.WeatherType.CLEAR
+	_assert(env.get_weather_defense_modifier() == 1.0, "CLEAR defense mod is 1.0")
+
+	# Test 11: Weather name
+	env.current_weather = ArenaEnvironment.WeatherType.CLEAR
+	_assert(env.get_weather_name() == "Clear", "CLEAR weather name is 'Clear'")
+	env.current_weather = ArenaEnvironment.WeatherType.STORM
+	_assert(env.get_weather_name() == "Storm", "STORM weather name is 'Storm'")
+
+	# Test 12: Environment info
+	env.current_weather = ArenaEnvironment.WeatherType.RAIN
+	var info = env.get_environment_info()
+	_assert(info.has("weather"), "Environment info has weather")
+	_assert(info["weather"] == "Rain", "Environment info weather name correct")
+	_assert(info.has("movement_mod"), "Environment info has movement_mod")
+	_assert(info.has("accuracy_mod"), "Environment info has accuracy_mod")
+	_assert(info.has("visibility_mod"), "Environment info has visibility_mod")
+	_assert(info.has("defense_mod"), "Environment info has defense_mod")
+
+	# Test 13: Force set weather
+	env.set_weather(ArenaEnvironment.WeatherType.STORM)
+	_assert(env.current_weather == ArenaEnvironment.WeatherType.STORM, "set_weather changes to STORM")
+	_assert(env.weather_timer == 0.0, "set_weather resets timer")
+
+	# Test 14: Invalid weather set ignored
+	var before = env.current_weather
+	env.set_weather(999)
+	_assert(env.current_weather == before, "Invalid weather type ignored")
+
+	# Test 15: Terrain damage (lava)
+	var lava_damage = env.get_terrain_damage(Vector2(640, 300))
+	_assert(lava_damage >= 0.0, "Terrain damage is non-negative")
+
+	# Test 16: Total movement modifier combines weather + terrain
+	env.current_weather = ArenaEnvironment.WeatherType.RAIN
+	var total_mod = env.get_total_movement_modifier(Vector2(100, 100))
+	_assert(total_mod > 0.0, "Total movement modifier positive")
+	_assert(total_mod <= 1.0, "Total movement modifier <= 1.0")
+
+	# Test 17: Update returns events dictionary
+	env.setup_for_map("default_arena")
+	var events = env.update(0.1)
+	_assert(events.has("weather_changed"), "Update returns weather_changed")
+	_assert(events.has("lightning"), "Update returns lightning")
+	_assert(events.has("lightning_position"), "Update returns lightning_position")
+
+	# Test 18: Weather timer increments
+	env.setup_for_map("default_arena")
+	env.update(10.0)
+	_assert(env.weather_timer == 10.0, "Weather timer increments by delta")
