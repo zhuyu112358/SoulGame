@@ -2364,12 +2364,12 @@ func _test_world_loader() -> void:
 	_assert(typeof(registered) == TYPE_ARRAY, "get_registered_worlds returns array")
 
 	# Test 3: get_loaded_worlds returns array
-	var loaded = WorldLoader.get_loaded_worlds()
-	_assert(typeof(loaded) == TYPE_ARRAY, "get_loaded_worlds returns array")
+	var loaded_list = WorldLoader.get_loaded_worlds()
+	_assert(typeof(loaded_list) == TYPE_ARRAY, "get_loaded_worlds returns array")
 
 	# Test 4: get_current_world_id returns string
-	var current_id = WorldLoader.get_current_world_id()
-	_assert(typeof(current_id) == TYPE_STRING, "get_current_world_id returns string")
+	var current_world_id = WorldLoader.get_current_world_id()
+	_assert(typeof(current_world_id) == TYPE_STRING, "get_current_world_id returns string")
 
 	# Test 5: get_stats returns dictionary
 	var stats = WorldLoader.get_stats()
@@ -2404,8 +2404,8 @@ func _test_world_loader() -> void:
 	_assert(not registered3.has("test_world"), "test_world unregistered")
 
 	# Test 10: discover_plugins returns array
-	var discovered = WorldLoader.discover_plugins()
-	_assert(typeof(discovered) == TYPE_ARRAY, "discover_plugins returns array")
+	var discovered_list = WorldLoader.discover_plugins()
+	_assert(typeof(discovered_list) == TYPE_ARRAY, "discover_plugins returns array")
 
 	# Test 11: load_world for nonexistent returns null
 	var loaded_world = WorldLoader.load_world("nonexistent_world")
@@ -2447,6 +2447,44 @@ func _test_world_loader() -> void:
 
 	# Test 18: Cleanup soul
 	PlatformSDK.delete_soul(soul.soul_id)
+
+	# Test 19: discover_plugins returns array
+	var discovered_new = WorldLoader.discover_plugins()
+	_assert(typeof(discovered_new) == TYPE_ARRAY, "discover_plugins returns array")
+
+	# Test 20: get_loaded_worlds returns array
+	var loaded_new = WorldLoader.get_loaded_worlds()
+	_assert(typeof(loaded_new) == TYPE_ARRAY, "get_loaded_worlds returns array")
+
+	# Test 21: get_current_world_id returns string
+	var current_id_new = WorldLoader.get_current_world_id()
+	_assert(typeof(current_id_new) == TYPE_STRING, "get_current_world_id returns string")
+
+	# Test 22: get_world_info for nonexistent returns error
+	var nonexistent_info = WorldLoader.get_world_info("nonexistent_world")
+	_assert(typeof(nonexistent_info) == TYPE_DICTIONARY, "get_world_info returns dictionary")
+	_assert(nonexistent_info.has("error"), "Nonexistent world info has error")
+
+	# Test 23: get_stats has all required fields
+	var loader_stats = WorldLoader.get_stats()
+	_assert(loader_stats.has("registered"), "get_stats has registered")
+	_assert(loader_stats.has("loaded"), "get_stats has loaded")
+	_assert(loader_stats.has("current_world"), "get_stats has current_world")
+	_assert(loader_stats.has("active"), "get_stats has active")
+
+	# Test 24: WorldPlugin class preloaded
+	_assert(WorldLoader.WorldPlugin != null, "WorldPlugin class preloaded")
+
+	# Test 25: Register and load world roundtrip
+	WorldLoader.register_plugin("test_world_c", "res://platform/world/WorldPlugin.gd")
+	var registered_c = WorldLoader.get_registered_worlds()
+	_assert(registered_c.has("test_world_c"), "test_world_c registered")
+	var world_c_info = WorldLoader.get_world_info("test_world_c")
+	_assert(world_c_info.has("id"), "World info has id")
+	_assert(world_c_info["id"] == "test_world_c", "World info id matches")
+	WorldLoader.unregister_plugin("test_world_c")
+	var registered_after = WorldLoader.get_registered_worlds()
+	_assert(not registered_after.has("test_world_c"), "test_world_c unregistered")
 
 
 ## ============================================
