@@ -34,6 +34,12 @@ var _ai_visual = null
 ## Battle active flag
 var _battle_active = false
 
+## Macro command UI (design doc: coach-style RTS, player issues limited commands)
+var _command_panel = null
+var _command_buttons = {}
+var _command_cooldown_label = null
+var _command_cooldown_timer = 0.0
+
 
 func _ready() -> void:
 	GameLog.info("RTSArenaController: RTS Arena scene ready", "Arena")
@@ -41,6 +47,7 @@ func _ready() -> void:
 	_setup_arena_background()
 	_connect_signals()
 	_setup_skill_buttons()
+	_setup_macro_commands()
 
 	# Auto-start battle if config is set in GameState
 	_try_auto_start_battle()
@@ -146,12 +153,108 @@ func _setup_skill_buttons() -> void:
 		back_button.pressed.connect(_on_back_pressed)
 
 
+## Setup macro command UI (design doc: coach-style RTS)
+## Player can issue one macro command per 30 seconds
+## Commands: gather, retreat, attack, defend
+func _setup_macro_commands() -> void:
+	# Create command panel at bottom center
+	_command_panel = Panel.new()
+	_command_panel.position = Vector2(380, 640)
+	_command_panel.size = Vector2(520, 70)
+	_command_panel.name = "MacroCommandPanel"
+	add_child(_command_panel)
+
+	# Title label
+	var title = Label.new()
+	title.text = "教练指令 (30秒冷却)"
+	title.position = Vector2(10, 5)
+	title.add_theme_font_size_override("font_size", 11)
+	title.modulate = Color(0.8, 0.8, 0.9)
+	_command_panel.add_child(title)
+
+	# Cooldown label
+	_command_cooldown_label = Label.new()
+	_command_cooldown_label.text = "就绪"
+	_command_cooldown_label.position = Vector2(400, 5)
+	_command_cooldown_label.add_theme_font_size_override("font_size", 11)
+	_command_cooldown_label.modulate = Color(0.4, 0.9, 0.5)
+	_command_panel.add_child(_command_cooldown_label)
+
+	# Create command buttons
+	var commands = [
+		{"name": "gather", "label": "集合", "color": Color(0.3, 0.6, 0.9)},
+		{"name": "attack", "label": "进攻", "color": Color(0.9, 0.4, 0.3)},
+		{"name": "defend", "label": "防守", "color": Color(0.4, 0.8, 0.4)},
+		{"name": "retreat", "label": "撤退", "color": Color(0.8, 0.7, 0.3)}
+	]
+
+	var btn_x = 15
+	for cmd in commands:
+		var btn = Button.new()
+		btn.text = cmd["label"]
+		btn.position = Vector2(btn_x, 30)
+		btn.size = Vector2(115, 32)
+		btn.add_theme_font_size_override("font_size", 12)
+		btn.modulate = cmd["color"]
+		btn.name = "Cmd_%s" % cmd["name"]
+		btn.pressed.connect(_on_macro_command.bind(cmd["name"]))
+		_command_panel.add_child(btn)
+		_command_buttons[cmd["name"]] = btn
+		btn_x += 125
+
+	GameLog.info("RTSArenaController: Macro command UI setup complete", "Arena")
+
+
+## Update macro command cooldown display
+func _update_command_cooldown(delta: float) -> void:
+	if _command_cooldown_timer > 0:
+		_command_cooldown_timer -= delta
+		if _command_cooldown_timer < 0:
+			_command_cooldown_timer = 0
+
+	if _command_cooldown_label:
+		if _command_cooldown_timer > 0:
+			_command_cooldown_label.text = "冷却: %d秒" % ceil(_command_cooldown_timer)
+			_command_cooldown_label.modulate = Color(0.9, 0.6, 0.3)
+			_set_commands_enabled(false)
+		else:
+			_command_cooldown_label.text = "就绪"
+			_command_cooldown_label.modulate = Color(0.4, 0.9, 0.5)
+			_set_commands_enabled(true)
+
+
+## Set all command buttons enabled/disabled
+func _set_commands_enabled(p_enabled: bool) -> void:
+	for btn_name in _command_buttons.keys():
+		if _command_buttons[btn_name]:
+			_command_buttons[btn_name].disabled = not p_enabled
+
+
+## Handle macro command button press
+func _on_macro_command(p_command: String) -> void:
+	if not _battle_active:
+		return
+	if _command_cooldown_timer > 0:
+		return
+
+	var result = RTSArenaManager.issue_player_command(p_command)
+	if result.get("success", false):
+		_command_cooldown_timer = 30.0
+		AudioManager.play_sfx("ui_button_click")
+		_add_log("教练指令: %s" % p_command)
+		GameLog.info("RTSArenaController: Player issued command %s" % p_command, "Arena")
+	else:
+		AudioManager.play_sfx("ui_error")
+		_add_log("指令失败: %s" % result.get("error", "unknown"))
+
+
 ## Process real-time UI updates
 func _process(delta: float) -> void:
 	if not _battle_active:
 		return
 	_update_unit_display()
 	_update_skill_cooldowns()
+	_update_command_cooldown(delta)
 	if minimap:
 		minimap.update_minimap()
 
