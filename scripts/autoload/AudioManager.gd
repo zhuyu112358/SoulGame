@@ -66,7 +66,8 @@ func _init_sound_paths() -> void:
 		"color_picker", "toggle_switch", "title_unlock", "connection_success",
 		"spectator_enter", "spectator_leave", "replay_start", "replay_end",
 		"settings_open", "settings_save",
-		"quest_open", "quest_complete"
+		"quest_open", "quest_complete",
+		"inventory_open", "item_use"
 	]
 	for sound_name in ui_sounds:
 		_sound_paths["ui_%s" % sound_name] = "res://assets/audio/ui/ui_%s.wav" % sound_name
@@ -88,7 +89,7 @@ func _init_sound_paths() -> void:
 	var env_sounds: Array = [
 		"ancient_battlefield", "canyon", "cave", "cliff",
 		"forest", "lava", "wind_chimes",
-		"frozen_forest", "lava_cave", "ancient_ruins"
+		"frozen_forest", "lava_cave", "ancient_ruins", "mushroom_swamp"
 	]
 	for sound_name in env_sounds:
 		_sound_paths["env_%s" % sound_name] = "res://assets/audio/environment/env_%s.wav" % sound_name
@@ -97,7 +98,8 @@ func _init_sound_paths() -> void:
 	var soul_sounds: Array = [
 		"angry_roar", "brave_courage", "confident", "determined_resolve",
 		"communication_blip", "curious_blip",
-		"overwhelmed", "envious", "energetic", "relaxed"
+		"overwhelmed", "envious", "energetic", "relaxed",
+		"drowsy", "alert"
 	]
 	for sound_name in soul_sounds:
 		_sound_paths["soul_%s" % sound_name] = "res://assets/audio/soul/soul_%s.wav" % sound_name
