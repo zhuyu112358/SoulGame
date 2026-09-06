@@ -540,7 +540,8 @@ func get_battle_info() -> Dictionary:
 		"winner_id": winner_id,
 		"player": player_unit.get_info() if player_unit != null else {},
 		"ai": ai_unit.get_info() if ai_unit != null else {},
-		"log_count": battle_log.size()
+		"log_count": battle_log.size(),
+		"weather": _environment.get_weather_name() if _environment != null else "Clear"
 	}
 
 

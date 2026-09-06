@@ -25,6 +25,7 @@ func _ready() -> void:
 	_test_rts_arena_manager()
 	_test_soul_ai_controller()
 	_test_arena_environment()
+	_test_arena_manager_environment()
 
 	# Print summary
 	print("\n=== M2 TEST SUMMARY ===")
@@ -576,3 +577,80 @@ func _test_arena_environment() -> void:
 	env.setup_for_map("default_arena")
 	env.update(10.0)
 	_assert(env.weather_timer == 10.0, "Weather timer increments by delta")
+
+
+## ============================================
+## RTSArenaManager Environment Integration Tests
+## ============================================
+func _test_arena_manager_environment() -> void:
+	print("\n--- RTSArenaManager Environment Integration Tests ---")
+
+	# Test soul data
+	var p_soul = {"id": "test_p", "name": "Player", "element": "fire", "level": 5}
+	var a_soul = {"id": "test_a", "name": "AI", "element": "water", "level": 5}
+
+	# Test 1: Start battle initializes environment
+	RTSArenaManager.start_battle(p_soul, a_soul, "default_arena")
+	var env_info = RTSArenaManager.get_environment_info()
+	_assert(env_info.has("weather"), "Environment info has weather after battle start")
+	_assert(env_info["weather"] == "Clear", "default_arena weather is Clear")
+
+	# Test 2: Environment info contains all modifier fields
+	_assert(env_info.has("movement_mod"), "Environment info has movement_mod")
+	_assert(env_info.has("accuracy_mod"), "Environment info has accuracy_mod")
+	_assert(env_info.has("visibility_mod"), "Environment info has visibility_mod")
+	_assert(env_info.has("defense_mod"), "Environment info has defense_mod")
+	_assert(env_info["movement_mod"] == 1.0, "Clear movement_mod is 1.0")
+	_assert(env_info["accuracy_mod"] == 1.0, "Clear accuracy_mod is 1.0")
+
+	# Test 3: Battle config stores weather
+	var battle_info = RTSArenaManager.get_battle_info()
+	_assert(battle_info.has("weather"), "Battle info has weather")
+	_assert(battle_info["weather"] == "Clear", "Battle config weather is Clear")
+
+	# Test 4: Cleanup clears environment (returns default)
+	RTSArenaManager.cleanup_battle()
+	var env_after = RTSArenaManager.get_environment_info()
+	_assert(env_after.get("weather", "") == "Clear", "Environment returns default Clear after cleanup")
+
+	# Test 5: Forest map starts with rain
+	RTSArenaManager.start_battle(p_soul, a_soul, "forest_arena")
+	var forest_env = RTSArenaManager.get_environment_info()
+	_assert(forest_env["weather"] == "Rain", "forest_arena weather is Rain")
+	_assert(forest_env["movement_mod"] == 0.9, "Rain movement_mod is 0.9")
+	_assert(forest_env["accuracy_mod"] == 0.95, "Rain accuracy_mod is 0.95")
+	RTSArenaManager.cleanup_battle()
+
+	# Test 6: Crystal map starts with snow
+	RTSArenaManager.start_battle(p_soul, a_soul, "crystal_arena")
+	var crystal_env = RTSArenaManager.get_environment_info()
+	_assert(crystal_env["weather"] == "Snow", "crystal_arena weather is Snow")
+	_assert(crystal_env["defense_mod"] == 1.1, "Snow defense_mod is 1.1")
+	RTSArenaManager.cleanup_battle()
+
+	# Test 7: Reset battle reinitializes environment (returns default)
+	RTSArenaManager.start_battle(p_soul, a_soul, "default_arena")
+	RTSArenaManager.reset_battle()
+	var reset_env = RTSArenaManager.get_environment_info()
+	_assert(reset_env.get("weather", "") == "Clear", "Environment returns default Clear after reset")
+
+	# Test 8: Process updates environment (no crash)
+	RTSArenaManager.start_battle(p_soul, a_soul, "default_arena")
+	RTSArenaManager._process(0.1)
+	var proc_env = RTSArenaManager.get_environment_info()
+	_assert(proc_env.has("weather"), "Environment valid after process")
+	RTSArenaManager.cleanup_battle()
+
+	# Test 9: Multiple battle starts/cleanups (no leak)
+	for i in range(3):
+		RTSArenaManager.start_battle(p_soul, a_soul, "default_arena")
+		_assert(RTSArenaManager.get_environment_info()["weather"] == "Clear", "Battle %d environment valid" % i)
+		RTSArenaManager.cleanup_battle()
+
+	# Test 10: Environment info format for UI
+	RTSArenaManager.start_battle(p_soul, a_soul, "default_arena")
+	var ui_info = RTSArenaManager.get_environment_info()
+	_assert(typeof(ui_info["weather"]) == TYPE_STRING, "Weather is string for UI")
+	_assert(typeof(ui_info["movement_mod"]) == TYPE_FLOAT, "movement_mod is float for UI")
+	_assert(typeof(ui_info["accuracy_mod"]) == TYPE_FLOAT, "accuracy_mod is float for UI")
+	RTSArenaManager.cleanup_battle()
