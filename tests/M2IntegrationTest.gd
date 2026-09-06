@@ -3267,6 +3267,27 @@ func _test_home_api() -> void:
 	var theme_resp = HomeAPI.set_room_theme("forest")
 	_assert(typeof(theme_resp) == TYPE_BOOL, "set_room_theme returns bool")
 
+
+	# Test 33: load_home returns dictionary
+	var load_resp_new = HomeAPI.load_home("test_soul")
+	_assert(typeof(load_resp_new) == TYPE_DICTIONARY, "load_home returns dictionary")
+
+	# Test 34: get_home_state returns dictionary
+	var home_state_new = HomeAPI.get_home_state()
+	_assert(typeof(home_state_new) == TYPE_DICTIONARY, "get_home_state returns dictionary")
+
+	# Test 35: interact returns dictionary
+	var interact_resp_new = HomeAPI.interact("chat", {"message": "hello"})
+	_assert(typeof(interact_resp_new) == TYPE_DICTIONARY, "interact returns dictionary")
+
+	# Test 36: get_info returns dictionary
+	var home_info_new = HomeAPI.get_info()
+	_assert(typeof(home_info_new) == TYPE_DICTIONARY, "get_info returns dictionary")
+	_assert(home_info_new.has("home_loaded"), "home_info has home_loaded")
+
+	# Test 37: unload_home callable
+	HomeAPI.unload_home()
+	_assert(HomeAPI._home_loaded == false, "unload_home sets home_loaded false")
 ## ============================================
 ## SoulSnapshot System Tests
 ## ============================================
