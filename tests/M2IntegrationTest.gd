@@ -1809,6 +1809,43 @@ func _test_arena_background_generator() -> void:
 		_assert(typeof(palette) == TYPE_DICTIONARY, "Palette for %s is dictionary" % arena_type)
 		_assert(palette.has("base"), "Palette for %s has base" % arena_type)
 
+	# Test 21: get_arena_types returns array
+	var supported_types = generator.get_arena_types()
+	_assert(typeof(supported_types) == TYPE_ARRAY, "get_arena_types returns array")
+	_assert(supported_types.size() > 0, "Arena types > 0")
+	_assert(supported_types.has("grass"), "grass is supported arena type")
+	_assert(supported_types.has("stone"), "stone is supported arena type")
+
+	# Test 22: Constants
+	_assert(ArenaBackgroundGenerator.TILE_SIZE == 32, "TILE_SIZE = 32")
+	_assert(ArenaBackgroundGenerator.ARENA_WIDTH == 1280, "ARENA_WIDTH = 1280")
+	_assert(ArenaBackgroundGenerator.ARENA_HEIGHT == 640, "ARENA_HEIGHT = 640")
+
+	# Test 23: All arena types generate valid backgrounds
+	for atype in supported_types:
+		var type_bg = generator.generate_background(atype, 42)
+		_assert(type_bg != null, "Background for %s generated" % atype)
+		_assert(type_bg.get_width() == 1280, "%s background width 1280" % atype)
+		_assert(type_bg.get_height() == 640, "%s background height 640" % atype)
+
+	# Test 24: Same seed generates deterministic background
+	var bg_seed_a = generator.generate_background("grass", 12345)
+	var bg_seed_b = generator.generate_background("grass", 12345)
+	_assert(bg_seed_a != null, "Seed A background generated")
+	_assert(bg_seed_b != null, "Seed B background generated")
+	# Both should be valid 1280x640
+	_assert(bg_seed_a.get_width() == 1280, "Seed A width 1280")
+	_assert(bg_seed_b.get_width() == 1280, "Seed B width 1280")
+
+	# Test 25: Default arena type
+	var default_type_bg = generator.generate_background()
+	_assert(default_type_bg != null, "Default arena type background generated")
+	_assert(default_type_bg.get_width() == 1280, "Default background width 1280")
+
+	# Test 26: Invalid arena type falls back gracefully
+	var invalid_type_bg = generator.generate_background("nonexistent_type", 1)
+	_assert(invalid_type_bg != null, "Invalid arena type handled gracefully")
+
 
 ## ============================================
 ## ServerAuthority System Tests
