@@ -92,6 +92,7 @@ func _ready() -> void:
 	_test_new_soul_sounds_round8()
 	_test_new_soul_sounds_round9()
 	_test_new_concept_art_round3()
+	_test_new_concept_art_round4()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -6522,3 +6523,75 @@ func _test_new_concept_art_round3() -> void:
 			world_count += 1
 	_assert(ui_count >= 5, "UI concept art count >= 5 (actual: %d)" % ui_count)
 	_assert(world_count >= 2, "World concept art count >= 2 (actual: %d)" % world_count)
+
+
+## ============================================
+## New Concept Art Integration Tests (Round 4)
+## ============================================
+func _test_new_concept_art_round4() -> void:
+	print("\n--- New Concept Art Integration Tests (Round 4) ---")
+
+	# Test 1: New concept art files exist
+	var new_art = ["concept_world_aurora", "concept_world_bamboo_forest", "concept_world_canyon", "concept_world_cave", "concept_world_cherry_blossom", "concept_world_crystal_cavern", "concept_world_desert", "concept_world_firefly_forest", "concept_world_flowerfield", "concept_world_glowing_cave"]
+	for art_name in new_art:
+		var path = "res://assets/art/concept/%s.png" % art_name
+		_assert(FileAccess.file_exists(path), "Concept art exists: %s" % art_name)
+
+	# Test 2: Concept art count increased
+	var concept_count = 0
+	var concept_dir = "res://assets/art/concept/"
+	var dir = DirAccess.open(concept_dir)
+	if dir:
+		dir.list_dir_begin()
+		var file_name = dir.get_next()
+		while file_name != "":
+			if file_name.ends_with(".png"):
+				concept_count += 1
+			file_name = dir.get_next()
+		dir.list_dir_end()
+	_assert(concept_count >= 65, "Concept art count >= 65 (actual: %d)" % concept_count)
+
+	# Test 3: Total art count increased
+	var total_art = concept_count
+	var bg_dir = DirAccess.open("res://assets/art/background/")
+	if bg_dir:
+		bg_dir.list_dir_begin()
+		var bg_name = bg_dir.get_next()
+		while bg_name != "":
+			if bg_name.ends_with(".png"):
+				total_art += 1
+			bg_name = bg_dir.get_next()
+		bg_dir.list_dir_end()
+	_assert(total_art >= 70, "Total art count >= 70 (actual: %d)" % total_art)
+
+	# Test 4: World concept art exists
+	_assert(FileAccess.file_exists("res://assets/art/concept/concept_world_aurora.png"), "World aurora concept exists")
+	_assert(FileAccess.file_exists("res://assets/art/concept/concept_world_crystal_cavern.png"), "World crystal cavern concept exists")
+	_assert(FileAccess.file_exists("res://assets/art/concept/concept_world_firefly_forest.png"), "World firefly forest concept exists")
+
+	# Test 5: Existing concept art still exists
+	_assert(FileAccess.file_exists("res://assets/art/concept/concept_world_floating_island.png"), "Existing floating island concept exists")
+	_assert(FileAccess.file_exists("res://assets/art/concept/concept_home_mainroom.png"), "Existing home mainroom concept exists")
+	_assert(FileAccess.file_exists("res://assets/art/concept/concept_ui_skill.png"), "Existing UI skill concept exists")
+
+	# Test 6: New concept art names are descriptive
+	_assert(new_art[0] == "concept_world_aurora", "First new art is concept_world_aurora")
+	_assert(new_art[5] == "concept_world_crystal_cavern", "Sixth new art is concept_world_crystal_cavern")
+	_assert(new_art[9] == "concept_world_glowing_cave", "Tenth new art is concept_world_glowing_cave")
+
+	# Test 7: All new concept art are world exploration
+	var world_count = 0
+	for art_name in new_art:
+		if art_name.begins_with("concept_world_"):
+			world_count += 1
+	_assert(world_count == 10, "All 10 new art are world exploration (actual: %d)" % world_count)
+
+	# Test 8: New concept art covers diverse environments
+	var environments = ["aurora", "bamboo", "canyon", "cave", "cherry", "crystal", "desert", "firefly", "flowerfield", "glowing"]
+	for env in environments:
+		var found = false
+		for art_name in new_art:
+			if art_name.find(env) >= 0:
+				found = true
+				break
+		_assert(found, "Environment covered: %s" % env)
