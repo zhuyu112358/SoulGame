@@ -177,6 +177,45 @@ func _test_battle_result_manager() -> void:
 	BattleResultManager.clear_history()
 	_assert(BattleResultManager.battle_history.size() == 0, "clear_history empties history")
 
+
+	# Test 13: get_soul_record returns dictionary
+	var soul_record_new = BattleResultManager.get_soul_record("test_soul")
+	_assert(typeof(soul_record_new) == TYPE_DICTIONARY, "get_soul_record returns dictionary")
+
+	# Test 14: get_stats returns dictionary
+	var result_stats_new = BattleResultManager.get_stats()
+	_assert(typeof(result_stats_new) == TYPE_DICTIONARY, "get_stats returns dictionary")
+	_assert(result_stats_new.has("total_battles"), "result_stats has total_battles")
+
+	# Test 15: process_battle_result with victory
+	var victory_data_new = {
+		"result": "victory",
+		"player_soul_id": "test_soul",
+		"player_level": 1,
+		"opponent_level": 1,
+		"damage_dealt": 100,
+		"damage_taken": 50
+	}
+	var victory_result_new = BattleResultManager.process_battle_result(victory_data_new)
+	_assert(typeof(victory_result_new) == TYPE_DICTIONARY, "process_battle_result returns dictionary")
+	_assert(victory_result_new.has("experience_gained"), "victory_result has experience_gained")
+
+	# Test 16: process_battle_result with defeat
+	var defeat_data_new = {
+		"result": "defeat",
+		"player_soul_id": "test_soul",
+		"player_level": 1,
+		"opponent_level": 1,
+		"damage_dealt": 50,
+		"damage_taken": 100
+	}
+	var defeat_result_new = BattleResultManager.process_battle_result(defeat_data_new)
+	_assert(typeof(defeat_result_new) == TYPE_DICTIONARY, "process_battle_result defeat returns dictionary")
+
+	# Test 17: get_history returns array after battles
+	var history_after_new = BattleResultManager.get_history()
+	_assert(typeof(history_after_new) == TYPE_ARRAY, "get_history returns array after battles")
+	_assert(history_after_new.size() > 0, "history has entries after battles")
 ## ============================================
 ## ArenaMap Tests
 ## ============================================
