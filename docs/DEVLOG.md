@@ -286,3 +286,49 @@
 - 修复端到端验证中发现的bug
 - 优化UI细节和视觉效果
 - 集成更多设计资源（概念图+音效）
+
+## 2026-09-07 - M2可玩原型冲刺第八轮
+
+### 完成功能
+
+#### 设计资源美术扩展集成 (P2)
+- **新增概念图**: 33张（arena/home/soul/ui/world各类）
+- **新增背景图**: 4张（soul_select_bg, soul_home_bg, rts_arena_bg, settings_bg）
+- **测试**: 20个美术资源集成测试
+
+**新增概念图分类**:
+- Arena: concept_arena_advanced.png
+- Home: concept_home_garden, concept_home_mainroom, concept_home_study, concept_home_training
+- Soul: concept_soul_advanced_forms.png
+- UI: concept_ui_battle_pass, concept_ui_battle_prep, concept_ui_codex, concept_ui_equipment, concept_ui_friends, concept_ui_inventory_expanded, concept_ui_loading, concept_ui_mail, concept_ui_main_menu, concept_ui_market, concept_ui_matchmaking, concept_ui_mockup, concept_ui_pause, concept_ui_rank, concept_ui_replay, concept_ui_season, concept_ui_settings, concept_ui_skill, concept_ui_soul_detail, concept_ui_soul_list, concept_ui_tutorial
+- World: concept_world_bamboo_forest, concept_world_coral_reef, concept_world_crystal_cave, concept_world_floating_island, concept_world_forest, concept_world_mushroom_swamp, concept_world_ocean, concept_world_rainforest, concept_world_volcano, concept_world_waterfall
+
+**新增场景背景图**:
+- soul_select_bg.png (极光冰原概念图)
+- soul_home_bg.png (灵魂之家主房间概念图)
+- rts_arena_bg.png (竞技场基础概念图)
+- settings_bg.png (设置UI概念图)
+
+**美术资源统计**:
+- 集成前: 17张（16概念图 + 1背景图）
+- 集成后: 54张（49概念图 + 5背景图）
+- 设计资源总量: 81张概念图，已集成49张（60.5%）
+
+### 测试
+- 美术资源测试: 20个（目录存在、背景图存在、概念图数量、分类验证、总数验证）
+- M2测试: 1526 -> 1546
+- 总计测试: 1710 -> 1730
+
+### 已知问题
+- 新复制的.png文件缺少.import文件，需要在Godot编辑器中打开项目自动导入
+- headless模式load()新图片会失败，但FileAccess.file_exists()检查正常
+
+### [设计需求]
+- 需要: 概念图 - 灵魂之家背景（温馨、像素风）- P1（已用concept_home_mainroom作为占位）
+- 需要: 音效 - 灵魂之家环境音（温暖、空灵）- P1
+
+### 下一步
+- 可玩原型端到端验证（实际运行游戏，从头玩到尾）
+- 修复端到端验证中发现的bug
+- 优化UI细节和视觉效果
+- 集成更多设计资源（概念图+音效）

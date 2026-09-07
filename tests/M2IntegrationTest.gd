@@ -57,6 +57,7 @@ func _ready() -> void:
 	# Print summary
 	_test_soul_home_controller()
 	_test_settings_menu()
+	_test_art_resources()
 	_test_game_flow()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
@@ -4335,3 +4336,85 @@ func _test_settings_menu() -> void:
 	# Test 17: SettingsMenu instance free
 	settings_instance.queue_free()
 	_assert(true, "SettingsMenu freed")
+
+
+## ============================================
+## Art Resource Integration Tests
+## ============================================
+func _test_art_resources() -> void:
+	print("\n--- Art Resource Integration Tests ---")
+
+	# Test 1: Concept art directory exists
+	var concept_dir = "res://assets/art/concept/"
+	_assert(DirAccess.dir_exists_absolute(ProjectSettings.globalize_path(concept_dir)), "Concept art directory exists")
+
+	# Test 2: Background directory exists
+	var bg_dir = "res://assets/art/background/"
+	_assert(DirAccess.dir_exists_absolute(ProjectSettings.globalize_path(bg_dir)), "Background directory exists")
+
+	# Test 3: Main menu background exists
+	_assert(FileAccess.file_exists("res://assets/art/background/main_menu_bg.png"), "main_menu_bg.png exists")
+
+	# Test 4: Soul select background exists
+	_assert(FileAccess.file_exists("res://assets/art/background/soul_select_bg.png"), "soul_select_bg.png exists")
+
+	# Test 5: Soul home background exists
+	_assert(FileAccess.file_exists("res://assets/art/background/soul_home_bg.png"), "soul_home_bg.png exists")
+
+	# Test 6: RTS arena background exists
+	_assert(FileAccess.file_exists("res://assets/art/background/rts_arena_bg.png"), "rts_arena_bg.png exists")
+
+	# Test 7: Settings background exists
+	_assert(FileAccess.file_exists("res://assets/art/background/settings_bg.png"), "settings_bg.png exists")
+
+	# Test 8: Concept art count >= 40
+	var concept_count = 0
+	var concept_path = ProjectSettings.globalize_path("res://assets/art/concept/")
+	var dir = DirAccess.open(concept_path)
+	if dir:
+		dir.list_dir_begin()
+		var fname = dir.get_next()
+		while fname != "":
+			if fname.ends_with(".png"):
+				concept_count += 1
+			fname = dir.get_next()
+		dir.list_dir_end()
+	_assert(concept_count >= 40, "Concept art count >= 40: %d" % concept_count)
+
+	# Test 9: Background count >= 5
+	var bg_count = 0
+	var bg_path = ProjectSettings.globalize_path("res://assets/art/background/")
+	var bg_dir_obj = DirAccess.open(bg_path)
+	if bg_dir_obj:
+		bg_dir_obj.list_dir_begin()
+		var bg_name = bg_dir_obj.get_next()
+		while bg_name != "":
+			if bg_name.ends_with(".png"):
+				bg_count += 1
+			bg_name = bg_dir_obj.get_next()
+		bg_dir_obj.list_dir_end()
+	_assert(bg_count >= 5, "Background count >= 5: %d" % bg_count)
+
+	# Test 10: Arena concept art exists
+	_assert(FileAccess.file_exists("res://assets/art/concept/concept_arena_basic.png"), "concept_arena_basic.png exists")
+	_assert(FileAccess.file_exists("res://assets/art/concept/concept_arena_advanced.png"), "concept_arena_advanced.png exists")
+
+	# Test 11: Soul design concept art exists
+	_assert(FileAccess.file_exists("res://assets/art/concept/concept_soul_design.png"), "concept_soul_design.png exists")
+	_assert(FileAccess.file_exists("res://assets/art/concept/concept_soul_advanced_forms.png"), "concept_soul_advanced_forms.png exists")
+
+	# Test 12: Home concept art exists
+	_assert(FileAccess.file_exists("res://assets/art/concept/concept_home_mainroom.png"), "concept_home_mainroom.png exists")
+	_assert(FileAccess.file_exists("res://assets/art/concept/concept_home_garden.png"), "concept_home_garden.png exists")
+
+	# Test 13: UI concept art exists
+	_assert(FileAccess.file_exists("res://assets/art/concept/concept_ui_main_menu.png"), "concept_ui_main_menu.png exists")
+	_assert(FileAccess.file_exists("res://assets/art/concept/concept_ui_battle_result.png"), "concept_ui_battle_result.png exists")
+
+	# Test 14: World concept art exists
+	_assert(FileAccess.file_exists("res://assets/art/concept/concept_world_floating_island.png"), "concept_world_floating_island.png exists")
+	_assert(FileAccess.file_exists("res://assets/art/concept/concept_world_lava_cave.png"), "concept_world_lava_cave.png exists")
+
+	# Test 15: Total art files >= 45
+	var total_art = concept_count + bg_count
+	_assert(total_art >= 45, "Total art files >= 45: %d" % total_art)
