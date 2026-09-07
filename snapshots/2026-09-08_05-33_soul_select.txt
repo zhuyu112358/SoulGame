@@ -1,0 +1,16 @@
+﻿=== soul_select.tscn Scene Structure Snapshot ===
+Exported: 2026-09-08_05-33
+
+  - SoulSelect (Control)
+  - Background (TextureRect)
+  - Overlay (ColorRect)
+  - MarginContainer (MarginContainer)
+  - VBoxContainer (VBoxContainer)
+  - TitleLabel (Label)
+  - SelectedInfo (Label)
+  - ScrollContainer (ScrollContainer)
+  - SoulList (VBoxContainer)
+  - BackButton (Button)
+
+Total nodes: 10
+

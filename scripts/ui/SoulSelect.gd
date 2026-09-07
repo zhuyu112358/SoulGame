@@ -20,6 +20,26 @@ func _ready() -> void:
 	_load_available_souls()
 	_populate_soul_list()
 	_play_select_music()
+	# Animate title and back button
+	_animate_entrance()
+
+
+## Animate entrance (title fade in + scale, back button fade in)
+func _animate_entrance() -> void:
+	# Title animation
+	if _title_label:
+		_title_label.modulate = Color(1, 1, 1, 0)
+		_title_label.scale = Vector2(0.8, 0.8)
+		var title_tween = create_tween()
+		title_tween.set_parallel(true)
+		title_tween.tween_property(_title_label, "modulate:a", 1.0, 0.6).set_ease(Tween.EASE_OUT)
+		title_tween.tween_property(_title_label, "scale", Vector2(1.0, 1.0), 0.6).set_ease(Tween.EASE_OUT)
+	# Back button animation
+	if _back_button:
+		_back_button.modulate = Color(1, 1, 1, 0)
+		var back_tween = create_tween()
+		back_tween.tween_interval(0.3)
+		back_tween.tween_property(_back_button, "modulate:a", 1.0, 0.4).set_ease(Tween.EASE_OUT)
 
 
 ## Setup button hover effects (audio + visual)
@@ -80,11 +100,16 @@ func _populate_soul_list() -> void:
 	for child in _soul_list.get_children():
 		child.queue_free()
 
-	# Create soul cards
+	# Create soul cards with staggered entrance animation
 	for i in range(_souls.size()):
 		var soul = _souls[i]
 		var card = _create_soul_card(soul, i)
+		card.modulate = Color(1, 1, 1, 0)
 		_soul_list.add_child(card)
+		# Staggered fade in animation
+		var card_tween = create_tween()
+		card_tween.tween_interval(0.4 + i * 0.15)
+		card_tween.tween_property(card, "modulate:a", 1.0, 0.4).set_ease(Tween.EASE_OUT)
 
 
 func _create_soul_card(soul: Dictionary, index: int) -> Button:
