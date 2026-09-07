@@ -64,6 +64,7 @@ func _ready() -> void:
 	_test_bgm_integration()
 	_test_combat_audio()
 	_test_command_audio()
+	_test_soul_select_audio()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -4704,3 +4705,52 @@ func _test_command_audio() -> void:
 
 	# Test 14: Command cooldown is 30 seconds
 	_assert(rts_content.find("_command_cooldown_timer = 30.0") >= 0, "Command cooldown is 30 seconds")
+
+
+## ============================================
+## Soul Select Audio Integration Tests
+## ============================================
+func _test_soul_select_audio() -> void:
+	print("\n--- Soul Select Audio Integration Tests ---")
+
+	# Test 1: SoulSelect has _play_soul_select_sound method
+	var soul_select_content = FileAccess.get_file_as_string("res://scripts/ui/SoulSelect.gd")
+	_assert(soul_select_content.find("_play_soul_select_sound") >= 0, "SoulSelect has _play_soul_select_sound")
+
+	# Test 2: _on_soul_selected calls _play_soul_select_sound
+	_assert(soul_select_content.find("_play_soul_select_sound(soul") >= 0, "_on_soul_selected calls _play_soul_select_sound")
+
+	# Test 3: Fire element plays soul_angry_roar
+	_assert(soul_select_content.find('play_sfx("soul_angry_roar")') >= 0, "Fire element plays soul_angry_roar")
+
+	# Test 4: Water element plays soul_calm_meditation
+	_assert(soul_select_content.find('play_sfx("soul_calm_meditation")') >= 0, "Water element plays soul_calm_meditation")
+
+	# Test 5: Earth element plays soul_brave_courage
+	_assert(soul_select_content.find('play_sfx("soul_brave_courage")') >= 0, "Earth element plays soul_brave_courage")
+
+	# Test 6: Wind element plays soul_joyful
+	_assert(soul_select_content.find('play_sfx("soul_joyful")') >= 0, "Wind element plays soul_joyful")
+
+	# Test 7: Light element plays soul_confident
+	_assert(soul_select_content.find('play_sfx("soul_confident")') >= 0, "Light element plays soul_confident")
+
+	# Test 8: Dark element plays soul_serene
+	_assert(soul_select_content.find('play_sfx("soul_serene")') >= 0, "Dark element plays soul_serene")
+
+	# Test 9: All element sounds are registered
+	_assert(AudioManager._sound_paths.has("soul_angry_roar"), "soul_angry_roar registered")
+	_assert(AudioManager._sound_paths.has("soul_calm_meditation"), "soul_calm_meditation registered")
+	_assert(AudioManager._sound_paths.has("soul_brave_courage"), "soul_brave_courage registered")
+	_assert(AudioManager._sound_paths.has("soul_joyful"), "soul_joyful registered")
+	_assert(AudioManager._sound_paths.has("soul_confident"), "soul_confident registered")
+	_assert(AudioManager._sound_paths.has("soul_serene"), "soul_serene registered")
+
+	# Test 10: SoulSelect has menu BGM
+	_assert(soul_select_content.find('play_bgm("menu")') >= 0, "SoulSelect plays menu BGM")
+
+	# Test 11: Default soul elements include fire, water, earth, wind
+	_assert(soul_select_content.find('"fire"') >= 0, "SoulSelect includes fire element")
+	_assert(soul_select_content.find('"water"') >= 0, "SoulSelect includes water element")
+	_assert(soul_select_content.find('"earth"') >= 0, "SoulSelect includes earth element")
+	_assert(soul_select_content.find('"wind"') >= 0, "SoulSelect includes wind element")

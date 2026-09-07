@@ -118,13 +118,34 @@ func _on_soul_selected(index: int) -> void:
 	_selected_index = index
 	var soul = _souls[index]
 	_selected_info.text = "已选择: %s - 点击下方按钮进入对战" % soul["name"]
-	_play_button_sound()
+	_play_soul_select_sound(soul["element"])
 
 	# Store selected soul in GameState
 	GameState.set_value("battle", "selected_soul", soul)
 
 	# Start battle with selected soul
 	_start_battle(soul)
+
+
+## Play soul selection sound based on element type
+func _play_soul_select_sound(p_element: String) -> void:
+	if not AudioManager:
+		return
+	match p_element:
+		"fire":
+			AudioManager.play_sfx("soul_angry_roar")
+		"water":
+			AudioManager.play_sfx("soul_calm_meditation")
+		"earth":
+			AudioManager.play_sfx("soul_brave_courage")
+		"wind":
+			AudioManager.play_sfx("soul_joyful")
+		"light":
+			AudioManager.play_sfx("soul_confident")
+		"dark":
+			AudioManager.play_sfx("soul_serene")
+		_:
+			AudioManager.play_ui("ui_button_click_01")
 
 
 func _start_battle(soul: Dictionary) -> void:
