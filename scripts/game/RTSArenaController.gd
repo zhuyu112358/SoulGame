@@ -61,9 +61,50 @@ func _ready() -> void:
 	_setup_skill_buttons()
 	_setup_macro_commands()
 	_setup_weather_display()
+	_setup_button_hovers()
 
 	# Auto-start battle if config is set in GameState
 	_try_auto_start_battle()
+
+
+## Setup hover effects for all buttons in the arena
+func _setup_button_hovers() -> void:
+	# Back button
+	if back_button:
+		_setup_button_hover(back_button)
+	# Skill buttons
+	for skill_name in skill_buttons.keys():
+		if skill_buttons[skill_name]:
+			_setup_button_hover(skill_buttons[skill_name])
+	# Macro command buttons
+	for cmd_name in _command_buttons.keys():
+		if _command_buttons[cmd_name]:
+			_setup_button_hover(_command_buttons[cmd_name])
+
+
+## Setup button hover effects (audio + visual)
+func _setup_button_hover(p_button: Button) -> void:
+	if p_button == null:
+		return
+	p_button.mouse_entered.connect(_on_button_hover.bind(p_button))
+	p_button.mouse_exited.connect(_on_button_exit.bind(p_button))
+
+
+## Play hover sound and visual feedback
+func _on_button_hover(p_button: Button) -> void:
+	_play_hover_sound()
+	p_button.modulate = Color(1.2, 1.2, 1.0)
+
+
+## Reset button visual on mouse exit
+func _on_button_exit(p_button: Button) -> void:
+	p_button.modulate = Color(1.0, 1.0, 1.0)
+
+
+## Play button hover sound
+func _play_hover_sound() -> void:
+	if AudioManager:
+		AudioManager.play_sfx("ui_hover")
 
 
 ## Setup procedural pixel art arena background

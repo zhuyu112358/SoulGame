@@ -69,6 +69,7 @@ func _ready() -> void:
 	_test_settings_menu_hover()
 	_test_soul_select_hover()
 	_test_soul_home_hover()
+	_test_rts_arena_hover()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -4980,3 +4981,60 @@ func _test_soul_home_hover() -> void:
 	_assert(soul_home_content.find('play_sfx("soul_happy")') >= 0, "SoulHomeController has soul_happy sound")
 	_assert(soul_home_content.find('play_sfx("soul_content_smile")') >= 0, "SoulHomeController has soul_content_smile sound")
 	_assert(soul_home_content.find('play_sfx("soul_joyful")') >= 0, "SoulHomeController has soul_joyful sound")
+
+
+## ============================================
+## RTS Arena Hover Effects Tests
+## ============================================
+func _test_rts_arena_hover() -> void:
+	print("\n--- RTS Arena Hover Effects Tests ---")
+
+	# Test 1: RTSArenaController has _setup_button_hovers method
+	var rts_content = FileAccess.get_file_as_string("res://scripts/game/RTSArenaController.gd")
+	_assert(rts_content.find("_setup_button_hovers") >= 0, "RTSArenaController has _setup_button_hovers")
+
+	# Test 2: RTSArenaController has _setup_button_hover method
+	_assert(rts_content.find("_setup_button_hover") >= 0, "RTSArenaController has _setup_button_hover")
+
+	# Test 3: RTSArenaController has _on_button_hover method
+	_assert(rts_content.find("_on_button_hover") >= 0, "RTSArenaController has _on_button_hover")
+
+	# Test 4: RTSArenaController has _on_button_exit method
+	_assert(rts_content.find("_on_button_exit") >= 0, "RTSArenaController has _on_button_exit")
+
+	# Test 5: RTSArenaController has _play_hover_sound method
+	_assert(rts_content.find("_play_hover_sound") >= 0, "RTSArenaController has _play_hover_sound")
+
+	# Test 6: _ready calls _setup_button_hovers
+	_assert(rts_content.find("_setup_button_hovers()") >= 0, "_ready calls _setup_button_hovers")
+
+	# Test 7: Hover plays ui_hover sound
+	_assert(rts_content.find('play_sfx("ui_hover")') >= 0, "Hover plays ui_hover sound")
+
+	# Test 8: Hover changes button modulate to brighter color
+	_assert(rts_content.find("modulate = Color(1.2, 1.2, 1.0)") >= 0, "Hover changes button modulate to brighter")
+
+	# Test 9: Mouse exit resets button modulate
+	_assert(rts_content.find("modulate = Color(1.0, 1.0, 1.0)") >= 0, "Mouse exit resets button modulate")
+
+	# Test 10: ui_hover sound is registered
+	_assert(AudioManager._sound_paths.has("ui_hover"), "ui_hover registered")
+
+	# Test 11: RTSArenaController has back button
+	_assert(rts_content.find("back_button") >= 0, "RTSArenaController has back button")
+
+	# Test 12: RTSArenaController has skill buttons
+	_assert(rts_content.find("skill_buttons") >= 0, "RTSArenaController has skill buttons")
+	_assert(rts_content.find("heavy_strike") >= 0, "RTSArenaController has heavy_strike skill")
+	_assert(rts_content.find("quick_strike") >= 0, "RTSArenaController has quick_strike skill")
+	_assert(rts_content.find("heal") >= 0, "RTSArenaController has heal skill")
+	_assert(rts_content.find("defend") >= 0, "RTSArenaController has defend skill")
+
+	# Test 13: RTSArenaController has macro command buttons
+	_assert(rts_content.find("_command_buttons") >= 0, "RTSArenaController has command buttons")
+	_assert(rts_content.find('"gather"') >= 0, "RTSArenaController has gather command")
+	_assert(rts_content.find('"attack"') >= 0, "RTSArenaController has attack command")
+	_assert(rts_content.find('"retreat"') >= 0, "RTSArenaController has retreat command")
+
+	# Test 14: RTSArenaController has battle BGM
+	_assert(rts_content.find('play_bgm("battle")') >= 0, "RTSArenaController plays battle BGM")
