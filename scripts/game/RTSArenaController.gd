@@ -75,6 +75,7 @@ var _countdown_label = null
 var _countdown_timer = 0.0
 var _countdown_active = false
 var _pending_battle_config = null
+var _last_countdown_text = ""
 
 ## Battle pause system
 var _pause_button = null
@@ -1008,18 +1009,37 @@ func _setup_countdown_label() -> void:
 	add_child(_countdown_label)
 
 
-## Update countdown display
+## Update countdown display with animation
 func _update_countdown_display() -> void:
 	if _countdown_label == null:
 		return
+	var new_text = ""
 	if _countdown_timer > 2.0:
-		_countdown_label.text = "3"
+		new_text = "3"
 	elif _countdown_timer > 1.0:
-		_countdown_label.text = "2"
+		new_text = "2"
 	elif _countdown_timer > 0.0:
-		_countdown_label.text = "1"
+		new_text = "1"
 	else:
-		_countdown_label.text = "GO!"
+		new_text = "GO!"
+	# Animate when text changes
+	if new_text != _last_countdown_text:
+		_countdown_label.text = new_text
+		_last_countdown_text = new_text
+		# Scale up + fade in animation
+		_countdown_label.scale = Vector2(1.5, 1.5)
+		_countdown_label.modulate = Color(1, 1, 1, 0)
+		var tween = create_tween()
+		tween.set_parallel(true)
+		tween.tween_property(_countdown_label, "scale", Vector2(1.0, 1.0), 0.3).set_ease(Tween.EASE_OUT)
+		tween.tween_property(_countdown_label, "modulate:a", 1.0, 0.3)
+		tween.set_parallel(false)
+		# GO! gets extra scale and color
+		if new_text == "GO!":
+			_countdown_label.add_theme_color_override("font_color", Color(0.3, 1.0, 0.4))
+			_countdown_label.scale = Vector2(2.0, 2.0)
+			var go_tween = create_tween()
+			go_tween.tween_property(_countdown_label, "scale", Vector2(1.2, 1.2), 0.5).set_ease(Tween.EASE_OUT)
 
 
 ## Start actual battle after countdown
