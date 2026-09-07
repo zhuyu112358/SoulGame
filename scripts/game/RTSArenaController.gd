@@ -69,6 +69,10 @@ var _speed_button = null
 var _current_speed = 1.0
 var _speed_options = [1.0, 1.5, 2.0]
 
+## Status effect display
+var _player_status_label = null
+var _ai_status_label = null
+
 
 func _ready() -> void:
 	GameLog.info("RTSArenaController: RTS Arena scene ready", "Arena")
@@ -81,6 +85,7 @@ func _ready() -> void:
 	_setup_button_hovers()
 	_setup_pause_button()
 	_setup_speed_button()
+	_setup_status_labels()
 
 	# Auto-start battle if config is set in GameState
 	_try_auto_start_battle()
@@ -250,6 +255,73 @@ func _on_speed_button_pressed() -> void:
 	if _speed_button:
 		_speed_button.text = "%.1fx" % _current_speed
 	_add_log("战斗速度: %.1fx" % _current_speed)
+
+
+## Setup status effect labels for player and AI
+func _setup_status_labels() -> void:
+	# Player status label (next to player panel)
+	_player_status_label = Label.new()
+	_player_status_label.name = "PlayerStatusLabel"
+	_player_status_label.text = ""
+	_player_status_label.position = Vector2(10, 55)
+	_player_status_label.add_theme_font_size_override("font_size", 11)
+	_player_status_label.modulate = Color(0.4, 0.9, 0.6)
+	add_child(_player_status_label)
+
+	# AI status label (next to AI panel)
+	_ai_status_label = Label.new()
+	_ai_status_label.name = "AIStatusLabel"
+	_ai_status_label.text = ""
+	_ai_status_label.position = Vector2(1050, 55)
+	_ai_status_label.add_theme_font_size_override("font_size", 11)
+	_ai_status_label.modulate = Color(0.9, 0.4, 0.4)
+	add_child(_ai_status_label)
+
+
+## Update status effect display for both units
+func _update_status_display() -> void:
+	if RTSArenaManager.player_unit and _player_status_label:
+		var effects = RTSArenaManager.player_unit.status_effects
+		if effects.size() > 0:
+			var text = ""
+			for effect_name in effects.keys():
+				var remaining = effects[effect_name]
+				var display_name = _get_status_display_name(effect_name)
+				text += "%s(%.1fs) " % [display_name, remaining]
+			_player_status_label.text = text
+		else:
+			_player_status_label.text = ""
+
+	if RTSArenaManager.ai_unit and _ai_status_label:
+		var effects = RTSArenaManager.ai_unit.status_effects
+		if effects.size() > 0:
+			var text = ""
+			for effect_name in effects.keys():
+				var remaining = effects[effect_name]
+				var display_name = _get_status_display_name(effect_name)
+				text += "%s(%.1fs) " % [display_name, remaining]
+			_ai_status_label.text = text
+		else:
+			_ai_status_label.text = ""
+
+
+## Get display name for status effect
+func _get_status_display_name(effect_name: String) -> String:
+	match effect_name:
+		"defense_up":
+			return "防御↑"
+		"attack_up":
+			return "攻击↑"
+		"speed_up":
+			return "速度↑"
+		"stun":
+			return "眩晕"
+		"poison":
+			return "中毒"
+		"burn":
+			return "燃烧"
+		_:
+			return effect_name.capitalize()
 
 
 ## Play button hover sound
@@ -632,6 +704,7 @@ func _process(delta: float) -> void:
 	_update_skill_cooldowns()
 	_update_command_cooldown(delta)
 	_update_weather_display()
+	_update_status_display()
 	if minimap:
 		minimap.update_minimap()
 

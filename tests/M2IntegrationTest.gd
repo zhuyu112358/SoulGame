@@ -97,6 +97,7 @@ func _ready() -> void:
 	_test_battle_countdown()
 	_test_battle_pause()
 	_test_battle_speed()
+	_test_status_effect_display()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -6840,3 +6841,53 @@ func _test_battle_speed() -> void:
 	_assert(controller._speed_button != null, "Speed button created")
 	_assert(controller._speed_button.text == "1x", "Speed button text is 1x")
 	_assert(controller._speed_button.size == Vector2(60, 35), "Speed button size is 60x35")
+
+
+## ============================================
+## Status Effect Display Tests
+## ============================================
+func _test_status_effect_display() -> void:
+	print("\n--- Status Effect Display Tests ---")
+
+	# Test 1: RTSArenaController has status display variables
+	var controller_script = load("res://scripts/game/RTSArenaController.gd")
+	var controller = controller_script.new()
+	_assert(controller._player_status_label == null, "Player status label is null initially")
+	_assert(controller._ai_status_label == null, "AI status label is null initially")
+
+	# Test 2: Controller has status display methods
+	_assert(controller.has_method("_setup_status_labels"), "Has _setup_status_labels method")
+	_assert(controller.has_method("_update_status_display"), "Has _update_status_display method")
+	_assert(controller.has_method("_get_status_display_name"), "Has _get_status_display_name method")
+
+	# Test 3: Setup status labels creates labels
+	controller._setup_status_labels()
+	_assert(controller._player_status_label != null, "Player status label created")
+	_assert(controller._ai_status_label != null, "AI status label created")
+	_assert(controller._player_status_label.text == "", "Player status label starts empty")
+	_assert(controller._ai_status_label.text == "", "AI status label starts empty")
+
+	# Test 4: Status display name mapping
+	_assert(controller._get_status_display_name("defense_up") == "防御↑", "defense_up maps to 防御↑")
+	_assert(controller._get_status_display_name("attack_up") == "攻击↑", "attack_up maps to 攻击↑")
+	_assert(controller._get_status_display_name("speed_up") == "速度↑", "speed_up maps to 速度↑")
+	_assert(controller._get_status_display_name("stun") == "眩晕", "stun maps to 眩晕")
+	_assert(controller._get_status_display_name("poison") == "中毒", "poison maps to 中毒")
+	_assert(controller._get_status_display_name("burn") == "燃烧", "burn maps to 燃烧")
+	_assert(controller._get_status_display_name("unknown") == "Unknown", "unknown maps to capitalized name")
+
+	# Test 5: SoulUnit has status_effects dictionary
+	var soul_unit_script = load("res://scripts/game/SoulUnit.gd")
+	var soul_unit = soul_unit_script.new()
+	_assert(soul_unit.status_effects != null, "SoulUnit has status_effects dictionary")
+	_assert(soul_unit.status_effects.size() == 0, "Status effects starts empty")
+
+	# Test 6: SoulUnit can add status effect
+	soul_unit.status_effects["defense_up"] = 3.0
+	_assert(soul_unit.status_effects.size() == 1, "Status effect added")
+	_assert(soul_unit.status_effects["defense_up"] == 3.0, "defense_up duration is 3.0")
+
+	# Test 7: RTSArenaManager get_battle_info includes unit info
+	var info = RTSArenaManager.get_battle_info()
+	_assert(info.has("player"), "Battle info has player key")
+	_assert(info.has("ai"), "Battle info has ai key")
