@@ -127,7 +127,10 @@ func _init_sound_paths() -> void:
 		"lake", "grassland",
 		"aurora", "desert_oasis", "flowerfield", "garden_birds",
 		"glacier", "highland", "hot_spring", "mangrove",
-		"meadow", "meteor_shower"
+		"meadow", "meteor_shower",
+		"aurora_snowfield", "cherry_blossom_valley", "moonlit_garden", "mountaintop",
+		"mushroom_forest", "night", "ocean", "pond",
+		"sakura_shrine", "savanna"
 	]
 	for sound_name in env_sounds:
 		_sound_paths["env_%s" % sound_name] = "res://assets/audio/environment/env_%s.wav" % sound_name

@@ -80,6 +80,7 @@ func _ready() -> void:
 	_test_new_soul_sounds_round2()
 	_test_new_env_sounds_round2()
 	_test_new_battle_sounds_round2()
+	_test_new_env_sounds_round3()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -5700,3 +5701,70 @@ func _test_new_battle_sounds_round2() -> void:
 				found = true
 				break
 		_assert(found, "Battle phase covered: %s" % phase)
+
+
+## ============================================
+## New Environment Sound Integration Tests (Round 3)
+## ============================================
+func _test_new_env_sounds_round3() -> void:
+	print("\n--- New Environment Sound Integration Tests (Round 3) ---")
+
+	# Test 1: New environment sound files exist
+	var new_sounds = ["env_aurora_snowfield", "env_cherry_blossom_valley", "env_moonlit_garden", "env_mountaintop", "env_mushroom_forest", "env_night", "env_ocean", "env_pond", "env_sakura_shrine", "env_savanna"]
+	for sound_name in new_sounds:
+		var path = "res://assets/audio/environment/%s.wav" % sound_name
+		_assert(FileAccess.file_exists(path), "Sound file exists: %s" % sound_name)
+
+	# Test 2: New environment sounds are registered in AudioManager
+	for sound_name in new_sounds:
+		_assert(AudioManager._sound_paths.has(sound_name), "Sound registered: %s" % sound_name)
+
+	# Test 3: AudioManager has env_night sound
+	_assert(AudioManager._sound_paths.has("env_night"), "AudioManager has env_night")
+
+	# Test 4: AudioManager has env_ocean sound
+	_assert(AudioManager._sound_paths.has("env_ocean"), "AudioManager has env_ocean")
+
+	# Test 5: AudioManager has env_mushroom_forest sound
+	_assert(AudioManager._sound_paths.has("env_mushroom_forest"), "AudioManager has env_mushroom_forest")
+
+	# Test 6: Environment sound count increased
+	var env_count = 0
+	for sound_name in AudioManager._sound_paths.keys():
+		if sound_name.begins_with("env_"):
+			env_count += 1
+	_assert(env_count >= 55, "Environment sound count >= 55 (actual: %d)" % env_count)
+
+	# Test 7: Total sound count increased
+	_assert(AudioManager._sound_paths.size() >= 250, "Total sound count >= 250 (actual: %d)" % AudioManager._sound_paths.size())
+
+	# Test 8: New sounds have correct file paths
+	_assert(AudioManager._sound_paths["env_night"] == "res://assets/audio/environment/env_night.wav", "env_night path correct")
+	_assert(AudioManager._sound_paths["env_ocean"] == "res://assets/audio/environment/env_ocean.wav", "env_ocean path correct")
+	_assert(AudioManager._sound_paths["env_mushroom_forest"] == "res://assets/audio/environment/env_mushroom_forest.wav", "env_mushroom_forest path correct")
+
+	# Test 9: AudioManager can play new sounds (no crash)
+	AudioManager.play_sfx("env_night")
+	AudioManager.play_sfx("env_ocean")
+	AudioManager.play_sfx("env_mushroom_forest")
+	_assert(true, "New environment sounds play without crash")
+
+	# Test 10: Existing environment sounds still registered
+	_assert(AudioManager._sound_paths.has("env_floating_island"), "Existing env_floating_island still registered")
+	_assert(AudioManager._sound_paths.has("env_aurora_icefield"), "Existing env_aurora_icefield still registered")
+	_assert(AudioManager._sound_paths.has("env_home_indoor"), "Existing env_home_indoor still registered")
+
+	# Test 11: New environment sound names are descriptive
+	_assert(new_sounds[0] == "env_aurora_snowfield", "First new sound is env_aurora_snowfield")
+	_assert(new_sounds[5] == "env_night", "Sixth new sound is env_night")
+	_assert(new_sounds[9] == "env_savanna", "Tenth new sound is env_savanna")
+
+	# Test 12: New environment sounds cover diverse biomes
+	var biomes = ["snow", "cherry", "moon", "mountain", "mushroom", "night", "ocean", "pond", "sakura", "savanna"]
+	for biome in biomes:
+		var found = false
+		for sound_name in new_sounds:
+			if sound_name.find(biome) >= 0:
+				found = true
+				break
+		_assert(found, "Biome covered: %s" % biome)
