@@ -2400,3 +2400,69 @@
 - 修复端到端验证中发现的bug
 - 优化UI细节和视觉效果
 - 考虑M2完成，进入M3（灵魂之家深化+成长系统完善+优化阶段）
+
+## 2026-09-07 - M2可玩原型冲刺第四十九轮
+
+### 完成功能
+
+#### 暴击系统 (P2)
+- **新增功能**: RTS战斗暴击系统+暴击提示显示
+- **修改文件**: scripts/game/SoulUnit.gd, scripts/game/RTSArenaController.gd
+- **测试**: 14个暴击系统测试
+
+**SoulUnit修改**:
+- 新增crit_rate变量（默认0.1，10%暴击率）
+- 新增crit_multiplier变量（默认1.5，150%暴击伤害）
+- 新增last_attack_critical变量（标记最后一次攻击是否暴击）
+- 修改_calculate_damage()方法：添加暴击判定
+  - 使用randf() < crit_rate判断是否暴击
+  - 暴击时伤害乘以crit_multiplier
+  - 设置last_attack_critical标记
+
+**RTSArenaController修改**:
+- 新增_crit_label、_crit_timer、_crit_active变量
+- 新增_setup_crit_label()方法：创建暴击提示标签
+  - 32px金色文字，居中显示在屏幕中央
+  - 初始隐藏
+- 新增_update_crit_display(delta)方法：
+  - 检查玩家单位的last_attack_critical
+  - 如果为true，调用_show_crit_hit()并重置标记
+  - 暴击提示显示1秒后自动隐藏
+- 新增_show_crit_hit()方法：
+  - 显示"暴击！"文字
+  - 播放battle_critical音效
+  - 添加战斗日志"暴击！"
+- 修改_process()方法：添加_update_crit_display(delta)调用
+
+**暴击系统效果**:
+- 玩家单位有10%概率造成暴击
+- 暴击时伤害为150%
+- 屏幕中央显示金色"暴击！"文字，持续1秒
+- 播放battle_critical音效
+- 战斗日志记录暴击事件
+
+#### 推送状态
+- 待推送commit: b993e5f（战斗结果详细统计）+ 本轮commit
+- GitHub连接重置，已重试2次，保留本地提交下轮重试
+
+### 测试
+- 暴击系统测试: 14个（暴击变量、暴击率/倍率修改、控制器变量、方法存在、标签创建、显示激活、定时隐藏、音效注册）
+- M2测试: 2780 -> 2794
+- 总计测试: 2964 -> 2978
+
+### 已知问题
+- 新复制的.png/.wav文件缺少.import文件，需要在Godot编辑器中打开项目自动导入
+- headless模式load()新资源会失败，但FileAccess.file_exists()检查正常
+- 编译时会显示资源导入警告，但不是代码错误
+- GitHub 443端口间歇性不可用，推送失败
+
+### [设计需求]
+- 需要: 概念图 - 灵魂之家背景（温馨、像素风）- P1（已用concept_home_mainroom作为占位）
+- 需要: 音效 - 灵魂之家环境音（温暖、空灵）- P1（已用env_home_indoor作为环境音）
+
+### 下一步
+- 下轮先重试推送本地2个commit（b993e5f + 本轮commit）
+- 可玩原型端到端验证（实际运行游戏，从头玩到尾）
+- 修复端到端验证中发现的bug
+- 优化UI细节和视觉效果
+- 考虑M2完成，进入M3（灵魂之家深化+成长系统完善+优化阶段）

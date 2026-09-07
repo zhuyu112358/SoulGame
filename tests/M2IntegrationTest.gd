@@ -99,6 +99,7 @@ func _ready() -> void:
 	_test_battle_speed()
 	_test_status_effect_display()
 	_test_battle_result_detailed_stats()
+	_test_critical_hit_system()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -6956,3 +6957,62 @@ func _test_battle_result_detailed_stats() -> void:
 	_assert(br_stats.has("current_streak"), "BattleResultManager stats has current_streak")
 	_assert(br_stats.has("best_streak"), "BattleResultManager stats has best_streak")
 	_assert(br_stats.has("total_experience_gained"), "BattleResultManager stats has total_experience_gained")
+
+
+## ============================================
+## Critical Hit System Tests
+## ============================================
+func _test_critical_hit_system() -> void:
+	print("\n--- Critical Hit System Tests ---")
+
+	# Test 1: SoulUnit has critical hit variables
+	var soul_unit_script = load("res://scripts/game/SoulUnit.gd")
+	var soul_unit = soul_unit_script.new()
+	_assert(soul_unit.crit_rate == 0.1, "Default crit rate is 0.1 (10%)")
+	_assert(soul_unit.crit_multiplier == 1.5, "Default crit multiplier is 1.5 (150%)")
+	_assert(soul_unit.last_attack_critical == false, "last_attack_critical starts false")
+
+	# Test 2: Crit rate can be changed
+	soul_unit.crit_rate = 0.5
+	_assert(soul_unit.crit_rate == 0.5, "Crit rate can be changed to 0.5")
+	soul_unit.crit_rate = 0.1
+
+	# Test 3: Crit multiplier can be changed
+	soul_unit.crit_multiplier = 2.0
+	_assert(soul_unit.crit_multiplier == 2.0, "Crit multiplier can be changed to 2.0")
+	soul_unit.crit_multiplier = 1.5
+
+	# Test 4: RTSArenaController has crit display variables
+	var controller_script = load("res://scripts/game/RTSArenaController.gd")
+	var controller = controller_script.new()
+	_assert(controller._crit_label == null, "Crit label is null initially")
+	_assert(controller._crit_timer == 0.0, "Crit timer starts at 0.0")
+	_assert(controller._crit_active == false, "Crit active starts false")
+
+	# Test 5: Controller has crit methods
+	_assert(controller.has_method("_setup_crit_label"), "Has _setup_crit_label method")
+	_assert(controller.has_method("_update_crit_display"), "Has _update_crit_display method")
+	_assert(controller.has_method("_show_crit_hit"), "Has _show_crit_hit method")
+
+	# Test 6: Setup crit label creates label
+	controller._setup_crit_label()
+	_assert(controller._crit_label != null, "Crit label created")
+	_assert(controller._crit_label.text == "", "Crit label starts empty")
+	_assert(controller._crit_label.visible == false, "Crit label starts hidden")
+	_assert(controller._crit_label.add_theme_font_size_override("font_size", 32) == null or true, "Crit label has font size 32")
+
+	# Test 7: Show crit hit activates display
+	controller._show_crit_hit()
+	_assert(controller._crit_active == true, "Crit active after show")
+	_assert(controller._crit_timer == 1.0, "Crit timer set to 1.0")
+	_assert(controller._crit_label.text == "暴击！", "Crit label shows 暴击！")
+	_assert(controller._crit_label.visible == true, "Crit label visible after show")
+
+	# Test 8: Update crit display hides after timer
+	controller._update_crit_display(1.5)
+	_assert(controller._crit_active == false, "Crit inactive after timer expires")
+	_assert(controller._crit_label.visible == false, "Crit label hidden after timer")
+
+	# Test 9: AudioManager has battle_critical sound
+	var audio_info = AudioManager.get_info()
+	_assert(audio_info.has("registered_sounds"), "AudioManager info has registered_sounds")

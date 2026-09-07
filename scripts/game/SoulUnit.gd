@@ -74,6 +74,11 @@ var skill_cooldowns: Dictionary = {}
 ## Status effects (effect_name -> remaining seconds)
 var status_effects: Dictionary = {}
 
+## Critical hit system
+var crit_rate: float = 0.1  # 10% base critical hit chance
+var crit_multiplier: float = 1.5  # 150% damage on critical hit
+var last_attack_critical: bool = false  # whether the last attack was a critical hit
+
 ## Visual sprite
 var _sprite: Node2D = null
 
@@ -329,13 +334,19 @@ func _perform_basic_attack() -> void:
 	GameLog.debug("SoulUnit: %s attacks %s for %d damage" % [soul_name, attack_target.soul_name, damage], "Arena")
 
 
-## Calculate damage with element advantage
+## Calculate damage with element advantage and critical hit
 func _calculate_damage(p_base_damage: int, p_multiplier: float) -> int:
 	var element_mult: float = 1.0
 	if attack_target != null and attack_target.has_method("get_element"):
 		element_mult = _get_element_multiplier(element, attack_target.get_element())
 
-	var final_damage: int = int(p_base_damage * p_multiplier * element_mult)
+	# Critical hit calculation
+	last_attack_critical = randf() < crit_rate
+	var crit_mult: float = 1.0
+	if last_attack_critical:
+		crit_mult = crit_multiplier
+
+	var final_damage: int = int(p_base_damage * p_multiplier * element_mult * crit_mult)
 	return max(1, final_damage)
 
 

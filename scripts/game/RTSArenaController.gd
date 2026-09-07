@@ -73,6 +73,11 @@ var _speed_options = [1.0, 1.5, 2.0]
 var _player_status_label = null
 var _ai_status_label = null
 
+## Critical hit display
+var _crit_label = null
+var _crit_timer = 0.0
+var _crit_active = false
+
 
 func _ready() -> void:
 	GameLog.info("RTSArenaController: RTS Arena scene ready", "Arena")
@@ -86,6 +91,7 @@ func _ready() -> void:
 	_setup_pause_button()
 	_setup_speed_button()
 	_setup_status_labels()
+	_setup_crit_label()
 
 	# Auto-start battle if config is set in GameState
 	_try_auto_start_battle()
@@ -322,6 +328,51 @@ func _get_status_display_name(effect_name: String) -> String:
 			return "燃烧"
 		_:
 			return effect_name.capitalize()
+
+
+## Setup critical hit label
+func _setup_crit_label() -> void:
+	_crit_label = Label.new()
+	_crit_label.name = "CritLabel"
+	_crit_label.text = ""
+	_crit_label.position = Vector2(540, 300)
+	_crit_label.size = Vector2(200, 50)
+	_crit_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_crit_label.add_theme_font_size_override("font_size", 32)
+	_crit_label.modulate = Color(1.0, 0.8, 0.2)
+	_crit_label.visible = false
+	add_child(_crit_label)
+
+
+## Update critical hit display
+func _update_crit_display(delta: float) -> void:
+	if _crit_active:
+		_crit_timer -= delta
+		if _crit_timer <= 0:
+			_crit_active = false
+			if _crit_label:
+				_crit_label.visible = false
+		return
+
+	# Check if player unit just landed a critical hit
+	if RTSArenaManager.player_unit and RTSArenaManager.player_unit.last_attack_critical:
+		_show_crit_hit()
+		# Reset the flag to avoid repeated display
+		RTSArenaManager.player_unit.last_attack_critical = false
+
+
+## Show critical hit effect
+func _show_crit_hit() -> void:
+	if _crit_label == null:
+		return
+	_crit_label.text = "暴击！"
+	_crit_label.visible = true
+	_crit_active = true
+	_crit_timer = 1.0
+	# Play critical hit sound
+	if AudioManager:
+		AudioManager.play_sfx("battle_critical")
+	_add_log("暴击！")
 
 
 ## Play button hover sound
@@ -705,6 +756,7 @@ func _process(delta: float) -> void:
 	_update_command_cooldown(delta)
 	_update_weather_display()
 	_update_status_display()
+	_update_crit_display(delta)
 	if minimap:
 		minimap.update_minimap()
 
