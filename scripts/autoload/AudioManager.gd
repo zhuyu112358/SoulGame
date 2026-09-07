@@ -159,6 +159,13 @@ func _init_sound_paths() -> void:
 		_sound_paths["battle_ui_%s" % battle_ui_name] = "res://assets/audio/battle_%s.wav" % battle_ui_name
 	_sound_paths["unit_select"] = "res://assets/audio/unit_select.wav"
 
+	# Steam achievement sounds (design assets for Steam EA)
+	var steam_achievement_sounds: Array = [
+		"unlock", "notify", "progress", "rare", "share", "view"
+	]
+	for ach_name in steam_achievement_sounds:
+		_sound_paths["steam_achievement_%s" % ach_name] = "res://assets/audio/steam_achievement_%s.wav" % ach_name
+
 	# BGM
 	var bgm_tracks: Array = ["battle", "explore", "home_main", "menu",
 		"main_menu", "battle_calm", "battle_tension",
