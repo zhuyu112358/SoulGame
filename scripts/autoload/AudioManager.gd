@@ -167,7 +167,9 @@ func _init_sound_paths() -> void:
 		"lonely_whisper", "loyal", "magnanimous", "merciful", "motivated",
 		"nostalgic_memory", "optimistic", "passionate", "peaceful_calm", "pet",
 		"play", "playful", "proud", "proud_pose", "reliable",
-		"relieved_sigh", "resentful", "righteous", "sad_hum", "satisfied_purr"
+		"relieved_sigh", "resentful", "righteous", "sad_hum", "satisfied_purr",
+		"shy", "shy_blush", "skeptical", "sleep", "sleep_breath",
+		"smug", "spawn", "supportive", "surprised", "surprised_gasp"
 	]
 	for sound_name in soul_sounds:
 		_sound_paths["soul_%s" % sound_name] = "res://assets/audio/soul/soul_%s.wav" % sound_name
