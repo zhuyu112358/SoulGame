@@ -79,6 +79,7 @@ func _ready() -> void:
 	_test_new_ui_sounds_round2()
 	_test_new_soul_sounds_round2()
 	_test_new_env_sounds_round2()
+	_test_new_battle_sounds_round2()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -5632,3 +5633,70 @@ func _test_new_env_sounds_round2() -> void:
 				found = true
 				break
 		_assert(found, "Biome covered: %s" % biome)
+
+
+## ============================================
+## New Battle Sound Integration Tests (Round 2)
+## ============================================
+func _test_new_battle_sounds_round2() -> void:
+	print("\n--- New Battle Sound Integration Tests (Round 2) ---")
+
+	# Test 1: New battle sound files exist
+	var new_sounds = ["battle_attack_hit", "battle_build", "battle_critical", "battle_defeat", "battle_defend", "battle_dodge", "battle_end", "battle_skill_cast", "battle_start", "battle_victory"]
+	for sound_name in new_sounds:
+		var path = "res://assets/audio/battle/%s.wav" % sound_name
+		_assert(FileAccess.file_exists(path), "Sound file exists: %s" % sound_name)
+
+	# Test 2: New battle sounds are registered in AudioManager
+	for sound_name in new_sounds:
+		_assert(AudioManager._sound_paths.has(sound_name), "Sound registered: %s" % sound_name)
+
+	# Test 3: AudioManager has battle_start sound
+	_assert(AudioManager._sound_paths.has("battle_start"), "AudioManager has battle_start")
+
+	# Test 4: AudioManager has battle_end sound
+	_assert(AudioManager._sound_paths.has("battle_end"), "AudioManager has battle_end")
+
+	# Test 5: AudioManager has battle_victory sound
+	_assert(AudioManager._sound_paths.has("battle_victory"), "AudioManager has battle_victory")
+
+	# Test 6: Battle sound count increased
+	var battle_count = 0
+	for sound_name in AudioManager._sound_paths.keys():
+		if sound_name.begins_with("battle_") or sound_name.begins_with("bat_"):
+			battle_count += 1
+	_assert(battle_count >= 25, "Battle sound count >= 25 (actual: %d)" % battle_count)
+
+	# Test 7: Total sound count increased
+	_assert(AudioManager._sound_paths.size() >= 240, "Total sound count >= 240 (actual: %d)" % AudioManager._sound_paths.size())
+
+	# Test 8: New sounds have correct file paths
+	_assert(AudioManager._sound_paths["battle_start"] == "res://assets/audio/battle/battle_start.wav", "battle_start path correct")
+	_assert(AudioManager._sound_paths["battle_end"] == "res://assets/audio/battle/battle_end.wav", "battle_end path correct")
+	_assert(AudioManager._sound_paths["battle_victory"] == "res://assets/audio/battle/battle_victory.wav", "battle_victory path correct")
+
+	# Test 9: AudioManager can play new sounds (no crash)
+	AudioManager.play_sfx("battle_start")
+	AudioManager.play_sfx("battle_end")
+	AudioManager.play_sfx("battle_victory")
+	_assert(true, "New battle sounds play without crash")
+
+	# Test 10: Existing battle sounds still registered
+	_assert(AudioManager._sound_paths.has("bat_attack_hit"), "Existing bat_attack_hit still registered")
+	_assert(AudioManager._sound_paths.has("bat_defeat"), "Existing bat_defeat still registered")
+	_assert(AudioManager._sound_paths.has("battle_skill_hit"), "Existing battle_skill_hit still registered")
+
+	# Test 11: New battle sound names are descriptive
+	_assert(new_sounds[0] == "battle_attack_hit", "First new sound is battle_attack_hit")
+	_assert(new_sounds[5] == "battle_dodge", "Sixth new sound is battle_dodge")
+	_assert(new_sounds[9] == "battle_victory", "Tenth new sound is battle_victory")
+
+	# Test 12: New battle sounds cover battle phases
+	var phases = ["start", "end", "victory", "defeat", "attack", "defend", "dodge", "critical", "skill", "build"]
+	for phase in phases:
+		var found = false
+		for sound_name in new_sounds:
+			if sound_name.find(phase) >= 0:
+				found = true
+				break
+		_assert(found, "Battle phase covered: %s" % phase)

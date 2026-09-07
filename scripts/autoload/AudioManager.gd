@@ -95,7 +95,9 @@ func _init_sound_paths() -> void:
 	# Additional battle sounds with battle_ prefix (design assets)
 	var battle_extra_sounds: Array = [
 		"skill_hit", "heal", "shield", "countdown", "gather",
-		"tension", "calm", "unit_move", "unit_attack", "upgrade"
+		"tension", "calm", "unit_move", "unit_attack", "upgrade",
+		"attack_hit", "build", "critical", "defeat", "defend",
+		"dodge", "end", "skill_cast", "start", "victory"
 	]
 	for sound_name in battle_extra_sounds:
 		_sound_paths["battle_%s" % sound_name] = "res://assets/audio/battle/battle_%s.wav" % sound_name
