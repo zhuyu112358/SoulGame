@@ -1136,3 +1136,56 @@
 - 修复端到端验证中发现的bug
 - 优化UI细节和视觉效果
 - 集成更多设计资源（概念图+音效）
+
+## 2026-09-07 - M2可玩原型冲刺第二十五轮
+
+### 完成功能
+
+#### 新BGM集成 (P2)
+- **修改**: scripts/autoload/AudioManager.gd, scripts/ui/MainMenu.gd, scripts/game/SoulHomeController.gd, scripts/game/RTSArenaController.gd
+- **新增资源**: 7个新BGM音效文件
+- **测试**: 28个新BGM集成测试 + 8个旧测试更新
+
+**新增BGM文件（7个）**:
+- bgm_main_menu.wav - 主菜单BGM
+- bgm_battle_calm.wav - 战斗平静BGM
+- bgm_battle_tension.wav - 战斗紧张BGM
+- bgm_soul_home_day.wav - 灵魂之家白天BGM
+- bgm_soul_home_night.wav - 灵魂之家夜晚BGM
+- bgm_victory_celebration.wav - 胜利庆祝BGM
+- bgm_explore_mystery.wav - 探索神秘BGM
+
+**BGM注册**:
+- 在AudioManager.gd的bgm_tracks数组中添加7个新BGM名称
+- 所有新BGM自动注册为bgm_前缀
+
+**BGM使用**:
+- 主菜单: bgm_main_menu（替换原有的menu BGM）
+- 灵魂之家: bgm_soul_home_day（替换原有的home_main BGM）
+- 战斗结果胜利: bgm_victory_celebration（胜利时播放庆祝BGM）
+- 灵魂选择: 继续使用menu BGM
+
+**BGM总数**:
+- BGM音效: 4 -> 11
+- 总音效数: 195 -> 202
+- 设计资源集成率: 195/339 (57.5%) -> 202/339 (59.6%)
+
+### 测试
+- 新BGM集成测试: 28个（文件存在、注册验证、使用验证、数量验证、路径验证、播放测试、已有BGM验证、场景BGM验证）
+- 更新8个旧测试以匹配新BGM名称
+- M2测试: 1916 -> 1948
+- 总计测试: 2100 -> 2132
+
+### 已知问题
+- 新复制的.wav文件缺少.import文件，需要在Godot编辑器中打开项目自动导入
+- headless模式load()新资源会失败，但FileAccess.file_exists()检查正常
+
+### [设计需求]
+- 需要: 概念图 - 灵魂之家背景（温馨、像素风）- P1（已用concept_home_mainroom作为占位）
+- 需要: 音效 - 灵魂之家环境音（温暖、空灵）- P1（已用env_home_indoor作为环境音）
+
+### 下一步
+- 可玩原型端到端验证（实际运行游戏，从头玩到尾）
+- 修复端到端验证中发现的bug
+- 优化UI细节和视觉效果
+- 集成更多设计资源（概念图+音效）

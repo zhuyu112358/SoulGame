@@ -98,7 +98,9 @@ func _init_sound_paths() -> void:
 		_sound_paths["battle_%s" % sound_name] = "res://assets/audio/battle/battle_%s.wav" % sound_name
 
 	# BGM
-	var bgm_tracks: Array = ["battle", "explore", "home_main", "menu"]
+	var bgm_tracks: Array = ["battle", "explore", "home_main", "menu",
+		"main_menu", "battle_calm", "battle_tension",
+		"soul_home_day", "soul_home_night", "victory_celebration", "explore_mystery"]
 	for track_name in bgm_tracks:
 		_sound_paths["bgm_%s" % track_name] = "res://assets/audio/bgm/bgm_%s.wav" % track_name
 

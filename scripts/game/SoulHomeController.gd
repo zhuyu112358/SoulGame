@@ -110,7 +110,7 @@ func _play_hover_sound() -> void:
 ## Play home background music and ambient sounds
 func _play_home_ambience() -> void:
 	if AudioManager:
-		AudioManager.play_bgm("home_main")
+		AudioManager.play_bgm("soul_home_day")
 		# Play home indoor environment ambience
 		AudioManager.play_sfx("env_home_indoor")
 		GameLog.info("SoulHome: Playing home BGM", "SoulHome")

@@ -491,6 +491,7 @@ func _on_battle_finished(p_result: String, p_winner_id: String, p_loser_id: Stri
 			result_color = Color(0.4, 0.9, 0.5)
 			if AudioManager:
 				AudioManager.play_sfx("bat_victory")
+				AudioManager.play_bgm("victory_celebration")
 		"defeat":
 			result_text = "DEFEAT..."
 			result_color = Color(0.9, 0.4, 0.4)
@@ -500,8 +501,8 @@ func _on_battle_finished(p_result: String, p_winner_id: String, p_loser_id: Stri
 			result_text = "DRAW"
 			result_color = Color(0.8, 0.8, 0.4)
 
-	# Stop battle BGM
-	if AudioManager:
+	# Stop battle BGM (except victory celebration)
+	if AudioManager and p_result != "victory":
 		AudioManager.stop_bgm()
 
 	_add_log("=== %s +%d EXP ===" % [result_text, exp_gained])

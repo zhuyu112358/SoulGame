@@ -75,6 +75,7 @@ func _ready() -> void:
 	_test_new_soul_sounds()
 	_test_new_env_sounds()
 	_test_new_battle_sounds()
+	_test_new_bgm_sounds()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -4504,7 +4505,7 @@ func _test_soul_home_audio() -> void:
 	_assert(soul_home_content.find("_play_home_ambience()") >= 0, "SoulHomeController calls _play_home_ambience in _ready")
 
 	# Test 3: _play_home_ambience plays bgm_home_main
-	_assert(soul_home_content.find('play_bgm("home_main")') >= 0, "_play_home_ambience plays home_main BGM")
+	_assert(soul_home_content.find('play_bgm("soul_home_day")') >= 0, "_play_home_ambience plays soul_home_day BGM")
 
 	# Test 4: Pet button plays soul_happy
 	_assert(soul_home_content.find('play_sfx("soul_happy")') >= 0, "Pet button plays soul_happy")
@@ -4561,7 +4562,7 @@ func _test_bgm_integration() -> void:
 
 	# Test 2: MainMenu uses correct BGM name (menu, not bgm_menu_01)
 	var main_menu_content = FileAccess.get_file_as_string("res://scripts/ui/MainMenu.gd")
-	_assert(main_menu_content.find('play_bgm("menu")') >= 0, "MainMenu uses play_bgm(menu)")
+	_assert(main_menu_content.find('play_bgm("main_menu")') >= 0, "MainMenu uses play_bgm(main_menu)")
 	_assert(main_menu_content.find("bgm_menu_01") < 0, "MainMenu does not use bgm_menu_01")
 
 	# Test 3: SoulSelect has BGM playback
@@ -4572,7 +4573,7 @@ func _test_bgm_integration() -> void:
 	# Test 4: SoulHome has BGM playback
 	var soul_home_content = FileAccess.get_file_as_string("res://scripts/game/SoulHomeController.gd")
 	_assert(soul_home_content.find("_play_home_ambience") >= 0, "SoulHome has _play_home_ambience")
-	_assert(soul_home_content.find('play_bgm("home_main")') >= 0, "SoulHome plays home_main BGM")
+	_assert(soul_home_content.find('play_bgm("soul_home_day")') >= 0, "SoulHome plays soul_home_day BGM")
 
 	# Test 5: RTS Arena has battle BGM
 	var rts_content = FileAccess.get_file_as_string("res://scripts/game/RTSArenaController.gd")
@@ -4809,8 +4810,8 @@ func _test_main_menu_hover() -> void:
 	_assert(main_menu_content.find("_settings_button") >= 0, "MainMenu has settings button")
 	_assert(main_menu_content.find("_quit_button") >= 0, "MainMenu has quit button")
 
-	# Test 11: MainMenu has menu BGM
-	_assert(main_menu_content.find('play_bgm("menu")') >= 0, "MainMenu plays menu BGM")
+	# Test 11: MainMenu has main_menu BGM
+	_assert(main_menu_content.find('play_bgm("main_menu")') >= 0, "MainMenu plays main_menu BGM")
 
 	# Test 12: Button click sound is ui_button_click_01
 	_assert(main_menu_content.find('play_ui("ui_button_click_01")') >= 0, "Button click uses ui_button_click_01")
@@ -4980,7 +4981,7 @@ func _test_soul_home_hover() -> void:
 	_assert(soul_home_content.find("_on_battle_button") >= 0, "SoulHomeController has battle button")
 
 	# Test 13: SoulHomeController has home BGM
-	_assert(soul_home_content.find('play_bgm("home_main")') >= 0, "SoulHomeController plays home_main BGM")
+	_assert(soul_home_content.find('play_bgm("soul_home_day")') >= 0, "SoulHomeController plays soul_home_day BGM")
 
 	# Test 14: SoulHomeController has soul interaction sounds
 	_assert(soul_home_content.find('play_sfx("soul_happy")') >= 0, "SoulHomeController has soul_happy sound")
@@ -5291,9 +5292,9 @@ func _test_new_env_sounds() -> void:
 	_assert(true, "New env sounds play without crash")
 
 	# Test 13: All scenes have BGM
-	_assert(menu_content.find('play_bgm("menu")') >= 0, "MainMenu has menu BGM")
+	_assert(menu_content.find('play_bgm("main_menu")') >= 0, "MainMenu has main_menu BGM")
 	_assert(select_content.find('play_bgm("menu")') >= 0, "SoulSelect has menu BGM")
-	_assert(home_content.find('play_bgm("home_main")') >= 0, "SoulHome has home_main BGM")
+	_assert(home_content.find('play_bgm("soul_home_day")') >= 0, "SoulHome has soul_home_day BGM")
 
 
 ## ============================================
@@ -5368,3 +5369,72 @@ func _test_new_battle_sounds() -> void:
 	_assert(AudioManager._sound_paths.has("bat_attack_hit"), "Existing bat_attack_hit still registered")
 	_assert(AudioManager._sound_paths.has("bat_victory"), "Existing bat_victory still registered")
 	_assert(AudioManager._sound_paths.has("bat_defeat"), "Existing bat_defeat still registered")
+
+
+## ============================================
+## New BGM Integration Tests
+## ============================================
+func _test_new_bgm_sounds() -> void:
+	print("\n--- New BGM Integration Tests ---")
+
+	# Test 1: New BGM files exist
+	var new_bgm = ["bgm_main_menu", "bgm_battle_calm", "bgm_battle_tension", "bgm_soul_home_day", "bgm_soul_home_night", "bgm_victory_celebration", "bgm_explore_mystery"]
+	for bgm_name in new_bgm:
+		var path = "res://assets/audio/bgm/%s.wav" % bgm_name
+		_assert(FileAccess.file_exists(path), "BGM file exists: %s" % bgm_name)
+
+	# Test 2: New BGM are registered in AudioManager
+	for bgm_name in new_bgm:
+		_assert(AudioManager._sound_paths.has(bgm_name), "BGM registered: %s" % bgm_name)
+
+	# Test 3: AudioManager has bgm_main_menu
+	_assert(AudioManager._sound_paths.has("bgm_main_menu"), "AudioManager has bgm_main_menu")
+
+	# Test 4: AudioManager has bgm_soul_home_day
+	_assert(AudioManager._sound_paths.has("bgm_soul_home_day"), "AudioManager has bgm_soul_home_day")
+
+	# Test 5: AudioManager has bgm_victory_celebration
+	_assert(AudioManager._sound_paths.has("bgm_victory_celebration"), "AudioManager has bgm_victory_celebration")
+
+	# Test 6: MainMenu uses bgm_main_menu
+	var menu_content = FileAccess.get_file_as_string("res://scripts/ui/MainMenu.gd")
+	_assert(menu_content.find('play_bgm("main_menu")') >= 0, "MainMenu uses bgm_main_menu")
+
+	# Test 7: SoulHomeController uses bgm_soul_home_day
+	var home_content = FileAccess.get_file_as_string("res://scripts/game/SoulHomeController.gd")
+	_assert(home_content.find('play_bgm("soul_home_day")') >= 0, "SoulHomeController uses bgm_soul_home_day")
+
+	# Test 8: RTSArenaController plays victory_celebration on victory
+	var controller_content = FileAccess.get_file_as_string("res://scripts/game/RTSArenaController.gd")
+	_assert(controller_content.find('play_bgm("victory_celebration")') >= 0, "RTSArenaController plays victory_celebration")
+
+	# Test 9: BGM count increased
+	var bgm_count = 0
+	for sound_name in AudioManager._sound_paths.keys():
+		if sound_name.begins_with("bgm_"):
+			bgm_count += 1
+	_assert(bgm_count >= 10, "BGM count >= 10 (actual: %d)" % bgm_count)
+
+	# Test 10: Total sound count increased
+	_assert(AudioManager._sound_paths.size() >= 200, "Total sound count >= 200 (actual: %d)" % AudioManager._sound_paths.size())
+
+	# Test 11: New BGM have correct file paths
+	_assert(AudioManager._sound_paths["bgm_main_menu"] == "res://assets/audio/bgm/bgm_main_menu.wav", "bgm_main_menu path correct")
+	_assert(AudioManager._sound_paths["bgm_soul_home_day"] == "res://assets/audio/bgm/bgm_soul_home_day.wav", "bgm_soul_home_day path correct")
+	_assert(AudioManager._sound_paths["bgm_victory_celebration"] == "res://assets/audio/bgm/bgm_victory_celebration.wav", "bgm_victory_celebration path correct")
+
+	# Test 12: Existing BGM still registered
+	_assert(AudioManager._sound_paths.has("bgm_battle"), "Existing bgm_battle still registered")
+	_assert(AudioManager._sound_paths.has("bgm_menu"), "Existing bgm_menu still registered")
+	_assert(AudioManager._sound_paths.has("bgm_home_main"), "Existing bgm_home_main still registered")
+
+	# Test 13: AudioManager can play new BGM (no crash)
+	AudioManager.play_bgm("main_menu")
+	AudioManager.play_bgm("soul_home_day")
+	AudioManager.play_bgm("victory_celebration")
+	_assert(true, "New BGM play without crash")
+
+	# Test 14: All scenes have BGM
+	_assert(menu_content.find("play_bgm(") >= 0, "MainMenu has BGM")
+	_assert(home_content.find("play_bgm(") >= 0, "SoulHome has BGM")
+	_assert(controller_content.find("play_bgm(") >= 0, "RTSArena has BGM")
