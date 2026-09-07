@@ -96,6 +96,7 @@ func _ready() -> void:
 	_test_new_concept_art_round5()
 	_test_battle_countdown()
 	_test_battle_pause()
+	_test_battle_speed()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -4833,8 +4834,8 @@ func _test_main_menu_hover() -> void:
 	# Test 11: MainMenu has main_menu BGM
 	_assert(main_menu_content.find('play_bgm("main_menu")') >= 0, "MainMenu plays main_menu BGM")
 
-	# Test 12: Button click sound is ui_button_click_01
-	_assert(main_menu_content.find('play_ui("ui_button_click_01")') >= 0, "Button click uses ui_button_click_01")
+	# Test 12: Button click sound is ui_button_click
+	_assert(main_menu_content.find('play_sfx("ui_button_click")') >= 0, "Button click uses ui_button_click")
 
 
 ## ============================================
@@ -4879,8 +4880,8 @@ func _test_settings_menu_hover() -> void:
 	_assert(settings_content.find("_sfx_slider") >= 0, "SettingsMenu has sfx slider")
 	_assert(settings_content.find("_bgm_slider") >= 0, "SettingsMenu has bgm slider")
 
-	# Test 12: Back button click plays ui_button_click_01
-	_assert(settings_content.find('play_ui("ui_button_click_01")') >= 0, "Back button click uses ui_button_click_01")
+	# Test 12: Back button click plays ui_button_click
+	_assert(settings_content.find('play_sfx("ui_button_click")') >= 0, "Back Button click uses ui_button_click")
 
 	# Test 13: SettingsMenu has _update_labels method
 	_assert(settings_content.find("_update_labels") >= 0, "SettingsMenu has _update_labels")
@@ -4943,8 +4944,8 @@ func _test_soul_select_hover() -> void:
 	# Test 15: SoulSelect has element-specific selection sounds
 	_assert(soul_select_content.find("_play_soul_select_sound") >= 0, "SoulSelect has element-specific selection sounds")
 
-	# Test 16: Back button click plays ui_button_click_01
-	_assert(soul_select_content.find('play_ui("ui_button_click_01")') >= 0, "Back button click uses ui_button_click_01")
+	# Test 16: Back button click plays ui_button_click
+	_assert(soul_select_content.find('play_sfx("ui_button_click")') >= 0, "Back Button click uses ui_button_click")
 
 	# Test 17: SoulSelect has menu BGM
 	_assert(soul_select_content.find('play_bgm("menu")') >= 0, "SoulSelect plays menu BGM")
@@ -6791,3 +6792,51 @@ func _test_battle_pause() -> void:
 	# Test 10: RTSArenaManager has pause/resume methods
 	_assert(RTSArenaManager.has_method("pause_battle"), "RTSArenaManager has pause_battle method")
 	_assert(RTSArenaManager.has_method("resume_battle"), "RTSArenaManager has resume_battle method")
+
+
+## ============================================
+## Battle Speed Control Tests
+## ============================================
+func _test_battle_speed() -> void:
+	print("\n--- Battle Speed Control Tests ---")
+
+	# Test 1: RTSArenaManager has battle speed variable
+	_assert(RTSArenaManager.battle_speed == 1.0, "Default battle speed is 1.0")
+
+	# Test 2: set_battle_speed method exists and works
+	_assert(RTSArenaManager.has_method("set_battle_speed"), "Has set_battle_speed method")
+	RTSArenaManager.set_battle_speed(2.0)
+	_assert(RTSArenaManager.battle_speed == 2.0, "Battle speed set to 2.0")
+
+	# Test 3: get_battle_speed method exists
+	_assert(RTSArenaManager.has_method("get_battle_speed"), "Has get_battle_speed method")
+	_assert(RTSArenaManager.get_battle_speed() == 2.0, "get_battle_speed returns 2.0")
+
+	# Test 4: Speed is clamped to valid range
+	RTSArenaManager.set_battle_speed(5.0)
+	_assert(RTSArenaManager.battle_speed == 3.0, "Speed clamped to max 3.0")
+	RTSArenaManager.set_battle_speed(0.1)
+	_assert(RTSArenaManager.battle_speed == 0.5, "Speed clamped to min 0.5")
+
+	# Test 5: Reset to default
+	RTSArenaManager.set_battle_speed(1.0)
+	_assert(RTSArenaManager.battle_speed == 1.0, "Speed reset to 1.0")
+
+	# Test 6: RTSArenaController has speed variables
+	var controller_script = load("res://scripts/game/RTSArenaController.gd")
+	var controller = controller_script.new()
+	_assert(controller._current_speed == 1.0, "Controller default speed is 1.0")
+	_assert(controller._speed_options.size() == 3, "Controller has 3 speed options")
+	_assert(controller._speed_options[0] == 1.0, "First speed option is 1.0")
+	_assert(controller._speed_options[1] == 1.5, "Second speed option is 1.5")
+	_assert(controller._speed_options[2] == 2.0, "Third speed option is 2.0")
+
+	# Test 7: Controller has speed methods
+	_assert(controller.has_method("_setup_speed_button"), "Has _setup_speed_button method")
+	_assert(controller.has_method("_on_speed_button_pressed"), "Has _on_speed_button_pressed method")
+
+	# Test 8: Speed button can be created
+	controller._setup_speed_button()
+	_assert(controller._speed_button != null, "Speed button created")
+	_assert(controller._speed_button.text == "1x", "Speed button text is 1x")
+	_assert(controller._speed_button.size == Vector2(60, 35), "Speed button size is 60x35")

@@ -174,7 +174,7 @@ func _play_soul_select_sound(p_element: String) -> void:
 		"dark":
 			AudioManager.play_sfx("soul_serene")
 		_:
-			AudioManager.play_ui("ui_button_click_01")
+			AudioManager.play_sfx("ui_button_click")
 
 
 func _start_battle(soul: Dictionary) -> void:
@@ -228,4 +228,4 @@ func _on_back_pressed() -> void:
 
 func _play_button_sound() -> void:
 	if AudioManager:
-		AudioManager.play_ui("ui_button_click_01")
+		AudioManager.play_sfx("ui_button_click")

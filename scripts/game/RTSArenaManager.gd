@@ -66,6 +66,9 @@ var _environment: ArenaEnvironment = null
 ## Battle mode: "manual" (player controls skills) or "auto" (AI controls both)
 var battle_mode: String = "manual"
 
+## Battle speed multiplier (1.0 = normal, 2.0 = double speed)
+var battle_speed: float = 1.0
+
 ## Battle log
 var battle_log: Array = []
 
@@ -199,17 +202,20 @@ func _process(delta: float) -> void:
 	if battle_state != BattleState.ACTIVE:
 		return
 
-	battle_time += delta
+	# Apply battle speed multiplier
+	var scaled_delta = delta * battle_speed
+
+	battle_time += scaled_delta
 	emit_signal("battle_time_updated", battle_time)
 
 	# Update AI controllers
 	if _ai_controller:
-		_ai_controller.update(delta)
+		_ai_controller.update(scaled_delta)
 	if _player_ai_controller:
-		_player_ai_controller.update(delta)
+		_player_ai_controller.update(scaled_delta)
 
 	# AI decision making (coach-style RTS: autonomous decisions)
-	_ai_decision_timer += delta
+	_ai_decision_timer += scaled_delta
 	if _ai_decision_timer >= _ai_decision_interval:
 		_ai_decision_timer = 0.0
 		_update_ai()
@@ -223,7 +229,7 @@ func _process(delta: float) -> void:
 
 	# Update arena environment (weather changes, terrain effects)
 	if _environment:
-		var env_events = _environment.update(delta)
+		var env_events = _environment.update(scaled_delta)
 		if env_events.get("weather_changed", false):
 			_add_log("Weather changed to: %s" % _environment.get_weather_name())
 			battle_config["weather"] = _environment.get_weather_name()
@@ -233,7 +239,7 @@ func _process(delta: float) -> void:
 			_apply_lightning_damage(lightning_pos)
 
 	# Apply terrain damage (lava etc.)
-	_apply_terrain_damage(delta)
+	_apply_terrain_damage(scaled_delta)
 
 	# Check battle time limit
 	if battle_time >= battle_config["max_battle_time"]:
@@ -443,6 +449,18 @@ func resume_battle() -> void:
 		battle_state = BattleState.ACTIVE
 		_add_log("Battle resumed")
 		GameLog.info("RTSArenaManager: Battle resumed", "Arena")
+
+
+## Set battle speed multiplier (1.0 = normal, 2.0 = double speed)
+func set_battle_speed(p_speed: float) -> void:
+	battle_speed = clamp(p_speed, 0.5, 3.0)
+	_add_log("Battle speed set to %.1fx" % battle_speed)
+	GameLog.info("RTSArenaManager: Battle speed set to %.1fx" % battle_speed, "Arena")
+
+
+## Get current battle speed
+func get_battle_speed() -> float:
+	return battle_speed
 
 
 ## Forfeit battle

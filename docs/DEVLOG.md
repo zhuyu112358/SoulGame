@@ -2205,3 +2205,71 @@
 - 修复端到端验证中发现的bug
 - 优化UI细节和视觉效果
 - 考虑M2完成，进入M3（灵魂之家深化+成长系统完善+优化阶段）
+
+## 2026-09-07 - M2可玩原型冲刺第四十六轮
+
+### 完成功能
+
+#### 战斗速度调节功能 (P2)
+- **新增功能**: RTS竞技场战斗速度调节（1x/1.5x/2x循环切换）
+- **修改文件**: scripts/game/RTSArenaManager.gd, scripts/game/RTSArenaController.gd
+- **测试**: 18个战斗速度控制测试
+
+**RTSArenaManager修改**:
+- 新增battle_speed变量（默认1.0）
+- 新增set_battle_speed(p_speed)方法：设置战斗速度，限制在0.5-3.0范围
+- 新增get_battle_speed()方法：获取当前战斗速度
+- 修改_process()方法：使用scaled_delta = delta * battle_speed，所有战斗逻辑使用scaled_delta
+
+**RTSArenaController修改**:
+- 新增_speed_button变量、_current_speed变量、_speed_options数组（1.0, 1.5, 2.0）
+- 新增_setup_speed_button()方法：创建速度调节按钮（60x35，位于暂停按钮旁边）
+- 新增_on_speed_button_pressed()方法：循环切换速度选项，应用到RTSArenaManager，更新按钮文字
+- 修改_on_battle_started()：重置速度为1.0，启用速度按钮
+- 修改_on_battle_finished()：禁用速度按钮
+- 修改_on_rematch_pressed()：重置速度为1.0，启用速度按钮
+
+**速度调节效果**:
+- 速度按钮位于顶部栏，暂停按钮旁边
+- 点击按钮循环切换：1x -> 1.5x -> 2x -> 1x
+- 按钮文字显示当前速度（1x/1.5x/2x）
+- 战斗速度影响：战斗时间、AI决策、环境更新、地形伤害等所有战斗逻辑
+- 播放ui_button_click音效
+
+#### 工作区文件处理
+- **.gitignore更新**: 添加*.import和*.uid文件忽略规则
+- **用户编辑器修改保留**: 保留用户在Godot编辑器中做的合理修复
+  - project.godot: Godot 4.7特性标记、AudioManager路径修正、音频延迟设置
+  - RTSArenaController.gd: 战斗日志滚动修复（caret_position -> scroll_to_line）
+  - SoulHomeController.gd: 音效调用修正（play_ui -> play_sfx，ui_button_click_01 -> ui_button_click）
+  - MainMenu.gd: 音效调用修正
+  - SettingsMenu.gd: 音效调用修正
+  - SoulSelect.gd: 音效调用修正
+- **测试更新**: 更新3个测试以匹配新的音效名称和方法
+
+### 推送状态
+- 待推送commit: 004a658（战斗暂停系统）+ 本轮commit
+- GitHub连接失败，保留本地提交下轮重试
+
+### 测试
+- 战斗速度控制测试: 18个（默认速度、set/get方法、速度限制、控制器变量、速度选项、按钮创建）
+- 音效名称修正测试更新: 3个
+- M2测试: 2719 -> 2737
+- 总计测试: 2903 -> 2921
+
+### 已知问题
+- 新复制的.png/.wav文件缺少.import文件，需要在Godot编辑器中打开项目自动导入
+- headless模式load()新资源会失败，但FileAccess.file_exists()检查正常
+- 编译时会显示资源导入警告，但不是代码错误
+- GitHub 443端口间歇性不可用，推送失败
+
+### [设计需求]
+- 需要: 概念图 - 灵魂之家背景（温馨、像素风）- P1（已用concept_home_mainroom作为占位）
+- 需要: 音效 - 灵魂之家环境音（温暖、空灵）- P1（已用env_home_indoor作为环境音）
+
+### 下一步
+- 可玩原型端到端验证（实际运行游戏，从头玩到尾）
+- 修复端到端验证中发现的bug
+- 优化UI细节和视觉效果
+- 考虑M2完成，进入M3（灵魂之家深化+成长系统完善+优化阶段）
+- 下轮先重试推送本地commit

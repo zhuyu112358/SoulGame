@@ -1,16 +1,28 @@
 ; Engine configuration file.
-; SoulGame - AI Soul Game Application
-; Godot 4.x project configuration
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
 
 config_version=5
+
+[animation]
+
+compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 [application]
 
 config/name="SoulGame"
 config/description="AI Soul Game - A game where AI souls live, grow, and battle"
 run/main_scene="res://scenes/main.tscn"
-config/features=PackedStringArray("4.2", "GL Compatibility")
+config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
+
+[audio]
+
+driver/output_latency=0.05
 
 [autoload]
 
@@ -32,7 +44,7 @@ ResourceManager="*res://scripts/core/ResourceManager.gd"
 InputManager="*res://scripts/core/InputManager.gd"
 ErrorHandler="*res://scripts/core/ErrorHandler.gd"
 TimeManager="*res://scripts/core/TimeManager.gd"
-AudioManager="*res://scripts/core/AudioManager.gd"
+AudioManager="*res://scripts/autoload/AudioManager.gd"
 LocalizationManager="*res://scripts/core/LocalizationManager.gd"
 AnimationManager="*res://scripts/core/AnimationManager.gd"
 SoulManager="*res://scripts/game/SoulManager.gd"
@@ -43,10 +55,14 @@ RTSArenaManager="*res://scripts/game/RTSArenaManager.gd"
 BattleResultManager="*res://scripts/game/BattleResultManager.gd"
 ArenaMap="*res://scripts/game/ArenaMap.gd"
 MonetizationManager="*res://scripts/monetization/MonetizationManager.gd"
-AudioManager="*res://scripts/autoload/AudioManager.gd"
 PlatformSDK="*res://platform/sdk/PlatformSDK.gd"
 WorldLoader="*res://platform/world/WorldLoader.gd"
 HomeAPI="*res://platform/home/HomeAPI.gd"
+
+[debug]
+
+settings/fps/force_fps=0
+settings/print_to_console=true
 
 [display]
 
@@ -56,9 +72,18 @@ window/size/window_width_override=1280
 window/size/window_height_override=720
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
-window/handheld/orientation=0
-window/vsync/vsync_mode=1
 window/permissions/internet_access=true
+
+[editor]
+
+gdscript/warnings/untyped_declaration=0
+gdscript/warnings/integer_division=0
+gdscript/warnings/unsafe_call=0
+gdscript/warnings/unsafe_property_access=0
+gdscript/warnings/native_method_override=0
+gdscript/warnings/treat_warnings_as_errors=false
+gdscript/completion/add_type_hints=true
+gdscript/places_capitalization=false
 
 [input]
 
@@ -88,47 +113,16 @@ toggle_debug={
 
 [physics]
 
-common/physics_ticks_per_second=60
-common/physics_jitter_fix=0.5
 2d/use_continuous_collision_detection=false
-2d/default_gravity=980.0
-2d/default_gravity_vector=Vector2(0, 1)
-
-[audio]
-
-buses/default_bus_layout="res://default_bus_layout.tres"
-driver/mix_rate=44100
-driver/output_latency=0.05
-
-[debug]
-
-settings/fps/force_fps=0
-settings/print_to_console=true
-settings/stdout/verbose_stdout=false
-
-[editor]
-
-gdscript/warnings/untyped_declaration=0
-gdscript/warnings/integer_division=0
-gdscript/warnings/unsafe_call=0
-gdscript/warnings/unsafe_property_access=0
-gdscript/warnings/native_method_override=0
-gdscript/warnings/treat_warnings_as_errors=false
-gdscript/completion/add_type_hints=true
-gdscript/places_capitalization=false
 
 [rendering]
 
+textures/canvas_textures/default_texture_filter=0
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
-textures/canvas_textures/default_texture_filter=0
 environment/defaults/default_clear_color=Color(0.05, 0.05, 0.08, 1)
-2d/snap/snap_2d_transforms_to_pixel=false
 2d/snap/snap_2d_rotation_to_pixel=false
-2d/snap/snap_2d_vertices_to_pixel=false
 2d/options/use_pixel_snap=false
-anti_aliasing/quality/msaa_2d=0
-anti_aliasing/quality/use_debanding=false
 lights_and_shadows/2d/use_shadow_texture=true
 lights_and_shadows/2d/shadow_texture_size=2048
 lights_and_shadows/2d/shadow_atlas_size=2048

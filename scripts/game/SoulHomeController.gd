@@ -388,7 +388,7 @@ func _exit_tree() -> void:
 func _on_back_button() -> void:
 	GameLog.info("SoulHome: Back to main menu", "SoulHome")
 	if AudioManager:
-		AudioManager.play_ui("ui_button_click_01")
+		AudioManager.play_sfx("ui_button_click")
 	exit_home()
 	SceneManager.change_scene("res://scenes/main_menu.tscn")
 
@@ -397,7 +397,7 @@ func _on_back_button() -> void:
 func _on_battle_button() -> void:
 	GameLog.info("SoulHome: Enter battle", "SoulHome")
 	if AudioManager:
-		AudioManager.play_ui("ui_button_click_01")
+		AudioManager.play_sfx("ui_button_click")
 	exit_home()
 	SceneManager.change_scene("res://scenes/soul_select.tscn")
 
@@ -406,7 +406,7 @@ func _on_battle_button() -> void:
 func _on_chat_button() -> void:
 	GameLog.info("SoulHome: Chat toggled", "SoulHome")
 	if AudioManager:
-		AudioManager.play_ui("ui_button_click_01")
+		AudioManager.play_sfx("ui_button_click")
 	var chat_panel = get_node_or_null("ChatPanel")
 	if chat_panel:
 		chat_panel.visible = not chat_panel.visible

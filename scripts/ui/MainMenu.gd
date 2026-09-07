@@ -91,4 +91,4 @@ func _on_quit_pressed() -> void:
 
 func _play_button_sound() -> void:
 	if AudioManager:
-		AudioManager.play_ui("ui_button_click_01")
+		AudioManager.play_sfx("ui_button_click")

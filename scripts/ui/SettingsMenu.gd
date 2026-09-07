@@ -79,7 +79,7 @@ func _on_sfx_volume_changed(p_value: float) -> void:
 	_sfx_label.text = "%d%%" % int(p_value)
 	# Play a test sound
 	if AudioManager and p_value > 0:
-		AudioManager.play_ui("ui_button_click_01")
+		AudioManager.play_sfx("ui_button_click")
 
 
 ## Handle BGM volume change
@@ -93,6 +93,6 @@ func _on_bgm_volume_changed(p_value: float) -> void:
 func _on_back_pressed() -> void:
 	GameLog.info("Settings: Back to main menu", "Settings")
 	if AudioManager:
-		AudioManager.play_ui("ui_button_click_01")
+		AudioManager.play_sfx("ui_button_click")
 		AudioManager.play_sfx("ui_settings_close")
 	SceneManager.change_scene("res://scenes/main_menu.tscn")

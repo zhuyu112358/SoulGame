@@ -64,6 +64,11 @@ var _pause_overlay = null
 var _pause_label = null
 var _is_paused = false
 
+## Battle speed control
+var _speed_button = null
+var _current_speed = 1.0
+var _speed_options = [1.0, 1.5, 2.0]
+
 
 func _ready() -> void:
 	GameLog.info("RTSArenaController: RTS Arena scene ready", "Arena")
@@ -75,6 +80,7 @@ func _ready() -> void:
 	_setup_weather_display()
 	_setup_button_hovers()
 	_setup_pause_button()
+	_setup_speed_button()
 
 	# Auto-start battle if config is set in GameState
 	_try_auto_start_battle()
@@ -211,6 +217,39 @@ func _hide_pause_overlay() -> void:
 		_pause_overlay.queue_free()
 		_pause_overlay = null
 		_pause_label = null
+
+
+## Setup battle speed button UI
+func _setup_speed_button() -> void:
+	# Create speed button next to pause button
+	_speed_button = Button.new()
+	_speed_button.name = "SpeedButton"
+	_speed_button.text = "1x"
+	_speed_button.position = Vector2(690, 10)
+	_speed_button.size = Vector2(60, 35)
+	_speed_button.add_theme_font_size_override("font_size", 14)
+	_speed_button.modulate = Color(0.7, 0.9, 0.7)
+	_speed_button.pressed.connect(_on_speed_button_pressed)
+	_setup_button_hover(_speed_button)
+	add_child(_speed_button)
+
+
+## Handle speed button press (cycle through speed options)
+func _on_speed_button_pressed() -> void:
+	if AudioManager:
+		AudioManager.play_sfx("ui_button_click")
+	# Find current speed index and cycle to next
+	var current_index = _speed_options.find(_current_speed)
+	if current_index < 0:
+		current_index = 0
+	var next_index = (current_index + 1) % _speed_options.size()
+	_current_speed = _speed_options[next_index]
+	# Apply speed to battle manager
+	RTSArenaManager.set_battle_speed(_current_speed)
+	# Update button text
+	if _speed_button:
+		_speed_button.text = "%.1fx" % _current_speed
+	_add_log("战斗速度: %.1fx" % _current_speed)
 
 
 ## Play button hover sound
@@ -634,9 +673,14 @@ func _update_skill_cooldowns() -> void:
 ## Handle battle started
 func _on_battle_started(p_battle_info: Dictionary) -> void:
 	_battle_active = true
-	# Enable pause button
+	# Enable pause button and reset speed
 	if _pause_button:
 		_pause_button.disabled = false
+	_current_speed = 1.0
+	RTSArenaManager.set_battle_speed(1.0)
+	if _speed_button:
+		_speed_button.text = "1x"
+		_speed_button.disabled = false
 	_add_log("Battle started!")
 
 	# Play battle start sound and BGM
@@ -673,6 +717,9 @@ func _on_battle_finished(p_result: String, p_winner_id: String, p_loser_id: Stri
 	if _pause_button:
 		_pause_button.text = "暂停"
 		_pause_button.disabled = true
+	# Disable speed button
+	if _speed_button:
+		_speed_button.disabled = true
 
 	# Get battle result info
 	var stats = BattleResultManager.get_stats()
@@ -843,6 +890,12 @@ func _on_rematch_pressed() -> void:
 		if _pause_button:
 			_pause_button.text = "暂停"
 			_pause_button.disabled = false
+		# Reset speed
+		_current_speed = 1.0
+		RTSArenaManager.set_battle_speed(1.0)
+		if _speed_button:
+			_speed_button.text = "1x"
+			_speed_button.disabled = false
 		_pending_battle_config = {
 			"player_soul": player_soul,
 			"ai_soul": ai_soul,
@@ -904,8 +957,8 @@ func _on_log_added(p_message: String) -> void:
 func _add_log(p_message: String) -> void:
 	if battle_log:
 		battle_log.text += p_message + "\n"
-		# Scroll to bottom
-		battle_log.caret_position = battle_log.text.length()
+		# Scroll to bottom (RichTextLabel uses scroll_to_line, not caret_position)
+		battle_log.scroll_to_line(battle_log.get_line_count() - 1)
 
 
 ## Skill button handlers
