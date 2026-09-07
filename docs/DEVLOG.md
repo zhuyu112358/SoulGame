@@ -1444,3 +1444,52 @@
 - 修复端到端验证中发现的bug
 - 优化UI细节和视觉效果
 - 集成更多设计资源（概念图+音效）
+
+## 2026-09-07 - M2可玩原型冲刺第三十一轮
+
+### 完成功能
+
+#### 新灵魂音效集成（第三轮） (P2)
+- **修改**: scripts/autoload/AudioManager.gd
+- **新增资源**: 10个新灵魂音效文件
+- **测试**: 44个新灵魂音效集成测试
+
+**新增音效文件（10个）**:
+- soul_ashamed.wav - 羞愧音效
+- soul_enthusiastic.wav - 热情音效
+- soul_evolve.wav - 进化音效
+- soul_excited_bounce.wav - 兴奋跳跃音效
+- soul_excited_sparkle.wav - 兴奋闪光音效
+- soul_expectant.wav - 期待音效
+- soul_fear_tremble.wav - 恐惧颤抖音效
+- soul_fierce.wav - 凶猛音效
+- soul_focused_concentrate.wav - 专注集中音效
+- soul_forgiving.wav - 宽容音效
+
+**音效注册**:
+- 在AudioManager.gd的soul_sounds数组中添加10个新音效名称
+- 所有新音效自动注册为soul_前缀
+
+**音效总数**:
+- 灵魂音效: 59 -> 69
+- 总音效数: 252 -> 262
+- 设计资源集成率: 252/342 (73.7%) -> 262/342 (76.6%)
+
+### 测试
+- 新灵魂音效集成测试（第三轮）: 44个（文件存在、注册验证、数量验证、路径验证、播放测试、已有音效验证、情感覆盖验证）
+- M2测试: 2154 -> 2198
+- 总计测试: 2338 -> 2382
+
+### 已知问题
+- 新复制的.wav文件缺少.import文件，需要在Godot编辑器中打开项目自动导入
+- headless模式load()新资源会失败，但FileAccess.file_exists()检查正常
+
+### [设计需求]
+- 需要: 概念图 - 灵魂之家背景（温馨、像素风）- P1（已用concept_home_mainroom作为占位）
+- 需要: 音效 - 灵魂之家环境音（温暖、空灵）- P1（已用env_home_indoor作为环境音）
+
+### 下一步
+- 可玩原型端到端验证（实际运行游戏，从头玩到尾）
+- 修复端到端验证中发现的bug
+- 优化UI细节和视觉效果
+- 集成更多设计资源（概念图+音效）
