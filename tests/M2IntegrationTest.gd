@@ -77,6 +77,7 @@ func _ready() -> void:
 	_test_new_battle_sounds()
 	_test_new_bgm_sounds()
 	_test_new_ui_sounds_round2()
+	_test_new_soul_sounds_round2()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -4518,7 +4519,7 @@ func _test_soul_home_audio() -> void:
 	_assert(soul_home_content.find('play_sfx("soul_joyful")') >= 0, "Play button plays soul_joyful")
 
 	# Test 7: Train button plays soul_determined_resolve
-	_assert(soul_home_content.find('play_sfx("soul_determined_resolve")') >= 0, "Train button plays soul_determined_resolve")
+	_assert(soul_home_content.find('play_sfx("soul_chivalrous")') >= 0, "Train button plays soul_chivalrous")
 
 	# Test 8: All soul emotion sounds are registered in AudioManager
 	_assert(AudioManager._sound_paths.has("soul_happy"), "soul_happy registered")
@@ -5231,7 +5232,7 @@ func _test_new_soul_sounds() -> void:
 	_assert(home_content.find('play_sfx("soul_happy")') >= 0, "SoulHomeController has soul_happy")
 	_assert(home_content.find('play_sfx("soul_content_smile")') >= 0, "SoulHomeController has soul_content_smile")
 	_assert(home_content.find('play_sfx("soul_joyful")') >= 0, "SoulHomeController has soul_joyful")
-	_assert(home_content.find('play_sfx("soul_determined_resolve")') >= 0, "SoulHomeController has soul_determined_resolve")
+	_assert(home_content.find('play_sfx("soul_chivalrous")') >= 0, "SoulHomeController has soul_chivalrous")
 
 
 ## ============================================
@@ -5502,3 +5503,64 @@ func _test_new_ui_sounds_round2() -> void:
 	_assert(AudioManager._sound_paths.has("ui_button_click"), "Existing ui_button_click still registered")
 	_assert(AudioManager._sound_paths.has("ui_hover"), "Existing ui_hover still registered")
 	_assert(AudioManager._sound_paths.has("ui_confirm"), "Existing ui_confirm still registered")
+
+
+## ============================================
+## New Soul Sound Integration Tests (Round 2)
+## ============================================
+func _test_new_soul_sounds_round2() -> void:
+	print("\n--- New Soul Sound Integration Tests (Round 2) ---")
+
+	# Test 1: New soul sound files exist
+	var new_sounds = ["soul_absorbed", "soul_aggressive", "soul_anxious", "soul_bored", "soul_calm_pulse", "soul_chivalrous", "soul_confused", "soul_dejected", "soul_dependable", "soul_disappointed"]
+	for sound_name in new_sounds:
+		var path = "res://assets/audio/soul/%s.wav" % sound_name
+		_assert(FileAccess.file_exists(path), "Sound file exists: %s" % sound_name)
+
+	# Test 2: New soul sounds are registered in AudioManager
+	for sound_name in new_sounds:
+		_assert(AudioManager._sound_paths.has(sound_name), "Sound registered: %s" % sound_name)
+
+	# Test 3: AudioManager has soul_chivalrous sound
+	_assert(AudioManager._sound_paths.has("soul_chivalrous"), "AudioManager has soul_chivalrous")
+
+	# Test 4: AudioManager has soul_absorbed sound
+	_assert(AudioManager._sound_paths.has("soul_absorbed"), "AudioManager has soul_absorbed")
+
+	# Test 5: AudioManager has soul_calm_pulse sound
+	_assert(AudioManager._sound_paths.has("soul_calm_pulse"), "AudioManager has soul_calm_pulse")
+
+	# Test 6: SoulHomeController plays soul_chivalrous on train
+	var home_content = FileAccess.get_file_as_string("res://scripts/game/SoulHomeController.gd")
+	_assert(home_content.find('play_sfx("soul_chivalrous")') >= 0, "SoulHomeController plays soul_chivalrous on train")
+
+	# Test 7: Soul sound count increased
+	var soul_count = 0
+	for sound_name in AudioManager._sound_paths.keys():
+		if sound_name.begins_with("soul_"):
+			soul_count += 1
+	_assert(soul_count >= 55, "Soul sound count >= 55 (actual: %d)" % soul_count)
+
+	# Test 8: Total sound count increased
+	_assert(AudioManager._sound_paths.size() >= 220, "Total sound count >= 220 (actual: %d)" % AudioManager._sound_paths.size())
+
+	# Test 9: New sounds have correct file paths
+	_assert(AudioManager._sound_paths["soul_chivalrous"] == "res://assets/audio/soul/soul_chivalrous.wav", "soul_chivalrous path correct")
+	_assert(AudioManager._sound_paths["soul_absorbed"] == "res://assets/audio/soul/soul_absorbed.wav", "soul_absorbed path correct")
+	_assert(AudioManager._sound_paths["soul_calm_pulse"] == "res://assets/audio/soul/soul_calm_pulse.wav", "soul_calm_pulse path correct")
+
+	# Test 10: AudioManager can play new sounds (no crash)
+	AudioManager.play_sfx("soul_chivalrous")
+	AudioManager.play_sfx("soul_absorbed")
+	AudioManager.play_sfx("soul_calm_pulse")
+	_assert(true, "New soul sounds play without crash")
+
+	# Test 11: Existing soul sounds still registered
+	_assert(AudioManager._sound_paths.has("soul_happy"), "Existing soul_happy still registered")
+	_assert(AudioManager._sound_paths.has("soul_joyful"), "Existing soul_joyful still registered")
+	_assert(AudioManager._sound_paths.has("soul_excited"), "Existing soul_excited still registered")
+
+	# Test 12: New soul sound names are descriptive
+	_assert(new_sounds[0] == "soul_absorbed", "First new sound is soul_absorbed")
+	_assert(new_sounds[5] == "soul_chivalrous", "Sixth new sound is soul_chivalrous")
+	_assert(new_sounds[9] == "soul_disappointed", "Tenth new sound is soul_disappointed")

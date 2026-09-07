@@ -447,7 +447,7 @@ func _on_train_button() -> void:
 	GameLog.info("SoulHome: Player trained soul", "SoulHome")
 	_update_event_log("You trained the soul. Skills increased.")
 	if AudioManager:
-		AudioManager.play_sfx("soul_determined_resolve")
+		AudioManager.play_sfx("soul_chivalrous")
 
 
 ## Handle chat send
