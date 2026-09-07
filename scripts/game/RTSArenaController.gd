@@ -76,6 +76,7 @@ var _skill_cooldown_overlays = {}
 ## Weather/environment display
 var _weather_label = null
 var _weather_icon = null
+var _last_weather = ""
 
 ## Battle start countdown
 var _countdown_label = null
@@ -1274,6 +1275,13 @@ func _update_weather_display() -> void:
 	var env_info = RTSArenaManager.get_environment_info()
 	var weather_name = env_info.get("weather", "Clear")
 	_weather_label.text = "Weather: %s" % weather_name
+
+	# Animate when weather changes
+	if weather_name != _last_weather and _last_weather != "":
+		_weather_label.scale = Vector2(1.3, 1.3)
+		var weather_tween = create_tween()
+		weather_tween.tween_property(_weather_label, "scale", Vector2(1.0, 1.0), 0.5).set_ease(Tween.EASE_OUT)
+	_last_weather = weather_name
 
 	# Weather color coding
 	match weather_name:
