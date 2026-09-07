@@ -88,6 +88,11 @@ var _heal_label = null
 var _heal_timer = 0.0
 var _heal_active = false
 
+## Defend display
+var _defend_label = null
+var _defend_timer = 0.0
+var _defend_active = false
+
 
 func _ready() -> void:
 	GameLog.info("RTSArenaController: RTS Arena scene ready", "Arena")
@@ -104,6 +109,7 @@ func _ready() -> void:
 	_setup_crit_label()
 	_setup_dodge_label()
 	_setup_heal_label()
+	_setup_defend_label()
 
 	# Auto-start battle if config is set in GameState
 	_try_auto_start_battle()
@@ -475,6 +481,51 @@ func _show_heal(heal_amount: int) -> void:
 	if AudioManager:
 		AudioManager.play_sfx("battle_heal")
 	_add_log("治疗 +%d" % heal_amount)
+
+
+## Setup defend label
+func _setup_defend_label() -> void:
+	_defend_label = Label.new()
+	_defend_label.name = "DefendLabel"
+	_defend_label.text = ""
+	_defend_label.position = Vector2(540, 480)
+	_defend_label.size = Vector2(200, 50)
+	_defend_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_defend_label.add_theme_font_size_override("font_size", 28)
+	_defend_label.modulate = Color(0.6, 0.6, 1.0)
+	_defend_label.visible = false
+	add_child(_defend_label)
+
+
+## Update defend display
+func _update_defend_display(delta: float) -> void:
+	if _defend_active:
+		_defend_timer -= delta
+		if _defend_timer <= 0:
+			_defend_active = false
+			if _defend_label:
+				_defend_label.visible = false
+		return
+
+	# Check if player unit just used defend
+	if RTSArenaManager.player_unit and RTSArenaManager.player_unit.last_defend_used:
+		_show_defend()
+		# Reset the flag to avoid repeated display
+		RTSArenaManager.player_unit.last_defend_used = false
+
+
+## Show defend effect
+func _show_defend() -> void:
+	if _defend_label == null:
+		return
+	_defend_label.text = "防御！"
+	_defend_label.visible = true
+	_defend_active = true
+	_defend_timer = 1.0
+	# Play defend sound
+	if AudioManager:
+		AudioManager.play_sfx("battle_shield")
+	_add_log("防御！")
 
 
 ## Play button hover sound
@@ -861,6 +912,7 @@ func _process(delta: float) -> void:
 	_update_crit_display(delta)
 	_update_dodge_display(delta)
 	_update_heal_display(delta)
+	_update_defend_display(delta)
 	if minimap:
 		minimap.update_minimap()
 

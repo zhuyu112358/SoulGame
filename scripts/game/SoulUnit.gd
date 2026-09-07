@@ -86,6 +86,9 @@ var last_damage_dodged: bool = false  # whether the last incoming damage was dod
 ## Heal tracking
 var last_heal_amount: int = 0  # amount of last heal performed
 
+## Defend tracking
+var last_defend_used: bool = false  # whether defend skill was just used
+
 ## Visual sprite
 var _sprite: Node2D = null
 
@@ -418,6 +421,7 @@ func use_skill(p_skill_name: String, p_target: Node2D = null) -> bool:
 			return true
 		"defend":
 			status_effects["defense_up"] = 3.0
+			last_defend_used = true
 			skill_cooldowns[p_skill_name] = 6.0
 			emit_signal("skill_used", p_skill_name, self)
 			return true

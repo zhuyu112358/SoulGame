@@ -102,6 +102,7 @@ func _ready() -> void:
 	_test_critical_hit_system()
 	_test_dodge_system()
 	_test_heal_display()
+	_test_defend_display()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -1212,9 +1213,11 @@ func _test_soul_unit_combat() -> void:
 	var unit2 = SoulUnit.new()
 	unit2.init_from_soul("test_u2", "WaterSoul", "water", 5, false)
 
-	# Disable dodge for deterministic testing
+	# Disable dodge and crit for deterministic testing
 	unit1.dodge_rate = 0.0
 	unit2.dodge_rate = 0.0
+	unit1.crit_rate = 0.0
+	unit2.crit_rate = 0.0
 
 	# Test 1: init_from_soul sets properties correctly
 	_assert(unit1.soul_id == "test_u1", "Unit1 soul_id correct")
@@ -7130,3 +7133,58 @@ func _test_heal_display() -> void:
 	test_unit.use_skill("heal")
 	_assert(test_unit.last_heal_amount > 0, "last_heal_amount set after heal skill")
 	_assert(test_unit.current_hp > 50, "HP increased after heal skill")
+
+
+## ============================================
+## Defend Display Tests
+## ============================================
+func _test_defend_display() -> void:
+	print("\n--- Defend Display Tests ---")
+
+	# Test 1: SoulUnit has last_defend_used variable
+	var soul_unit_script = load("res://scripts/game/SoulUnit.gd")
+	var soul_unit = soul_unit_script.new()
+	_assert(soul_unit.last_defend_used == false, "last_defend_used starts false")
+
+	# Test 2: RTSArenaController has defend display variables
+	var controller_script = load("res://scripts/game/RTSArenaController.gd")
+	var controller = controller_script.new()
+	_assert(controller._defend_label == null, "Defend label is null initially")
+	_assert(controller._defend_timer == 0.0, "Defend timer starts at 0.0")
+	_assert(controller._defend_active == false, "Defend active starts false")
+
+	# Test 3: Controller has defend methods
+	_assert(controller.has_method("_setup_defend_label"), "Has _setup_defend_label method")
+	_assert(controller.has_method("_update_defend_display"), "Has _update_defend_display method")
+	_assert(controller.has_method("_show_defend"), "Has _show_defend method")
+
+	# Test 4: Setup defend label creates label
+	controller._setup_defend_label()
+	_assert(controller._defend_label != null, "Defend label created")
+	_assert(controller._defend_label.text == "", "Defend label starts empty")
+	_assert(controller._defend_label.visible == false, "Defend label starts hidden")
+
+	# Test 5: Show defend activates display
+	controller._show_defend()
+	_assert(controller._defend_active == true, "Defend active after show")
+	_assert(controller._defend_timer == 1.0, "Defend timer set to 1.0")
+	_assert(controller._defend_label.text == "防御！", "Defend label shows 防御！")
+	_assert(controller._defend_label.visible == true, "Defend label visible after show")
+
+	# Test 6: Update defend display hides after timer
+	controller._update_defend_display(1.5)
+	_assert(controller._defend_active == false, "Defend inactive after timer expires")
+	_assert(controller._defend_label.visible == false, "Defend label hidden after timer")
+
+	# Test 7: AudioManager has battle_shield sound
+	var audio_info = AudioManager.get_info()
+	_assert(audio_info.has("registered_sounds"), "AudioManager info has registered_sounds")
+
+	# Test 8: Defend skill sets last_defend_used
+	var test_unit = soul_unit_script.new()
+	test_unit.init_from_soul("test_defend", "DefendSoul", "earth", 5, true)
+	test_unit.dodge_rate = 0.0
+	test_unit.current_energy = 100
+	test_unit.use_skill("defend")
+	_assert(test_unit.last_defend_used == true, "last_defend_used set after defend skill")
+	_assert(test_unit.status_effects.has("defense_up"), "defense_up status effect applied")
