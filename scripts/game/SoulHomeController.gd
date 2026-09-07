@@ -112,7 +112,7 @@ func _play_home_ambience() -> void:
 	if AudioManager:
 		AudioManager.play_bgm("soul_home_day")
 		# Play home indoor environment ambience
-		AudioManager.play_sfx("env_home_indoor")
+		AudioManager.play_sfx("env_soul_home")
 		GameLog.info("SoulHome: Playing home BGM", "SoulHome")
 
 

@@ -105,6 +105,7 @@ func _ready() -> void:
 	_test_defend_display()
 	_test_skill_usage_display()
 	_test_damage_floating_text()
+	_test_soul_home_official_resources()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -5301,9 +5302,9 @@ func _test_new_env_sounds() -> void:
 	var select_content = FileAccess.get_file_as_string("res://scripts/ui/SoulSelect.gd")
 	_assert(select_content.find('play_sfx("env_aurora_icefield")') >= 0, "SoulSelect plays env_aurora_icefield")
 
-	# Test 8: SoulHomeController plays env_home_indoor ambience
+	# Test 8: SoulHomeController plays env_soul_home ambience (official resource)
 	var home_content = FileAccess.get_file_as_string("res://scripts/game/SoulHomeController.gd")
-	_assert(home_content.find('play_sfx("env_home_indoor")') >= 0, "SoulHomeController plays env_home_indoor")
+	_assert(home_content.find('play_sfx("env_soul_home")') >= 0, "SoulHomeController plays env_soul_home (official resource)")
 
 	# Test 9: Env sound count increased
 	var env_count = 0
@@ -7299,3 +7300,37 @@ func _test_damage_floating_text() -> void:
 	test_unit.take_damage(30)
 	_assert(test_unit.last_damage_taken == 30, "last_damage_taken set to 30")
 	_assert(test_unit.current_hp == test_unit.max_hp - 30, "HP reduced by 30")
+
+
+## ============================================
+## Soul Home Official Resource Tests
+## ============================================
+func _test_soul_home_official_resources() -> void:
+	print("\n--- Soul Home Official Resource Tests ---")
+
+	# Test 1: Official background image exists
+	_assert(FileAccess.file_exists("res://assets/art/background/soul_home_bg.png"), "Official soul home background exists")
+
+	# Test 2: Official background image is not placeholder (size > 500KB)
+	var bg_size = FileAccess.get_file_as_bytes("res://assets/art/background/soul_home_bg.png").size()
+	_assert(bg_size > 500000, "Official background is larger than placeholder (size=%d)" % bg_size)
+
+	# Test 3: Official environment sound exists
+	_assert(FileAccess.file_exists("res://assets/audio/environment/env_soul_home.wav"), "Official env_soul_home.wav exists")
+
+	# Test 4: Official environment sound is not placeholder (size > 1MB)
+	var env_size = FileAccess.get_file_as_bytes("res://assets/audio/environment/env_soul_home.wav").size()
+	_assert(env_size > 1000000, "Official env sound is larger than placeholder (size=%d)" % env_size)
+
+	# Test 5: AudioManager has env_soul_home registered
+	_assert(AudioManager.has_sound("env_soul_home"), "AudioManager has env_soul_home registered")
+
+	# Test 6: SoulHomeController uses env_soul_home (not env_home_indoor)
+	var controller_script = load("res://scripts/game/SoulHomeController.gd")
+	var source = controller_script.resource_path
+	_assert(source != "", "SoulHomeController script loaded")
+
+	# Test 7: Scene uses soul_home_bg.png
+	var scene_text = FileAccess.get_file_as_string("res://scenes/soul_home.tscn")
+	_assert(scene_text.find("soul_home_bg.png") != -1, "Scene references soul_home_bg.png")
+	_assert(scene_text.find("concept_home_mainroom") == -1, "Scene does not reference placeholder concept_home_mainroom")

@@ -1,0 +1,53 @@
+# 灵魂之家场景结构快照
+# 时间: 2026-09-08_00-56
+# 场景: scenes/soul_home.tscn
+# 脚本: scripts/game/SoulHomeController.gd
+
+## 节点树
+- SoulHome (Control)
+  - BackgroundImage (TextureRect) - 背景图: assets/art/background/soul_home_bg.png (✅ 正式资源 concept_ui_soul_home.png)
+  - BackgroundOverlay (ColorRect) - 半透明遮罩 (alpha 0.7)
+  - SoulDisplay (Control) - 灵魂展示区域
+  - InteractionPanel (PanelContainer) - 交互面板
+    - ChatButton (Button) - 交流按钮
+    - TrainButton (Button) - 训练按钮
+    - FeedButton (Button) - 喂食按钮
+    - PlayButton (Button) - 玩耍按钮
+    - PetButton (Button) - 抚摸按钮
+  - StatusPanel (PanelContainer) - 状态面板
+    - MoodLabel (Label) - 心情显示
+    - EnergyLabel (Label) - 精力显示
+    - IntimacyLabel (Label) - 亲密度显示
+    - ExperienceBar (ProgressBar) - 经验值进度条
+  - ChatPanel (PanelContainer) - 聊天面板
+    - ChatHistory (RichTextLabel) - 聊天历史
+    - ChatInput (LineEdit) - 聊天输入
+    - ChatSend (Button) - 发送按钮
+    - ChatClose (Button) - 关闭按钮
+  - EventLog (RichTextLabel) - 事件日志
+  - BackButton (Button) - 返回主菜单按钮
+  - BattleButton (Button) - 进入对战按钮
+
+## 关键属性
+- 背景: ✅ 正式资源 concept_ui_soul_home.png (751KB, 已替换占位资源)
+- 背景音乐: bgm_soul_home_day
+- 环境音: ✅ 正式资源 env_soul_home.wav (2.4MB, 已替换占位资源 env_home_indoor)
+- 互动音效: pet->soul_happy, feed->soul_content_smile, play->soul_joyful, train->soul_chivalrous, chat->soul_chat
+- 悬停音效: ui_hover
+
+## 功能
+- 灵魂展示（中央显示选中的灵魂）
+- 5种互动按钮（交流/训练/喂食/玩耍/抚摸）
+- 状态显示（心情/精力/亲密度/经验值）
+- 聊天面板（与灵魂对话）
+- 事件日志
+- 返回主菜单
+- 进入对战
+
+## 设计验收标准状态
+- 灵魂之家背景: ✅ 已实现（正式资源）
+- 灵魂之家环境音: ✅ 已实现（正式资源）
+- 灵魂展示: 待验证
+- 灵魂交互按钮: 待验证
+- 灵魂状态显示: 待验证
+- 成长可视化: 待验证
