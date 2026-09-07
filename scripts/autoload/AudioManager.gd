@@ -159,6 +159,14 @@ func _init_sound_paths() -> void:
 	for sound_name in soul_sounds:
 		_sound_paths["soul_%s" % sound_name] = "res://assets/audio/soul/soul_%s.wav" % sound_name
 
+	# Action sounds (player actions)
+	var action_sounds: Array = [
+		"attack_swing", "craft", "door_open", "harvest",
+		"interact", "pickup", "use_item", "walk_wood"
+	]
+	for sound_name in action_sounds:
+		_sound_paths["act_%s" % sound_name] = "res://assets/audio/actions/act_%s.wav" % sound_name
+
 	GameLog.info("AudioManager: Registered %d sound paths" % _sound_paths.size(), "Audio")
 
 

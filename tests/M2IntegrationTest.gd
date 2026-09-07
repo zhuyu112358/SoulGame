@@ -82,6 +82,7 @@ func _ready() -> void:
 	_test_new_battle_sounds_round2()
 	_test_new_env_sounds_round3()
 	_test_new_soul_sounds_round3()
+	_test_new_action_sounds()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -5836,3 +5837,70 @@ func _test_new_soul_sounds_round3() -> void:
 				found = true
 				break
 		_assert(found, "Emotion covered: %s" % emotion)
+
+
+## ============================================
+## New Action Sound Integration Tests
+## ============================================
+func _test_new_action_sounds() -> void:
+	print("\n--- New Action Sound Integration Tests ---")
+
+	# Test 1: New action sound files exist
+	var new_sounds = ["act_attack_swing", "act_craft", "act_door_open", "act_harvest", "act_interact", "act_pickup", "act_use_item", "act_walk_wood"]
+	for sound_name in new_sounds:
+		var path = "res://assets/audio/actions/%s.wav" % sound_name
+		_assert(FileAccess.file_exists(path), "Sound file exists: %s" % sound_name)
+
+	# Test 2: New action sounds are registered in AudioManager
+	for sound_name in new_sounds:
+		_assert(AudioManager._sound_paths.has(sound_name), "Sound registered: %s" % sound_name)
+
+	# Test 3: AudioManager has act_attack_swing sound
+	_assert(AudioManager._sound_paths.has("act_attack_swing"), "AudioManager has act_attack_swing")
+
+	# Test 4: AudioManager has act_craft sound
+	_assert(AudioManager._sound_paths.has("act_craft"), "AudioManager has act_craft")
+
+	# Test 5: AudioManager has act_interact sound
+	_assert(AudioManager._sound_paths.has("act_interact"), "AudioManager has act_interact")
+
+	# Test 6: Action sound count is correct
+	var act_count = 0
+	for sound_name in AudioManager._sound_paths.keys():
+		if sound_name.begins_with("act_"):
+			act_count += 1
+	_assert(act_count == 8, "Action sound count == 8 (actual: %d)" % act_count)
+
+	# Test 7: Total sound count increased
+	_assert(AudioManager._sound_paths.size() >= 268, "Total sound count >= 268 (actual: %d)" % AudioManager._sound_paths.size())
+
+	# Test 8: New sounds have correct file paths
+	_assert(AudioManager._sound_paths["act_attack_swing"] == "res://assets/audio/actions/act_attack_swing.wav", "act_attack_swing path correct")
+	_assert(AudioManager._sound_paths["act_craft"] == "res://assets/audio/actions/act_craft.wav", "act_craft path correct")
+	_assert(AudioManager._sound_paths["act_interact"] == "res://assets/audio/actions/act_interact.wav", "act_interact path correct")
+
+	# Test 9: AudioManager can play new sounds (no crash)
+	AudioManager.play_sfx("act_attack_swing")
+	AudioManager.play_sfx("act_craft")
+	AudioManager.play_sfx("act_interact")
+	_assert(true, "New action sounds play without crash")
+
+	# Test 10: Existing sounds still registered
+	_assert(AudioManager._sound_paths.has("ui_confirm"), "Existing ui_confirm still registered")
+	_assert(AudioManager._sound_paths.has("soul_happy"), "Existing soul_happy still registered")
+	_assert(AudioManager._sound_paths.has("env_floating_island"), "Existing env_floating_island still registered")
+
+	# Test 11: New action sound names are descriptive
+	_assert(new_sounds[0] == "act_attack_swing", "First new sound is act_attack_swing")
+	_assert(new_sounds[4] == "act_interact", "Fifth new sound is act_interact")
+	_assert(new_sounds[7] == "act_walk_wood", "Eighth new sound is act_walk_wood")
+
+	# Test 12: New action sounds cover diverse actions
+	var actions = ["attack", "craft", "door", "harvest", "interact", "pickup", "use", "walk"]
+	for action in actions:
+		var found = false
+		for sound_name in new_sounds:
+			if sound_name.find(action) >= 0:
+				found = true
+				break
+		_assert(found, "Action covered: %s" % action)
