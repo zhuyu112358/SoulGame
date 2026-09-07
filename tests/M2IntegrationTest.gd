@@ -95,6 +95,7 @@ func _ready() -> void:
 	_test_new_concept_art_round4()
 	_test_new_concept_art_round5()
 	_test_battle_countdown()
+	_test_battle_pause()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -6727,3 +6728,66 @@ func _test_battle_countdown() -> void:
 	controller._countdown_label = null
 	_assert(controller._countdown_label == null, "Countdown label cleared after battle start")
 	_assert(controller._countdown_active == false, "Countdown inactive after battle start")
+
+
+## ============================================
+## Battle Pause System Tests
+## ============================================
+func _test_battle_pause() -> void:
+	print("\n--- Battle Pause System Tests ---")
+
+	# Test 1: RTSArenaController has pause variables
+	var controller_script = load("res://scripts/game/RTSArenaController.gd")
+	_assert(controller_script != null, "RTSArenaController script loaded")
+
+	# Test 2: Pause methods exist
+	var controller = controller_script.new()
+	_assert(controller.has_method("_setup_pause_button"), "Has _setup_pause_button method")
+	_assert(controller.has_method("_on_pause_button_pressed"), "Has _on_pause_button_pressed method")
+	_assert(controller.has_method("_pause_battle"), "Has _pause_battle method")
+	_assert(controller.has_method("_resume_battle"), "Has _resume_battle method")
+	_assert(controller.has_method("_show_pause_overlay"), "Has _show_pause_overlay method")
+	_assert(controller.has_method("_hide_pause_overlay"), "Has _hide_pause_overlay method")
+
+	# Test 3: Pause variables initialized correctly
+	_assert(controller._pause_button == null, "Pause button initialized to null")
+	_assert(controller._pause_overlay == null, "Pause overlay initialized to null")
+	_assert(controller._pause_label == null, "Pause label initialized to null")
+	_assert(controller._is_paused == false, "Is paused initialized to false")
+
+	# Test 4: Pause button can be created
+	controller._setup_pause_button()
+	_assert(controller._pause_button != null, "Pause button created")
+	_assert(controller._pause_button.text == "暂停", "Pause button text is 暂停")
+	_assert(controller._pause_button.size == Vector2(80, 35), "Pause button size is 80x35")
+
+	# Test 5: Pause overlay can be shown
+	controller._show_pause_overlay()
+	_assert(controller._pause_overlay != null, "Pause overlay created")
+	_assert(controller._pause_label != null, "Pause label created")
+	_assert(controller._pause_label.text == "战斗暂停", "Pause label text is 战斗暂停")
+
+	# Test 6: Pause overlay styling
+	_assert(controller._pause_label.get_theme_font_size_override("font_size") == 48, "Pause label font size is 48")
+	_assert(controller._pause_label.horizontal_alignment == HORIZONTAL_ALIGNMENT_CENTER, "Pause label horizontal alignment is center")
+
+	# Test 7: Pause overlay can be hidden
+	controller._hide_pause_overlay()
+	_assert(controller._pause_overlay == null, "Pause overlay cleared after hide")
+	_assert(controller._pause_label == null, "Pause label cleared after hide")
+
+	# Test 8: Pause state can be toggled
+	controller._is_paused = true
+	_assert(controller._is_paused == true, "Pause state set to true")
+	controller._is_paused = false
+	_assert(controller._is_paused == false, "Pause state set to false")
+
+	# Test 9: Pause button text changes based on state
+	controller._pause_button.text = "继续"
+	_assert(controller._pause_button.text == "继续", "Pause button text changed to 继续")
+	controller._pause_button.text = "暂停"
+	_assert(controller._pause_button.text == "暂停", "Pause button text changed back to 暂停")
+
+	# Test 10: RTSArenaManager has pause/resume methods
+	_assert(RTSArenaManager.has_method("pause_battle"), "RTSArenaManager has pause_battle method")
+	_assert(RTSArenaManager.has_method("resume_battle"), "RTSArenaManager has resume_battle method")

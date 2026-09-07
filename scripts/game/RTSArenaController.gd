@@ -58,6 +58,12 @@ var _countdown_timer = 0.0
 var _countdown_active = false
 var _pending_battle_config = null
 
+## Battle pause system
+var _pause_button = null
+var _pause_overlay = null
+var _pause_label = null
+var _is_paused = false
+
 
 func _ready() -> void:
 	GameLog.info("RTSArenaController: RTS Arena scene ready", "Arena")
@@ -68,6 +74,7 @@ func _ready() -> void:
 	_setup_macro_commands()
 	_setup_weather_display()
 	_setup_button_hovers()
+	_setup_pause_button()
 
 	# Auto-start battle if config is set in GameState
 	_try_auto_start_battle()
@@ -105,6 +112,105 @@ func _on_button_hover(p_button: Button) -> void:
 ## Reset button visual on mouse exit
 func _on_button_exit(p_button: Button) -> void:
 	p_button.modulate = Color(1.0, 1.0, 1.0)
+
+
+## Setup pause button UI
+func _setup_pause_button() -> void:
+	# Create pause button in top bar area
+	_pause_button = Button.new()
+	_pause_button.name = "PauseButton"
+	_pause_button.text = "暂停"
+	_pause_button.position = Vector2(600, 10)
+	_pause_button.size = Vector2(80, 35)
+	_pause_button.add_theme_font_size_override("font_size", 14)
+	_pause_button.modulate = Color(0.9, 0.9, 0.7)
+	_pause_button.pressed.connect(_on_pause_button_pressed)
+	_setup_button_hover(_pause_button)
+	add_child(_pause_button)
+
+
+## Handle pause button press
+func _on_pause_button_pressed() -> void:
+	if AudioManager:
+		AudioManager.play_sfx("ui_button_click")
+	if _is_paused:
+		_resume_battle()
+	else:
+		_pause_battle()
+
+
+## Pause the battle
+func _pause_battle() -> void:
+	if not _battle_active or _is_paused:
+		return
+	_is_paused = true
+	RTSArenaManager.pause_battle()
+	_show_pause_overlay()
+	# Disable skill and command buttons during pause
+	for skill_name in skill_buttons.keys():
+		if skill_buttons[skill_name]:
+			skill_buttons[skill_name].disabled = true
+	for cmd_name in _command_buttons.keys():
+		if _command_buttons[cmd_name]:
+			_command_buttons[cmd_name].disabled = true
+	if _pause_button:
+		_pause_button.text = "继续"
+	_add_log("战斗已暂停")
+
+
+## Resume the battle
+func _resume_battle() -> void:
+	if not _is_paused:
+		return
+	_is_paused = false
+	RTSArenaManager.resume_battle()
+	_hide_pause_overlay()
+	# Re-enable skill and command buttons
+	for skill_name in skill_buttons.keys():
+		if skill_buttons[skill_name]:
+			skill_buttons[skill_name].disabled = false
+	for cmd_name in _command_buttons.keys():
+		if _command_buttons[cmd_name]:
+			_command_buttons[cmd_name].disabled = false
+	if _pause_button:
+		_pause_button.text = "暂停"
+	_add_log("战斗已继续")
+
+
+## Show pause overlay
+func _show_pause_overlay() -> void:
+	if _pause_overlay != null:
+		return
+	# Create semi-transparent overlay
+	_pause_overlay = ColorRect.new()
+	_pause_overlay.name = "PauseOverlay"
+	_pause_overlay.color = Color(0, 0, 0, 0.6)
+	_pause_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(_pause_overlay)
+	# Create pause label
+	_pause_label = Label.new()
+	_pause_label.name = "PauseLabel"
+	_pause_label.text = "战斗暂停"
+	_pause_label.set_anchors_preset(Control.PRESET_CENTER)
+	_pause_label.set_grow_horizontal(Control.GROW_DIRECTION_BOTH)
+	_pause_label.set_grow_vertical(Control.GROW_DIRECTION_BOTH)
+	_pause_label.position = Vector2(-150, -50)
+	_pause_label.size = Vector2(300, 100)
+	_pause_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_pause_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_pause_label.add_theme_font_size_override("font_size", 48)
+	_pause_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.3))
+	_pause_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.8))
+	_pause_label.add_theme_constant_override("outline_size", 4)
+	_pause_overlay.add_child(_pause_label)
+
+
+## Hide pause overlay
+func _hide_pause_overlay() -> void:
+	if _pause_overlay != null:
+		_pause_overlay.queue_free()
+		_pause_overlay = null
+		_pause_label = null
 
 
 ## Play button hover sound
@@ -479,6 +585,10 @@ func _process(delta: float) -> void:
 		return
 	if not _battle_active:
 		return
+	# Skip battle logic updates when paused (UI still renders)
+	if _is_paused:
+		_update_unit_display()
+		return
 	_update_unit_display()
 	_update_skill_cooldowns()
 	_update_command_cooldown(delta)
@@ -524,6 +634,9 @@ func _update_skill_cooldowns() -> void:
 ## Handle battle started
 func _on_battle_started(p_battle_info: Dictionary) -> void:
 	_battle_active = true
+	# Enable pause button
+	if _pause_button:
+		_pause_button.disabled = false
 	_add_log("Battle started!")
 
 	# Play battle start sound and BGM
@@ -553,6 +666,13 @@ func _on_battle_started(p_battle_info: Dictionary) -> void:
 ## Handle battle finished
 func _on_battle_finished(p_result: String, p_winner_id: String, p_loser_id: String) -> void:
 	_battle_active = false
+	# Reset pause state
+	if _is_paused:
+		_is_paused = false
+		_hide_pause_overlay()
+	if _pause_button:
+		_pause_button.text = "暂停"
+		_pause_button.disabled = true
 
 	# Get battle result info
 	var stats = BattleResultManager.get_stats()
@@ -717,6 +837,12 @@ func _on_rematch_pressed() -> void:
 		# Reset battle and start countdown
 		RTSArenaManager.reset_battle()
 		_battle_active = false
+		# Reset pause state
+		_is_paused = false
+		_hide_pause_overlay()
+		if _pause_button:
+			_pause_button.text = "暂停"
+			_pause_button.disabled = false
 		_pending_battle_config = {
 			"player_soul": player_soul,
 			"ai_soul": ai_soul,
