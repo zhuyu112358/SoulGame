@@ -137,6 +137,20 @@ func _init_sound_paths() -> void:
 	for sound_name in battle_extra_sounds:
 		_sound_paths["battle_%s" % sound_name] = "res://assets/audio/battle/battle_%s.wav" % sound_name
 
+	# Skill cast sounds (design assets round 7)
+	var skill_sounds: Array = [
+		"fireball", "waterarrow", "rock", "windblade", "heal", "defend"
+	]
+	for skill_sound_name in skill_sounds:
+		_sound_paths["skill_%s" % skill_sound_name] = "res://assets/audio/skill_%s.wav" % skill_sound_name
+
+	# Soul unit sounds (design assets round 6)
+	var soul_unit_sounds: Array = [
+		"idle", "attack", "hurt", "death", "move", "skill"
+	]
+	for unit_sound_name in soul_unit_sounds:
+		_sound_paths["soul_unit_%s" % unit_sound_name] = "res://assets/audio/soul_unit_%s.wav" % unit_sound_name
+
 	# BGM
 	var bgm_tracks: Array = ["battle", "explore", "home_main", "menu",
 		"main_menu", "battle_calm", "battle_tension",

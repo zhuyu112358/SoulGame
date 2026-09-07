@@ -346,6 +346,9 @@ func _perform_basic_attack() -> void:
 	attack_target.take_damage(damage, self)
 	attack_cooldown = 1.0 / attack_speed
 	emit_signal("attack_performed", attack_target, damage)
+	# Play attack sound
+	if AudioManager:
+		AudioManager.play_sfx("soul_unit_attack", 0.6)
 
 	GameLog.debug("SoulUnit: %s attacks %s for %d damage" % [soul_name, attack_target.soul_name, damage], "Arena")
 
@@ -401,6 +404,9 @@ func use_skill(p_skill_name: String, p_target: Node2D = null) -> bool:
 
 	current_energy -= energy_cost
 	emit_signal("energy_changed", current_energy, max_energy)
+	# Play skill cast sound
+	if AudioManager:
+		AudioManager.play_sfx("soul_unit_skill", 0.7)
 
 	match p_skill_name:
 		"heavy_strike":
@@ -473,7 +479,7 @@ func take_damage(p_damage: int, p_attacker: Node2D = null) -> void:
 
 	# Play hit sound effect
 	if AudioManager:
-		AudioManager.play_sfx("bat_attack_hit")
+		AudioManager.play_sfx("soul_unit_hurt", 0.8)
 
 	GameLog.debug("SoulUnit: %s takes %d damage (HP: %d/%d)" % [soul_name, actual_damage, current_hp, max_hp], "Arena")
 
@@ -484,7 +490,7 @@ func take_damage(p_damage: int, p_attacker: Node2D = null) -> void:
 		emit_signal("unit_died", self)
 		# Play death sound effect
 		if AudioManager:
-			AudioManager.play_sfx("bat_defeat")
+			AudioManager.play_sfx("soul_unit_death", 1.0)
 		GameLog.info("SoulUnit: %s has been defeated!" % soul_name, "Arena")
 
 

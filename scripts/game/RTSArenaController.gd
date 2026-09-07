@@ -1490,22 +1490,22 @@ func _add_log(p_message: String) -> void:
 func _on_heavy_strike_pressed() -> void:
 	RTSArenaManager.player_use_skill("heavy_strike")
 	if AudioManager:
-		AudioManager.play_sfx("battle_skill_hit")
+		AudioManager.play_sfx("skill_rock")
 
 func _on_quick_strike_pressed() -> void:
 	RTSArenaManager.player_use_skill("quick_strike")
 	if AudioManager:
-		AudioManager.play_sfx("battle_skill_hit")
+		AudioManager.play_sfx("skill_windblade")
 
 func _on_heal_pressed() -> void:
 	RTSArenaManager.player_use_skill("heal")
 	if AudioManager:
-		AudioManager.play_sfx("battle_heal")
+		AudioManager.play_sfx("skill_heal")
 
 func _on_defend_pressed() -> void:
 	RTSArenaManager.player_use_skill("defend")
 	if AudioManager:
-		AudioManager.play_sfx("battle_shield")
+		AudioManager.play_sfx("skill_defend")
 
 
 ## Handle back button - return to main menu

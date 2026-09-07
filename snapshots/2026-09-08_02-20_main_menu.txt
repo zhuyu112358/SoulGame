@@ -1,0 +1,20 @@
+﻿=== main_menu.tscn Scene Structure Snapshot ===
+Exported: 2026-09-08_02-20
+
+  - MainMenu (Control)
+  - Background (TextureRect)
+  - Overlay (ColorRect)
+  - CenterContainer (CenterContainer)
+  - VBoxContainer (VBoxContainer)
+  - TitleLabel (Label)
+  - SubtitleLabel (Label)
+  - Spacer1 (Control)
+  - StartButton (Button)
+  - HomeButton (Button)
+  - SettingsButton (Button)
+  - QuitButton (Button)
+  - Spacer2 (Control)
+  - VersionLabel (Label)
+
+Total nodes: 14
+

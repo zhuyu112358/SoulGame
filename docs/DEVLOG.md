@@ -3204,3 +3204,40 @@
 
 ### 测试
 - M2测试运行中...
+
+## 2026-09-08 - M2可玩原型冲刺第六十一轮
+
+### 完成工作
+
+#### 1. 技能释放音效集成（设计任务第7轮资源）
+- **AudioManager**: 注册6个新的skill_*音效（fireball/waterarrow/rock/windblade/heal/defend）
+- **RTSArenaController**: 技能按钮点击音效更新为专属技能音效
+  - heavy_strike → skill_rock（重击，岩石）
+  - quick_strike → skill_windblade（快击，风刃）
+  - heal → skill_heal
+  - defend → skill_defend
+
+#### 2. 灵魂单位音效集成（设计任务第6轮资源）
+- **AudioManager**: 注册6个soul_unit_*音效（idle/attack/hurt/death/move/skill）
+- **SoulUnit._perform_basic_attack**: 添加soul_unit_attack攻击音效（音量0.6）
+- **SoulUnit.use_skill**: 添加soul_unit_skill技能释放音效（音量0.7）
+- **SoulUnit.take_damage**: 受击音效从bat_attack_hit改为soul_unit_hurt（音量0.8）
+- **SoulUnit死亡**: 死亡音效从bat_defeat改为soul_unit_death（音量1.0）
+
+### 视觉/玩法效果变化
+
+**听觉效果提升**:
+- 玩家点击技能按钮时，现在播放对应元素的技能释放音效（岩石/风刃/治疗/防御）
+- 灵魂单位普通攻击时播放soul_unit_attack音效
+- 灵魂单位使用技能时播放soul_unit_skill音效
+- 灵魂单位受击时播放soul_unit_hurt音效（更有灵魂质感）
+- 灵魂单位死亡时播放soul_unit_death音效（更有仪式感）
+- 战斗听觉体验从通用战斗音效升级为灵魂单位专属音效
+
+**设计资源利用**:
+- 集成设计任务第6轮产出的6个灵魂单位音效
+- 集成设计任务第7轮产出的6个技能释放音效
+- 共计12个新音效集成到战斗系统中
+
+### 测试
+- M2测试运行中...

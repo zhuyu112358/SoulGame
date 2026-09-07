@@ -4651,10 +4651,10 @@ func _test_combat_audio() -> void:
 
 	# Test 1: SoulUnit has hit sound in take_damage
 	var soul_unit_content = FileAccess.get_file_as_string("res://scripts/game/SoulUnit.gd")
-	_assert(soul_unit_content.find('play_sfx("bat_attack_hit")') >= 0, "SoulUnit.take_damage plays bat_attack_hit")
+	_assert(soul_unit_content.find('play_sfx("soul_unit_hurt"') >= 0, "SoulUnit.take_damage plays soul_unit_hurt")
 
 	# Test 2: SoulUnit has death sound on unit death
-	_assert(soul_unit_content.find('play_sfx("bat_defeat")') >= 0, "SoulUnit death plays bat_defeat")
+	_assert(soul_unit_content.find('play_sfx("soul_unit_death"') >= 0, "SoulUnit death plays soul_unit_death")
 
 	# Test 3: bat_attack_hit sound is registered
 	_assert(AudioManager._sound_paths.has("bat_attack_hit"), "bat_attack_hit registered")
@@ -4676,10 +4676,10 @@ func _test_combat_audio() -> void:
 
 	# Test 9: RTSArenaController has skill cast sounds
 	var rts_content = FileAccess.get_file_as_string("res://scripts/game/RTSArenaController.gd")
-	_assert(rts_content.find('play_sfx("battle_skill_hit")') >= 0, "RTSArenaController has battle_skill_hit")
+	_assert(rts_content.find('play_sfx("skill_rock")') >= 0, "RTSArenaController has skill_rock")
 
 	# Test 10: RTSArenaController has defend sound
-	_assert(rts_content.find('play_sfx("battle_shield")') >= 0, "RTSArenaController has battle_shield")
+	_assert(rts_content.find('play_sfx("skill_defend")') >= 0, "RTSArenaController has skill_defend")
 
 	# Test 11: RTSArenaController has victory sound
 	_assert(rts_content.find('play_sfx("bat_victory")') >= 0, "RTSArenaController has bat_victory")
@@ -5368,8 +5368,8 @@ func _test_new_battle_sounds() -> void:
 	# Test 7: RTSArenaController uses battle_shield for defend skill
 	_assert(controller_content.find('play_sfx("battle_shield")') >= 0, "RTSArenaController uses battle_shield")
 
-	# Test 8: RTSArenaController uses battle_skill_hit for attack skills
-	_assert(controller_content.find('play_sfx("battle_skill_hit")') >= 0, "RTSArenaController uses battle_skill_hit")
+	# Test 8: RTSArenaController uses skill_rock for attack skills
+	_assert(controller_content.find('play_sfx("skill_rock")') >= 0, "RTSArenaController uses skill_rock")
 
 	# Test 9: RTSArenaController uses battle_countdown on battle start
 	_assert(controller_content.find('play_sfx("battle_countdown")') >= 0, "RTSArenaController uses battle_countdown")
