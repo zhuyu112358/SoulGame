@@ -16,9 +16,35 @@ var _selected_index: int = -1
 func _ready() -> void:
 	GameLog.info("SoulSelect initialized", "SoulSelect")
 	_back_button.pressed.connect(_on_back_pressed)
+	_setup_button_hover(_back_button)
 	_load_available_souls()
 	_populate_soul_list()
 	_play_select_music()
+
+
+## Setup button hover effects (audio + visual)
+func _setup_button_hover(p_button: Button) -> void:
+	if p_button == null:
+		return
+	p_button.mouse_entered.connect(_on_button_hover.bind(p_button))
+	p_button.mouse_exited.connect(_on_button_exit.bind(p_button))
+
+
+## Play hover sound and visual feedback
+func _on_button_hover(p_button: Button) -> void:
+	_play_hover_sound()
+	p_button.modulate = Color(1.2, 1.2, 1.0)
+
+
+## Reset button visual on mouse exit
+func _on_button_exit(p_button: Button) -> void:
+	p_button.modulate = Color(1.0, 1.0, 1.0)
+
+
+## Play button hover sound
+func _play_hover_sound() -> void:
+	if AudioManager:
+		AudioManager.play_sfx("ui_hover")
 
 
 ## Play soul select background music
@@ -99,6 +125,7 @@ func _create_soul_card(soul: Dictionary, index: int) -> Button:
 
 	# Connect click
 	card.pressed.connect(_on_soul_selected.bind(index))
+	_setup_button_hover(card)
 
 	return card
 

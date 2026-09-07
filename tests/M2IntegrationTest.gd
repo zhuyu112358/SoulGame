@@ -67,6 +67,7 @@ func _ready() -> void:
 	_test_soul_select_audio()
 	_test_main_menu_hover()
 	_test_settings_menu_hover()
+	_test_soul_select_hover()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -4860,3 +4861,65 @@ func _test_settings_menu_hover() -> void:
 	_assert(settings_content.find("_on_master_volume_changed") >= 0, "SettingsMenu has master volume handler")
 	_assert(settings_content.find("_on_sfx_volume_changed") >= 0, "SettingsMenu has sfx volume handler")
 	_assert(settings_content.find("_on_bgm_volume_changed") >= 0, "SettingsMenu has bgm volume handler")
+
+
+## ============================================
+## Soul Select Hover Effects Tests
+## ============================================
+func _test_soul_select_hover() -> void:
+	print("\n--- Soul Select Hover Effects Tests ---")
+
+	# Test 1: SoulSelect has _setup_button_hover method
+	var soul_select_content = FileAccess.get_file_as_string("res://scripts/ui/SoulSelect.gd")
+	_assert(soul_select_content.find("_setup_button_hover") >= 0, "SoulSelect has _setup_button_hover")
+
+	# Test 2: SoulSelect has _on_button_hover method
+	_assert(soul_select_content.find("_on_button_hover") >= 0, "SoulSelect has _on_button_hover")
+
+	# Test 3: SoulSelect has _on_button_exit method
+	_assert(soul_select_content.find("_on_button_exit") >= 0, "SoulSelect has _on_button_exit")
+
+	# Test 4: SoulSelect has _play_hover_sound method
+	_assert(soul_select_content.find("_play_hover_sound") >= 0, "SoulSelect has _play_hover_sound")
+
+	# Test 5: _ready calls _setup_button_hover for back button
+	_assert(soul_select_content.find("_setup_button_hover(_back_button)") >= 0, "_ready sets up back button hover")
+
+	# Test 6: _create_soul_card calls _setup_button_hover for card
+	_assert(soul_select_content.find("_setup_button_hover(card)") >= 0, "_create_soul_card sets up card hover")
+
+	# Test 7: Hover plays ui_hover sound
+	_assert(soul_select_content.find('play_sfx("ui_hover")') >= 0, "Hover plays ui_hover sound")
+
+	# Test 8: Hover changes button modulate to brighter color
+	_assert(soul_select_content.find("modulate = Color(1.2, 1.2, 1.0)") >= 0, "Hover changes button modulate to brighter")
+
+	# Test 9: Mouse exit resets button modulate
+	_assert(soul_select_content.find("modulate = Color(1.0, 1.0, 1.0)") >= 0, "Mouse exit resets button modulate")
+
+	# Test 10: ui_hover sound is registered
+	_assert(AudioManager._sound_paths.has("ui_hover"), "ui_hover registered")
+
+	# Test 11: SoulSelect has back button
+	_assert(soul_select_content.find("_back_button") >= 0, "SoulSelect has back button")
+
+	# Test 12: SoulSelect has soul list
+	_assert(soul_select_content.find("_soul_list") >= 0, "SoulSelect has soul list")
+
+	# Test 13: SoulSelect has _create_soul_card method
+	_assert(soul_select_content.find("_create_soul_card") >= 0, "SoulSelect has _create_soul_card")
+
+	# Test 14: SoulSelect has _populate_soul_list method
+	_assert(soul_select_content.find("_populate_soul_list") >= 0, "SoulSelect has _populate_soul_list")
+
+	# Test 15: SoulSelect has element-specific selection sounds
+	_assert(soul_select_content.find("_play_soul_select_sound") >= 0, "SoulSelect has element-specific selection sounds")
+
+	# Test 16: Back button click plays ui_button_click_01
+	_assert(soul_select_content.find('play_ui("ui_button_click_01")') >= 0, "Back button click uses ui_button_click_01")
+
+	# Test 17: SoulSelect has menu BGM
+	_assert(soul_select_content.find('play_bgm("menu")') >= 0, "SoulSelect plays menu BGM")
+
+	# Test 18: SoulSelect has _get_element_color method
+	_assert(soul_select_content.find("_get_element_color") >= 0, "SoulSelect has _get_element_color")
