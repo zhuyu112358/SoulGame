@@ -59,6 +59,7 @@ func _ready() -> void:
 	_test_settings_menu()
 	_test_art_resources()
 	_test_game_flow()
+	_test_scene_backgrounds()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -4418,3 +4419,56 @@ func _test_art_resources() -> void:
 	# Test 15: Total art files >= 45
 	var total_art = concept_count + bg_count
 	_assert(total_art >= 45, "Total art files >= 45: %d" % total_art)
+
+
+## ============================================
+## Scene Background Integration Tests
+## ============================================
+func _test_scene_backgrounds() -> void:
+	print("\n--- Scene Background Integration Tests ---")
+
+	# Test 1: main_menu.tscn uses main_menu_bg.png
+	var main_menu_content = FileAccess.get_file_as_string("res://scenes/main_menu.tscn")
+	_assert(main_menu_content.find("main_menu_bg.png") >= 0, "main_menu.tscn references main_menu_bg.png")
+
+	# Test 2: soul_select.tscn uses soul_select_bg.png
+	var soul_select_content = FileAccess.get_file_as_string("res://scenes/soul_select.tscn")
+	_assert(soul_select_content.find("soul_select_bg.png") >= 0, "soul_select.tscn references soul_select_bg.png")
+
+	# Test 3: soul_select.tscn no longer uses main_menu_bg.png
+	_assert(soul_select_content.find("main_menu_bg.png") < 0, "soul_select.tscn no longer uses main_menu_bg.png")
+
+	# Test 4: soul_home.tscn uses soul_home_bg.png
+	var soul_home_content = FileAccess.get_file_as_string("res://scenes/soul_home.tscn")
+	_assert(soul_home_content.find("soul_home_bg.png") >= 0, "soul_home.tscn references soul_home_bg.png")
+
+	# Test 5: soul_home.tscn has BackgroundImage TextureRect
+	_assert(soul_home_content.find("BackgroundImage") >= 0, "soul_home.tscn has BackgroundImage node")
+
+	# Test 6: soul_home.tscn has BackgroundOverlay ColorRect
+	_assert(soul_home_content.find("BackgroundOverlay") >= 0, "soul_home.tscn has BackgroundOverlay node")
+
+	# Test 7: settings.tscn uses settings_bg.png
+	var settings_content = FileAccess.get_file_as_string("res://scenes/settings.tscn")
+	_assert(settings_content.find("settings_bg.png") >= 0, "settings.tscn references settings_bg.png")
+
+	# Test 8: settings.tscn has BackgroundImage TextureRect
+	_assert(settings_content.find("BackgroundImage") >= 0, "settings.tscn has BackgroundImage node")
+
+	# Test 9: settings.tscn has BackgroundOverlay ColorRect
+	_assert(settings_content.find("BackgroundOverlay") >= 0, "settings.tscn has BackgroundOverlay node")
+
+	# Test 10: All background image files exist
+	_assert(FileAccess.file_exists("res://assets/art/background/main_menu_bg.png"), "main_menu_bg.png exists")
+	_assert(FileAccess.file_exists("res://assets/art/background/soul_select_bg.png"), "soul_select_bg.png exists")
+	_assert(FileAccess.file_exists("res://assets/art/background/soul_home_bg.png"), "soul_home_bg.png exists")
+	_assert(FileAccess.file_exists("res://assets/art/background/settings_bg.png"), "settings_bg.png exists")
+
+	# Test 11: rts_arena_bg.png exists (for future RTS arena background)
+	_assert(FileAccess.file_exists("res://assets/art/background/rts_arena_bg.png"), "rts_arena_bg.png exists")
+
+	# Test 12: Scene files are valid (can be loaded as text)
+	_assert(main_menu_content.length() > 0, "main_menu.tscn non-empty")
+	_assert(soul_select_content.length() > 0, "soul_select.tscn non-empty")
+	_assert(soul_home_content.length() > 0, "soul_home.tscn non-empty")
+	_assert(settings_content.length() > 0, "settings.tscn non-empty")

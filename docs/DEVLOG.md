@@ -332,3 +332,43 @@
 - 修复端到端验证中发现的bug
 - 优化UI细节和视觉效果
 - 集成更多设计资源（概念图+音效）
+
+## 2026-09-07 - M2可玩原型冲刺第九轮
+
+### 完成功能
+
+#### 场景背景图集成 (P2)
+- **修改**: soul_select.tscn, soul_home.tscn, settings.tscn
+- **测试**: 18个场景背景图集成测试
+
+**场景背景图更新**:
+- main_menu.tscn: main_menu_bg.png（已有，浮空岛概念图）
+- soul_select.tscn: 从main_menu_bg.png改为soul_select_bg.png（极光冰原概念图）
+- soul_home.tscn: 新增soul_home_bg.png背景图（灵魂之家主房间概念图）+ 半透明遮罩(0.7)
+- settings.tscn: 新增settings_bg.png背景图（设置UI概念图）+ 半透明遮罩(0.75)
+- rts_arena_bg.png: 已准备好，待后续集成到RTS竞技场场景
+
+**背景图实现方式**:
+- 每个场景使用TextureRect显示背景图（全屏拉伸）
+- 在背景图上叠加ColorRect半透明遮罩，确保UI文字清晰可读
+- 遮罩透明度：灵魂之家0.7，设置界面0.75
+
+### 测试
+- 场景背景图测试: 18个（场景引用正确背景图、BackgroundImage节点存在、BackgroundOverlay节点存在、背景图文件存在、场景文件非空）
+- M2测试: 1546 -> 1564
+- 总计测试: 1730 -> 1748
+
+### 已知问题
+- 新复制的.png文件缺少.import文件，需要在Godot编辑器中打开项目自动导入
+- headless模式load()新图片会失败，但FileAccess.file_exists()检查正常
+- rts_arena_bg.png已准备好但尚未集成到rts_arena.tscn（RTS竞技场已有程序化背景生成器）
+
+### [设计需求]
+- 需要: 概念图 - 灵魂之家背景（温馨、像素风）- P1（已用concept_home_mainroom作为占位）
+- 需要: 音效 - 灵魂之家环境音（温暖、空灵）- P1
+
+### 下一步
+- 可玩原型端到端验证（实际运行游戏，从头玩到尾）
+- 修复端到端验证中发现的bug
+- 优化UI细节和视觉效果
+- 集成更多设计资源（概念图+音效）
