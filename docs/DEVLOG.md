@@ -3125,3 +3125,23 @@
 - 继续实现设计验收标准中剩余的待验证功能
 - 优化UI细节和视觉效果
 - 考虑M2完成，进入M3（灵魂之家深化+成长系统完善+优化阶段）
+
+### 🚨 P0 Bug排查进展 (BUG-029)
+
+**用户试玩报告**: 进入竞技场后战斗开始但单位未创建，Souls:0，方块卡着不动
+
+**排查进展**:
+1. ✅ 确认RTSArenaManager.start_battle()正确创建SoulUnit并add_child
+2. ✅ 确认SoulUnit.init_from_soul()正确初始化属性
+3. ✅ 确认SoulUnit._ready()调用_create_visual()创建精灵
+4. ✅ 确认RTSArenaController._on_unit_spawned()创建ColorRect视觉方块
+5. ✅ 确认"Souls:0"来自DebugOverlay，显示GameState中的soul_count（非竞技场单位）
+6. ⚠️ 发现battle_mode默认是"manual"，玩家单位不会自动移动
+7. ⚠️ AI单位通过SoulAIController控制，需进一步排查execute_decision是否正确执行
+8. ⚠️ 可能问题：单位创建了但状态未正确切换到MOVING/ATTACKING
+
+**下一轮优先处理**:
+- 深入排查SoulAIController.execute_decision是否正确调用move_to/set_attack_target
+- 检查单位position_changed信号是否正确连接
+- 考虑将battle_mode默认改为"auto"，让玩家单位也自动战斗
+- 添加调试日志，跟踪单位状态变化
