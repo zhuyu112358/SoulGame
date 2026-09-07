@@ -70,6 +70,7 @@ func _ready() -> void:
 	_test_soul_select_hover()
 	_test_soul_home_hover()
 	_test_rts_arena_hover()
+	_test_result_modal_hover()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -5038,3 +5039,71 @@ func _test_rts_arena_hover() -> void:
 
 	# Test 14: RTSArenaController has battle BGM
 	_assert(rts_content.find('play_bgm("battle")') >= 0, "RTSArenaController plays battle BGM")
+
+
+## ============================================
+## Result Modal Hover Effects Tests
+## ============================================
+func _test_result_modal_hover() -> void:
+	print("\n--- Result Modal Hover Effects Tests ---")
+
+	# Test 1: RTSArenaController has result modal buttons
+	var rts_content = FileAccess.get_file_as_string("res://scripts/game/RTSArenaController.gd")
+	_assert(rts_content.find("_show_result_modal") >= 0, "RTSArenaController has _show_result_modal")
+
+	# Test 2: Result modal has rematch button
+	_assert(rts_content.find("rematch_btn") >= 0, "Result modal has rematch button")
+
+	# Test 3: Result modal has back to menu button
+	_assert(rts_content.find("back_btn") >= 0, "Result modal has back to menu button")
+
+	# Test 4: Rematch button has hover effect setup
+	_assert(rts_content.find("_setup_button_hover(rematch_btn)") >= 0, "Rematch button has hover effect setup")
+
+	# Test 5: Back button has hover effect setup
+	_assert(rts_content.find("_setup_button_hover(back_btn)") >= 0, "Back button has hover effect setup")
+
+	# Test 6: RTSArenaController has _setup_button_hover method
+	_assert(rts_content.find("_setup_button_hover") >= 0, "RTSArenaController has _setup_button_hover")
+
+	# Test 7: RTSArenaController has _on_button_hover method
+	_assert(rts_content.find("_on_button_hover") >= 0, "RTSArenaController has _on_button_hover")
+
+	# Test 8: RTSArenaController has _on_button_exit method
+	_assert(rts_content.find("_on_button_exit") >= 0, "RTSArenaController has _on_button_exit")
+
+	# Test 9: RTSArenaController has _play_hover_sound method
+	_assert(rts_content.find("_play_hover_sound") >= 0, "RTSArenaController has _play_hover_sound")
+
+	# Test 10: Hover plays ui_hover sound
+	_assert(rts_content.find('play_sfx("ui_hover")') >= 0, "Hover plays ui_hover sound")
+
+	# Test 11: Hover changes button modulate to brighter color
+	_assert(rts_content.find("modulate = Color(1.2, 1.2, 1.0)") >= 0, "Hover changes button modulate to brighter")
+
+	# Test 12: Mouse exit resets button modulate
+	_assert(rts_content.find("modulate = Color(1.0, 1.0, 1.0)") >= 0, "Mouse exit resets button modulate")
+
+	# Test 13: ui_hover sound is registered
+	_assert(AudioManager._sound_paths.has("ui_hover"), "ui_hover registered")
+
+	# Test 14: Rematch button has click sound
+	_assert(rts_content.find('play_sfx("ui_button_click")') >= 0, "Rematch button has click sound")
+
+	# Test 15: Result modal has title
+	_assert(rts_content.find("title") >= 0, "Result modal has title")
+
+	# Test 16: Result modal has EXP label
+	_assert(rts_content.find("exp_label") >= 0, "Result modal has EXP label")
+
+	# Test 17: Result modal has stats label
+	_assert(rts_content.find("stats_label") >= 0, "Result modal has stats label")
+
+	# Test 18: Result modal has separator
+	_assert(rts_content.find("HSeparator") >= 0, "Result modal has separator")
+
+	# Test 19: Result modal has rematch handler
+	_assert(rts_content.find("_on_rematch_pressed") >= 0, "Result modal has rematch handler")
+
+	# Test 20: Result modal has back to menu handler
+	_assert(rts_content.find("_on_back_to_menu_pressed") >= 0, "Result modal has back to menu handler")

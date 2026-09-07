@@ -592,6 +592,7 @@ func _show_result_modal(p_result: String, p_title: String, p_title_color: Color,
 	rematch_btn.add_theme_font_size_override("font_size", 16)
 	rematch_btn.modulate = Color(0.4, 0.7, 0.9)
 	rematch_btn.pressed.connect(_on_rematch_pressed)
+	_setup_button_hover(rematch_btn)
 	panel.add_child(rematch_btn)
 
 	# Back to menu button
@@ -602,6 +603,7 @@ func _show_result_modal(p_result: String, p_title: String, p_title_color: Color,
 	back_btn.add_theme_font_size_override("font_size", 16)
 	back_btn.modulate = Color(0.7, 0.7, 0.7)
 	back_btn.pressed.connect(_on_back_to_menu_pressed)
+	_setup_button_hover(back_btn)
 	panel.add_child(back_btn)
 
 	GameLog.info("RTSArenaController: Result modal shown", "Arena")
