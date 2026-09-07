@@ -2185,6 +2185,32 @@ func _test_pixel_sprite_generator() -> void:
 	_assert(water_sprite_new != null, "water sprite generated")
 	_assert(water_sprite_new.get_height() == 64, "sprite height 64")
 ## ============================================
+
+	# Test 41: _hash_string returns int
+	var hash_val_new = generator._hash_string("test")
+	_assert(typeof(hash_val_new) == TYPE_INT, "_hash_string returns int")
+
+	# Test 42: _get_palette returns dictionary
+	var palette_new = generator._get_palette("fire", {})
+	_assert(typeof(palette_new) == TYPE_DICTIONARY, "_get_palette returns dictionary")
+	_assert(palette_new.has("primary"), "palette has primary")
+
+	# Test 43: generate_soul_sprite earth element
+	var earth_sprite_new = generator.generate_soul_sprite("earth")
+	_assert(earth_sprite_new != null, "earth sprite generated")
+
+	# Test 44: generate_soul_sprite wind element
+	var wind_sprite_new = generator.generate_soul_sprite("wind")
+	_assert(wind_sprite_new != null, "wind sprite generated")
+
+	# Test 45: generate_color_swatch fire element
+	var fire_swatch_new = generator.generate_color_swatch("fire")
+	_assert(fire_swatch_new != null, "fire color swatch generated")
+
+	# Test 46: generate_color_swatch custom size
+	var custom_swatch_new2 = generator.generate_color_swatch("neutral", 128)
+	_assert(custom_swatch_new2 != null, "custom size swatch generated")
+	_assert(custom_swatch_new2.get_width() == 128, "custom swatch width 128")
 ## ArenaBackgroundGenerator System Tests
 ## ============================================
 func _test_arena_background_generator() -> void:
