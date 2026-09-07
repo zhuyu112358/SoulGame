@@ -161,6 +161,7 @@ func _try_auto_start_battle() -> void:
 		# Play game start sound
 		if AudioManager:
 			AudioManager.play_sfx("ui_game_start")
+			AudioManager.play_sfx("battle_countdown")
 		# Clear battle config from GameState after use (keep local copy for rematch)
 		GameState.set_value("battle", "player_soul", null)
 		GameState.set_value("battle", "ai_soul", null)
@@ -312,13 +313,13 @@ func _on_macro_command(p_command: String) -> void:
 		# Play command-specific sound
 		match p_command:
 			"gather":
-				AudioManager.play_sfx("ui_confirm")
+				AudioManager.play_sfx("battle_gather")
 			"attack":
-				AudioManager.play_sfx("bat_skill_cast")
+				AudioManager.play_sfx("battle_unit_attack")
 			"defend":
-				AudioManager.play_sfx("bat_defend")
+				AudioManager.play_sfx("battle_shield")
 			"retreat":
-				AudioManager.play_sfx("ui_cancel")
+				AudioManager.play_sfx("battle_unit_move")
 			_:
 				AudioManager.play_sfx("ui_button_click")
 		_add_log("教练指令: %s" % p_command)
@@ -700,22 +701,22 @@ func _add_log(p_message: String) -> void:
 func _on_heavy_strike_pressed() -> void:
 	RTSArenaManager.player_use_skill("heavy_strike")
 	if AudioManager:
-		AudioManager.play_sfx("bat_skill_cast")
+		AudioManager.play_sfx("battle_skill_hit")
 
 func _on_quick_strike_pressed() -> void:
 	RTSArenaManager.player_use_skill("quick_strike")
 	if AudioManager:
-		AudioManager.play_sfx("bat_skill_cast")
+		AudioManager.play_sfx("battle_skill_hit")
 
 func _on_heal_pressed() -> void:
 	RTSArenaManager.player_use_skill("heal")
 	if AudioManager:
-		AudioManager.play_sfx("bat_skill_cast")
+		AudioManager.play_sfx("battle_heal")
 
 func _on_defend_pressed() -> void:
 	RTSArenaManager.player_use_skill("defend")
 	if AudioManager:
-		AudioManager.play_sfx("bat_defend")
+		AudioManager.play_sfx("battle_shield")
 
 
 ## Handle back button - return to main menu

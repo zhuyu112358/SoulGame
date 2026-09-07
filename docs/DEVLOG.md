@@ -1073,3 +1073,66 @@
 - 修复端到端验证中发现的bug
 - 优化UI细节和视觉效果
 - 集成更多设计资源（概念图+音效）
+
+## 2026-09-07 - M2可玩原型冲刺第二十四轮
+
+### 完成功能
+
+#### 新战斗音效集成 (P2)
+- **修改**: scripts/autoload/AudioManager.gd, scripts/game/RTSArenaController.gd
+- **新增资源**: 10个新战斗音效文件
+- **测试**: 35个新战斗音效集成测试 + 6个旧测试更新
+
+**新增音效文件（10个）**:
+- battle_skill_hit.wav - 技能命中音效
+- battle_heal.wav - 治疗音效
+- battle_shield.wav - 护盾音效
+- battle_countdown.wav - 倒计时音效
+- battle_gather.wav - 集合音效
+- battle_tension.wav - 紧张音效
+- battle_calm.wav - 平静音效
+- battle_unit_move.wav - 单位移动音效
+- battle_unit_attack.wav - 单位攻击音效
+- battle_upgrade.wav - 升级音效
+
+**音效注册**:
+- 在AudioManager.gd中添加battle_extra_sounds数组，注册10个新音效
+- 所有新音效使用battle_前缀（区别于已有的bat_前缀音效）
+
+**音效使用**:
+- RTS竞技场技能按钮:
+  - heavy_strike（重击）: battle_skill_hit
+  - quick_strike（快击）: battle_skill_hit
+  - heal（治疗）: battle_heal
+  - defend（防御）: battle_shield
+- 玩家宏观指令:
+  - gather（集合）: battle_gather
+  - attack（进攻）: battle_unit_attack
+  - defend（防守）: battle_shield
+  - retreat（撤退）: battle_unit_move
+- 战斗开始: battle_countdown（倒计时音效）
+
+**音效总数**:
+- 战斗音效: 10 -> 20
+- 总音效数: 185 -> 195
+- 设计资源集成率: 185/339 (54.6%) -> 195/339 (57.5%)
+
+### 测试
+- 新战斗音效集成测试: 35个（文件存在、注册验证、使用验证、数量验证、路径验证、播放测试、已有音效验证）
+- 更新6个旧测试以匹配新音效名称
+- M2测试: 1877 -> 1916
+- 总计测试: 2061 -> 2100
+
+### 已知问题
+- 新复制的.wav文件缺少.import文件，需要在Godot编辑器中打开项目自动导入
+- headless模式load()新资源会失败，但FileAccess.file_exists()检查正常
+
+### [设计需求]
+- 需要: 概念图 - 灵魂之家背景（温馨、像素风）- P1（已用concept_home_mainroom作为占位）
+- 需要: 音效 - 灵魂之家环境音（温暖、空灵）- P1（已用env_home_indoor作为环境音）
+
+### 下一步
+- 可玩原型端到端验证（实际运行游戏，从头玩到尾）
+- 修复端到端验证中发现的bug
+- 优化UI细节和视觉效果
+- 集成更多设计资源（概念图+音效）

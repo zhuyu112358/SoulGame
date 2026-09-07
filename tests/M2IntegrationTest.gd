@@ -74,6 +74,7 @@ func _ready() -> void:
 	_test_new_ui_sounds()
 	_test_new_soul_sounds()
 	_test_new_env_sounds()
+	_test_new_battle_sounds()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -4635,10 +4636,10 @@ func _test_combat_audio() -> void:
 
 	# Test 9: RTSArenaController has skill cast sounds
 	var rts_content = FileAccess.get_file_as_string("res://scripts/game/RTSArenaController.gd")
-	_assert(rts_content.find('play_sfx("bat_skill_cast")') >= 0, "RTSArenaController has bat_skill_cast")
+	_assert(rts_content.find('play_sfx("battle_skill_hit")') >= 0, "RTSArenaController has battle_skill_hit")
 
 	# Test 10: RTSArenaController has defend sound
-	_assert(rts_content.find('play_sfx("bat_defend")') >= 0, "RTSArenaController has bat_defend")
+	_assert(rts_content.find('play_sfx("battle_shield")') >= 0, "RTSArenaController has battle_shield")
 
 	# Test 11: RTSArenaController has victory sound
 	_assert(rts_content.find('play_sfx("bat_victory")') >= 0, "RTSArenaController has bat_victory")
@@ -4675,17 +4676,17 @@ func _test_command_audio() -> void:
 	# Test 2: Macro command uses match for different sounds
 	_assert(rts_content.find("match p_command:") >= 0, "Macro command uses match for sounds")
 
-	# Test 3: Gather command plays ui_confirm
-	_assert(rts_content.find('play_sfx("ui_confirm")') >= 0, "Gather command plays ui_confirm")
+	# Test 3: Gather command plays battle_gather
+	_assert(rts_content.find('play_sfx("battle_gather")') >= 0, "Gather command plays battle_gather")
 
-	# Test 4: Attack command plays bat_skill_cast
-	_assert(rts_content.find('play_sfx("bat_skill_cast")') >= 0, "Attack command plays bat_skill_cast")
+	# Test 4: Attack command plays battle_unit_attack
+	_assert(rts_content.find('play_sfx("battle_unit_attack")') >= 0, "Attack command plays battle_unit_attack")
 
-	# Test 5: Defend command plays bat_defend
-	_assert(rts_content.find('play_sfx("bat_defend")') >= 0, "Defend command plays bat_defend")
+	# Test 5: Defend command plays battle_shield
+	_assert(rts_content.find('play_sfx("battle_shield")') >= 0, "Defend command plays battle_shield")
 
-	# Test 6: Retreat command plays ui_cancel
-	_assert(rts_content.find('play_sfx("ui_cancel")') >= 0, "Retreat command plays ui_cancel")
+	# Test 6: Retreat command plays battle_unit_move
+	_assert(rts_content.find('play_sfx("battle_unit_move")') >= 0, "Retreat command plays battle_unit_move")
 
 	# Test 7: Cooldown finish plays ui_notification
 	_assert(rts_content.find('play_sfx("ui_notification")') >= 0, "Cooldown finish plays ui_notification")
@@ -5293,3 +5294,77 @@ func _test_new_env_sounds() -> void:
 	_assert(menu_content.find('play_bgm("menu")') >= 0, "MainMenu has menu BGM")
 	_assert(select_content.find('play_bgm("menu")') >= 0, "SoulSelect has menu BGM")
 	_assert(home_content.find('play_bgm("home_main")') >= 0, "SoulHome has home_main BGM")
+
+
+## ============================================
+## New Battle Sound Integration Tests
+## ============================================
+func _test_new_battle_sounds() -> void:
+	print("\n--- New Battle Sound Integration Tests ---")
+
+	# Test 1: New battle sound files exist
+	var new_sounds = ["battle_skill_hit", "battle_heal", "battle_shield", "battle_countdown", "battle_gather", "battle_tension", "battle_calm", "battle_unit_move", "battle_unit_attack", "battle_upgrade"]
+	for sound_name in new_sounds:
+		var path = "res://assets/audio/battle/%s.wav" % sound_name
+		_assert(FileAccess.file_exists(path), "Sound file exists: %s" % sound_name)
+
+	# Test 2: New battle sounds are registered in AudioManager
+	for sound_name in new_sounds:
+		_assert(AudioManager._sound_paths.has(sound_name), "Sound registered: %s" % sound_name)
+
+	# Test 3: AudioManager has battle_heal sound
+	_assert(AudioManager._sound_paths.has("battle_heal"), "AudioManager has battle_heal")
+
+	# Test 4: AudioManager has battle_shield sound
+	_assert(AudioManager._sound_paths.has("battle_shield"), "AudioManager has battle_shield")
+
+	# Test 5: AudioManager has battle_skill_hit sound
+	_assert(AudioManager._sound_paths.has("battle_skill_hit"), "AudioManager has battle_skill_hit")
+
+	# Test 6: RTSArenaController uses battle_heal for heal skill
+	var controller_content = FileAccess.get_file_as_string("res://scripts/game/RTSArenaController.gd")
+	_assert(controller_content.find('play_sfx("battle_heal")') >= 0, "RTSArenaController uses battle_heal")
+
+	# Test 7: RTSArenaController uses battle_shield for defend skill
+	_assert(controller_content.find('play_sfx("battle_shield")') >= 0, "RTSArenaController uses battle_shield")
+
+	# Test 8: RTSArenaController uses battle_skill_hit for attack skills
+	_assert(controller_content.find('play_sfx("battle_skill_hit")') >= 0, "RTSArenaController uses battle_skill_hit")
+
+	# Test 9: RTSArenaController uses battle_countdown on battle start
+	_assert(controller_content.find('play_sfx("battle_countdown")') >= 0, "RTSArenaController uses battle_countdown")
+
+	# Test 10: RTSArenaController uses battle_gather for gather command
+	_assert(controller_content.find('play_sfx("battle_gather")') >= 0, "RTSArenaController uses battle_gather")
+
+	# Test 11: RTSArenaController uses battle_unit_attack for attack command
+	_assert(controller_content.find('play_sfx("battle_unit_attack")') >= 0, "RTSArenaController uses battle_unit_attack")
+
+	# Test 12: RTSArenaController uses battle_unit_move for retreat command
+	_assert(controller_content.find('play_sfx("battle_unit_move")') >= 0, "RTSArenaController uses battle_unit_move")
+
+	# Test 13: Battle sound count increased
+	var battle_count = 0
+	for sound_name in AudioManager._sound_paths.keys():
+		if sound_name.begins_with("bat_") or sound_name.begins_with("battle_"):
+			battle_count += 1
+	_assert(battle_count >= 15, "Battle sound count >= 15 (actual: %d)" % battle_count)
+
+	# Test 14: Total sound count increased
+	_assert(AudioManager._sound_paths.size() >= 190, "Total sound count >= 190 (actual: %d)" % AudioManager._sound_paths.size())
+
+	# Test 15: New sounds have correct file paths
+	_assert(AudioManager._sound_paths["battle_heal"] == "res://assets/audio/battle/battle_heal.wav", "battle_heal path correct")
+	_assert(AudioManager._sound_paths["battle_shield"] == "res://assets/audio/battle/battle_shield.wav", "battle_shield path correct")
+	_assert(AudioManager._sound_paths["battle_skill_hit"] == "res://assets/audio/battle/battle_skill_hit.wav", "battle_skill_hit path correct")
+
+	# Test 16: AudioManager can play new sounds (no crash)
+	AudioManager.play_sfx("battle_heal")
+	AudioManager.play_sfx("battle_shield")
+	AudioManager.play_sfx("battle_skill_hit")
+	_assert(true, "New battle sounds play without crash")
+
+	# Test 17: Existing battle sounds still registered
+	_assert(AudioManager._sound_paths.has("bat_attack_hit"), "Existing bat_attack_hit still registered")
+	_assert(AudioManager._sound_paths.has("bat_victory"), "Existing bat_victory still registered")
+	_assert(AudioManager._sound_paths.has("bat_defeat"), "Existing bat_defeat still registered")

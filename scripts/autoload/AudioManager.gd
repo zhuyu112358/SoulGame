@@ -89,6 +89,14 @@ func _init_sound_paths() -> void:
 	for sound_name in battle_sounds:
 		_sound_paths["bat_%s" % sound_name] = "res://assets/audio/battle/bat_%s.wav" % sound_name
 
+	# Additional battle sounds with battle_ prefix (design assets)
+	var battle_extra_sounds: Array = [
+		"skill_hit", "heal", "shield", "countdown", "gather",
+		"tension", "calm", "unit_move", "unit_attack", "upgrade"
+	]
+	for sound_name in battle_extra_sounds:
+		_sound_paths["battle_%s" % sound_name] = "res://assets/audio/battle/battle_%s.wav" % sound_name
+
 	# BGM
 	var bgm_tracks: Array = ["battle", "explore", "home_main", "menu"]
 	for track_name in bgm_tracks:
