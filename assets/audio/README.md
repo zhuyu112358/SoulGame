@@ -4,6 +4,12 @@
 > 设计资源由设计任务产出，应用开发任务集成使用。
 
 ## 资源清单
+| steam_store_button_click.wav | 2026-09-08 | Steam商店页P1 | Steam商店页按钮点击音效（2秒，清脆点击声+像素光点声+轻微反馈声，有反馈感和清脆感） | 设计任务第10轮 |
+| steam_store_button_hover.wav | 2026-09-08 | Steam商店页P1 | Steam商店页按钮悬停音效（2秒，轻微上升音阶+像素光点声+柔和反馈声，有悬停感和柔和感） | 设计任务第10轮 |
+| steam_store_purchase_success.wav | 2026-09-08 | Steam商店页P1 | Steam商店页购买成功音效（3秒，欢快上升音阶+金币声+确认声+像素光点声，有成功感和满足感） | 设计任务第10轮 |
+| steam_store_wishlist_add.wav | 2026-09-08 | Steam商店页P1 | Steam商店页添加愿望单音效（3秒，柔和上升音阶+星星声+确认声+像素光点声，有收藏感和期待感） | 设计任务第10轮 |
+| steam_achievement_unlock.wav | 2026-09-08 | Steam商店页P1 | Steam成就解锁音效（4秒，史诗感上升音阶+叮声+光芒绽放声+庆祝声+像素光点声，有成就感和仪式感） | 设计任务第10轮 |
+| steam_game_launch.wav | 2026-09-08 | Steam商店页P1 | Steam游戏启动音效（3秒，上升音阶+能量聚集声+启动声+像素光点声，有启动感和期待感） | 设计任务第10轮 |
 | steam_trailer_intro.wav | 2026-09-08 | Steam商店页P1 | Steam宣传视频开场音效（5秒，史诗感号角+弦乐上升+鼓声渐强+灵魂主题旋律，有史诗感和期待感） | 设计任务第9轮 |
 | steam_trailer_transition.wav | 2026-09-08 | Steam商店页P1 | Steam宣传视频转场音效（2秒，快速上升音阶+能量扫过声，有转场感和流畅感） | 设计任务第9轮 |
 | steam_trailer_climax.wav | 2026-09-08 | Steam商店页P1 | Steam宣传视频高潮音效（5秒，史诗战斗号角+激烈战鼓+弦乐高潮+技能释放+爆炸，有激烈感和史诗感） | 设计任务第9轮 |
