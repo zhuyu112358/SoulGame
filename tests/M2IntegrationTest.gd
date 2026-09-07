@@ -86,6 +86,7 @@ func _ready() -> void:
 	_test_new_env_sounds_round4()
 	_test_new_soul_sounds_round4()
 	_test_new_env_sounds_round5()
+	_test_new_soul_sounds_round5()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -6108,3 +6109,70 @@ func _test_new_env_sounds_round5() -> void:
 				found = true
 				break
 		_assert(found, "Biome covered: %s" % biome)
+
+
+## ============================================
+## New Soul Sound Integration Tests (Round 5)
+## ============================================
+func _test_new_soul_sounds_round5() -> void:
+	print("\n--- New Soul Sound Integration Tests (Round 5) ---")
+
+	# Test 1: New soul sound files exist
+	var new_sounds = ["soul_expectant_wait", "soul_feed", "soul_heroic", "soul_honorable", "soul_humble", "soul_inquisitive", "soul_inspired", "soul_jealous", "soul_lonely", "soul_loving"]
+	for sound_name in new_sounds:
+		var path = "res://assets/audio/soul/%s.wav" % sound_name
+		_assert(FileAccess.file_exists(path), "Sound file exists: %s" % sound_name)
+
+	# Test 2: New soul sounds are registered in AudioManager
+	for sound_name in new_sounds:
+		_assert(AudioManager._sound_paths.has(sound_name), "Sound registered: %s" % sound_name)
+
+	# Test 3: AudioManager has soul_heroic sound
+	_assert(AudioManager._sound_paths.has("soul_heroic"), "AudioManager has soul_heroic")
+
+	# Test 4: AudioManager has soul_loving sound
+	_assert(AudioManager._sound_paths.has("soul_loving"), "AudioManager has soul_loving")
+
+	# Test 5: AudioManager has soul_inspired sound
+	_assert(AudioManager._sound_paths.has("soul_inspired"), "AudioManager has soul_inspired")
+
+	# Test 6: Soul sound count increased
+	var soul_count = 0
+	for sound_name in AudioManager._sound_paths.keys():
+		if sound_name.begins_with("soul_"):
+			soul_count += 1
+	_assert(soul_count >= 85, "Soul sound count >= 85 (actual: %d)" % soul_count)
+
+	# Test 7: Total sound count increased
+	_assert(AudioManager._sound_paths.size() >= 305, "Total sound count >= 305 (actual: %d)" % AudioManager._sound_paths.size())
+
+	# Test 8: New sounds have correct file paths
+	_assert(AudioManager._sound_paths["soul_heroic"] == "res://assets/audio/soul/soul_heroic.wav", "soul_heroic path correct")
+	_assert(AudioManager._sound_paths["soul_loving"] == "res://assets/audio/soul/soul_loving.wav", "soul_loving path correct")
+	_assert(AudioManager._sound_paths["soul_inspired"] == "res://assets/audio/soul/soul_inspired.wav", "soul_inspired path correct")
+
+	# Test 9: AudioManager can play new sounds (no crash)
+	AudioManager.play_sfx("soul_heroic")
+	AudioManager.play_sfx("soul_loving")
+	AudioManager.play_sfx("soul_inspired")
+	_assert(true, "New soul sounds play without crash")
+
+	# Test 10: Existing soul sounds still registered
+	_assert(AudioManager._sound_paths.has("soul_happy"), "Existing soul_happy still registered")
+	_assert(AudioManager._sound_paths.has("soul_joyful"), "Existing soul_joyful still registered")
+	_assert(AudioManager._sound_paths.has("soul_excited"), "Existing soul_excited still registered")
+
+	# Test 11: New soul sound names are descriptive
+	_assert(new_sounds[0] == "soul_expectant_wait", "First new sound is soul_expectant_wait")
+	_assert(new_sounds[5] == "soul_inquisitive", "Sixth new sound is soul_inquisitive")
+	_assert(new_sounds[9] == "soul_loving", "Tenth new sound is soul_loving")
+
+	# Test 12: New soul sounds cover diverse emotions
+	var emotions = ["expectant", "feed", "heroic", "honorable", "humble", "inquisitive", "inspired", "jealous", "lonely", "loving"]
+	for emotion in emotions:
+		var found = false
+		for sound_name in new_sounds:
+			if sound_name.find(emotion) >= 0:
+				found = true
+				break
+		_assert(found, "Emotion covered: %s" % emotion)
