@@ -94,3 +94,16 @@
 - 设计文档：`D:\Sojourn\management\docs\game-design\`
 - 设计DEVLOG：`D:\Sojourn\battleplan\docs\DESIGN_DEVLOG.md`
 - 设计验收标准：`D:\Sojourn\battleplan\docs\design_acceptance.md`
+
+### 第11轮新增（2026-09-08，游戏BGM音效组+Steam商店页素材）
+
+| 文件名 | 描述 | 时长 | 用途 |
+|--------|------|------|------|
+| bgm_main_menu.wav | 主菜单背景音乐BGM（柔和钢琴+弦乐+轻柔鼓点+灵魂主题旋律，宁静感和期待感，可循环） | 10秒 | 游戏主菜单界面BGM，Steam商店页素材 |
+| bgm_soul_home.wav | 灵魂之家背景音乐BGM（温暖氛围音乐+柔和钢琴+木吉他+轻柔弦乐+温暖的灵魂主题旋律，温馨感和归属感，可循环） | 10秒 | 灵魂之家界面BGM |
+| bgm_rts_arena.wav | RTS竞技场背景音乐BGM（紧张氛围音乐+急促鼓点+低沉弦乐+战斗号角+紧张的战斗主题旋律，紧张感和战斗感，可循环） | 10秒 | RTS竞技场战斗界面BGM |
+| bgm_battle_result.wav | 战斗结算背景音乐BGM（氛围音乐+柔和钢琴+弦乐+胜利/失败主题旋律，结算感和回味感） | 8秒 | 战斗结算界面BGM |
+| bgm_soul_select.wav | 灵魂选择背景音乐BGM（神秘氛围音乐+柔和钢琴+空灵弦乐+神秘的灵魂主题旋律+轻微魔法音效，神秘感和探索感，可循环） | 8秒 | 灵魂选择界面BGM |
+| bgm_settings.wav | 设置界面背景音乐BGM（轻松氛围音乐+柔和钢琴+轻柔弦乐+轻松的主题旋律，轻松感和舒适感，可循环） | 8秒 | 设置界面BGM |
+
+**本轮总计：6个BGM音效（游戏全场景BGM组：主菜单/灵魂之家/RTS竞技场/战斗结算/灵魂选择/设置界面，Steam EA上架P1素材）**
