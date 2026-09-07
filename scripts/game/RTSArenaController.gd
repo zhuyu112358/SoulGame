@@ -54,6 +54,11 @@ var _screen_shake_timer = 0.0
 var _screen_shake_intensity = 0.0
 var _base_position = Vector2.ZERO
 
+## Hit flash effect (combat feedback)
+var _hit_flash = null
+var _hit_flash_timer = 0.0
+var _hit_flash_duration = 0.0
+
 ## Weather/environment display
 var _weather_label = null
 var _weather_icon = null
@@ -139,6 +144,7 @@ func _ready() -> void:
 	_setup_damage_label()
 	_setup_error_label()
 	_setup_success_label()
+	_setup_hit_flash()
 
 	# Auto-start battle if config is set in GameState
 	_try_auto_start_battle()
@@ -432,6 +438,8 @@ func _show_crit_hit() -> void:
 	_crit_timer = 1.0
 	# Trigger screen shake for critical hit
 	_trigger_screen_shake(4.0, 0.25)
+	# Trigger stronger hit flash for critical hit
+	_trigger_hit_flash(Color(1.0, 0.8, 0.2, 0.35), 0.2)
 	# Play critical hit sound
 	if AudioManager:
 		AudioManager.play_sfx("battle_critical")
@@ -712,6 +720,8 @@ func _show_damage(damage_amount: int) -> void:
 	_damage_label.modulate.a = 1.0
 	_damage_active = true
 	_damage_timer = 1.0
+	# Trigger hit flash on damage taken
+	_trigger_hit_flash(Color(1.0, 0.2, 0.2, 0.25), 0.15)
 
 
 ## Trigger screen shake effect
@@ -761,6 +771,39 @@ func _setup_success_label() -> void:
 	_success_label.modulate = Color(0.3, 1.0, 0.4)
 	_success_label.visible = false
 	add_child(_success_label)
+
+
+## Setup hit flash overlay (full screen color flash on damage)
+func _setup_hit_flash() -> void:
+	_hit_flash = ColorRect.new()
+	_hit_flash.name = "HitFlash"
+	_hit_flash.color = Color(1.0, 0.2, 0.2, 0.0)  # Red, transparent by default
+	_hit_flash.size = Vector2(1280, 720)
+	_hit_flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_hit_flash)
+
+
+## Trigger hit flash effect
+func _trigger_hit_flash(p_color: Color = Color(1.0, 0.2, 0.2, 0.3), p_duration: float = 0.15) -> void:
+	if _hit_flash == null:
+		return
+	_hit_flash.color = p_color
+	_hit_flash_timer = p_duration
+	_hit_flash_duration = p_duration
+
+
+## Update hit flash effect (fade out)
+func _update_hit_flash(delta: float) -> void:
+	if _hit_flash_timer > 0 and _hit_flash != null:
+		_hit_flash_timer -= delta
+		if _hit_flash_timer > 0:
+			var progress = 1.0 - (_hit_flash_timer / _hit_flash_duration)
+			var current_color = _hit_flash.color
+			current_color.a = _hit_flash.color.a * (1.0 - progress)
+			_hit_flash.color = current_color
+		else:
+			_hit_flash.color.a = 0.0
+			_hit_flash_timer = 0.0
 
 
 ## Update error message display
@@ -1190,6 +1233,8 @@ func _process(delta: float) -> void:
 		return
 	# Update screen shake effect (runs even when paused for visual feedback)
 	_update_screen_shake(delta)
+	# Update hit flash effect (runs even when paused)
+	_update_hit_flash(delta)
 	# Skip battle logic updates when paused (UI still renders)
 	if _is_paused:
 		_update_unit_display()
