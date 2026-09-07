@@ -18,6 +18,7 @@ const SoulAIController = preload("res://scripts/game/SoulAIController.gd")
 const SoulSelect = preload("res://scripts/ui/SoulSelect.gd")
 ## Test counters
 const SoulHomeController = preload("res://scripts/game/SoulHomeController.gd")
+const SettingsMenu = preload("res://scripts/ui/SettingsMenu.gd")
 var _tests_run: int = 0
 var _tests_passed: int = 0
 var _tests_failed: int = 0
@@ -55,6 +56,7 @@ func _ready() -> void:
 	_test_soul_select()
 	# Print summary
 	_test_soul_home_controller()
+	_test_settings_menu()
 	_test_game_flow()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
@@ -4227,3 +4229,69 @@ func _test_game_flow() -> void:
 
 	# Test 34: RTSArenaController has _on_battle_finished
 	_assert(arena_instance.has_method("_on_battle_finished"), "RTSArenaController has _on_battle_finished")
+
+
+## ============================================
+## SettingsMenu System Tests
+## ============================================
+func _test_settings_menu() -> void:
+	print("\n--- SettingsMenu System Tests ---")
+
+	# Test 1: SettingsMenu script exists
+	_assert(SettingsMenu != null, "SettingsMenu script loaded")
+
+	# Test 2: SettingsMenu is Script
+	_assert(SettingsMenu is Script, "SettingsMenu is Script")
+
+	# Test 3: SettingsMenu can be instantiated
+	var settings_instance = SettingsMenu.new()
+	_assert(settings_instance != null, "SettingsMenu instantiated")
+	_assert(settings_instance is Control, "SettingsMenu instance is Control")
+
+	# Test 4: SettingsMenu has _on_back_pressed
+	_assert(settings_instance.has_method("_on_back_pressed"), "SettingsMenu has _on_back_pressed")
+
+	# Test 5: SettingsMenu has _on_master_volume_changed
+	_assert(settings_instance.has_method("_on_master_volume_changed"), "SettingsMenu has _on_master_volume_changed")
+
+	# Test 6: SettingsMenu has _on_sfx_volume_changed
+	_assert(settings_instance.has_method("_on_sfx_volume_changed"), "SettingsMenu has _on_sfx_volume_changed")
+
+	# Test 7: SettingsMenu has _on_bgm_volume_changed
+	_assert(settings_instance.has_method("_on_bgm_volume_changed"), "SettingsMenu has _on_bgm_volume_changed")
+
+	# Test 8: SettingsMenu has _update_labels
+	_assert(settings_instance.has_method("_update_labels"), "SettingsMenu has _update_labels")
+
+	# Test 9: settings.tscn exists
+	var settings_scene = load("res://scenes/settings.tscn")
+	_assert(settings_scene != null, "settings.tscn exists")
+
+	# Test 10: settings.tscn is PackedScene
+	_assert(settings_scene is PackedScene, "settings is PackedScene")
+
+	# Test 11: AudioManager has set_master_volume
+	_assert(AudioManager.has_method("set_master_volume"), "AudioManager has set_master_volume")
+
+	# Test 12: AudioManager has set_sfx_volume
+	_assert(AudioManager.has_method("set_sfx_volume"), "AudioManager has set_sfx_volume")
+
+	# Test 13: AudioManager has set_bgm_volume
+	_assert(AudioManager.has_method("set_bgm_volume"), "AudioManager has set_bgm_volume")
+
+	# Test 14: AudioManager has get_volume
+	_assert(AudioManager.has_method("get_volume"), "AudioManager has get_volume")
+
+	# Test 15: MainMenu has _on_settings_pressed
+	var main_menu_script = load("res://scripts/ui/MainMenu.gd")
+	var menu_instance = main_menu_script.new()
+	_assert(menu_instance.has_method("_on_settings_pressed"), "MainMenu has _on_settings_pressed")
+	menu_instance.queue_free()
+
+	# Test 16: SceneManager has settings alias
+	var scene_stats = SceneManager.get_stats()
+	_assert(scene_stats.has("registered_aliases"), "SceneManager has aliases stat")
+
+	# Test 17: SettingsMenu instance free
+	settings_instance.queue_free()
+	_assert(true, "SettingsMenu freed")

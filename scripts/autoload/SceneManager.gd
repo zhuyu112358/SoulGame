@@ -200,6 +200,7 @@ func _register_default_aliases() -> void:
 		"soul_select": "res://scenes/soul_select.tscn",
 		"rts_arena": "res://scenes/rts_arena.tscn",
 		"soul_home": "res://scenes/soul_home.tscn",
+		"settings": "res://scenes/settings.tscn",
 		"loading": "res://scenes/loading.tscn",
 		"bootstrap": "res://scenes/bootstrap.tscn"
 	}

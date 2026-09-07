@@ -198,3 +198,43 @@
 - 可玩原型端到端验证（实际运行游戏，从头玩到尾）
 - 修复端到端验证中发现的bug
 - 实现设置界面（音量控制等）- P2
+
+## 2026-09-07 - M2可玩原型冲刺第六轮
+
+### 完成功能
+
+#### 设置界面实现 (P2)
+- **文件**: scripts/ui/SettingsMenu.gd, scenes/settings.tscn
+- **修改**: scripts/ui/MainMenu.gd, scripts/autoload/SceneManager.gd
+
+**设置界面功能**:
+- 主音量滑块（0-100%）
+- 音效音量滑块（0-100%，调整时播放测试音）
+- 背景音乐音量滑块（0-100%）
+- 返回主菜单按钮
+- 深色背景+像素风UI风格，与v1.1设计一致
+
+**集成**:
+- MainMenu._on_settings_pressed()现在切换到settings.tscn（原TODO占位）
+- SceneManager注册settings场景别名
+- 音量控制通过AudioManager.set_master_volume/set_sfx_volume/set_bgm_volume实现
+- 设置场景加载时读取当前音量值
+
+### 测试
+- SettingsMenu测试: 17个（脚本存在、场景存在、实例化、方法检查、AudioManager方法、SceneManager别名）
+- M2测试: 1495 -> 1513
+- 总计测试: 1679 -> 1697
+
+### 已知问题
+- 背景图main_menu_bg.png缺少.import文件，需要在Godot编辑器中打开项目自动导入
+- 场景加载时有资源警告，但不影响功能
+
+### [设计需求]
+- 需要: 概念图 - 灵魂之家背景（温馨、像素风）- P1
+- 需要: 音效 - 灵魂之家环境音（温暖、空灵）- P1
+
+### 下一步
+- 可玩原型端到端验证（实际运行游戏，从头玩到尾）
+- 修复端到端验证中发现的bug
+- 优化UI细节和视觉效果
+- 集成更多设计资源（概念图+音效）

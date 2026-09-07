@@ -45,9 +45,9 @@ func _on_home_pressed() -> void:
 
 
 func _on_settings_pressed() -> void:
-	GameLog.info("Settings pressed - settings not implemented yet", "MainMenu")
+	GameLog.info("Settings pressed - transitioning to settings", "MainMenu")
 	_play_button_sound()
-	# TODO: Implement settings scene
+	SceneManager.change_scene("res://scenes/settings.tscn")
 
 
 func _on_quit_pressed() -> void:

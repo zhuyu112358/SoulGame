@@ -1,0 +1,104 @@
+[gd_scene load_steps=2 format=3 uid="uid://b_settings_001"]
+
+[ext_resource type="Script" path="res://scripts/ui/SettingsMenu.gd" id="1_settings"]
+
+[node name="Settings" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_settings")
+
+[node name="Background" type="ColorRect" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.08, 0.06, 0.12, 1)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(500, 400)
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/VBoxContainer"]
+text = "设置 Settings"
+horizontal_alignment = 1
+theme_override_colors/font_color = Color(0.95, 0.9, 0.7, 1)
+theme_override_font_sizes/font_size = 32
+
+[node name="Spacer1" type="Control" parent="CenterContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 30)
+
+[node name="MasterVolume" type="HBoxContainer" parent="CenterContainer/VBoxContainer"]
+
+[node name="NameLabel" type="Label" parent="CenterContainer/VBoxContainer/MasterVolume"]
+text = "主音量"
+custom_minimum_size = Vector2(120, 0)
+theme_override_colors/font_color = Color(0.9, 0.9, 0.95, 1)
+theme_override_font_sizes/font_size = 16
+
+[node name="Slider" type="HSlider" parent="CenterContainer/VBoxContainer/MasterVolume"]
+custom_minimum_size = Vector2(250, 0)
+min_value = 0.0
+max_value = 100.0
+step = 1.0
+value = 80.0
+
+[node name="ValueLabel" type="Label" parent="CenterContainer/VBoxContainer/MasterVolume"]
+text = "80%"
+custom_minimum_size = Vector2(60, 0)
+horizontal_alignment = 1
+theme_override_colors/font_color = Color(0.8, 0.9, 1.0, 1)
+theme_override_font_sizes/font_size = 16
+
+[node name="SfxVolume" type="HBoxContainer" parent="CenterContainer/VBoxContainer"]
+
+[node name="NameLabel" type="Label" parent="CenterContainer/VBoxContainer/SfxVolume"]
+text = "音效"
+custom_minimum_size = Vector2(120, 0)
+theme_override_colors/font_color = Color(0.9, 0.9, 0.95, 1)
+theme_override_font_sizes/font_size = 16
+
+[node name="Slider" type="HSlider" parent="CenterContainer/VBoxContainer/SfxVolume"]
+custom_minimum_size = Vector2(250, 0)
+min_value = 0.0
+max_value = 100.0
+step = 1.0
+value = 80.0
+
+[node name="ValueLabel" type="Label" parent="CenterContainer/VBoxContainer/SfxVolume"]
+text = "80%"
+custom_minimum_size = Vector2(60, 0)
+horizontal_alignment = 1
+theme_override_colors/font_color = Color(0.8, 0.9, 1.0, 1)
+theme_override_font_sizes/font_size = 16
+
+[node name="BgmVolume" type="HBoxContainer" parent="CenterContainer/VBoxContainer"]
+
+[node name="NameLabel" type="Label" parent="CenterContainer/VBoxContainer/BgmVolume"]
+text = "背景音乐"
+custom_minimum_size = Vector2(120, 0)
+theme_override_colors/font_color = Color(0.9, 0.9, 0.95, 1)
+theme_override_font_sizes/font_size = 16
+
+[node name="Slider" type="HSlider" parent="CenterContainer/VBoxContainer/BgmVolume"]
+custom_minimum_size = Vector2(250, 0)
+min_value = 0.0
+max_value = 100.0
+step = 1.0
+value = 50.0
+
+[node name="ValueLabel" type="Label" parent="CenterContainer/VBoxContainer/BgmVolume"]
+text = "50%"
+custom_minimum_size = Vector2(60, 0)
+horizontal_alignment = 1
+theme_override_colors/font_color = Color(0.8, 0.9, 1.0, 1)
+theme_override_font_sizes/font_size = 16
+
+[node name="Spacer2" type="Control" parent="CenterContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 40)
+
+[node name="BackButton" type="Button" parent="CenterContainer/VBoxContainer"]
+custom_minimum_size = Vector2(200, 50)
+size_flags_horizontal = 4
+text = "返回主菜单"
+theme_override_font_sizes/font_size = 18
