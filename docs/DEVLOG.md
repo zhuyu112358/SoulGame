@@ -2535,3 +2535,59 @@
 - 修复端到端验证中发现的bug
 - 优化UI细节和视觉效果
 - 考虑M2完成，进入M3（灵魂之家深化+成长系统完善+优化阶段）
+
+## 2026-09-08 - M2可玩原型冲刺第五十一轮
+
+### 完成功能
+
+#### 治疗效果显示 (P2)
+- **新增功能**: RTS战斗治疗效果显示
+- **修改文件**: scripts/game/SoulUnit.gd, scripts/game/RTSArenaController.gd
+- **测试**: 19个治疗效果显示测试
+
+**SoulUnit修改**:
+- 新增last_heal_amount变量（记录最后一次治疗量）
+- 修改heal技能：记录治疗量到last_heal_amount
+  - 治疗量为15 + level * 2
+  - 治疗后设置last_heal_amount
+
+**RTSArenaController修改**:
+- 新增_heal_label、_heal_timer、_heal_active变量
+- 新增_setup_heal_label()方法：创建治疗提示标签
+  - 28px绿色文字，居中显示在屏幕中央偏下
+  - 初始隐藏
+- 新增_update_heal_display(delta)方法：
+  - 检查玩家单位的last_heal_amount
+  - 如果大于0，调用_show_heal()并重置为0
+  - 治疗提示显示1秒后自动隐藏
+- 新增_show_heal(heal_amount)方法：
+  - 显示"治疗 +X"文字
+  - 播放battle_heal音效
+  - 添加战斗日志"治疗 +X"
+- 修改_process()方法：添加_update_heal_display(delta)调用
+
+**治疗效果显示效果**:
+- 玩家单位使用治疗技能时
+- 屏幕中央显示绿色"治疗 +X"文字，持续1秒
+- 播放battle_heal音效
+- 战斗日志记录治疗事件
+
+### 测试
+- 治疗效果显示测试: 19个（治疗变量、控制器变量、方法存在、标签创建、显示激活、定时隐藏、音效注册、治疗技能设置last_heal_amount）
+- M2测试: 2813 -> 2832
+- 总计测试: 2997 -> 3016
+
+### 已知问题
+- 新复制的.png/.wav文件缺少.import文件，需要在Godot编辑器中打开项目自动导入
+- headless模式load()新资源会失败，但FileAccess.file_exists()检查正常
+- 编译时会显示资源导入警告，但不是代码错误
+
+### [设计需求]
+- 需要: 概念图 - 灵魂之家背景（温馨、像素风）- P1（已用concept_home_mainroom作为占位）
+- 需要: 音效 - 灵魂之家环境音（温暖、空灵）- P1（已用env_home_indoor作为环境音）
+
+### 下一步
+- 可玩原型端到端验证（实际运行游戏，从头玩到尾）
+- 修复端到端验证中发现的bug
+- 优化UI细节和视觉效果
+- 考虑M2完成，进入M3（灵魂之家深化+成长系统完善+优化阶段）

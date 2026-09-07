@@ -101,6 +101,7 @@ func _ready() -> void:
 	_test_battle_result_detailed_stats()
 	_test_critical_hit_system()
 	_test_dodge_system()
+	_test_heal_display()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -7073,3 +7074,59 @@ func _test_dodge_system() -> void:
 	# Test 8: AudioManager has battle_dodge sound
 	var audio_info = AudioManager.get_info()
 	_assert(audio_info.has("registered_sounds"), "AudioManager info has registered_sounds")
+
+
+## ============================================
+## Heal Display Tests
+## ============================================
+func _test_heal_display() -> void:
+	print("\n--- Heal Display Tests ---")
+
+	# Test 1: SoulUnit has last_heal_amount variable
+	var soul_unit_script = load("res://scripts/game/SoulUnit.gd")
+	var soul_unit = soul_unit_script.new()
+	_assert(soul_unit.last_heal_amount == 0, "last_heal_amount starts at 0")
+
+	# Test 2: RTSArenaController has heal display variables
+	var controller_script = load("res://scripts/game/RTSArenaController.gd")
+	var controller = controller_script.new()
+	_assert(controller._heal_label == null, "Heal label is null initially")
+	_assert(controller._heal_timer == 0.0, "Heal timer starts at 0.0")
+	_assert(controller._heal_active == false, "Heal active starts false")
+
+	# Test 3: Controller has heal methods
+	_assert(controller.has_method("_setup_heal_label"), "Has _setup_heal_label method")
+	_assert(controller.has_method("_update_heal_display"), "Has _update_heal_display method")
+	_assert(controller.has_method("_show_heal"), "Has _show_heal method")
+
+	# Test 4: Setup heal label creates label
+	controller._setup_heal_label()
+	_assert(controller._heal_label != null, "Heal label created")
+	_assert(controller._heal_label.text == "", "Heal label starts empty")
+	_assert(controller._heal_label.visible == false, "Heal label starts hidden")
+
+	# Test 5: Show heal activates display
+	controller._show_heal(25)
+	_assert(controller._heal_active == true, "Heal active after show")
+	_assert(controller._heal_timer == 1.0, "Heal timer set to 1.0")
+	_assert(controller._heal_label.text == "治疗 +25", "Heal label shows 治疗 +25")
+	_assert(controller._heal_label.visible == true, "Heal label visible after show")
+
+	# Test 6: Update heal display hides after timer
+	controller._update_heal_display(1.5)
+	_assert(controller._heal_active == false, "Heal inactive after timer expires")
+	_assert(controller._heal_label.visible == false, "Heal label hidden after timer")
+
+	# Test 7: AudioManager has battle_heal sound
+	var audio_info = AudioManager.get_info()
+	_assert(audio_info.has("registered_sounds"), "AudioManager info has registered_sounds")
+
+	# Test 8: Heal skill sets last_heal_amount
+	var test_unit = soul_unit_script.new()
+	test_unit.init_from_soul("test_heal", "HealSoul", "light", 5, true)
+	test_unit.dodge_rate = 0.0
+	test_unit.current_hp = 50
+	test_unit.current_energy = 100
+	test_unit.use_skill("heal")
+	_assert(test_unit.last_heal_amount > 0, "last_heal_amount set after heal skill")
+	_assert(test_unit.current_hp > 50, "HP increased after heal skill")

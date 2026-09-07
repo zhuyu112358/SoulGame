@@ -83,6 +83,9 @@ var last_attack_critical: bool = false  # whether the last attack was a critical
 var dodge_rate: float = 0.05  # 5% base dodge chance
 var last_damage_dodged: bool = false  # whether the last incoming damage was dodged
 
+## Heal tracking
+var last_heal_amount: int = 0  # amount of last heal performed
+
 ## Visual sprite
 var _sprite: Node2D = null
 
@@ -407,6 +410,7 @@ func use_skill(p_skill_name: String, p_target: Node2D = null) -> bool:
 				return true
 		"heal":
 			var heal_amount: int = 15 + level * 2
+			last_heal_amount = heal_amount
 			current_hp = min(max_hp, current_hp + heal_amount)
 			emit_signal("hp_changed", current_hp, max_hp)
 			skill_cooldowns[p_skill_name] = 8.0

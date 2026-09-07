@@ -83,6 +83,11 @@ var _dodge_label = null
 var _dodge_timer = 0.0
 var _dodge_active = false
 
+## Heal display
+var _heal_label = null
+var _heal_timer = 0.0
+var _heal_active = false
+
 
 func _ready() -> void:
 	GameLog.info("RTSArenaController: RTS Arena scene ready", "Arena")
@@ -98,6 +103,7 @@ func _ready() -> void:
 	_setup_status_labels()
 	_setup_crit_label()
 	_setup_dodge_label()
+	_setup_heal_label()
 
 	# Auto-start battle if config is set in GameState
 	_try_auto_start_battle()
@@ -424,6 +430,51 @@ func _show_dodge() -> void:
 	if AudioManager:
 		AudioManager.play_sfx("battle_dodge")
 	_add_log("闪避！")
+
+
+## Setup heal label
+func _setup_heal_label() -> void:
+	_heal_label = Label.new()
+	_heal_label.name = "HealLabel"
+	_heal_label.text = ""
+	_heal_label.position = Vector2(540, 420)
+	_heal_label.size = Vector2(200, 50)
+	_heal_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_heal_label.add_theme_font_size_override("font_size", 28)
+	_heal_label.modulate = Color(0.3, 1.0, 0.4)
+	_heal_label.visible = false
+	add_child(_heal_label)
+
+
+## Update heal display
+func _update_heal_display(delta: float) -> void:
+	if _heal_active:
+		_heal_timer -= delta
+		if _heal_timer <= 0:
+			_heal_active = false
+			if _heal_label:
+				_heal_label.visible = false
+		return
+
+	# Check if player unit just healed
+	if RTSArenaManager.player_unit and RTSArenaManager.player_unit.last_heal_amount > 0:
+		_show_heal(RTSArenaManager.player_unit.last_heal_amount)
+		# Reset the flag to avoid repeated display
+		RTSArenaManager.player_unit.last_heal_amount = 0
+
+
+## Show heal effect
+func _show_heal(heal_amount: int) -> void:
+	if _heal_label == null:
+		return
+	_heal_label.text = "治疗 +%d" % heal_amount
+	_heal_label.visible = true
+	_heal_active = true
+	_heal_timer = 1.0
+	# Play heal sound
+	if AudioManager:
+		AudioManager.play_sfx("battle_heal")
+	_add_log("治疗 +%d" % heal_amount)
 
 
 ## Play button hover sound
@@ -809,6 +860,7 @@ func _process(delta: float) -> void:
 	_update_status_display()
 	_update_crit_display(delta)
 	_update_dodge_display(delta)
+	_update_heal_display(delta)
 	if minimap:
 		minimap.update_minimap()
 
