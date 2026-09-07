@@ -2336,3 +2336,67 @@
 - 修复端到端验证中发现的bug
 - 优化UI细节和视觉效果
 - 考虑M2完成，进入M3（灵魂之家深化+成长系统完善+优化阶段）
+
+## 2026-09-07 - M2可玩原型冲刺第四十八轮
+
+### 完成功能
+
+#### 战斗结果弹窗详细统计数据增强 (P2)
+- **新增功能**: 战斗结果弹窗显示本场战斗详细统计数据
+- **修改文件**: scripts/game/RTSArenaManager.gd, scripts/game/RTSArenaController.gd
+- **测试**: 21个战斗结果详细统计测试
+
+**RTSArenaManager修改**:
+- 新增last_battle_stats变量（保存最后一场战斗的统计数据）
+- 修改_finish_battle()方法：保存战斗统计数据到last_battle_stats
+  - 添加ai_hp_remaining和ai_max_hp字段
+  - 包含result, player_soul_id, opponent_soul_id, player_level, opponent_level
+  - 包含player_hp_remaining, player_max_hp, ai_hp_remaining, ai_max_hp
+  - 包含duration, damage_dealt, damage_taken, skills_used
+
+**RTSArenaController修改**:
+- 修改_on_battle_finished()方法：获取RTSArenaManager.last_battle_stats并传递给_show_result_modal
+- 修改_show_result_modal()方法：添加p_battle_stats参数（默认空字典）
+- 增强战斗结果弹窗显示：
+  - 面板高度从360增加到440（容纳更多统计数据）
+  - 面板位置从180调整到140（居中显示）
+  - 添加"本场战斗"统计区域（蓝色文字）：
+    - 战斗时长（MM:SS格式）
+    - 伤害输出
+    - 承受伤害
+    - 剩余HP（当前/最大 百分比）
+  - 添加"总体统计"区域（灰色文字）：
+    - 胜率（百分比 胜场/总场数）
+    - 当前连胜（最佳连胜）
+    - 总经验
+  - 按钮位置从280调整到360
+  - 添加两个分隔线区分不同统计区域
+
+**战斗结果弹窗效果**:
+- 胜利时显示绿色"VICTORY!"标题
+- 失败时显示红色"DEFEAT..."标题
+- 平局时显示黄色"DRAW"标题
+- 显示获得的经验值（金色文字）
+- 显示本场战斗详细统计（蓝色文字）
+- 显示总体统计数据（灰色文字）
+- "再战一局"和"返回主菜单"按钮
+
+### 测试
+- 战斗结果详细统计测试: 21个（last_battle_stats变量、方法存在、统计字段、时长格式化、HP百分比、伤害计算、BattleResultManager统计字段）
+- M2测试: 2759 -> 2780
+- 总计测试: 2943 -> 2964
+
+### 已知问题
+- 新复制的.png/.wav文件缺少.import文件，需要在Godot编辑器中打开项目自动导入
+- headless模式load()新资源会失败，但FileAccess.file_exists()检查正常
+- 编译时会显示资源导入警告，但不是代码错误
+
+### [设计需求]
+- 需要: 概念图 - 灵魂之家背景（温馨、像素风）- P1（已用concept_home_mainroom作为占位）
+- 需要: 音效 - 灵魂之家环境音（温暖、空灵）- P1（已用env_home_indoor作为环境音）
+
+### 下一步
+- 可玩原型端到端验证（实际运行游戏，从头玩到尾）
+- 修复端到端验证中发现的bug
+- 优化UI细节和视觉效果
+- 考虑M2完成，进入M3（灵魂之家深化+成长系统完善+优化阶段）

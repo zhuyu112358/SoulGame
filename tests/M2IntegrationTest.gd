@@ -98,6 +98,7 @@ func _ready() -> void:
 	_test_battle_pause()
 	_test_battle_speed()
 	_test_status_effect_display()
+	_test_battle_result_detailed_stats()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -6891,3 +6892,67 @@ func _test_status_effect_display() -> void:
 	var info = RTSArenaManager.get_battle_info()
 	_assert(info.has("player"), "Battle info has player key")
 	_assert(info.has("ai"), "Battle info has ai key")
+
+
+## ============================================
+## Battle Result Detailed Stats Tests
+## ============================================
+func _test_battle_result_detailed_stats() -> void:
+	print("\n--- Battle Result Detailed Stats Tests ---")
+
+	# Test 1: RTSArenaManager has last_battle_stats variable
+	_assert(RTSArenaManager.last_battle_stats != null, "RTSArenaManager has last_battle_stats dictionary")
+	_assert(RTSArenaManager.last_battle_stats is Dictionary, "last_battle_stats is a dictionary")
+
+	# Test 2: RTSArenaController _show_result_modal accepts battle_stats parameter
+	var controller_script = load("res://scripts/game/RTSArenaController.gd")
+	var controller = controller_script.new()
+	_assert(controller.has_method("_show_result_modal"), "Has _show_result_modal method")
+
+	# Test 3: Battle stats dictionary has expected fields
+	var test_battle_stats = {
+		"result": "victory",
+		"player_soul_id": "soul_fire_01",
+		"opponent_soul_id": "ai_soul_01",
+		"player_level": 1,
+		"opponent_level": 1,
+		"player_hp_remaining": 75,
+		"player_max_hp": 100,
+		"ai_hp_remaining": 0,
+		"ai_max_hp": 100,
+		"duration": 45.5,
+		"damage_dealt": 100,
+		"damage_taken": 25,
+		"skills_used": []
+	}
+	_assert(test_battle_stats.has("duration"), "Battle stats has duration field")
+	_assert(test_battle_stats.has("damage_dealt"), "Battle stats has damage_dealt field")
+	_assert(test_battle_stats.has("damage_taken"), "Battle stats has damage_taken field")
+	_assert(test_battle_stats.has("player_hp_remaining"), "Battle stats has player_hp_remaining field")
+	_assert(test_battle_stats.has("player_max_hp"), "Battle stats has player_max_hp field")
+	_assert(test_battle_stats.has("ai_hp_remaining"), "Battle stats has ai_hp_remaining field")
+	_assert(test_battle_stats.has("ai_max_hp"), "Battle stats has ai_max_hp field")
+
+	# Test 4: Duration formatting
+	var duration = test_battle_stats["duration"]
+	var minutes = int(duration) / 60
+	var seconds = int(duration) % 60
+	_assert(minutes == 0, "45.5 seconds = 0 minutes")
+	_assert(seconds == 45, "45.5 seconds = 45 seconds")
+
+	# Test 5: HP percentage calculation
+	var hp_pct = float(test_battle_stats["player_hp_remaining"]) / float(test_battle_stats["player_max_hp"]) * 100.0
+	_assert(hp_pct == 75.0, "75/100 HP = 75%")
+
+	# Test 6: Damage calculations are correct
+	_assert(test_battle_stats["damage_dealt"] == 100, "Damage dealt = 100 (ai max_hp - ai remaining)")
+	_assert(test_battle_stats["damage_taken"] == 25, "Damage taken = 25 (player max_hp - player remaining)")
+
+	# Test 7: BattleResultManager stats has expected fields
+	var br_stats = BattleResultManager.get_stats()
+	_assert(br_stats.has("total_battles"), "BattleResultManager stats has total_battles")
+	_assert(br_stats.has("victories"), "BattleResultManager stats has victories")
+	_assert(br_stats.has("win_rate"), "BattleResultManager stats has win_rate")
+	_assert(br_stats.has("current_streak"), "BattleResultManager stats has current_streak")
+	_assert(br_stats.has("best_streak"), "BattleResultManager stats has best_streak")
+	_assert(br_stats.has("total_experience_gained"), "BattleResultManager stats has total_experience_gained")

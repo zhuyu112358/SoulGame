@@ -837,13 +837,14 @@ func _on_battle_finished(p_result: String, p_winner_id: String, p_loser_id: Stri
 	_set_commands_enabled(false)
 
 	# Show battle result modal
-	_show_result_modal(p_result, result_text, result_color, exp_gained, stats)
+	var battle_stats = RTSArenaManager.last_battle_stats
+	_show_result_modal(p_result, result_text, result_color, exp_gained, stats, battle_stats)
 
 	GameLog.info("RTSArenaController: Battle finished - %s, EXP: +%d" % [p_result, exp_gained], "Arena")
 
 
 ## Show battle result modal dialog
-func _show_result_modal(p_result: String, p_title: String, p_title_color: Color, p_exp: int, p_stats: Dictionary) -> void:
+func _show_result_modal(p_result: String, p_title: String, p_title_color: Color, p_exp: int, p_stats: Dictionary, p_battle_stats: Dictionary = {}) -> void:
 	# Play EXP gain sound
 	if AudioManager:
 		AudioManager.play_sfx("ui_exp_gain")
@@ -855,17 +856,17 @@ func _show_result_modal(p_result: String, p_title: String, p_title_color: Color,
 	modal_bg.name = "ResultModalBG"
 	add_child(modal_bg)
 
-	# Create result panel
+	# Create result panel (taller to fit more stats)
 	var panel = Panel.new()
-	panel.position = Vector2(390, 180)
-	panel.size = Vector2(500, 360)
+	panel.position = Vector2(390, 140)
+	panel.size = Vector2(500, 440)
 	panel.name = "ResultModal"
 	add_child(panel)
 
 	# Title
 	var title = Label.new()
 	title.text = p_title
-	title.position = Vector2(0, 25)
+	title.position = Vector2(0, 20)
 	title.size = Vector2(500, 50)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", 36)
@@ -875,42 +876,70 @@ func _show_result_modal(p_result: String, p_title: String, p_title_color: Color,
 	# EXP gained
 	var exp_label = Label.new()
 	exp_label.text = "Experience Gained: +%d" % p_exp
-	exp_label.position = Vector2(0, 85)
+	exp_label.position = Vector2(0, 75)
 	exp_label.size = Vector2(500, 30)
 	exp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	exp_label.add_theme_font_size_override("font_size", 18)
 	exp_label.modulate = Color(0.9, 0.8, 0.4)
 	panel.add_child(exp_label)
 
-	# Separator
-	var sep = HSeparator.new()
-	sep.position = Vector2(50, 125)
-	sep.size = Vector2(400, 10)
-	panel.add_child(sep)
+	# Separator 1
+	var sep1 = HSeparator.new()
+	sep1.position = Vector2(50, 115)
+	sep1.size = Vector2(400, 10)
+	panel.add_child(sep1)
 
-	# Stats
-	var stats_text = "Win Rate: %.1f%%  (%d/%d)\n" % [
+	# Battle stats (this battle)
+	var battle_stats_text = "--- 本场战斗 ---\n"
+	var duration = p_battle_stats.get("duration", 0.0)
+	var minutes = int(duration) / 60
+	var seconds = int(duration) % 60
+	battle_stats_text += "战斗时长: %02d:%02d\n" % [minutes, seconds]
+	battle_stats_text += "伤害输出: %d\n" % p_battle_stats.get("damage_dealt", 0)
+	battle_stats_text += "承受伤害: %d\n" % p_battle_stats.get("damage_taken", 0)
+	var player_hp = p_battle_stats.get("player_hp_remaining", 0)
+	var player_max_hp = p_battle_stats.get("player_max_hp", 100)
+	battle_stats_text += "剩余HP: %d/%d (%.0f%%)" % [player_hp, player_max_hp, float(player_hp) / float(player_max_hp) * 100.0]
+
+	var battle_stats_label = Label.new()
+	battle_stats_label.text = battle_stats_text
+	battle_stats_label.position = Vector2(50, 130)
+	battle_stats_label.size = Vector2(400, 100)
+	battle_stats_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	battle_stats_label.add_theme_font_size_override("font_size", 14)
+	battle_stats_label.modulate = Color(0.7, 0.9, 1.0)
+	panel.add_child(battle_stats_label)
+
+	# Separator 2
+	var sep2 = HSeparator.new()
+	sep2.position = Vector2(50, 240)
+	sep2.size = Vector2(400, 10)
+	panel.add_child(sep2)
+
+	# Overall stats
+	var stats_text = "--- 总体统计 ---\n"
+	stats_text += "胜率: %.1f%%  (%d/%d)\n" % [
 		p_stats.get("win_rate", 0),
 		p_stats.get("victories", 0),
 		p_stats.get("total_battles", 0)
 	]
-	stats_text += "Current Streak: %d  (Best: %d)\n" % [
+	stats_text += "当前连胜: %d  (最佳: %d)\n" % [
 		p_stats.get("current_streak", 0),
 		p_stats.get("best_streak", 0)
 	]
-	stats_text += "Total EXP: %d" % p_stats.get("total_experience_gained", 0)
+	stats_text += "总经验: %d" % p_stats.get("total_experience_gained", 0)
 
 	var stats_label = Label.new()
 	stats_label.text = stats_text
-	stats_label.position = Vector2(50, 145)
-	stats_label.size = Vector2(400, 100)
+	stats_label.position = Vector2(50, 255)
+	stats_label.size = Vector2(400, 90)
 	stats_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	stats_label.add_theme_font_size_override("font_size", 14)
 	stats_label.modulate = Color(0.85, 0.85, 0.9)
 	panel.add_child(stats_label)
 
 	# Buttons
-	var btn_y = 280
+	var btn_y = 360
 
 	# Rematch button
 	var rematch_btn = Button.new()

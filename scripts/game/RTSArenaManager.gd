@@ -69,6 +69,9 @@ var battle_mode: String = "manual"
 ## Battle speed multiplier (1.0 = normal, 2.0 = double speed)
 var battle_speed: float = 1.0
 
+## Last battle statistics (for result display)
+var last_battle_stats: Dictionary = {}
+
 ## Battle log
 var battle_log: Array = []
 
@@ -343,12 +346,17 @@ func _finish_battle(p_winner_id: String, p_result: String) -> void:
 		"opponent_level": ai_unit.level,
 		"player_hp_remaining": player_unit.current_hp,
 		"player_max_hp": player_unit.max_hp,
+		"ai_hp_remaining": ai_unit.current_hp,
+		"ai_max_hp": ai_unit.max_hp,
 		"duration": battle_time,
 		"damage_dealt": player_unit.max_hp - ai_unit.current_hp,
 		"damage_taken": player_unit.max_hp - player_unit.current_hp,
 		"skills_used": []
 	}
 	BattleResultManager.process_battle_result(battle_data)
+
+	# Save last battle stats for result display
+	last_battle_stats = battle_data
 
 	emit_signal("battle_finished", p_result, p_winner_id, loser_id)
 
