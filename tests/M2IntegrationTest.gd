@@ -66,6 +66,7 @@ func _ready() -> void:
 	_test_command_audio()
 	_test_soul_select_audio()
 	_test_main_menu_hover()
+	_test_settings_menu_hover()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -4805,3 +4806,57 @@ func _test_main_menu_hover() -> void:
 
 	# Test 12: Button click sound is ui_button_click_01
 	_assert(main_menu_content.find('play_ui("ui_button_click_01")') >= 0, "Button click uses ui_button_click_01")
+
+
+## ============================================
+## Settings Menu Hover Effects Tests
+## ============================================
+func _test_settings_menu_hover() -> void:
+	print("\n--- Settings Menu Hover Effects Tests ---")
+
+	# Test 1: SettingsMenu has _setup_button_hover method
+	var settings_content = FileAccess.get_file_as_string("res://scripts/ui/SettingsMenu.gd")
+	_assert(settings_content.find("_setup_button_hover") >= 0, "SettingsMenu has _setup_button_hover")
+
+	# Test 2: SettingsMenu has _on_button_hover method
+	_assert(settings_content.find("_on_button_hover") >= 0, "SettingsMenu has _on_button_hover")
+
+	# Test 3: SettingsMenu has _on_button_exit method
+	_assert(settings_content.find("_on_button_exit") >= 0, "SettingsMenu has _on_button_exit")
+
+	# Test 4: SettingsMenu has _play_hover_sound method
+	_assert(settings_content.find("_play_hover_sound") >= 0, "SettingsMenu has _play_hover_sound")
+
+	# Test 5: _ready calls _setup_button_hover for back button
+	_assert(settings_content.find("_setup_button_hover(_back_button)") >= 0, "_ready sets up back button hover")
+
+	# Test 6: Hover plays ui_hover sound
+	_assert(settings_content.find('play_sfx("ui_hover")') >= 0, "Hover plays ui_hover sound")
+
+	# Test 7: Hover changes button modulate to brighter color
+	_assert(settings_content.find("modulate = Color(1.2, 1.2, 1.0)") >= 0, "Hover changes button modulate to brighter")
+
+	# Test 8: Mouse exit resets button modulate
+	_assert(settings_content.find("modulate = Color(1.0, 1.0, 1.0)") >= 0, "Mouse exit resets button modulate")
+
+	# Test 9: ui_hover sound is registered
+	_assert(AudioManager._sound_paths.has("ui_hover"), "ui_hover registered")
+
+	# Test 10: SettingsMenu has back button
+	_assert(settings_content.find("_back_button") >= 0, "SettingsMenu has back button")
+
+	# Test 11: SettingsMenu has 3 volume sliders
+	_assert(settings_content.find("_master_slider") >= 0, "SettingsMenu has master slider")
+	_assert(settings_content.find("_sfx_slider") >= 0, "SettingsMenu has sfx slider")
+	_assert(settings_content.find("_bgm_slider") >= 0, "SettingsMenu has bgm slider")
+
+	# Test 12: Back button click plays ui_button_click_01
+	_assert(settings_content.find('play_ui("ui_button_click_01")') >= 0, "Back button click uses ui_button_click_01")
+
+	# Test 13: SettingsMenu has _update_labels method
+	_assert(settings_content.find("_update_labels") >= 0, "SettingsMenu has _update_labels")
+
+	# Test 14: SettingsMenu has volume change handlers
+	_assert(settings_content.find("_on_master_volume_changed") >= 0, "SettingsMenu has master volume handler")
+	_assert(settings_content.find("_on_sfx_volume_changed") >= 0, "SettingsMenu has sfx volume handler")
+	_assert(settings_content.find("_on_bgm_volume_changed") >= 0, "SettingsMenu has bgm volume handler")
