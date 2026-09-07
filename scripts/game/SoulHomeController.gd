@@ -59,6 +59,14 @@ func _ready() -> void:
 	GameLog.info("SoulHome: Scene initialized", "SoulHome")
 	_setup_soul_display()
 	_enter_home()
+	_play_home_ambience()
+
+
+## Play home background music and ambient sounds
+func _play_home_ambience() -> void:
+	if AudioManager:
+		AudioManager.play_bgm("home_main")
+		GameLog.info("SoulHome: Playing home BGM", "SoulHome")
 
 
 func _process(delta: float) -> void:
@@ -361,18 +369,24 @@ func _on_chat_button() -> void:
 func _on_pet_button() -> void:
 	interact_pet()
 	_update_event_log("You petted the soul. It feels happy.")
+	if AudioManager:
+		AudioManager.play_sfx("soul_happy")
 
 
 ## Handle feed button
 func _on_feed_button() -> void:
 	interact_feed()
 	_update_event_log("You fed the soul. Energy restored.")
+	if AudioManager:
+		AudioManager.play_sfx("soul_content_smile")
 
 
 ## Handle play button
 func _on_play_button() -> void:
 	interact_play()
 	_update_event_log("You played with the soul. Skills improved.")
+	if AudioManager:
+		AudioManager.play_sfx("soul_joyful")
 
 
 ## Handle train button
@@ -385,6 +399,8 @@ func _on_train_button() -> void:
 		soul_growth.add_memory("Player trained me", "training", 2)
 	GameLog.info("SoulHome: Player trained soul", "SoulHome")
 	_update_event_log("You trained the soul. Skills increased.")
+	if AudioManager:
+		AudioManager.play_sfx("soul_determined_resolve")
 
 
 ## Handle chat send

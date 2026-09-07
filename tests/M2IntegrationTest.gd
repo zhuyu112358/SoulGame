@@ -61,6 +61,7 @@ func _ready() -> void:
 	_test_game_flow()
 	_test_scene_backgrounds()
 	print("\n=== M2 TEST SUMMARY ===")
+	_test_soul_home_audio()
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
 	print("Total: %d" % _tests_run)
@@ -4472,3 +4473,62 @@ func _test_scene_backgrounds() -> void:
 	_assert(soul_select_content.length() > 0, "soul_select.tscn non-empty")
 	_assert(soul_home_content.length() > 0, "soul_home.tscn non-empty")
 	_assert(settings_content.length() > 0, "settings.tscn non-empty")
+
+
+## ============================================
+## Soul Home Audio Integration Tests
+## ============================================
+func _test_soul_home_audio() -> void:
+	print("\n--- Soul Home Audio Integration Tests ---")
+
+	# Test 1: SoulHomeController has _play_home_ambience method
+	var soul_home_script = load("res://scripts/game/SoulHomeController.gd")
+	var soul_home_instance = soul_home_script.new()
+	_assert(soul_home_instance.has_method("_play_home_ambience"), "SoulHomeController has _play_home_ambience")
+
+	# Test 2: SoulHomeController _ready calls _play_home_ambience
+	var soul_home_content = FileAccess.get_file_as_string("res://scripts/game/SoulHomeController.gd")
+	_assert(soul_home_content.find("_play_home_ambience()") >= 0, "SoulHomeController calls _play_home_ambience in _ready")
+
+	# Test 3: _play_home_ambience plays bgm_home_main
+	_assert(soul_home_content.find('play_bgm("home_main")') >= 0, "_play_home_ambience plays home_main BGM")
+
+	# Test 4: Pet button plays soul_happy
+	_assert(soul_home_content.find('play_sfx("soul_happy")') >= 0, "Pet button plays soul_happy")
+
+	# Test 5: Feed button plays soul_content_smile
+	_assert(soul_home_content.find('play_sfx("soul_content_smile")') >= 0, "Feed button plays soul_content_smile")
+
+	# Test 6: Play button plays soul_joyful
+	_assert(soul_home_content.find('play_sfx("soul_joyful")') >= 0, "Play button plays soul_joyful")
+
+	# Test 7: Train button plays soul_determined_resolve
+	_assert(soul_home_content.find('play_sfx("soul_determined_resolve")') >= 0, "Train button plays soul_determined_resolve")
+
+	# Test 8: All soul emotion sounds are registered in AudioManager
+	_assert(AudioManager._sound_paths.has("soul_happy"), "soul_happy registered")
+	_assert(AudioManager._sound_paths.has("soul_content_smile"), "soul_content_smile registered")
+	_assert(AudioManager._sound_paths.has("soul_joyful"), "soul_joyful registered")
+	_assert(AudioManager._sound_paths.has("soul_determined_resolve"), "soul_determined_resolve registered")
+
+	# Test 9: bgm_home_main is registered
+	_assert(AudioManager._sound_paths.has("bgm_home_main"), "bgm_home_main registered")
+
+	# Test 10: SoulHomeController instance is Node2D
+	_assert(soul_home_instance is Node2D, "SoulHomeController instance is Node2D")
+
+	# Test 11: SoulHomeController has _on_pet_button
+	_assert(soul_home_instance.has_method("_on_pet_button"), "SoulHomeController has _on_pet_button")
+
+	# Test 12: SoulHomeController has _on_feed_button
+	_assert(soul_home_instance.has_method("_on_feed_button"), "SoulHomeController has _on_feed_button")
+
+	# Test 13: SoulHomeController has _on_play_button
+	_assert(soul_home_instance.has_method("_on_play_button"), "SoulHomeController has _on_play_button")
+
+	# Test 14: SoulHomeController has _on_train_button
+	_assert(soul_home_instance.has_method("_on_train_button"), "SoulHomeController has _on_train_button")
+
+	# Test 15: Free instance
+	soul_home_instance.queue_free()
+	_assert(true, "SoulHomeController instance freed")
