@@ -191,11 +191,18 @@ theme_override_colors/font_color = Color(0.7, 0.7, 0.75, 1)
 theme_override_font_sizes/font_size = 12
 
 [node name="BackButton" type="Button" parent="."]
+offset_left = 1030.0
+offset_top = 10.0
+offset_right = 1140.0
+offset_bottom = 40.0
+text = "返回主菜单"
+
+[node name="BattleButton" type="Button" parent="."]
 offset_left = 1150.0
 offset_top = 10.0
 offset_right = 1270.0
 offset_bottom = 40.0
-text = "Back to CLI"
+text = "进入对战"
 
 [connection signal="pressed" from="InteractionPanel/ChatButton" to="." method="_on_chat_button"]
 [connection signal="pressed" from="InteractionPanel/PetButton" to="." method="_on_pet_button"]
@@ -206,3 +213,4 @@ text = "Back to CLI"
 [connection signal="pressed" from="ChatPanel/ChatClose" to="." method="_on_chat_close"]
 [connection signal="text_submitted" from="ChatPanel/ChatInput" to="." method="_on_chat_send"]
 [connection signal="pressed" from="BackButton" to="." method="_on_back_button"]
+[connection signal="pressed" from="BattleButton" to="." method="_on_battle_button"]

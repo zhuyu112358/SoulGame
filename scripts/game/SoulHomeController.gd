@@ -325,3 +325,96 @@ func get_soul_summary() -> Dictionary:
 func _exit_tree() -> void:
 	if home_state["entered"]:
 		exit_home()
+
+
+## --- UI Button Handlers ---
+
+## Handle back button - return to main menu
+func _on_back_button() -> void:
+	GameLog.info("SoulHome: Back to main menu", "SoulHome")
+	if AudioManager:
+		AudioManager.play_ui("ui_button_click_01")
+	exit_home()
+	SceneManager.change_scene("res://scenes/main_menu.tscn")
+
+
+## Handle battle button - enter RTS battle
+func _on_battle_button() -> void:
+	GameLog.info("SoulHome: Enter battle", "SoulHome")
+	if AudioManager:
+		AudioManager.play_ui("ui_button_click_01")
+	exit_home()
+	SceneManager.change_scene("res://scenes/soul_select.tscn")
+
+
+## Handle chat button - toggle chat panel
+func _on_chat_button() -> void:
+	GameLog.info("SoulHome: Chat toggled", "SoulHome")
+	if AudioManager:
+		AudioManager.play_ui("ui_button_click_01")
+	var chat_panel = get_node_or_null("ChatPanel")
+	if chat_panel:
+		chat_panel.visible = not chat_panel.visible
+
+
+## Handle pet button
+func _on_pet_button() -> void:
+	interact_pet()
+	_update_event_log("You petted the soul. It feels happy.")
+
+
+## Handle feed button
+func _on_feed_button() -> void:
+	interact_feed()
+	_update_event_log("You fed the soul. Energy restored.")
+
+
+## Handle play button
+func _on_play_button() -> void:
+	interact_play()
+	_update_event_log("You played with the soul. Skills improved.")
+
+
+## Handle train button
+func _on_train_button() -> void:
+	if _interaction_cooldown > 0:
+		return
+	_interaction_cooldown = 3.0
+	if soul_growth:
+		soul_growth.add_dimension_experience("skill", 15)
+		soul_growth.add_memory("Player trained me", "training", 2)
+	GameLog.info("SoulHome: Player trained soul", "SoulHome")
+	_update_event_log("You trained the soul. Skills increased.")
+
+
+## Handle chat send
+func _on_chat_send(message: String = "") -> void:
+	var chat_input = get_node_or_null("ChatPanel/ChatInput")
+	if chat_input and message.is_empty():
+		message = chat_input.text
+	if not message.is_empty():
+		send_message(message)
+		_update_chat_history("You: " + message)
+		if chat_input:
+			chat_input.text = ""
+
+
+## Handle chat close
+func _on_chat_close() -> void:
+	var chat_panel = get_node_or_null("ChatPanel")
+	if chat_panel:
+		chat_panel.visible = false
+
+
+## Update event log label
+func _update_event_log(text: String) -> void:
+	var event_log = get_node_or_null("EventLog")
+	if event_log:
+		event_log.text = text
+
+
+## Update chat history
+func _update_chat_history(text: String) -> void:
+	var chat_history = get_node_or_null("ChatPanel/ChatHistory")
+	if chat_history:
+		chat_history.append_text("\n" + text)

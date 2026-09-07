@@ -17,6 +17,7 @@ const MainMenu = preload("res://scripts/ui/MainMenu.gd")
 const SoulAIController = preload("res://scripts/game/SoulAIController.gd")
 const SoulSelect = preload("res://scripts/ui/SoulSelect.gd")
 ## Test counters
+const SoulHomeController = preload("res://scripts/game/SoulHomeController.gd")
 var _tests_run: int = 0
 var _tests_passed: int = 0
 var _tests_failed: int = 0
@@ -53,6 +54,7 @@ func _ready() -> void:
 	_test_main_menu()
 	_test_soul_select()
 	# Print summary
+	_test_soul_home_controller()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -3994,3 +3996,92 @@ func _test_soul_select() -> void:
 	# Test 15: Bootstrap transitions to main_menu
 	var bootstrap_script = load("res://scripts/core/Bootstrap.gd")
 	_assert(bootstrap_script != null, "Bootstrap script exists")
+
+
+## ============================================
+## SoulHomeController System Tests
+## ============================================
+func _test_soul_home_controller() -> void:
+	print("\n--- SoulHomeController System Tests ---")
+
+	# Test 1: SoulHomeController script exists
+	_assert(SoulHomeController != null, "SoulHomeController script loaded")
+
+	# Test 2: SoulHomeController is Script
+	_assert(SoulHomeController is Script, "SoulHomeController is Script")
+
+	# Test 3: SoulHomeController can be instantiated
+	var home_instance = SoulHomeController.new()
+	_assert(home_instance != null, "SoulHomeController instantiated")
+	_assert(home_instance is Node2D, "SoulHomeController instance is Node2D")
+
+	# Test 4: SoulHomeController has current_room property
+	_assert(typeof(home_instance.current_room) == TYPE_STRING, "SoulHomeController has current_room")
+
+	# Test 5: SoulHomeController has rooms dictionary
+	_assert(typeof(home_instance.rooms) == TYPE_DICTIONARY, "SoulHomeController has rooms")
+	_assert(home_instance.rooms.has("main"), "rooms has main")
+
+	# Test 6: SoulHomeController has home_state dictionary
+	_assert(typeof(home_instance.home_state) == TYPE_DICTIONARY, "SoulHomeController has home_state")
+
+	# Test 7: SoulHomeController has switch_room method
+	_assert(home_instance.has_method("switch_room"), "SoulHomeController has switch_room")
+
+	# Test 8: SoulHomeController has get_current_room method
+	_assert(home_instance.has_method("get_current_room"), "SoulHomeController has get_current_room")
+
+	# Test 9: SoulHomeController has exit_home method
+	_assert(home_instance.has_method("exit_home"), "SoulHomeController has exit_home")
+
+	# Test 10: SoulHomeController has get_soul_summary method
+	_assert(home_instance.has_method("get_soul_summary"), "SoulHomeController has get_soul_summary")
+
+	# Test 11: SoulHomeController has _on_back_button method
+	_assert(home_instance.has_method("_on_back_button"), "SoulHomeController has _on_back_button")
+
+	# Test 12: SoulHomeController has _on_battle_button method
+	_assert(home_instance.has_method("_on_battle_button"), "SoulHomeController has _on_battle_button")
+
+	# Test 13: SoulHomeController has _on_chat_button method
+	_assert(home_instance.has_method("_on_chat_button"), "SoulHomeController has _on_chat_button")
+
+	# Test 14: SoulHomeController has _on_pet_button method
+	_assert(home_instance.has_method("_on_pet_button"), "SoulHomeController has _on_pet_button")
+
+	# Test 15: SoulHomeController has _on_feed_button method
+	_assert(home_instance.has_method("_on_feed_button"), "SoulHomeController has _on_feed_button")
+
+	# Test 16: SoulHomeController has _on_play_button method
+	_assert(home_instance.has_method("_on_play_button"), "SoulHomeController has _on_play_button")
+
+	# Test 17: SoulHomeController has _on_train_button method
+	_assert(home_instance.has_method("_on_train_button"), "SoulHomeController has _on_train_button")
+
+	# Test 18: SoulHomeController has interact_pet method
+	_assert(home_instance.has_method("interact_pet"), "SoulHomeController has interact_pet")
+
+	# Test 19: SoulHomeController has interact_feed method
+	_assert(home_instance.has_method("interact_feed"), "SoulHomeController has interact_feed")
+
+	# Test 20: SoulHomeController has interact_play method
+	_assert(home_instance.has_method("interact_play"), "SoulHomeController has interact_play")
+
+	# Test 21: soul_home.tscn exists
+	var soul_home_scene = load("res://scenes/soul_home.tscn")
+	_assert(soul_home_scene != null, "soul_home.tscn exists")
+
+	# Test 22: soul_home.tscn is PackedScene
+	_assert(soul_home_scene is PackedScene, "soul_home is PackedScene")
+
+	# Test 23: get_current_room returns dictionary
+	var room_info = home_instance.get_current_room()
+	_assert(typeof(room_info) == TYPE_DICTIONARY, "get_current_room returns dictionary")
+
+	# Test 24: get_soul_summary returns dictionary
+	var summary = home_instance.get_soul_summary()
+	_assert(typeof(summary) == TYPE_DICTIONARY, "get_soul_summary returns dictionary")
+
+	# Test 25: SoulHomeController instance free
+	home_instance.queue_free()
+	_assert(true, "SoulHomeController freed")

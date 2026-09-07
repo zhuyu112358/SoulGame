@@ -43,6 +43,45 @@
 - 需要: 概念图 - 设置界面背景 - P2
 
 ### 下一步
-- 灵魂之家集成（从主菜单进入，查看灵魂、成长）
 - 可玩原型端到端验证（实际运行游戏，从头玩到尾）
 - RTSArenaController接收选中的灵魂数据
+
+## 2026-09-07 - M2可玩原型冲刺第二轮
+
+### 完成功能
+
+#### 灵魂之家集成 (P1)
+- **文件**: `scripts/game/SoulHomeController.gd`, `scenes/soul_home.tscn`
+- **新增UI方法**:
+  - `_on_back_button()`: 返回主菜单（原"Back to CLI"）
+  - `_on_battle_button()`: 进入对战（跳转到灵魂选择）
+  - `_on_chat_button()`: 切换聊天面板显示
+  - `_on_pet_button()`: 抚摸灵魂，增加情感经验
+  - `_on_feed_button()`: 喂食灵魂，恢复能量
+  - `_on_play_button()`: 和灵魂玩耍，增加技能经验
+  - `_on_train_button()`: 训练灵魂，增加技能经验
+  - `_on_chat_send()`: 发送消息给灵魂
+  - `_on_chat_close()`: 关闭聊天面板
+- **辅助方法**: `_update_event_log()`, `_update_chat_history()`
+- **场景修改**:
+  - BackButton文字改为"返回主菜单"，位置调整
+  - 新增BattleButton"进入对战"，连接到_on_battle_button
+- **流程**: 主菜单→灵魂之家→查看灵魂/互动→进入对战→灵魂选择→RTS对战
+
+### 测试
+- SoulHomeController测试: 25个（脚本存在、场景存在、实例化、属性、方法检查）
+- M2测试: 1415 → 1442
+- 总计测试: 1599 → 1626
+
+### 已知问题
+- 背景图main_menu_bg.png缺少.import文件，需要在Godot编辑器中打开项目自动导入
+- 场景加载时有资源警告，但不影响功能
+
+### [设计需求]
+- 需要: 概念图 - 灵魂之家背景（温馨、像素风）- P1
+- 需要: 音效 - 灵魂之家环境音（温暖、空灵）- P1
+
+### 下一步
+- 可玩原型端到端验证（实际运行游戏，从头玩到尾）
+- RTSArenaController接收选中的灵魂数据
+- 修复端到端验证中发现的bug
