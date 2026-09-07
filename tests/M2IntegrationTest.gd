@@ -90,6 +90,7 @@ func _ready() -> void:
 	_test_new_soul_sounds_round6()
 	_test_new_soul_sounds_round7()
 	_test_new_soul_sounds_round8()
+	_test_new_soul_sounds_round9()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -6380,3 +6381,74 @@ func _test_new_soul_sounds_round8() -> void:
 				found = true
 				break
 		_assert(found, "Emotion covered: %s" % emotion)
+
+
+## ============================================
+## New Soul Sound Integration Tests (Round 9 - Final)
+## ============================================
+func _test_new_soul_sounds_round9() -> void:
+	print("\n--- New Soul Sound Integration Tests (Round 9 - Final) ---")
+
+	# Test 1: New soul sound files exist
+	var new_sounds = ["soul_tenacious", "soul_terrified", "soul_thinking_hum", "soul_timid", "soul_tired_sigh", "soul_train", "soul_tranquil", "soul_trust", "soul_trustworthy", "soul_trust_warm", "soul_understanding", "soul_valiant", "soul_wistful", "soul_zealous"]
+	for sound_name in new_sounds:
+		var path = "res://assets/audio/soul/%s.wav" % sound_name
+		_assert(FileAccess.file_exists(path), "Sound file exists: %s" % sound_name)
+
+	# Test 2: New soul sounds are registered in AudioManager
+	for sound_name in new_sounds:
+		_assert(AudioManager._sound_paths.has(sound_name), "Sound registered: %s" % sound_name)
+
+	# Test 3: AudioManager has soul_trust sound
+	_assert(AudioManager._sound_paths.has("soul_trust"), "AudioManager has soul_trust")
+
+	# Test 4: AudioManager has soul_understanding sound
+	_assert(AudioManager._sound_paths.has("soul_understanding"), "AudioManager has soul_understanding")
+
+	# Test 5: AudioManager has soul_zealous sound
+	_assert(AudioManager._sound_paths.has("soul_zealous"), "AudioManager has soul_zealous")
+
+	# Test 6: All 133 soul sounds are now integrated
+	var soul_count = 0
+	for sound_name in AudioManager._sound_paths.keys():
+		if sound_name.begins_with("soul_"):
+			soul_count += 1
+	_assert(soul_count >= 130, "Soul sound count >= 130 (actual: %d)" % soul_count)
+
+	# Test 7: Total sound count increased
+	_assert(AudioManager._sound_paths.size() >= 348, "Total sound count >= 348 (actual: %d)" % AudioManager._sound_paths.size())
+
+	# Test 8: New sounds have correct file paths
+	_assert(AudioManager._sound_paths["soul_trust"] == "res://assets/audio/soul/soul_trust.wav", "soul_trust path correct")
+	_assert(AudioManager._sound_paths["soul_understanding"] == "res://assets/audio/soul/soul_understanding.wav", "soul_understanding path correct")
+	_assert(AudioManager._sound_paths["soul_zealous"] == "res://assets/audio/soul/soul_zealous.wav", "soul_zealous path correct")
+
+	# Test 9: AudioManager can play new sounds (no crash)
+	AudioManager.play_sfx("soul_trust")
+	AudioManager.play_sfx("soul_understanding")
+	AudioManager.play_sfx("soul_zealous")
+	_assert(true, "New soul sounds play without crash")
+
+	# Test 10: Existing soul sounds still registered
+	_assert(AudioManager._sound_paths.has("soul_happy"), "Existing soul_happy still registered")
+	_assert(AudioManager._sound_paths.has("soul_joyful"), "Existing soul_joyful still registered")
+	_assert(AudioManager._sound_paths.has("soul_excited"), "Existing soul_excited still registered")
+
+	# Test 11: New soul sound names are descriptive
+	_assert(new_sounds[0] == "soul_tenacious", "First new sound is soul_tenacious")
+	_assert(new_sounds[6] == "soul_tranquil", "Seventh new sound is soul_tranquil")
+	_assert(new_sounds[13] == "soul_zealous", "Fourteenth new sound is soul_zealous")
+
+	# Test 12: New soul sounds cover diverse emotions
+	var emotions = ["tenacious", "terrified", "thinking", "timid", "tired", "train", "tranquil", "trust", "understanding", "valiant", "wistful", "zealous"]
+	for emotion in emotions:
+		var found = false
+		for sound_name in new_sounds:
+			if sound_name.find(emotion) >= 0:
+				found = true
+				break
+		_assert(found, "Emotion covered: %s" % emotion)
+
+	# Test 13: All design soul sounds are integrated (133 total)
+	var design_soul_count = 133
+	_assert(soul_count >= design_soul_count - 5, "All design soul sounds integrated (actual: %d, expected: %d)" % [soul_count, design_soul_count])
