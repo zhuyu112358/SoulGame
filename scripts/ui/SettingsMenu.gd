@@ -10,6 +10,7 @@ extends Control
 @onready var _sfx_label: Label = $CenterContainer/VBoxContainer/SfxVolume/ValueLabel
 @onready var _bgm_slider: HSlider = $CenterContainer/VBoxContainer/BgmVolume/Slider
 @onready var _bgm_label: Label = $CenterContainer/VBoxContainer/BgmVolume/ValueLabel
+@onready var _save_button: Button = $CenterContainer/VBoxContainer/SaveButton
 @onready var _back_button: Button = $CenterContainer/VBoxContainer/BackButton
 
 
@@ -27,9 +28,11 @@ func _ready() -> void:
 	_master_slider.value_changed.connect(_on_master_volume_changed)
 	_sfx_slider.value_changed.connect(_on_sfx_volume_changed)
 	_bgm_slider.value_changed.connect(_on_bgm_volume_changed)
+	_save_button.pressed.connect(_on_save_pressed)
 	_back_button.pressed.connect(_on_back_pressed)
 
 	# Setup button hover effects for audio + visual feedback
+	_setup_button_hover(_save_button)
 	_setup_button_hover(_back_button)
 
 
@@ -87,6 +90,19 @@ func _on_bgm_volume_changed(p_value: float) -> void:
 	if AudioManager:
 		AudioManager.set_bgm_volume(p_value / 100.0)
 	_bgm_label.text = "%d%%" % int(p_value)
+
+
+## Handle save button - save settings to config file
+func _on_save_pressed() -> void:
+	GameLog.info("Settings: Saving settings", "Settings")
+	if AudioManager:
+		AudioManager.save_settings()
+		AudioManager.play_sfx("ui_settings_save")
+		AudioManager.play_sfx("ui_button_click")
+	# Show save confirmation
+	_save_button.text = "已保存！"
+	await get_tree().create_timer(1.5).timeout
+	_save_button.text = "保存设置"
 
 
 ## Handle back button - return to main menu

@@ -41,6 +41,41 @@ func _ready() -> void:
 	_setup_audio_buses()
 	_init_sound_paths()
 	_init_sfx_pool()
+	load_settings()
+
+
+## Save volume settings to config file
+func save_settings() -> void:
+	var config = ConfigFile.new()
+	config.set_value("audio", "master_volume", master_volume)
+	config.set_value("audio", "sfx_volume", sfx_volume)
+	config.set_value("audio", "bgm_volume", bgm_volume)
+	var err = config.save("user://settings.cfg")
+	if err == OK:
+		GameLog.info("AudioManager: Settings saved", "Audio")
+	else:
+		GameLog.warning("AudioManager: Failed to save settings (error %d)" % err, "Audio")
+
+
+## Load volume settings from config file
+func load_settings() -> void:
+	var config = ConfigFile.new()
+	var err = config.load("user://settings.cfg")
+	if err == OK:
+		master_volume = config.get_value("audio", "master_volume", 1.0)
+		sfx_volume = config.get_value("audio", "sfx_volume", 0.8)
+		bgm_volume = config.get_value("audio", "bgm_volume", 0.5)
+		_apply_volumes()
+		GameLog.info("AudioManager: Settings loaded (master=%.2f, sfx=%.2f, bgm=%.2f)" % [master_volume, sfx_volume, bgm_volume], "Audio")
+	else:
+		GameLog.info("AudioManager: No saved settings, using defaults", "Audio")
+
+
+## Apply current volume settings to audio buses
+func _apply_volumes() -> void:
+	set_master_volume(master_volume)
+	set_sfx_volume(sfx_volume)
+	set_bgm_volume(bgm_volume)
 
 
 ## Setup audio buses if they don't exist

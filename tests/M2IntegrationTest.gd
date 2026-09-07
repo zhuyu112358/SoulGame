@@ -106,6 +106,7 @@ func _ready() -> void:
 	_test_skill_usage_display()
 	_test_damage_floating_text()
 	_test_soul_home_official_resources()
+	_test_settings_save_load()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -7334,3 +7335,54 @@ func _test_soul_home_official_resources() -> void:
 	var scene_text = FileAccess.get_file_as_string("res://scenes/soul_home.tscn")
 	_assert(scene_text.find("soul_home_bg.png") != -1, "Scene references soul_home_bg.png")
 	_assert(scene_text.find("concept_home_mainroom") == -1, "Scene does not reference placeholder concept_home_mainroom")
+
+
+## ============================================
+## Settings Save/Load Tests
+## ============================================
+func _test_settings_save_load() -> void:
+	print("\n--- Settings Save/Load Tests ---")
+
+	# Test 1: AudioManager has save_settings method
+	_assert(AudioManager.has_method("save_settings"), "AudioManager has save_settings method")
+
+	# Test 2: AudioManager has load_settings method
+	_assert(AudioManager.has_method("load_settings"), "AudioManager has load_settings method")
+
+	# Test 3: SettingsMenu has save button reference
+	var settings_script = load("res://scripts/ui/SettingsMenu.gd")
+	var settings = settings_script.new()
+	_assert(settings != null, "SettingsMenu instance created")
+
+	# Test 4: SettingsMenu has _on_save_pressed method
+	_assert(settings.has_method("_on_save_pressed"), "SettingsMenu has _on_save_pressed method")
+
+	# Test 5: Settings scene has SaveButton
+	var scene_text = FileAccess.get_file_as_string("res://scenes/settings.tscn")
+	_assert(scene_text.find("SaveButton") != -1, "Settings scene has SaveButton")
+	_assert(scene_text.find("保存设置") != -1, "SaveButton text is 保存设置")
+
+	# Test 6: AudioManager ui_settings_save sound registered
+	_assert(AudioManager.has_sound("ui_settings_save"), "AudioManager has ui_settings_save registered")
+
+	# Test 7: Save settings writes config file
+	AudioManager.master_volume = 0.5
+	AudioManager.sfx_volume = 0.6
+	AudioManager.bgm_volume = 0.4
+	AudioManager.save_settings()
+	_assert(FileAccess.file_exists("user://settings.cfg"), "Config file created after save")
+
+	# Test 8: Load settings reads from config file
+	AudioManager.master_volume = 1.0
+	AudioManager.sfx_volume = 1.0
+	AudioManager.bgm_volume = 1.0
+	AudioManager.load_settings()
+	_assert(abs(AudioManager.master_volume - 0.5) < 0.01, "Master volume loaded correctly (%.2f)" % AudioManager.master_volume)
+	_assert(abs(AudioManager.sfx_volume - 0.6) < 0.01, "SFX volume loaded correctly (%.2f)" % AudioManager.sfx_volume)
+	_assert(abs(AudioManager.bgm_volume - 0.4) < 0.01, "BGM volume loaded correctly (%.2f)" % AudioManager.bgm_volume)
+
+	# Reset to defaults
+	AudioManager.master_volume = 1.0
+	AudioManager.sfx_volume = 0.8
+	AudioManager.bgm_volume = 0.5
+	AudioManager.save_settings()

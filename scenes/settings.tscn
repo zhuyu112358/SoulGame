@@ -104,6 +104,12 @@ theme_override_font_sizes/font_size = 16
 [node name="Spacer2" type="Control" parent="CenterContainer/VBoxContainer"]
 custom_minimum_size = Vector2(0, 40)
 
+
+[node name="SaveButton" type="Button" parent="CenterContainer/VBoxContainer"]
+custom_minimum_size = Vector2(200, 50)
+size_flags_horizontal = 4
+text = "保存设置"
+theme_override_font_sizes/font_size = 18
 [node name="BackButton" type="Button" parent="CenterContainer/VBoxContainer"]
 custom_minimum_size = Vector2(200, 50)
 size_flags_horizontal = 4
