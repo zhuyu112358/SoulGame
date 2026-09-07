@@ -4,7 +4,7 @@
 > 设计资源由设计任务产出，应用开发任务集成使用。
 
 ## 资源清单
-$newEntries2$newEntries2$newEntries2| steam_store_button_click.wav | 2026-09-08 | Steam商店页P1 | Steam商店页按钮点击音效（2秒，清脆点击声+像素光点声+轻微反馈声，有反馈感和清脆感） | 设计任务第10轮 |
+$newEntries2$newEntries2$newEntries2$newEntries2| steam_store_button_click.wav | 2026-09-08 | Steam商店页P1 | Steam商店页按钮点击音效（2秒，清脆点击声+像素光点声+轻微反馈声，有反馈感和清脆感） | 设计任务第10轮 |
 | steam_store_button_hover.wav | 2026-09-08 | Steam商店页P1 | Steam商店页按钮悬停音效（2秒，轻微上升音阶+像素光点声+柔和反馈声，有悬停感和柔和感） | 设计任务第10轮 |
 | steam_store_purchase_success.wav | 2026-09-08 | Steam商店页P1 | Steam商店页购买成功音效（3秒，欢快上升音阶+金币声+确认声+像素光点声，有成功感和满足感） | 设计任务第10轮 |
 | steam_store_wishlist_add.wav | 2026-09-08 | Steam商店页P1 | Steam商店页添加愿望单音效（3秒，柔和上升音阶+星星声+确认声+像素光点声，有收藏感和期待感） | 设计任务第10轮 |
