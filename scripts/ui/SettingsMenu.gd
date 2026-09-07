@@ -35,6 +35,38 @@ func _ready() -> void:
 	_setup_button_hover(_save_button)
 	_setup_button_hover(_back_button)
 
+	# Animate entrance (staggered fade in for sliders and buttons)
+	_animate_entrance()
+
+
+## Animate settings screen entrance (staggered fade in)
+func _animate_entrance() -> void:
+	# Volume sliders staggered fade in
+	var sliders = [_master_slider, _sfx_slider, _bgm_slider]
+	var labels = [_master_label, _sfx_label, _bgm_label]
+	for i in range(sliders.size()):
+		var slider = sliders[i]
+		var label = labels[i]
+		if slider:
+			slider.modulate = Color(1, 1, 1, 0)
+			var slider_tween = create_tween()
+			slider_tween.tween_interval(0.2 + i * 0.15)
+			slider_tween.tween_property(slider, "modulate:a", 1.0, 0.4).set_ease(Tween.EASE_OUT)
+		if label:
+			label.modulate = Color(1, 1, 1, 0)
+			var label_tween = create_tween()
+			label_tween.tween_interval(0.2 + i * 0.15)
+			label_tween.tween_property(label, "modulate:a", 1.0, 0.4).set_ease(Tween.EASE_OUT)
+	# Save and back buttons fade in
+	var buttons = [_save_button, _back_button]
+	for i in range(buttons.size()):
+		var btn = buttons[i]
+		if btn:
+			btn.modulate = Color(1, 1, 1, 0)
+			var btn_tween = create_tween()
+			btn_tween.tween_interval(0.7 + i * 0.15)
+			btn_tween.tween_property(btn, "modulate:a", 1.0, 0.4).set_ease(Tween.EASE_OUT)
+
 
 ## Setup button hover effects (audio + visual)
 func _setup_button_hover(p_button: Button) -> void:
