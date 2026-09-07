@@ -63,6 +63,7 @@ func _ready() -> void:
 	_test_soul_home_audio()
 	_test_bgm_integration()
 	_test_combat_audio()
+	_test_command_audio()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -4649,3 +4650,57 @@ func _test_combat_audio() -> void:
 	_assert(FileAccess.file_exists("res://assets/audio/battle/bat_defend.wav"), "bat_defend.wav exists")
 	_assert(FileAccess.file_exists("res://assets/audio/battle/bat_victory.wav"), "bat_victory.wav exists")
 	_assert(FileAccess.file_exists("res://assets/audio/battle/bat_defeat.wav"), "bat_defeat.wav exists")
+
+
+## ============================================
+## Command Audio Integration Tests
+## ============================================
+func _test_command_audio() -> void:
+	print("\n--- Command Audio Integration Tests ---")
+
+	# Test 1: RTSArenaController has _was_on_cooldown variable
+	var rts_content = FileAccess.get_file_as_string("res://scripts/game/RTSArenaController.gd")
+	_assert(rts_content.find("_was_on_cooldown") >= 0, "RTSArenaController has _was_on_cooldown")
+
+	# Test 2: Macro command uses match for different sounds
+	_assert(rts_content.find("match p_command:") >= 0, "Macro command uses match for sounds")
+
+	# Test 3: Gather command plays ui_confirm
+	_assert(rts_content.find('play_sfx("ui_confirm")') >= 0, "Gather command plays ui_confirm")
+
+	# Test 4: Attack command plays bat_skill_cast
+	_assert(rts_content.find('play_sfx("bat_skill_cast")') >= 0, "Attack command plays bat_skill_cast")
+
+	# Test 5: Defend command plays bat_defend
+	_assert(rts_content.find('play_sfx("bat_defend")') >= 0, "Defend command plays bat_defend")
+
+	# Test 6: Retreat command plays ui_cancel
+	_assert(rts_content.find('play_sfx("ui_cancel")') >= 0, "Retreat command plays ui_cancel")
+
+	# Test 7: Cooldown finish plays ui_notification
+	_assert(rts_content.find('play_sfx("ui_notification")') >= 0, "Cooldown finish plays ui_notification")
+
+	# Test 8: Cooldown finish adds log message
+	_assert(rts_content.find("教练指令已就绪") >= 0, "Cooldown finish adds log message")
+
+	# Test 9: ui_confirm sound is registered
+	_assert(AudioManager._sound_paths.has("ui_confirm"), "ui_confirm registered")
+
+	# Test 10: ui_cancel sound is registered
+	_assert(AudioManager._sound_paths.has("ui_cancel"), "ui_cancel registered")
+
+	# Test 11: ui_notification sound is registered
+	_assert(AudioManager._sound_paths.has("ui_notification"), "ui_notification registered")
+
+	# Test 12: ui_error sound is registered (for failed commands)
+	_assert(AudioManager._sound_paths.has("ui_error"), "ui_error registered")
+
+	# Test 13: RTSArenaManager supports 4 commands
+	var manager_content = FileAccess.get_file_as_string("res://scripts/game/RTSArenaManager.gd")
+	_assert(manager_content.find('"gather"') >= 0, "Manager supports gather command")
+	_assert(manager_content.find('"attack"') >= 0, "Manager supports attack command")
+	_assert(manager_content.find('"defend"') >= 0, "Manager supports defend command")
+	_assert(manager_content.find('"retreat"') >= 0, "Manager supports retreat command")
+
+	# Test 14: Command cooldown is 30 seconds
+	_assert(rts_content.find("_command_cooldown_timer = 30.0") >= 0, "Command cooldown is 30 seconds")

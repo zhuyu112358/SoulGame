@@ -46,6 +46,7 @@ var _command_panel = null
 var _command_buttons = {}
 var _command_cooldown_label = null
 var _command_cooldown_timer = 0.0
+var _was_on_cooldown = false
 
 ## Weather/environment display
 var _weather_label = null
@@ -234,10 +235,17 @@ func _update_command_cooldown(delta: float) -> void:
 			_command_cooldown_label.text = "冷却: %d秒" % ceil(_command_cooldown_timer)
 			_command_cooldown_label.modulate = Color(0.9, 0.6, 0.3)
 			_set_commands_enabled(false)
+			_was_on_cooldown = true
 		else:
 			_command_cooldown_label.text = "就绪"
 			_command_cooldown_label.modulate = Color(0.4, 0.9, 0.5)
 			_set_commands_enabled(true)
+			# Play notification sound when cooldown finishes
+			if _was_on_cooldown:
+				_was_on_cooldown = false
+				if AudioManager:
+					AudioManager.play_sfx("ui_notification")
+				_add_log("教练指令已就绪")
 
 
 ## Set all command buttons enabled/disabled
@@ -257,7 +265,18 @@ func _on_macro_command(p_command: String) -> void:
 	var result = RTSArenaManager.issue_player_command(p_command)
 	if result.get("success", false):
 		_command_cooldown_timer = 30.0
-		AudioManager.play_sfx("ui_button_click")
+		# Play command-specific sound
+		match p_command:
+			"gather":
+				AudioManager.play_sfx("ui_confirm")
+			"attack":
+				AudioManager.play_sfx("bat_skill_cast")
+			"defend":
+				AudioManager.play_sfx("bat_defend")
+			"retreat":
+				AudioManager.play_sfx("ui_cancel")
+			_:
+				AudioManager.play_sfx("ui_button_click")
 		_add_log("教练指令: %s" % p_command)
 		GameLog.info("RTSArenaController: Player issued command %s" % p_command, "Arena")
 	else:
