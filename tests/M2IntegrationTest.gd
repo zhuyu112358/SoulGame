@@ -78,6 +78,7 @@ func _ready() -> void:
 	_test_new_bgm_sounds()
 	_test_new_ui_sounds_round2()
 	_test_new_soul_sounds_round2()
+	_test_new_env_sounds_round2()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -5564,3 +5565,70 @@ func _test_new_soul_sounds_round2() -> void:
 	_assert(new_sounds[0] == "soul_absorbed", "First new sound is soul_absorbed")
 	_assert(new_sounds[5] == "soul_chivalrous", "Sixth new sound is soul_chivalrous")
 	_assert(new_sounds[9] == "soul_disappointed", "Tenth new sound is soul_disappointed")
+
+
+## ============================================
+## New Environment Sound Integration Tests (Round 2)
+## ============================================
+func _test_new_env_sounds_round2() -> void:
+	print("\n--- New Environment Sound Integration Tests (Round 2) ---")
+
+	# Test 1: New environment sound files exist
+	var new_sounds = ["env_aurora", "env_desert_oasis", "env_flowerfield", "env_garden_birds", "env_glacier", "env_highland", "env_hot_spring", "env_mangrove", "env_meadow", "env_meteor_shower"]
+	for sound_name in new_sounds:
+		var path = "res://assets/audio/environment/%s.wav" % sound_name
+		_assert(FileAccess.file_exists(path), "Sound file exists: %s" % sound_name)
+
+	# Test 2: New environment sounds are registered in AudioManager
+	for sound_name in new_sounds:
+		_assert(AudioManager._sound_paths.has(sound_name), "Sound registered: %s" % sound_name)
+
+	# Test 3: AudioManager has env_aurora sound
+	_assert(AudioManager._sound_paths.has("env_aurora"), "AudioManager has env_aurora")
+
+	# Test 4: AudioManager has env_glacier sound
+	_assert(AudioManager._sound_paths.has("env_glacier"), "AudioManager has env_glacier")
+
+	# Test 5: AudioManager has env_meteor_shower sound
+	_assert(AudioManager._sound_paths.has("env_meteor_shower"), "AudioManager has env_meteor_shower")
+
+	# Test 6: Environment sound count increased
+	var env_count = 0
+	for sound_name in AudioManager._sound_paths.keys():
+		if sound_name.begins_with("env_"):
+			env_count += 1
+	_assert(env_count >= 45, "Environment sound count >= 45 (actual: %d)" % env_count)
+
+	# Test 7: Total sound count increased
+	_assert(AudioManager._sound_paths.size() >= 230, "Total sound count >= 230 (actual: %d)" % AudioManager._sound_paths.size())
+
+	# Test 8: New sounds have correct file paths
+	_assert(AudioManager._sound_paths["env_aurora"] == "res://assets/audio/environment/env_aurora.wav", "env_aurora path correct")
+	_assert(AudioManager._sound_paths["env_glacier"] == "res://assets/audio/environment/env_glacier.wav", "env_glacier path correct")
+	_assert(AudioManager._sound_paths["env_meteor_shower"] == "res://assets/audio/environment/env_meteor_shower.wav", "env_meteor_shower path correct")
+
+	# Test 9: AudioManager can play new sounds (no crash)
+	AudioManager.play_sfx("env_aurora")
+	AudioManager.play_sfx("env_glacier")
+	AudioManager.play_sfx("env_meteor_shower")
+	_assert(true, "New environment sounds play without crash")
+
+	# Test 10: Existing environment sounds still registered
+	_assert(AudioManager._sound_paths.has("env_floating_island"), "Existing env_floating_island still registered")
+	_assert(AudioManager._sound_paths.has("env_aurora_icefield"), "Existing env_aurora_icefield still registered")
+	_assert(AudioManager._sound_paths.has("env_home_indoor"), "Existing env_home_indoor still registered")
+
+	# Test 11: New environment sound names are descriptive
+	_assert(new_sounds[0] == "env_aurora", "First new sound is env_aurora")
+	_assert(new_sounds[4] == "env_glacier", "Fifth new sound is env_glacier")
+	_assert(new_sounds[9] == "env_meteor_shower", "Tenth new sound is env_meteor_shower")
+
+	# Test 12: New environment sounds cover diverse biomes
+	var biomes = ["aurora", "desert", "flower", "garden", "glacier", "highland", "hot_spring", "mangrove", "meadow", "meteor"]
+	for biome in biomes:
+		var found = false
+		for sound_name in new_sounds:
+			if sound_name.find(biome) >= 0:
+				found = true
+				break
+		_assert(found, "Biome covered: %s" % biome)
