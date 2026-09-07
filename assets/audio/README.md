@@ -107,3 +107,16 @@
 | bgm_settings.wav | 设置界面背景音乐BGM（轻松氛围音乐+柔和钢琴+轻柔弦乐+轻松的主题旋律，轻松感和舒适感，可循环） | 8秒 | 设置界面BGM |
 
 **本轮总计：6个BGM音效（游戏全场景BGM组：主菜单/灵魂之家/RTS竞技场/战斗结算/灵魂选择/设置界面，Steam EA上架P1素材）**
+
+### 第12轮新增（2026-09-08，Steam成就音效组+Steam商店页素材）
+
+| 文件名 | 描述 | 时长 | 用途 |
+|--------|------|------|------|
+| steam_achievement_unlock.wav | Steam成就解锁音效（覆盖更新旧版，史诗感上升音阶+叮声+光芒绽放声+庆祝声+像素光点声，成就感和仪式感） | 4秒 | Steam成就解锁，Steam EA上架P1素材 |
+| steam_achievement_progress.wav | Steam成就进度音效（轻微上升音阶+叮声+像素光点声，进步感和期待感） | 2秒 | Steam成就进度增加，Steam EA上架P1素材 |
+| steam_achievement_rare.wav | Steam稀有成就解锁音效（非常史诗感上升音阶+多重叮声+光芒绽放声+庆祝声+烟花声+像素光点声，非常强烈的成就感和仪式感） | 5秒 | Steam稀有成就解锁，Steam EA上架P1素材 |
+| steam_achievement_notify.wav | Steam成就通知音效（柔和上升音阶+叮声+通知声+像素光点声，通知感和提醒感） | 3秒 | Steam成就通知弹出，Steam EA上架P1素材 |
+| steam_achievement_view.wav | Steam成就查看音效（轻微点击声+上升音阶+像素光点声，浏览感和探索感） | 2秒 | Steam查看成就列表，Steam EA上架P1素材 |
+| steam_achievement_share.wav | Steam成就分享音效（欢快上升音阶+叮声+分享声+像素光点声，分享感和喜悦感） | 3秒 | Steam分享成就到社交媒体，Steam EA上架P1素材 |
+
+**本轮总计：6个Steam成就音效（1个覆盖更新旧版+5个新增，Steam成就音效组：解锁/进度/稀有/通知/查看/分享，Steam EA上架P1素材）**
