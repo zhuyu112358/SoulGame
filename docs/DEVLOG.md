@@ -3241,3 +3241,38 @@
 
 ### 测试
 - M2测试运行中...
+
+## 2026-09-08 - M2可玩原型冲刺第六十二轮
+
+### 完成工作
+
+#### 1. 战斗UI音效集成（设计任务第8轮资源）
+- **AudioManager**: 注册6个新的战斗UI高质量音效
+  - battle_ui_start（战斗开始，48KB高质量版）
+  - battle_ui_end（战斗结束，48KB高质量版）
+  - battle_ui_victory（胜利，64KB高质量版）
+  - battle_ui_defeat（失败，64KB高质量版）
+  - battle_ui_countdown（倒计时，64KB高质量版）
+  - unit_select（单位选中，32KB）
+- **RTSArenaController**: 战斗流程音效升级
+  - 倒计时音效：battle_countdown → battle_ui_countdown
+  - 战斗开始音效：ui_battle_start → battle_ui_start
+  - 胜利音效：bat_victory → battle_ui_victory
+  - 失败音效：bat_defeat → battle_ui_defeat
+  - 结果弹窗：新增battle_ui_end战斗结束音效
+
+### 视觉/玩法效果变化
+
+**听觉效果提升**:
+- 战斗开始时播放高质量的battle_ui_start音效，更有史诗感
+- 倒计时阶段播放battle_ui_countdown音效，紧张感更强
+- 战斗结束时播放battle_ui_end音效，仪式感更强
+- 胜利时播放battle_ui_victory，失败时播放battle_ui_defeat，情绪反馈更明确
+- 所有战斗UI音效从旧的低质量版本（16KB）升级为高质量版本（48-64KB）
+
+**设计资源利用**:
+- 集成设计任务第8轮产出的6个战斗UI升级音效
+- 战斗听觉体验全面升级，从通用音效升级为专属战斗UI音效
+
+### 测试
+- M2测试运行中...

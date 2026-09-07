@@ -813,7 +813,7 @@ func _start_countdown() -> void:
 	_update_countdown_display()
 	# Play countdown start sound
 	if AudioManager:
-		AudioManager.play_sfx("battle_countdown")
+		AudioManager.play_sfx("battle_ui_countdown")
 
 
 ## Setup countdown label UI
@@ -1178,7 +1178,7 @@ func _on_battle_started(p_battle_info: Dictionary) -> void:
 
 	# Play battle start sound and BGM
 	if AudioManager:
-		AudioManager.play_sfx("ui_battle_start")
+		AudioManager.play_sfx("battle_ui_start")
 		AudioManager.play_bgm("battle")
 
 	# Add ArenaMap to scene for rendering
@@ -1229,13 +1229,13 @@ func _on_battle_finished(p_result: String, p_winner_id: String, p_loser_id: Stri
 			result_text = "VICTORY!"
 			result_color = Color(0.4, 0.9, 0.5)
 			if AudioManager:
-				AudioManager.play_sfx("bat_victory")
+				AudioManager.play_sfx("battle_ui_victory")
 				AudioManager.play_bgm("victory_celebration")
 		"defeat":
 			result_text = "DEFEAT..."
 			result_color = Color(0.9, 0.4, 0.4)
 			if AudioManager:
-				AudioManager.play_sfx("bat_defeat")
+				AudioManager.play_sfx("battle_ui_defeat")
 		"draw":
 			result_text = "DRAW"
 			result_color = Color(0.8, 0.8, 0.4)
@@ -1265,6 +1265,9 @@ func _on_battle_finished(p_result: String, p_winner_id: String, p_loser_id: Stri
 
 ## Show battle result modal dialog
 func _show_result_modal(p_result: String, p_title: String, p_title_color: Color, p_exp: int, p_stats: Dictionary, p_battle_stats: Dictionary = {}) -> void:
+	# Play battle end sound
+	if AudioManager:
+		AudioManager.play_sfx("battle_ui_end")
 	# Play panel open sound
 	if AudioManager:
 		AudioManager.play_sfx("ui_panel_open")

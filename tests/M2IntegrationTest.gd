@@ -4682,10 +4682,10 @@ func _test_combat_audio() -> void:
 	_assert(rts_content.find('play_sfx("skill_defend")') >= 0, "RTSArenaController has skill_defend")
 
 	# Test 11: RTSArenaController has victory sound
-	_assert(rts_content.find('play_sfx("bat_victory")') >= 0, "RTSArenaController has bat_victory")
+	_assert(rts_content.find('play_sfx("battle_ui_victory")') >= 0, "RTSArenaController has battle_ui_victory")
 
 	# Test 12: RTSArenaController has defeat sound
-	_assert(rts_content.find('play_sfx("bat_defeat")') >= 0, "RTSArenaController has bat_defeat")
+	_assert(rts_content.find('play_sfx("battle_ui_defeat")') >= 0, "RTSArenaController has battle_ui_defeat")
 
 	# Test 13: RTSArenaManager has battle start sound
 	var manager_content = FileAccess.get_file_as_string("res://scripts/game/RTSArenaManager.gd")
@@ -5371,8 +5371,8 @@ func _test_new_battle_sounds() -> void:
 	# Test 8: RTSArenaController uses skill_rock for attack skills
 	_assert(controller_content.find('play_sfx("skill_rock")') >= 0, "RTSArenaController uses skill_rock")
 
-	# Test 9: RTSArenaController uses battle_countdown on battle start
-	_assert(controller_content.find('play_sfx("battle_countdown")') >= 0, "RTSArenaController uses battle_countdown")
+	# Test 9: RTSArenaController uses battle_ui_countdown on battle start
+	_assert(controller_content.find('play_sfx("battle_ui_countdown")') >= 0, "RTSArenaController uses battle_ui_countdown")
 
 	# Test 10: RTSArenaController uses battle_gather for gather command
 	_assert(controller_content.find('play_sfx("battle_gather")') >= 0, "RTSArenaController uses battle_gather")

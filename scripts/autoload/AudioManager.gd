@@ -151,6 +151,14 @@ func _init_sound_paths() -> void:
 	for unit_sound_name in soul_unit_sounds:
 		_sound_paths["soul_unit_%s" % unit_sound_name] = "res://assets/audio/soul_unit_%s.wav" % unit_sound_name
 
+	# Battle UI sounds (design assets round 8) - high quality versions
+	var battle_ui_sounds: Array = [
+		"start", "end", "victory", "defeat", "countdown"
+	]
+	for battle_ui_name in battle_ui_sounds:
+		_sound_paths["battle_ui_%s" % battle_ui_name] = "res://assets/audio/battle_%s.wav" % battle_ui_name
+	_sound_paths["unit_select"] = "res://assets/audio/unit_select.wav"
+
 	# BGM
 	var bgm_tracks: Array = ["battle", "explore", "home_main", "menu",
 		"main_menu", "battle_calm", "battle_tension",
