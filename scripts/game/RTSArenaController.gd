@@ -63,6 +63,9 @@ var _hit_flash_duration = 0.0
 var _skill_particles = []
 var _skill_particle_timer = 0.0
 
+## Skill cooldown overlays (visual cooldown indicator)
+var _skill_cooldown_overlays = {}
+
 ## Weather/environment display
 var _weather_label = null
 var _weather_icon = null
@@ -1083,6 +1086,19 @@ func _setup_skill_buttons() -> void:
 		skill_buttons["defend"].pressed.connect(_on_defend_pressed)
 	if back_button:
 		back_button.pressed.connect(_on_back_pressed)
+	# Create cooldown overlays for each skill button
+	for skill_name in skill_buttons.keys():
+		var button = skill_buttons[skill_name]
+		if button:
+			var overlay = ColorRect.new()
+			overlay.name = "CooldownOverlay"
+			overlay.color = Color(0.0, 0.0, 0.0, 0.6)
+			overlay.size = button.size
+			overlay.position = Vector2(0, 0)
+			overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			overlay.visible = false
+			button.add_child(overlay)
+			_skill_cooldown_overlays[skill_name] = overlay
 
 
 ## Setup macro command UI (design doc: coach-style RTS)
@@ -1333,6 +1349,19 @@ func _update_skill_cooldowns() -> void:
 		var cooldown = RTSArenaManager.player_unit.skill_cooldowns.get(skill_name, 0)
 		var was_on_cd = _skill_was_on_cooldown.get(skill_name, false)
 		button.disabled = cooldown > 0
+		# Update cooldown overlay visual
+		var overlay = _skill_cooldown_overlays.get(skill_name, null)
+		if overlay:
+			if cooldown > 0:
+				# Get max cooldown for this skill
+				var max_cd = _get_skill_max_cooldown(skill_name)
+				var progress = 1.0 - (cooldown / max_cd) if max_cd > 0 else 0.0
+				overlay.visible = true
+				overlay.size.y = button.size.y * (1.0 - progress)
+				overlay.position.y = button.size.y * progress
+			else:
+				overlay.visible = false
+				overlay.size.y = 0
 		if cooldown > 0:
 			button.text = "%s (%.1f)" % [skill_name.capitalize(), cooldown]
 			_skill_was_on_cooldown[skill_name] = true
@@ -1342,6 +1371,20 @@ func _update_skill_cooldowns() -> void:
 			if was_on_cd and AudioManager:
 				AudioManager.play_sfx("bat_skill_ready", 0.5)
 			_skill_was_on_cooldown[skill_name] = false
+
+
+## Get max cooldown for a skill
+func _get_skill_max_cooldown(skill_name: String) -> float:
+	match skill_name:
+		"heavy_strike":
+			return 5.0
+		"quick_strike":
+			return 2.0
+		"heal":
+			return 8.0
+		"defend":
+			return 6.0
+	return 5.0
 
 
 ## Handle battle started
