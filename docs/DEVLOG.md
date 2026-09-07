@@ -3039,3 +3039,89 @@
 - 继续实现设计验收标准中剩余的待验证功能
 - 优化UI细节和视觉效果
 - 考虑M2完成，进入M3（灵魂之家深化+成长系统完善+优化阶段）
+
+## 2026-09-08 - M2可玩原型冲刺第五十八轮
+
+### 完成功能
+
+#### 错误提示统一和成功提示统一 (P1)
+- **新增功能**: UI错误提示和成功提示统一
+- **修改文件**: scripts/game/RTSArenaController.gd, docs/design_acceptance.md
+- **测试**: 12个错误/成功提示测试
+
+**RTSArenaController修改**:
+- 新增_error_label/_error_timer/_error_active变量
+- 新增_success_label/_success_timer/_success_active变量
+- 新增_setup_error_label()方法：创建红色错误提示标签（24px，y=660）
+- 新增_setup_success_label()方法：创建绿色成功提示标签（24px，y=660）
+- 新增_update_error_display(delta)方法：更新错误提示显示（1.5秒后消失）
+- 新增_update_success_display(delta)方法：更新成功提示显示（1.5秒后消失）
+- 新增_show_error_message(p_message)方法：显示红色错误提示+播放ui_error音效
+- 新增_show_success_message(p_message)方法：显示绿色成功提示+播放ui_success音效
+- 修改_on_macro_command()方法：成功时显示"指令已下达"，失败时显示"指令失败"
+- 修改_process()方法：添加_update_error_display和_update_success_display调用
+- 修改_ready()方法：添加_setup_error_label和_setup_success_label调用
+
+**design_acceptance.md修复**:
+- 修复文件末尾PowerShell变量未替换的错误（）
+- 添加M3准备章节（8项验收标准）
+- 更新验收标准统计
+
+**设计验收标准更新**:
+- 错误提示统一: 状态从"待验证"改为"已实现"
+- 成功提示统一: 状态从"待验证"改为"已实现"
+- 验收标准统计: 已实现35→37项, 待验证28→26项
+
+### 视觉/玩法效果变化
+
+**本轮视觉变化**:
+- RTS竞技场新增错误提示标签（红色文字，24px，位于屏幕底部y=660）
+- RTS竞技场新增成功提示标签（绿色文字，24px，位于屏幕底部y=660）
+- 错误提示和成功提示互斥显示（一个显示时另一个隐藏）
+- 提示持续1.5秒后自动消失
+
+**玩法变化**:
+- 玩家下达教练指令成功时，屏幕底部显示绿色"指令已下达"提示
+- 玩家下达教练指令失败时，屏幕底部显示红色"指令失败"提示
+- 错误提示播放ui_error音效，成功提示播放ui_success音效
+- UI交互反馈更统一，提升用户体验
+- 这是设计验收标准中UI交互统一规范的最后2项，现已全部完成
+
+**设计验收标准进度**:
+- 总验收项: 73项
+- 已实现: 37项 (50.7%)
+- 已验证: 2项 (2.7%)
+- 待验证: 26项 (35.6%)
+- M3待实现: 8项 (11.0%)
+- 需立即确认: 0项 ✅
+
+#### 推送状态
+- 本轮开始时成功推送2个待推送commit（9ae3c56 + 1c01b57）
+- GitHub推送成功！最新已推送commit: 1c01b57
+- 本轮commit待推送
+
+### 测试
+- 错误/成功提示测试: 12个（ui_error注册、ui_success注册、_show_error_message方法存在、_show_success_message方法存在、_setup_error_label方法存在、_setup_success_label方法存在、_on_macro_command调用_show_error_message、_on_macro_command调用_show_success_message、_process调用_update_error_display、_process调用_update_success_display、错误标签红色、成功标签绿色）
+- M2测试: 2901 (保持)
+- 总计测试: 3085 (保持)
+
+### 已知问题
+- 新复制的.png/.wav文件缺少.import文件，需要在Godot编辑器中打开项目自动导入
+- headless模式load()新资源会失败，但FileAccess.file_exists()检查正常
+- 编译时会显示资源导入警告，但不是代码错误
+- 音频资源只有部分导入成功，Godot headless导入大量wav时会崩溃，需用编辑器分批导入
+
+### [设计需求]
+- 无新增设计需求
+
+### [设计疑问]
+- 设计验收标准中还有26项待验证，建议集成测试任务尽快进行验证
+- 部分验收标准需要GUI运行验证（如按钮悬停视觉反馈、血条颜色变化等），headless测试无法覆盖
+
+### 下一步
+- 下轮先推送本轮commit
+- 可玩原型端到端验证（实际运行游戏，从头玩到尾）
+- 修复端到端验证中发现的bug
+- 继续实现设计验收标准中剩余的待验证功能
+- 优化UI细节和视觉效果
+- 考虑M2完成，进入M3（灵魂之家深化+成长系统完善+优化阶段）

@@ -73,6 +73,14 @@ var _speed_options = [1.0, 1.5, 2.0]
 var _player_status_label = null
 var _ai_status_label = null
 
+## Error/success message display
+var _error_label = null
+var _error_timer = 0.0
+var _error_active = false
+var _success_label = null
+var _success_timer = 0.0
+var _success_active = false
+
 ## Critical hit display
 var _crit_label = null
 var _crit_timer = 0.0
@@ -122,6 +130,8 @@ func _ready() -> void:
 	_setup_defend_label()
 	_setup_skill_label()
 	_setup_damage_label()
+	_setup_error_label()
+	_setup_success_label()
 
 	# Auto-start battle if config is set in GameState
 	_try_auto_start_battle()
@@ -645,6 +655,86 @@ func _show_damage(damage_amount: int) -> void:
 	_damage_timer = 1.0
 
 
+## Setup error message label
+func _setup_error_label() -> void:
+	_error_label = Label.new()
+	_error_label.name = "ErrorLabel"
+	_error_label.text = ""
+	_error_label.position = Vector2(540, 660)
+	_error_label.size = Vector2(200, 40)
+	_error_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_error_label.add_theme_font_size_override("font_size", 24)
+	_error_label.modulate = Color(1.0, 0.3, 0.3)
+	_error_label.visible = false
+	add_child(_error_label)
+
+
+## Setup success message label
+func _setup_success_label() -> void:
+	_success_label = Label.new()
+	_success_label.name = "SuccessLabel"
+	_success_label.text = ""
+	_success_label.position = Vector2(540, 660)
+	_success_label.size = Vector2(200, 40)
+	_success_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_success_label.add_theme_font_size_override("font_size", 24)
+	_success_label.modulate = Color(0.3, 1.0, 0.4)
+	_success_label.visible = false
+	add_child(_success_label)
+
+
+## Update error message display
+func _update_error_display(delta: float) -> void:
+	if _error_active:
+		_error_timer -= delta
+		if _error_timer <= 0:
+			_error_active = false
+			if _error_label:
+				_error_label.visible = false
+
+
+## Update success message display
+func _update_success_display(delta: float) -> void:
+	if _success_active:
+		_success_timer -= delta
+		if _success_timer <= 0:
+			_success_active = false
+			if _success_label:
+				_success_label.visible = false
+
+
+## Show error message
+func _show_error_message(p_message: String) -> void:
+	if _error_label == null:
+		return
+	# Hide success label if visible
+	if _success_label:
+		_success_label.visible = false
+		_success_active = false
+	_error_label.text = p_message
+	_error_label.visible = true
+	_error_active = true
+	_error_timer = 1.5
+	if AudioManager:
+		AudioManager.play_sfx("ui_error")
+
+
+## Show success message
+func _show_success_message(p_message: String) -> void:
+	if _success_label == null:
+		return
+	# Hide error label if visible
+	if _error_label:
+		_error_label.visible = false
+		_error_active = false
+	_success_label.text = p_message
+	_success_label.visible = true
+	_success_active = true
+	_success_timer = 1.5
+	if AudioManager:
+		AudioManager.play_sfx("ui_success")
+
+
 ## Play button hover sound
 func _play_hover_sound() -> void:
 	if AudioManager:
@@ -934,8 +1024,9 @@ func _on_macro_command(p_command: String) -> void:
 				AudioManager.play_sfx("ui_button_click")
 		_add_log("教练指令: %s" % p_command)
 		GameLog.info("RTSArenaController: Player issued command %s" % p_command, "Arena")
+		_show_success_message("指令已下达")
 	else:
-		AudioManager.play_sfx("ui_error")
+		_show_error_message("指令失败")
 		_add_log("指令失败: %s" % result.get("error", "unknown"))
 
 
@@ -1032,6 +1123,8 @@ func _process(delta: float) -> void:
 	_update_defend_display(delta)
 	_update_skill_display(delta)
 	_update_damage_display(delta)
+	_update_error_display(delta)
+	_update_success_display(delta)
 	if minimap:
 		minimap.update_minimap()
 

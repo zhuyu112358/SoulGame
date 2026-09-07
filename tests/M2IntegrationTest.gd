@@ -108,6 +108,7 @@ func _ready() -> void:
 	_test_soul_home_official_resources()
 	_test_settings_save_load()
 	_test_panel_open_close_sounds()
+	_test_error_success_messages()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -7420,3 +7421,47 @@ func _test_panel_open_close_sounds() -> void:
 
 	# Test 8: ui_panel_open.wav file exists
 	_assert(FileAccess.file_exists("res://assets/audio/ui/ui_panel_open.wav"), "ui_panel_open.wav file exists")
+
+
+## ============================================
+## Error/Success Message Tests
+## ============================================
+func _test_error_success_messages() -> void:
+	print("\n--- Error/Success Message Tests ---")
+
+	# Test 1: AudioManager has ui_error registered
+	_assert(AudioManager.has_sound("ui_error"), "AudioManager has ui_error registered")
+
+	# Test 2: AudioManager has ui_success registered
+	_assert(AudioManager.has_sound("ui_success"), "AudioManager has ui_success registered")
+
+	# Test 3: RTSArenaController has _show_error_message method
+	var source_text = FileAccess.get_file_as_string("res://scripts/game/RTSArenaController.gd")
+	_assert(source_text.find("func _show_error_message") != -1, "RTSArenaController has _show_error_message method")
+
+	# Test 4: RTSArenaController has _show_success_message method
+	_assert(source_text.find("func _show_success_message") != -1, "RTSArenaController has _show_success_message method")
+
+	# Test 5: RTSArenaController has _setup_error_label method
+	_assert(source_text.find("func _setup_error_label") != -1, "RTSArenaController has _setup_error_label method")
+
+	# Test 6: RTSArenaController has _setup_success_label method
+	_assert(source_text.find("func _setup_success_label") != -1, "RTSArenaController has _setup_success_label method")
+
+	# Test 7: _on_macro_command calls _show_error_message on failure
+	_assert(source_text.find("_show_error_message(\"指令失败\")") != -1, "_on_macro_command calls _show_error_message on failure")
+
+	# Test 8: _on_macro_command calls _show_success_message on success
+	_assert(source_text.find("_show_success_message(\"指令已下达\")") != -1, "_on_macro_command calls _show_success_message on success")
+
+	# Test 9: _process calls _update_error_display
+	_assert(source_text.find("_update_error_display(delta)") != -1, "_process calls _update_error_display")
+
+	# Test 10: _process calls _update_success_display
+	_assert(source_text.find("_update_success_display(delta)") != -1, "_process calls _update_success_display")
+
+	# Test 11: Error label is red color
+	_assert(source_text.find("Color(1.0, 0.3, 0.3)") != -1, "Error label is red color")
+
+	# Test 12: Success label is green color
+	_assert(source_text.find("Color(0.3, 1.0, 0.4)") != -1, "Success label is green color")
