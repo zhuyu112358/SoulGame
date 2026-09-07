@@ -4202,3 +4202,28 @@ func _test_game_flow() -> void:
 	_assert(soul_select_scene != null, "Soul select accessible")
 	_assert(rts_arena_scene != null, "RTS arena accessible")
 	_assert(soul_home_scene != null, "Soul home accessible")
+
+	# Test 29: BattleResultManager stats fields are correct
+	var br_stats = BattleResultManager.get_stats()
+	_assert(br_stats.has("total_battles"), "stats has total_battles")
+	_assert(br_stats.has("victories"), "stats has victories")
+	_assert(br_stats.has("defeats"), "stats has defeats")
+	_assert(br_stats.has("win_rate"), "stats has win_rate")
+	_assert(br_stats.has("total_experience_gained"), "stats has total_experience_gained")
+	_assert(br_stats.has("current_streak"), "stats has current_streak")
+	_assert(br_stats.has("best_streak"), "stats has best_streak")
+
+	# Test 30: BattleResultManager does NOT have wrong field name
+	_assert(not br_stats.has("total_experience"), "stats does NOT have total_experience (correct field is total_experience_gained)")
+
+	# Test 31: BattleResultManager has process_battle_result
+	_assert(BattleResultManager.has_method("process_battle_result"), "BattleResultManager has process_battle_result")
+
+	# Test 32: BattleResultManager has get_history
+	_assert(BattleResultManager.has_method("get_history"), "BattleResultManager has get_history")
+
+	# Test 33: RTSArenaController has _show_result_modal
+	_assert(arena_instance.has_method("_show_result_modal"), "RTSArenaController has _show_result_modal")
+
+	# Test 34: RTSArenaController has _on_battle_finished
+	_assert(arena_instance.has_method("_on_battle_finished"), "RTSArenaController has _on_battle_finished")

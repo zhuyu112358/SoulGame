@@ -160,3 +160,41 @@
 - 可玩原型端到端验证（实际运行游戏，从头玩到尾）
 - 修复端到端验证中发现的bug
 - 实现设置界面（音量控制等）- P2
+
+## 2026-09-07 - M2可玩原型冲刺第五轮
+
+### 完成功能
+
+#### 战斗结果弹窗统计字段修复 (P1)
+- **文件**: `scripts/game/RTSArenaController.gd`
+
+**Bug: 战斗结果弹窗Total EXP显示为0**
+- 问题: `_show_result_modal()`使用`p_stats.get("total_experience", 0)`读取统计
+- BattleResultManager.get_stats()返回的字段是`total_experience_gained`，不是`total_experience`
+- 导致战斗结果弹窗中Total EXP始终显示为0
+- 修复: 改为`p_stats.get("total_experience_gained", 0)`
+
+**BattleResultManager.stats正确字段**:
+- total_battles, victories, defeats, draws
+- win_rate, total_experience_gained
+- total_damage_dealt, total_damage_taken
+- current_streak, best_streak
+
+### 测试
+- 统计字段验证测试: 12个（字段存在性、错误字段不存在、方法存在性）
+- M2测试: 1483 → 1495
+- 总计测试: 1667 → 1679
+
+### 已知问题
+- 背景图main_menu_bg.png缺少.import文件，需要在Godot编辑器中打开项目自动导入
+- 场景加载时有资源警告，但不影响功能
+- 设置按钮功能未实现（非P0，M2原型期可接受）
+
+### [设计需求]
+- 需要: 概念图 - 灵魂之家背景（温馨、像素风）- P1
+- 需要: 音效 - 灵魂之家环境音（温暖、空灵）- P1
+
+### 下一步
+- 可玩原型端到端验证（实际运行游戏，从头玩到尾）
+- 修复端到端验证中发现的bug
+- 实现设置界面（音量控制等）- P2

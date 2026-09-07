@@ -510,7 +510,7 @@ func _show_result_modal(p_result: String, p_title: String, p_title_color: Color,
 		p_stats.get("current_streak", 0),
 		p_stats.get("best_streak", 0)
 	]
-	stats_text += "Total EXP: %d" % p_stats.get("total_experience", 0)
+	stats_text += "Total EXP: %d" % p_stats.get("total_experience_gained", 0)
 
 	var stats_label = Label.new()
 	stats_label.text = stats_text
