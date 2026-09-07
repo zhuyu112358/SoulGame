@@ -1747,6 +1747,7 @@ func _on_unit_spawned(p_unit: SoulUnit, p_is_player: bool) -> void:
 	var visual = ColorRect.new()
 	visual.size = Vector2(64, 64)
 	visual.position = p_unit.position - Vector2(32, 32)
+	visual.z_index = 10  # Render above arena obstacles
 	if p_is_player:
 		visual.color = Color(0.2, 0.6, 1.0)  # Blue for player
 		_player_visual = visual
