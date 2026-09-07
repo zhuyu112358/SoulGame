@@ -78,6 +78,11 @@ var _crit_label = null
 var _crit_timer = 0.0
 var _crit_active = false
 
+## Dodge display
+var _dodge_label = null
+var _dodge_timer = 0.0
+var _dodge_active = false
+
 
 func _ready() -> void:
 	GameLog.info("RTSArenaController: RTS Arena scene ready", "Arena")
@@ -92,6 +97,7 @@ func _ready() -> void:
 	_setup_speed_button()
 	_setup_status_labels()
 	_setup_crit_label()
+	_setup_dodge_label()
 
 	# Auto-start battle if config is set in GameState
 	_try_auto_start_battle()
@@ -373,6 +379,51 @@ func _show_crit_hit() -> void:
 	if AudioManager:
 		AudioManager.play_sfx("battle_critical")
 	_add_log("暴击！")
+
+
+## Setup dodge label
+func _setup_dodge_label() -> void:
+	_dodge_label = Label.new()
+	_dodge_label.name = "DodgeLabel"
+	_dodge_label.text = ""
+	_dodge_label.position = Vector2(540, 360)
+	_dodge_label.size = Vector2(200, 50)
+	_dodge_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_dodge_label.add_theme_font_size_override("font_size", 28)
+	_dodge_label.modulate = Color(0.4, 0.8, 1.0)
+	_dodge_label.visible = false
+	add_child(_dodge_label)
+
+
+## Update dodge display
+func _update_dodge_display(delta: float) -> void:
+	if _dodge_active:
+		_dodge_timer -= delta
+		if _dodge_timer <= 0:
+			_dodge_active = false
+			if _dodge_label:
+				_dodge_label.visible = false
+		return
+
+	# Check if player unit just dodged an attack
+	if RTSArenaManager.player_unit and RTSArenaManager.player_unit.last_damage_dodged:
+		_show_dodge()
+		# Reset the flag to avoid repeated display
+		RTSArenaManager.player_unit.last_damage_dodged = false
+
+
+## Show dodge effect
+func _show_dodge() -> void:
+	if _dodge_label == null:
+		return
+	_dodge_label.text = "闪避！"
+	_dodge_label.visible = true
+	_dodge_active = true
+	_dodge_timer = 1.0
+	# Play dodge sound
+	if AudioManager:
+		AudioManager.play_sfx("battle_dodge")
+	_add_log("闪避！")
 
 
 ## Play button hover sound
@@ -757,6 +808,7 @@ func _process(delta: float) -> void:
 	_update_weather_display()
 	_update_status_display()
 	_update_crit_display(delta)
+	_update_dodge_display(delta)
 	if minimap:
 		minimap.update_minimap()
 

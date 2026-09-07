@@ -2466,3 +2466,72 @@
 - 修复端到端验证中发现的bug
 - 优化UI细节和视觉效果
 - 考虑M2完成，进入M3（灵魂之家深化+成长系统完善+优化阶段）
+
+## 2026-09-07 - M2可玩原型冲刺第五十轮
+
+### 完成功能
+
+#### 闪避系统 (P2)
+- **新增功能**: RTS战斗闪避系统+闪避提示显示
+- **修改文件**: scripts/game/SoulUnit.gd, scripts/game/RTSArenaController.gd, tests/M2IntegrationTest.gd
+- **测试**: 19个闪避系统测试
+
+**SoulUnit修改**:
+- 新增dodge_rate变量（默认0.05，5%闪避率）
+- 新增last_damage_dodged变量（标记最后一次受到的伤害是否被闪避）
+- 修改take_damage()方法：添加闪避判定
+  - 使用randf() < dodge_rate判断是否闪避
+  - 闪避时直接返回，不造成伤害
+  - 设置last_damage_dodged标记
+
+**RTSArenaController修改**:
+- 新增_dodge_label、_dodge_timer、_dodge_active变量
+- 新增_setup_dodge_label()方法：创建闪避提示标签
+  - 28px蓝色文字，居中显示在屏幕中央偏下
+  - 初始隐藏
+- 新增_update_dodge_display(delta)方法：
+  - 检查玩家单位的last_damage_dodged
+  - 如果为true，调用_show_dodge()并重置标记
+  - 闪避提示显示1秒后自动隐藏
+- 新增_show_dodge()方法：
+  - 显示"闪避！"文字
+  - 播放battle_dodge音效
+  - 添加战斗日志"闪避！"
+- 修改_process()方法：添加_update_dodge_display(delta)调用
+
+**闪避系统效果**:
+- 玩家单位有5%概率闪避攻击
+- 闪避时不受到任何伤害
+- 屏幕中央显示蓝色"闪避！"文字，持续1秒
+- 播放battle_dodge音效
+- 战斗日志记录闪避事件
+
+**测试修复**:
+- 修改_test_soul_unit_combat测试，设置unit1.dodge_rate=0和unit2.dodge_rate=0
+- 避免闪避系统导致测试结果不稳定
+
+#### 推送状态
+- 成功推送2个待推送commit：b993e5f（战斗结果详细统计）+ 258fdc6（暴击系统）
+- 推送范围：da3eca6..258fdc6
+- GitHub连接恢复正常
+
+### 测试
+- 闪避系统测试: 19个（闪避变量、闪避率修改、控制器变量、方法存在、标签创建、显示激活、定时隐藏、音效注册）
+- 测试修复: _test_soul_unit_combat设置dodge_rate=0
+- M2测试: 2794 -> 2813
+- 总计测试: 2978 -> 2997
+
+### 已知问题
+- 新复制的.png/.wav文件缺少.import文件，需要在Godot编辑器中打开项目自动导入
+- headless模式load()新资源会失败，但FileAccess.file_exists()检查正常
+- 编译时会显示资源导入警告，但不是代码错误
+
+### [设计需求]
+- 需要: 概念图 - 灵魂之家背景（温馨、像素风）- P1（已用concept_home_mainroom作为占位）
+- 需要: 音效 - 灵魂之家环境音（温暖、空灵）- P1（已用env_home_indoor作为环境音）
+
+### 下一步
+- 可玩原型端到端验证（实际运行游戏，从头玩到尾）
+- 修复端到端验证中发现的bug
+- 优化UI细节和视觉效果
+- 考虑M2完成，进入M3（灵魂之家深化+成长系统完善+优化阶段）

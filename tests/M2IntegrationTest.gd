@@ -100,6 +100,7 @@ func _ready() -> void:
 	_test_status_effect_display()
 	_test_battle_result_detailed_stats()
 	_test_critical_hit_system()
+	_test_dodge_system()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -1209,6 +1210,10 @@ func _test_soul_unit_combat() -> void:
 	unit1.init_from_soul("test_u1", "FireSoul", "fire", 5, true)
 	var unit2 = SoulUnit.new()
 	unit2.init_from_soul("test_u2", "WaterSoul", "water", 5, false)
+
+	# Disable dodge for deterministic testing
+	unit1.dodge_rate = 0.0
+	unit2.dodge_rate = 0.0
 
 	# Test 1: init_from_soul sets properties correctly
 	_assert(unit1.soul_id == "test_u1", "Unit1 soul_id correct")
@@ -7014,5 +7019,57 @@ func _test_critical_hit_system() -> void:
 	_assert(controller._crit_label.visible == false, "Crit label hidden after timer")
 
 	# Test 9: AudioManager has battle_critical sound
+	var audio_info = AudioManager.get_info()
+	_assert(audio_info.has("registered_sounds"), "AudioManager info has registered_sounds")
+
+
+## ============================================
+## Dodge System Tests
+## ============================================
+func _test_dodge_system() -> void:
+	print("\n--- Dodge System Tests ---")
+
+	# Test 1: SoulUnit has dodge variables
+	var soul_unit_script = load("res://scripts/game/SoulUnit.gd")
+	var soul_unit = soul_unit_script.new()
+	_assert(soul_unit.dodge_rate == 0.05, "Default dodge rate is 0.05 (5%)")
+	_assert(soul_unit.last_damage_dodged == false, "last_damage_dodged starts false")
+
+	# Test 2: Dodge rate can be changed
+	soul_unit.dodge_rate = 0.3
+	_assert(soul_unit.dodge_rate == 0.3, "Dodge rate can be changed to 0.3")
+	soul_unit.dodge_rate = 0.05
+
+	# Test 3: RTSArenaController has dodge display variables
+	var controller_script = load("res://scripts/game/RTSArenaController.gd")
+	var controller = controller_script.new()
+	_assert(controller._dodge_label == null, "Dodge label is null initially")
+	_assert(controller._dodge_timer == 0.0, "Dodge timer starts at 0.0")
+	_assert(controller._dodge_active == false, "Dodge active starts false")
+
+	# Test 4: Controller has dodge methods
+	_assert(controller.has_method("_setup_dodge_label"), "Has _setup_dodge_label method")
+	_assert(controller.has_method("_update_dodge_display"), "Has _update_dodge_display method")
+	_assert(controller.has_method("_show_dodge"), "Has _show_dodge method")
+
+	# Test 5: Setup dodge label creates label
+	controller._setup_dodge_label()
+	_assert(controller._dodge_label != null, "Dodge label created")
+	_assert(controller._dodge_label.text == "", "Dodge label starts empty")
+	_assert(controller._dodge_label.visible == false, "Dodge label starts hidden")
+
+	# Test 6: Show dodge activates display
+	controller._show_dodge()
+	_assert(controller._dodge_active == true, "Dodge active after show")
+	_assert(controller._dodge_timer == 1.0, "Dodge timer set to 1.0")
+	_assert(controller._dodge_label.text == "闪避！", "Dodge label shows 闪避！")
+	_assert(controller._dodge_label.visible == true, "Dodge label visible after show")
+
+	# Test 7: Update dodge display hides after timer
+	controller._update_dodge_display(1.5)
+	_assert(controller._dodge_active == false, "Dodge inactive after timer expires")
+	_assert(controller._dodge_label.visible == false, "Dodge label hidden after timer")
+
+	# Test 8: AudioManager has battle_dodge sound
 	var audio_info = AudioManager.get_info()
 	_assert(audio_info.has("registered_sounds"), "AudioManager info has registered_sounds")

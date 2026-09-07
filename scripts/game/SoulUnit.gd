@@ -79,6 +79,10 @@ var crit_rate: float = 0.1  # 10% base critical hit chance
 var crit_multiplier: float = 1.5  # 150% damage on critical hit
 var last_attack_critical: bool = false  # whether the last attack was a critical hit
 
+## Dodge system
+var dodge_rate: float = 0.05  # 5% base dodge chance
+var last_damage_dodged: bool = false  # whether the last incoming damage was dodged
+
 ## Visual sprite
 var _sprite: Node2D = null
 
@@ -431,6 +435,12 @@ func _get_skill_energy_cost(p_skill_name: String) -> int:
 ## Take damage
 func take_damage(p_damage: int, p_attacker: Node2D = null) -> void:
 	if state == UnitState.DEAD:
+		return
+
+	# Dodge check
+	last_damage_dodged = randf() < dodge_rate
+	if last_damage_dodged:
+		GameLog.debug("SoulUnit: %s dodged the attack!" % soul_name, "Arena")
 		return
 
 	# Apply defense buff
