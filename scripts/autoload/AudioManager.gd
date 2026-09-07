@@ -133,7 +133,9 @@ func _init_sound_paths() -> void:
 		"sakura_shrine", "savanna",
 		"seaside", "snow_mountain", "soul_home", "soul_home_day",
 		"soul_home_night", "starlight", "stream", "sunset",
-		"tundra", "underground_cavern"
+		"tundra", "underground_cavern",
+		"underground_city", "underground_river", "volcanic_wasteland", "volcano",
+		"waterfall_canyon", "wetland", "wind_erosion"
 	]
 	for sound_name in env_sounds:
 		_sound_paths["env_%s" % sound_name] = "res://assets/audio/environment/env_%s.wav" % sound_name
