@@ -102,6 +102,11 @@ var _sprite: Node2D = null
 var _hit_flash_timer: float = 0.0
 var _hit_flash_duration: float = 0.15
 
+## HP bar smooth transition
+var _target_hp_ratio: float = 1.0
+var _current_hp_ratio: float = 1.0
+var _hp_bar_smooth_speed: float = 5.0
+
 ## Signal for state changes
 signal hp_changed(current_hp, max_hp)
 signal energy_changed(current_energy, max_energy)
@@ -190,7 +195,7 @@ func _update_hp_bar() -> void:
 	var hp_bar = get_node_or_null("HPBar")
 	if hp_bar:
 		var ratio = float(current_hp) / float(max_hp) if max_hp > 0 else 0.0
-		hp_bar.size.x = 50.0 * ratio
+		_target_hp_ratio = ratio
 		# Color changes based on HP ratio
 		if ratio > 0.5:
 			hp_bar.color = Color(0.2, 0.8, 0.3, 1.0)
@@ -198,6 +203,16 @@ func _update_hp_bar() -> void:
 			hp_bar.color = Color(0.9, 0.7, 0.2, 1.0)
 		else:
 			hp_bar.color = Color(0.9, 0.3, 0.2, 1.0)
+
+
+## Smoothly update HP bar width towards target
+func _update_hp_bar_smooth(delta: float) -> void:
+	var hp_bar = get_node_or_null("HPBar")
+	if hp_bar == null:
+		return
+	# Smoothly interpolate current ratio towards target
+	_current_hp_ratio = lerp(_current_hp_ratio, _target_hp_ratio, delta * _hp_bar_smooth_speed)
+	hp_bar.size.x = 50.0 * _current_hp_ratio
 
 
 ## Setup initial skill cooldowns
@@ -220,6 +235,7 @@ func _process(delta: float) -> void:
 	_update_status_effects(delta)
 	_update_energy_regen(delta)
 	_update_hit_flash(delta)
+	_update_hp_bar_smooth(delta)
 
 	match state:
 		UnitState.MOVING:
