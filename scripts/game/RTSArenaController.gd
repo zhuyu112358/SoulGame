@@ -649,7 +649,7 @@ func _on_defend_pressed() -> void:
 		AudioManager.play_sfx("bat_defend")
 
 
-## Handle back button
+## Handle back button - return to main menu
 func _on_back_pressed() -> void:
 	RTSArenaManager.cleanup_battle()
 	if AudioManager:
@@ -658,7 +658,7 @@ func _on_back_pressed() -> void:
 	# Remove ArenaMap from scene (keep as autoload)
 	if ArenaMap and ArenaMap.get_parent() == self:
 		remove_child(ArenaMap)
-	SceneManager.change_scene("res://scenes/cli.tscn")
+	SceneManager.change_scene("res://scenes/main_menu.tscn")
 
 
 ## Start a test battle

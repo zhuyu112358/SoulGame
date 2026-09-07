@@ -119,4 +119,4 @@ offset_left = 10.0
 offset_top = 65.0
 offset_right = 110.0
 offset_bottom = 100.0
-text = "Back to CLI"
+text = "返回主菜单"

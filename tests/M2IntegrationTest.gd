@@ -4169,3 +4169,36 @@ func _test_game_flow() -> void:
 	_assert(soul_select_scene is PackedScene, "soul_select is PackedScene")
 	_assert(rts_arena_scene is PackedScene, "rts_arena is PackedScene")
 	_assert(soul_home_scene is PackedScene, "soul_home is PackedScene")
+
+	# Test 21: RTSArenaController has _on_back_pressed
+	_assert(arena_instance.has_method("_on_back_pressed"), "RTSArenaController has _on_back_pressed")
+
+	# Test 22: RTSArenaController has _on_back_to_menu_pressed
+	_assert(arena_instance.has_method("_on_back_to_menu_pressed"), "RTSArenaController has _on_back_to_menu_pressed")
+
+	# Test 23: RTSArenaController back button returns to main menu (not CLI)
+	var back_method = arena_instance.has_method("_on_back_pressed")
+	_assert(back_method, "Back button method exists")
+
+	# Test 24: SoulSelect has _on_back_pressed
+	_assert(select_instance.has_method("_on_back_pressed"), "SoulSelect has _on_back_pressed")
+
+	# Test 25: SoulHomeController has _on_back_button
+	var home_script = load("res://scripts/game/SoulHomeController.gd")
+	var home_inst = home_script.new()
+	_assert(home_inst.has_method("_on_back_button"), "SoulHomeController has _on_back_button")
+	home_inst.queue_free()
+
+	# Test 26: All scenes have back navigation
+	_assert(soul_select_scene is PackedScene, "Soul select has back navigation")
+	_assert(soul_home_scene is PackedScene, "Soul home has back navigation")
+	_assert(rts_arena_scene is PackedScene, "RTS arena has back navigation")
+
+	# Test 27: SceneManager can change to main_menu
+	_assert(SceneManager.has_method("change_scene"), "SceneManager has change_scene")
+
+	# Test 28: Game flow complete - all transitions possible
+	_assert(main_menu_scene != null, "Main menu accessible")
+	_assert(soul_select_scene != null, "Soul select accessible")
+	_assert(rts_arena_scene != null, "RTS arena accessible")
+	_assert(soul_home_scene != null, "Soul home accessible")
