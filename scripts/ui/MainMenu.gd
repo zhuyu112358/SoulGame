@@ -39,6 +39,38 @@ func _ready() -> void:
 		# Play floating island environment ambience
 		AudioManager.play_sfx("env_floating_island")
 
+	# Animate title appearance (fade in + scale up)
+	if _title_label:
+		_title_label.modulate = Color(1, 1, 1, 0)
+		_title_label.scale = Vector2(0.8, 0.8)
+		var title_tween = create_tween()
+		title_tween.set_parallel(true)
+		title_tween.tween_property(_title_label, "modulate:a", 1.0, 0.8).set_ease(Tween.EASE_OUT)
+		title_tween.tween_property(_title_label, "scale", Vector2(1.0, 1.0), 0.8).set_ease(Tween.EASE_OUT)
+		title_tween.set_parallel(false)
+		# Add subtle floating animation after entrance
+		title_tween.tween_callback(_start_title_float)
+
+	# Animate buttons appearance (staggered fade in)
+	var buttons = [_start_button, _home_button, _settings_button, _quit_button]
+	for i in range(buttons.size()):
+		var btn = buttons[i]
+		if btn:
+			btn.modulate = Color(1, 1, 1, 0)
+			var btn_tween = create_tween()
+			btn_tween.tween_interval(0.3 + i * 0.15)
+			btn_tween.tween_property(btn, "modulate:a", 1.0, 0.4).set_ease(Tween.EASE_OUT)
+
+
+## Start title floating animation (subtle up-down motion)
+func _start_title_float() -> void:
+	if _title_label == null:
+		return
+	var float_tween = create_tween()
+	float_tween.set_looped()
+	float_tween.tween_property(_title_label, "position:y", _title_label.position.y - 8, 2.0).set_ease(Tween.EASE_IN_OUT)
+	float_tween.tween_property(_title_label, "position:y", _title_label.position.y + 8, 2.0).set_ease(Tween.EASE_IN_OUT)
+
 
 ## Setup button hover effects (audio + visual)
 func _setup_button_hover(p_button: Button) -> void:
