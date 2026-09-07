@@ -458,6 +458,9 @@ func _on_chat_send(message: String = "") -> void:
 		_update_chat_history("You: " + message)
 		if chat_input:
 			chat_input.text = ""
+		# Play soul chat sound when soul responds
+		if AudioManager:
+			AudioManager.play_sfx("soul_chat")
 
 
 ## Handle chat close

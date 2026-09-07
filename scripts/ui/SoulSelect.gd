@@ -210,6 +210,10 @@ func _start_battle(soul: Dictionary) -> void:
 	GameState.set_value("battle", "map_name", "default_arena")
 	GameState.set_value("battle", "selected_soul", soul)
 
+	# Play soul excited sound when entering battle
+	if AudioManager:
+		AudioManager.play_sfx("soul_excited")
+
 	SceneManager.change_scene("res://scenes/rts_arena.tscn")
 
 
