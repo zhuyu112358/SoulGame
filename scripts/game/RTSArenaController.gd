@@ -49,6 +49,11 @@ var _command_cooldown_timer = 0.0
 var _was_on_cooldown = false
 var _skill_was_on_cooldown = {}
 
+## Screen shake effect (combat feedback)
+var _screen_shake_timer = 0.0
+var _screen_shake_intensity = 0.0
+var _base_position = Vector2.ZERO
+
 ## Weather/environment display
 var _weather_label = null
 var _weather_icon = null
@@ -115,6 +120,7 @@ var _damage_active = false
 
 func _ready() -> void:
 	GameLog.info("RTSArenaController: RTS Arena scene ready", "Arena")
+	_base_position = position
 	_setup_ui_refs()
 	_setup_arena_background()
 	_connect_signals()
@@ -424,6 +430,8 @@ func _show_crit_hit() -> void:
 	_crit_label.modulate.a = 1.0
 	_crit_active = true
 	_crit_timer = 1.0
+	# Trigger screen shake for critical hit
+	_trigger_screen_shake(4.0, 0.25)
 	# Play critical hit sound
 	if AudioManager:
 		AudioManager.play_sfx("battle_critical")
@@ -637,6 +645,8 @@ func _show_skill_used(skill_name: String) -> void:
 	_skill_label.modulate.a = 1.0
 	_skill_active = true
 	_skill_timer = 1.0
+	# Trigger screen shake for skill use
+	_trigger_screen_shake(2.5, 0.15)
 	_add_log(display_name)
 
 
@@ -702,6 +712,27 @@ func _show_damage(damage_amount: int) -> void:
 	_damage_label.modulate.a = 1.0
 	_damage_active = true
 	_damage_timer = 1.0
+
+
+## Trigger screen shake effect
+func _trigger_screen_shake(p_intensity: float = 3.0, p_duration: float = 0.2) -> void:
+	_screen_shake_intensity = p_intensity
+	_screen_shake_timer = p_duration
+
+
+## Update screen shake effect
+func _update_screen_shake(delta: float) -> void:
+	if _screen_shake_timer > 0:
+		_screen_shake_timer -= delta
+		if _screen_shake_timer > 0:
+			# Random offset within intensity range
+			var shake_x = randf_range(-_screen_shake_intensity, _screen_shake_intensity)
+			var shake_y = randf_range(-_screen_shake_intensity, _screen_shake_intensity)
+			position = _base_position + Vector2(shake_x, shake_y)
+		else:
+			# Reset to base position when shake ends
+			position = _base_position
+			_screen_shake_timer = 0.0
 
 
 ## Setup error message label
@@ -1157,6 +1188,8 @@ func _process(delta: float) -> void:
 		return
 	if not _battle_active:
 		return
+	# Update screen shake effect (runs even when paused for visual feedback)
+	_update_screen_shake(delta)
 	# Skip battle logic updates when paused (UI still renders)
 	if _is_paused:
 		_update_unit_display()
