@@ -59,6 +59,10 @@ var _hit_flash = null
 var _hit_flash_timer = 0.0
 var _hit_flash_duration = 0.0
 
+## Skill particle effect (combat feedback)
+var _skill_particles = []
+var _skill_particle_timer = 0.0
+
 ## Weather/environment display
 var _weather_label = null
 var _weather_icon = null
@@ -655,6 +659,8 @@ func _show_skill_used(skill_name: String) -> void:
 	_skill_timer = 1.0
 	# Trigger screen shake for skill use
 	_trigger_screen_shake(2.5, 0.15)
+	# Trigger skill particle burst at arena center
+	_trigger_skill_particles(Vector2(640, 300), Color(1.0, 0.6, 0.2))
 	_add_log(display_name)
 
 
@@ -804,6 +810,46 @@ func _update_hit_flash(delta: float) -> void:
 		else:
 			_hit_flash.color.a = 0.0
 			_hit_flash_timer = 0.0
+
+
+## Trigger skill particle burst effect
+func _trigger_skill_particles(p_position: Vector2, p_color: Color = Color(1.0, 0.5, 0.2)) -> void:
+	# Create 8 particle squares radiating outward
+	for i in range(8):
+		var particle = ColorRect.new()
+		particle.color = p_color
+		particle.size = Vector2(8, 8)
+		particle.position = p_position
+		particle.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		add_child(particle)
+		var angle = (i / 8.0) * TAU
+		var speed = randf_range(80.0, 150.0)
+		var velocity = Vector2(cos(angle), sin(angle)) * speed
+		_skill_particles.append({"node": particle, "velocity": velocity, "life": 0.5, "max_life": 0.5})
+	_skill_particle_timer = 0.5
+
+
+## Update skill particle effect
+func _update_skill_particles(delta: float) -> void:
+	if _skill_particles.is_empty():
+		return
+	var to_remove = []
+	for particle_data in _skill_particles:
+		particle_data["life"] -= delta
+		if particle_data["life"] <= 0:
+			particle_data["node"].queue_free()
+			to_remove.append(particle_data)
+		else:
+			var progress = 1.0 - (particle_data["life"] / particle_data["max_life"])
+			particle_data["node"].position += particle_data["velocity"] * delta
+			var current_color = particle_data["node"].color
+			current_color.a = 1.0 - progress
+			particle_data["node"].color = current_color
+			# Shrink particle
+			var scale_factor = 1.0 - progress * 0.5
+			particle_data["node"].scale = Vector2(scale_factor, scale_factor)
+	for particle_data in to_remove:
+		_skill_particles.erase(particle_data)
 
 
 ## Update error message display
@@ -1235,6 +1281,8 @@ func _process(delta: float) -> void:
 	_update_screen_shake(delta)
 	# Update hit flash effect (runs even when paused)
 	_update_hit_flash(delta)
+	# Update skill particle effect (runs even when paused)
+	_update_skill_particles(delta)
 	# Skip battle logic updates when paused (UI still renders)
 	if _is_paused:
 		_update_unit_display()

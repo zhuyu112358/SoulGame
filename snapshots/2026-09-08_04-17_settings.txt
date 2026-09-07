@@ -1,0 +1,29 @@
+﻿=== settings.tscn Scene Structure Snapshot ===
+Exported: 2026-09-08_04-17
+
+  - Settings (Control)
+  - BackgroundImage (TextureRect)
+  - BackgroundImage (TextureRect)
+  - BackgroundOverlay (ColorRect)
+  - CenterContainer (CenterContainer)
+  - VBoxContainer (VBoxContainer)
+  - TitleLabel (Label)
+  - Spacer1 (Control)
+  - MasterVolume (HBoxContainer)
+  - NameLabel (Label)
+  - Slider (HSlider)
+  - ValueLabel (Label)
+  - SfxVolume (HBoxContainer)
+  - NameLabel (Label)
+  - Slider (HSlider)
+  - ValueLabel (Label)
+  - BgmVolume (HBoxContainer)
+  - NameLabel (Label)
+  - Slider (HSlider)
+  - ValueLabel (Label)
+  - Spacer2 (Control)
+  - SaveButton (Button)
+  - BackButton (Button)
+
+Total nodes: 23
+
