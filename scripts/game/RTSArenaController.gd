@@ -19,6 +19,13 @@ var ai_name_label = null
 var battle_time_label = null
 var battle_log = null
 var skill_buttons = {}
+
+## Energy bar smooth transition
+var _target_player_energy: float = 0.0
+var _current_player_energy: float = 0.0
+var _target_ai_energy: float = 0.0
+var _current_ai_energy: float = 0.0
+var _energy_bar_smooth_speed: float = 5.0
 var back_button = null
 var arena_viewport = null
 var minimap = null
@@ -1302,6 +1309,8 @@ func _update_weather_display() -> void:
 
 ## Process real-time UI updates
 func _process(delta: float) -> void:
+	# Smoothly update energy bars (runs always for visual smoothness)
+	_update_energy_bars_smooth(delta)
 	# Update countdown if active
 	if _countdown_active:
 		_countdown_timer -= delta
@@ -1351,13 +1360,23 @@ func _update_unit_display() -> void:
 		var p = info["player"]
 		player_hp_bar.value = float(p.get("hp", 0)) / float(p.get("max_hp", 100)) * 100.0
 		if player_energy_bar:
-			player_energy_bar.value = float(p.get("energy", 0)) / float(p.get("max_energy", 50)) * 100.0
+			_target_player_energy = float(p.get("energy", 0)) / float(p.get("max_energy", 50)) * 100.0
 
 	if info.has("ai") and ai_hp_bar:
 		var a = info["ai"]
 		ai_hp_bar.value = float(a.get("hp", 0)) / float(a.get("max_hp", 100)) * 100.0
 		if ai_energy_bar:
-			ai_energy_bar.value = float(a.get("energy", 0)) / float(a.get("max_energy", 50)) * 100.0
+			_target_ai_energy = float(a.get("energy", 0)) / float(a.get("max_energy", 50)) * 100.0
+
+
+## Smoothly update energy bars towards target values
+func _update_energy_bars_smooth(delta: float) -> void:
+	if player_energy_bar:
+		_current_player_energy = lerp(_current_player_energy, _target_player_energy, delta * _energy_bar_smooth_speed)
+		player_energy_bar.value = _current_player_energy
+	if ai_energy_bar:
+		_current_ai_energy = lerp(_current_ai_energy, _target_ai_energy, delta * _energy_bar_smooth_speed)
+		ai_energy_bar.value = _current_ai_energy
 
 
 ## Update skill cooldown display
