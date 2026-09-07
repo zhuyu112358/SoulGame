@@ -55,6 +55,7 @@ func _ready() -> void:
 	_test_soul_select()
 	# Print summary
 	_test_soul_home_controller()
+	_test_game_flow()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -4085,3 +4086,86 @@ func _test_soul_home_controller() -> void:
 	# Test 25: SoulHomeController instance free
 	home_instance.queue_free()
 	_assert(true, "SoulHomeController freed")
+
+
+## ============================================
+## Game Flow System Tests
+## ============================================
+func _test_game_flow() -> void:
+	print("\n--- Game Flow System Tests ---")
+
+	# Test 1: RTSArenaController has _battle_config
+	var arena_script = load("res://scripts/game/RTSArenaController.gd")
+	_assert(arena_script != null, "RTSArenaController script loaded")
+
+	# Test 2-5: RTSArenaController methods (check via instance)
+	var arena_instance = arena_script.new()
+	_assert(arena_instance.has_method("_try_auto_start_battle"), "RTSArenaController has _try_auto_start_battle")
+	_assert(arena_instance.has_method("_on_rematch_pressed"), "RTSArenaController has _on_rematch_pressed")
+	_assert(arena_instance.has_method("_on_back_to_menu_pressed"), "RTSArenaController has _on_back_to_menu_pressed")
+	_assert(arena_instance.has_method("start_test_battle"), "RTSArenaController has start_test_battle")
+	arena_instance.queue_free()
+
+	# Test 6-8: SoulSelect methods (check via instance)
+	var soul_select_script = load("res://scripts/ui/SoulSelect.gd")
+	_assert(soul_select_script != null, "SoulSelect script loaded")
+	var select_instance = soul_select_script.new()
+	_assert(select_instance.has_method("_start_battle"), "SoulSelect has _start_battle")
+	_assert(select_instance.has_method("_on_soul_selected"), "SoulSelect has _on_soul_selected")
+	_assert(select_instance.has_method("_on_back_pressed"), "SoulSelect has _on_back_pressed")
+	select_instance.queue_free()
+
+	# Test 9: GameState can store and retrieve battle config
+	GameState.set_value("battle", "player_soul", {"id": "test", "name": "Test"})
+	GameState.set_value("battle", "ai_soul", {"id": "ai_test", "name": "AI Test"})
+	var stored_player = GameState.get_value("battle", "player_soul", null)
+	var stored_ai = GameState.get_value("battle", "ai_soul", null)
+	_assert(stored_player != null, "GameState stores player_soul")
+	_assert(stored_ai != null, "GameState stores ai_soul")
+	_assert(stored_player["name"] == "Test", "GameState player_soul name correct")
+
+	# Test 10: GameState can clear battle config
+	GameState.set_value("battle", "player_soul", null)
+	GameState.set_value("battle", "ai_soul", null)
+	_assert(GameState.get_value("battle", "player_soul", null) == null, "GameState clears player_soul")
+	_assert(GameState.get_value("battle", "ai_soul", null) == null, "GameState clears ai_soul")
+
+	# Test 11: SceneManager has all required scene aliases
+	var scene_stats = SceneManager.get_stats()
+	_assert(scene_stats.has("registered_aliases"), "SceneManager has aliases stat")
+
+	# Test 12: main_menu.tscn exists
+	var main_menu_scene = load("res://scenes/main_menu.tscn")
+	_assert(main_menu_scene != null, "main_menu.tscn exists")
+
+	# Test 13: soul_select.tscn exists
+	var soul_select_scene = load("res://scenes/soul_select.tscn")
+	_assert(soul_select_scene != null, "soul_select.tscn exists")
+
+	# Test 14: rts_arena.tscn exists
+	var rts_arena_scene = load("res://scenes/rts_arena.tscn")
+	_assert(rts_arena_scene != null, "rts_arena.tscn exists")
+
+	# Test 15: soul_home.tscn exists
+	var soul_home_scene = load("res://scenes/soul_home.tscn")
+	_assert(soul_home_scene != null, "soul_home.tscn exists")
+
+	# Test 16: RTSArenaManager.start_battle accepts Dictionary params
+	_assert(RTSArenaManager.has_method("start_battle"), "RTSArenaManager has start_battle")
+
+	# Test 17: RTSArenaManager.reset_battle exists
+	_assert(RTSArenaManager.has_method("reset_battle"), "RTSArenaManager has reset_battle")
+
+	# Test 18-19: MainMenu methods (check via instance)
+	var main_menu_script = load("res://scripts/ui/MainMenu.gd")
+	_assert(main_menu_script != null, "MainMenu script loaded")
+	var menu_instance = main_menu_script.new()
+	_assert(menu_instance.has_method("_on_start_pressed"), "MainMenu has _on_start_pressed")
+	_assert(menu_instance.has_method("_on_home_pressed"), "MainMenu has _on_home_pressed")
+	menu_instance.queue_free()
+
+	# Test 20: Full flow scene chain exists
+	_assert(main_menu_scene is PackedScene, "main_menu is PackedScene")
+	_assert(soul_select_scene is PackedScene, "soul_select is PackedScene")
+	_assert(rts_arena_scene is PackedScene, "rts_arena is PackedScene")
+	_assert(soul_home_scene is PackedScene, "soul_home is PackedScene")

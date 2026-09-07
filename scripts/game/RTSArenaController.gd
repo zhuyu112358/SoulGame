@@ -34,6 +34,13 @@ var _ai_visual = null
 ## Battle active flag
 var _battle_active = false
 
+## Saved battle config for rematch
+var _battle_config = {
+	"player_soul": null,
+	"ai_soul": null,
+	"map_name": "default_arena"
+}
+
 ## Macro command UI (design doc: coach-style RTS, player issues limited commands)
 var _command_panel = null
 var _command_buttons = {}
@@ -103,8 +110,13 @@ func _try_auto_start_battle() -> void:
 
 	if player_soul != null and ai_soul != null:
 		GameLog.info("RTSArenaController: Auto-starting battle with config from GameState", "Arena")
+		# Save config for rematch
+		_battle_config["player_soul"] = player_soul
+		_battle_config["ai_soul"] = ai_soul
+		_battle_config["map_name"] = map_name
 		RTSArenaManager.start_battle(player_soul, ai_soul, map_name)
-		# Clear battle config after use
+		_battle_active = true
+		# Clear battle config from GameState after use (keep local copy for rematch)
 		GameState.set_value("battle", "player_soul", null)
 		GameState.set_value("battle", "ai_soul", null)
 	else:
@@ -546,10 +558,10 @@ func _on_rematch_pressed() -> void:
 	if modal_bg:
 		modal_bg.queue_free()
 
-	# Restart battle with same config
-	var player_soul = GameState.get_value("battle", "player_soul", null)
-	var ai_soul = GameState.get_value("battle", "ai_soul", null)
-	var map_name = GameState.get_value("battle", "map_name", "default_arena")
+	# Restart battle with saved config
+	var player_soul = _battle_config["player_soul"]
+	var ai_soul = _battle_config["ai_soul"]
+	var map_name = _battle_config["map_name"]
 
 	if player_soul != null and ai_soul != null:
 		# Reset and restart battle
@@ -663,4 +675,8 @@ func start_test_battle() -> void:
 		"element": "water",
 		"level": 5
 	}
+	_battle_config["player_soul"] = player_soul
+	_battle_config["ai_soul"] = ai_soul
+	_battle_config["map_name"] = "default_arena"
 	RTSArenaManager.start_battle(player_soul, ai_soul)
+	_battle_active = true

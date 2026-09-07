@@ -83,5 +83,43 @@
 
 ### 下一步
 - 可玩原型端到端验证（实际运行游戏，从头玩到尾）
-- RTSArenaController接收选中的灵魂数据
 - 修复端到端验证中发现的bug
+
+## 2026-09-07 - M2可玩原型冲刺第三轮
+
+### 完成功能
+
+#### 游戏流程bug修复 (P0)
+- **文件**: `scripts/ui/SoulSelect.gd`, `scripts/game/RTSArenaController.gd`
+
+**Bug 1: SoulSelect未传递战斗配置**
+- 问题: SoulSelect._start_battle只切换场景，未设置player_soul/ai_soul到GameState
+- 修复: _start_battle现在创建完整的player_soul和ai_soul字典，设置到GameState
+- player_soul包含: id, name, element, level, hp, attack, defense, is_player
+- ai_soul: 随机元素，与玩家同等级，包含完整战斗属性
+
+**Bug 2: 重赛功能失效**
+- 问题: _try_auto_start_battle在战斗开始后清除GameState中的player_soul/ai_soul
+- _on_rematch_pressed从GameState读取配置时为null，重赛失败
+- 修复: 添加_battle_config实例变量保存战斗配置
+- _try_auto_start_battle保存配置到_battle_config后再清除GameState
+- _on_rematch_pressed从_battle_config读取配置进行重赛
+- start_test_battle也更新为保存_battle_config
+
+### 测试
+- 游戏流程测试: 28个（场景存在、方法检查、GameState存储/清除、场景链验证）
+- M2测试: 1442 → 1470
+- 总计测试: 1626 → 1654
+
+### 已知问题
+- 背景图main_menu_bg.png缺少.import文件，需要在Godot编辑器中打开项目自动导入
+- 场景加载时有资源警告，但不影响功能
+
+### [设计需求]
+- 需要: 概念图 - 灵魂之家背景（温馨、像素风）- P1
+- 需要: 音效 - 灵魂之家环境音（温暖、空灵）- P1
+
+### 下一步
+- 可玩原型端到端验证（实际运行游戏，从头玩到尾）
+- 修复端到端验证中发现的bug
+- RTS对战中玩家技能按钮功能验证

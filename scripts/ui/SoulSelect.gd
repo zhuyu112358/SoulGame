@@ -121,6 +121,39 @@ func _on_soul_selected(index: int) -> void:
 
 func _start_battle(soul: Dictionary) -> void:
 	GameLog.info("Starting battle with soul: %s" % soul["name"], "SoulSelect")
+
+	# Create player soul data in RTSArenaManager expected format
+	var player_soul = {
+		"id": soul["id"],
+		"name": soul["name"],
+		"element": soul["element"],
+		"level": soul["level"],
+		"hp": soul["hp"],
+		"attack": soul["attack"],
+		"defense": soul["defense"],
+		"is_player": true
+	}
+
+	# Create AI opponent soul (random element, similar level)
+	var ai_elements = ["fire", "water", "earth", "wind", "light", "dark"]
+	var ai_element = ai_elements[randi() % ai_elements.size()]
+	var ai_soul = {
+		"id": "ai_soul_01",
+		"name": "敌方灵魂",
+		"element": ai_element,
+		"level": soul["level"],
+		"hp": 100 + soul["level"] * 10,
+		"attack": 12 + soul["level"] * 2,
+		"defense": 8 + soul["level"],
+		"is_player": false
+	}
+
+	# Store battle config in GameState for RTSArenaController
+	GameState.set_value("battle", "player_soul", player_soul)
+	GameState.set_value("battle", "ai_soul", ai_soul)
+	GameState.set_value("battle", "map_name", "default_arena")
+	GameState.set_value("battle", "selected_soul", soul)
+
 	SceneManager.change_scene("res://scenes/rts_arena.tscn")
 
 
