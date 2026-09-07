@@ -65,6 +65,7 @@ func _ready() -> void:
 	_test_combat_audio()
 	_test_command_audio()
 	_test_soul_select_audio()
+	_test_main_menu_hover()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -4754,3 +4755,53 @@ func _test_soul_select_audio() -> void:
 	_assert(soul_select_content.find('"water"') >= 0, "SoulSelect includes water element")
 	_assert(soul_select_content.find('"earth"') >= 0, "SoulSelect includes earth element")
 	_assert(soul_select_content.find('"wind"') >= 0, "SoulSelect includes wind element")
+
+
+## ============================================
+## Main Menu Hover Effects Tests
+## ============================================
+func _test_main_menu_hover() -> void:
+	print("\n--- Main Menu Hover Effects Tests ---")
+
+	# Test 1: MainMenu has _setup_button_hover method
+	var main_menu_content = FileAccess.get_file_as_string("res://scripts/ui/MainMenu.gd")
+	_assert(main_menu_content.find("_setup_button_hover") >= 0, "MainMenu has _setup_button_hover")
+
+	# Test 2: MainMenu has _on_button_hover method
+	_assert(main_menu_content.find("_on_button_hover") >= 0, "MainMenu has _on_button_hover")
+
+	# Test 3: MainMenu has _on_button_exit method
+	_assert(main_menu_content.find("_on_button_exit") >= 0, "MainMenu has _on_button_exit")
+
+	# Test 4: MainMenu has _play_hover_sound method
+	_assert(main_menu_content.find("_play_hover_sound") >= 0, "MainMenu has _play_hover_sound")
+
+	# Test 5: _ready calls _setup_button_hover for all buttons
+	_assert(main_menu_content.find("_setup_button_hover(_start_button)") >= 0, "_ready sets up start button hover")
+	_assert(main_menu_content.find("_setup_button_hover(_home_button)") >= 0, "_ready sets up home button hover")
+	_assert(main_menu_content.find("_setup_button_hover(_settings_button)") >= 0, "_ready sets up settings button hover")
+	_assert(main_menu_content.find("_setup_button_hover(_quit_button)") >= 0, "_ready sets up quit button hover")
+
+	# Test 6: Hover plays ui_hover sound
+	_assert(main_menu_content.find('play_sfx("ui_hover")') >= 0, "Hover plays ui_hover sound")
+
+	# Test 7: Hover changes button modulate to brighter color
+	_assert(main_menu_content.find("modulate = Color(1.2, 1.2, 1.0)") >= 0, "Hover changes button modulate to brighter")
+
+	# Test 8: Mouse exit resets button modulate
+	_assert(main_menu_content.find("modulate = Color(1.0, 1.0, 1.0)") >= 0, "Mouse exit resets button modulate")
+
+	# Test 9: ui_hover sound is registered
+	_assert(AudioManager._sound_paths.has("ui_hover"), "ui_hover registered")
+
+	# Test 10: MainMenu has 4 buttons
+	_assert(main_menu_content.find("_start_button") >= 0, "MainMenu has start button")
+	_assert(main_menu_content.find("_home_button") >= 0, "MainMenu has home button")
+	_assert(main_menu_content.find("_settings_button") >= 0, "MainMenu has settings button")
+	_assert(main_menu_content.find("_quit_button") >= 0, "MainMenu has quit button")
+
+	# Test 11: MainMenu has menu BGM
+	_assert(main_menu_content.find('play_bgm("menu")') >= 0, "MainMenu plays menu BGM")
+
+	# Test 12: Button click sound is ui_button_click_01
+	_assert(main_menu_content.find('play_ui("ui_button_click_01")') >= 0, "Button click uses ui_button_click_01")

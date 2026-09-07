@@ -23,6 +23,12 @@ func _ready() -> void:
 	_settings_button.pressed.connect(_on_settings_pressed)
 	_quit_button.pressed.connect(_on_quit_pressed)
 
+	# Connect hover signals for audio feedback
+	_setup_button_hover(_start_button)
+	_setup_button_hover(_home_button)
+	_setup_button_hover(_settings_button)
+	_setup_button_hover(_quit_button)
+
 	# Set version text
 	var version = GameState.get_value("game", "version", "0.2.0")
 	_version_label.text = "v%s - M2 Prototype" % version
@@ -30,6 +36,31 @@ func _ready() -> void:
 	# Play menu music if AudioManager available
 	if AudioManager:
 		AudioManager.play_bgm("menu")
+
+
+## Setup button hover effects (audio + visual)
+func _setup_button_hover(p_button: Button) -> void:
+	if p_button == null:
+		return
+	p_button.mouse_entered.connect(_on_button_hover.bind(p_button))
+	p_button.mouse_exited.connect(_on_button_exit.bind(p_button))
+
+
+## Play hover sound and visual feedback
+func _on_button_hover(p_button: Button) -> void:
+	_play_hover_sound()
+	p_button.modulate = Color(1.2, 1.2, 1.0)
+
+
+## Reset button visual on mouse exit
+func _on_button_exit(p_button: Button) -> void:
+	p_button.modulate = Color(1.0, 1.0, 1.0)
+
+
+## Play button hover sound
+func _play_hover_sound() -> void:
+	if AudioManager:
+		AudioManager.play_sfx("ui_hover")
 
 
 func _on_start_pressed() -> void:
