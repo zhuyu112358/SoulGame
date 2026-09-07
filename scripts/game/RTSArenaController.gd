@@ -399,6 +399,12 @@ func _update_crit_display(delta: float) -> void:
 			_crit_active = false
 			if _crit_label:
 				_crit_label.visible = false
+		else:
+			# Animate: float upward and fade out
+			if _crit_label:
+				var progress = 1.0 - (_crit_timer / 1.0)
+				_crit_label.position.y = 300 - progress * 30
+				_crit_label.modulate.a = 1.0 - progress
 		return
 
 	# Check if player unit just landed a critical hit
@@ -414,6 +420,8 @@ func _show_crit_hit() -> void:
 		return
 	_crit_label.text = "暴击！"
 	_crit_label.visible = true
+	_crit_label.position = Vector2(540, 300)
+	_crit_label.modulate.a = 1.0
 	_crit_active = true
 	_crit_timer = 1.0
 	# Play critical hit sound
@@ -444,6 +452,12 @@ func _update_dodge_display(delta: float) -> void:
 			_dodge_active = false
 			if _dodge_label:
 				_dodge_label.visible = false
+		else:
+			# Animate: float upward and fade out
+			if _dodge_label:
+				var progress = 1.0 - (_dodge_timer / 1.0)
+				_dodge_label.position.y = 360 - progress * 30
+				_dodge_label.modulate.a = 1.0 - progress
 		return
 
 	# Check if player unit just dodged an attack
@@ -459,6 +473,8 @@ func _show_dodge() -> void:
 		return
 	_dodge_label.text = "闪避！"
 	_dodge_label.visible = true
+	_dodge_label.position = Vector2(540, 360)
+	_dodge_label.modulate.a = 1.0
 	_dodge_active = true
 	_dodge_timer = 1.0
 	# Play dodge sound
@@ -489,6 +505,12 @@ func _update_heal_display(delta: float) -> void:
 			_heal_active = false
 			if _heal_label:
 				_heal_label.visible = false
+		else:
+			# Animate: float upward and fade out
+			if _heal_label:
+				var progress = 1.0 - (_heal_timer / 1.0)
+				_heal_label.position.y = 420 - progress * 30
+				_heal_label.modulate.a = 1.0 - progress
 		return
 
 	# Check if player unit just healed
@@ -504,6 +526,8 @@ func _show_heal(heal_amount: int) -> void:
 		return
 	_heal_label.text = "治疗 +%d" % heal_amount
 	_heal_label.visible = true
+	_heal_label.position = Vector2(540, 420)
+	_heal_label.modulate.a = 1.0
 	_heal_active = true
 	_heal_timer = 1.0
 	# Play heal sound
@@ -534,6 +558,12 @@ func _update_defend_display(delta: float) -> void:
 			_defend_active = false
 			if _defend_label:
 				_defend_label.visible = false
+		else:
+			# Animate: float upward and fade out
+			if _defend_label:
+				var progress = 1.0 - (_defend_timer / 1.0)
+				_defend_label.position.y = 480 - progress * 30
+				_defend_label.modulate.a = 1.0 - progress
 		return
 
 	# Check if player unit just used defend
@@ -549,6 +579,8 @@ func _show_defend() -> void:
 		return
 	_defend_label.text = "防御！"
 	_defend_label.visible = true
+	_defend_label.position = Vector2(540, 480)
+	_defend_label.modulate.a = 1.0
 	_defend_active = true
 	_defend_timer = 1.0
 	# Play defend sound
@@ -579,6 +611,12 @@ func _update_skill_display(delta: float) -> void:
 			_skill_active = false
 			if _skill_label:
 				_skill_label.visible = false
+		else:
+			# Animate: float upward and fade out
+			if _skill_label:
+				var progress = 1.0 - (_skill_timer / 1.0)
+				_skill_label.position.y = 540 - progress * 30
+				_skill_label.modulate.a = 1.0 - progress
 		return
 
 	# Check if player unit just used a skill
@@ -595,6 +633,8 @@ func _show_skill_used(skill_name: String) -> void:
 	var display_name = _get_skill_display_name(skill_name)
 	_skill_label.text = display_name
 	_skill_label.visible = true
+	_skill_label.position = Vector2(540, 540)
+	_skill_label.modulate.a = 1.0
 	_skill_active = true
 	_skill_timer = 1.0
 	_add_log(display_name)

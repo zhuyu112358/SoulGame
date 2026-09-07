@@ -366,6 +366,8 @@ func _test_soul_unit() -> void:
 	# Test 5: Take damage
 	var unit2 = SoulUnit.new()
 	unit2.init_from_soul("target", "Target", "water", 3, false)
+	unit2.dodge_rate = 0  # Disable dodge for deterministic test
+	unit.crit_rate = 0  # Disable crit for deterministic test
 	var initial_hp = unit2.current_hp
 	unit2.take_damage(20, unit)
 	_assert(unit2.current_hp == initial_hp - 20, "Damage applied correctly")
