@@ -47,6 +47,7 @@ var _command_buttons = {}
 var _command_cooldown_label = null
 var _command_cooldown_timer = 0.0
 var _was_on_cooldown = false
+var _skill_was_on_cooldown = {}
 
 ## Weather/environment display
 var _weather_label = null
@@ -1156,11 +1157,17 @@ func _update_skill_cooldowns() -> void:
 		if button == null:
 			continue
 		var cooldown = RTSArenaManager.player_unit.skill_cooldowns.get(skill_name, 0)
+		var was_on_cd = _skill_was_on_cooldown.get(skill_name, false)
 		button.disabled = cooldown > 0
 		if cooldown > 0:
 			button.text = "%s (%.1f)" % [skill_name.capitalize(), cooldown]
+			_skill_was_on_cooldown[skill_name] = true
 		else:
 			button.text = skill_name.capitalize()
+			# Play skill ready sound when cooldown finishes
+			if was_on_cd and AudioManager:
+				AudioManager.play_sfx("bat_skill_ready", 0.5)
+			_skill_was_on_cooldown[skill_name] = false
 
 
 ## Handle battle started
