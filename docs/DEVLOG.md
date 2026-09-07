@@ -238,3 +238,51 @@
 - 修复端到端验证中发现的bug
 - 优化UI细节和视觉效果
 - 集成更多设计资源（概念图+音效）
+
+## 2026-09-07 - M2可玩原型冲刺第七轮
+
+### 完成功能
+
+#### 设计资源音效扩展集成 (P2)
+- **新增音效**: 35个（17 soul + 13 environment + 5 ui）
+- **修改**: scripts/autoload/AudioManager.gd - 注册所有新音效路径
+
+**新增Soul情感音效（17个）**:
+- soul_affectionate, soul_affinity_heart, soul_amazed_wonder, soul_amused
+- soul_balanced, soul_benevolent, soul_calm_meditation, soul_caring
+- soul_content_smile, soul_curious_peek, soul_dedicated
+- soul_gentle, soul_happy, soul_harmonious, soul_joyful
+- soul_kind, soul_peaceful, soul_serene, soul_tender, soul_warm
+
+**新增Environment环境音效（13个）**:
+- env_campfire, env_coral_reef, env_crystal_cave, env_dawn
+- env_desert, env_ocean, env_rain, env_river
+- env_snow, env_storm, env_thunder, env_volcano
+- env_waterfall, env_wind
+
+**新增UI音效（5个）**:
+- ui_hover, ui_select, ui_success, ui_tab, ui_toggle
+
+**音效统计**:
+- 集成前: 120个音效（ui 63 + battle 10 + bgm 4 + environment 21 + soul 22）
+- 集成后: 155个音效（ui 68 + battle 10 + bgm 4 + environment 34 + soul 39）
+- 设计资源总量: 301个音效，已集成155个（51.5%）
+
+### 测试
+- 音频扩展测试: 13个（总音效数>=150、soul>=40、env>=30、ui>=70、新音效注册验证）
+- M2测试: 1513 -> 1526
+- 总计测试: 1697 -> 1710
+
+### 已知问题
+- 背景图main_menu_bg.png缺少.import文件，需要在Godot编辑器中打开项目自动导入
+- 新复制的.wav文件需要Godot编辑器导入生成.import文件，headless模式显示加载警告但非致命
+
+### [设计需求]
+- 需要: 概念图 - 灵魂之家背景（温馨、像素风）- P1
+- 需要: 音效 - 灵魂之家环境音（温暖、空灵）- P1
+
+### 下一步
+- 可玩原型端到端验证（实际运行游戏，从头玩到尾）
+- 修复端到端验证中发现的bug
+- 优化UI细节和视觉效果
+- 集成更多设计资源（概念图+音效）

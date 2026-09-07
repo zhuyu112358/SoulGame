@@ -1991,6 +1991,46 @@ func _test_audio_manager() -> void:
 	# Test 48: bgm_volume is float
 	_assert(typeof(AudioManager.bgm_volume) == TYPE_FLOAT, "bgm_volume is float")
 ## PixelSpriteGenerator System Tests
+
+	# Test 49: Total registered sounds >= 150 (expanded audio library)
+	var total_sounds = AudioManager._sound_paths.size()
+	_assert(total_sounds >= 150, 'Total registered sounds >= 150: %d' % total_sounds)
+
+	# Test 50: Soul sounds count >= 40 (expanded soul emotions)
+	var soul_count = 0
+	for sname in AudioManager._sound_paths:
+		if sname.begins_with('soul_'):
+			soul_count += 1
+	_assert(soul_count >= 40, 'Soul sounds >= 40: %d' % soul_count)
+
+	# Test 51: Environment sounds count >= 30 (expanded environments)
+	var env_count = 0
+	for sname in AudioManager._sound_paths:
+		if sname.begins_with('env_'):
+			env_count += 1
+	_assert(env_count >= 30, 'Environment sounds >= 30: %d' % env_count)
+
+	# Test 52: UI sounds count >= 70 (expanded UI feedback)
+	var ui_count = 0
+	for sname in AudioManager._sound_paths:
+		if sname.begins_with('ui_'):
+			ui_count += 1
+	_assert(ui_count >= 70, 'UI sounds >= 70: %d' % ui_count)
+
+	# Test 53: New soul sounds registered
+	_assert(AudioManager._sound_paths.has('soul_warm'), 'soul_warm registered')
+	_assert(AudioManager._sound_paths.has('soul_happy'), 'soul_happy registered')
+	_assert(AudioManager._sound_paths.has('soul_peaceful'), 'soul_peaceful registered')
+
+	# Test 54: New environment sounds registered
+	_assert(AudioManager._sound_paths.has('env_campfire'), 'env_campfire registered')
+	_assert(AudioManager._sound_paths.has('env_ocean'), 'env_ocean registered')
+	_assert(AudioManager._sound_paths.has('env_storm'), 'env_storm registered')
+
+	# Test 55: New UI sounds registered
+	_assert(AudioManager._sound_paths.has('ui_hover'), 'ui_hover registered')
+	_assert(AudioManager._sound_paths.has('ui_select'), 'ui_select registered')
+	_assert(AudioManager._sound_paths.has('ui_success'), 'ui_success registered')
 ## ============================================
 func _test_pixel_sprite_generator() -> void:
 	print("\n--- PixelSpriteGenerator System Tests ---")

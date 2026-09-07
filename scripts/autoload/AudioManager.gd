@@ -71,7 +71,10 @@ func _init_sound_paths() -> void:
 		"achievement_open", "shop_sell",
 		"teleport_cast", "teleport_open",
 		"matchmaking_open",
-		"battle_result_open", "battle_victory"
+		"battle_result_open", "battle_victory",
+		"accept", "back", "close", "confirm", "error",
+		"hover", "menu_open", "notification", "open",
+		"select", "success", "tab", "tick", "toggle", "warning"
 	]
 	for sound_name in ui_sounds:
 		_sound_paths["ui_%s" % sound_name] = "res://assets/audio/ui/ui_%s.wav" % sound_name
@@ -97,7 +100,11 @@ func _init_sound_paths() -> void:
 		"lavender_field", "autumn_forest", "rainforest", "rainforest_canopy",
 		"snow_mountain_lake", "starfield_grassland",
 		"cloud_peak", "volcano_crater",
-		"crystal_cavern", "mangrove_swamp"
+		"crystal_cavern", "mangrove_swamp",
+		"campfire", "coral_reef", "crystal_cave", "dawn",
+		"desert", "ocean", "rain", "river",
+		"snow", "storm", "thunder", "volcano",
+		"waterfall", "wind"
 	]
 	for sound_name in env_sounds:
 		_sound_paths["env_%s" % sound_name] = "res://assets/audio/environment/env_%s.wav" % sound_name
@@ -110,7 +117,12 @@ func _init_sound_paths() -> void:
 		"drowsy", "alert", "melancholic", "compassionate",
 		"anticipating", "astonished", "contemplative", "empathetic",
 		"resolute", "devoted",
-		"persistent", "sentimental"
+		"persistent", "sentimental",
+		"affectionate", "affinity_heart", "amazed_wonder", "amused",
+		"balanced", "benevolent", "calm_meditation", "caring",
+		"content_smile", "curious_peek", "dedicated",
+		"gentle", "happy", "harmonious", "joyful",
+		"kind", "peaceful", "serene", "tender", "warm"
 	]
 	for sound_name in soul_sounds:
 		_sound_paths["soul_%s" % sound_name] = "res://assets/audio/soul/soul_%s.wav" % sound_name
