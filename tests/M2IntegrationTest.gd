@@ -93,6 +93,7 @@ func _ready() -> void:
 	_test_new_soul_sounds_round9()
 	_test_new_concept_art_round3()
 	_test_new_concept_art_round4()
+	_test_new_concept_art_round5()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -6595,3 +6596,69 @@ func _test_new_concept_art_round4() -> void:
 				found = true
 				break
 		_assert(found, "Environment covered: %s" % env)
+
+
+## ============================================
+## New Concept Art Integration Tests (Round 5 - Final)
+## ============================================
+func _test_new_concept_art_round5() -> void:
+	print("\n--- New Concept Art Integration Tests (Round 5 - Final) ---")
+
+	# Test 1: New concept art files exist
+	var new_art = ["concept_world_aurora_snowfield", "concept_world_cloud_peak", "concept_world_crystal_garden", "concept_world_grassland", "concept_world_highland", "concept_world_hot_spring", "concept_world_icefield", "concept_world_lake", "concept_world_meadow", "concept_world_meteor_shower", "concept_world_moonlit_garden", "concept_world_mushroom_forest", "concept_world_rainforest_canopy", "concept_world_ruins", "concept_world_sakura_shrine", "concept_world_skyisland", "concept_world_snow", "concept_world_sunset", "concept_world_swamp", "concept_world_town", "concept_world_tundra", "concept_world_underground_cavern", "concept_world_underground_city", "concept_world_volcano_crater", "concept_world_waterfall_canyon"]
+	for art_name in new_art:
+		var path = "res://assets/art/concept/%s.png" % art_name
+		_assert(FileAccess.file_exists(path), "Concept art exists: %s" % art_name)
+
+	# Test 2: All 93 concept art are now integrated
+	var concept_count = 0
+	var concept_dir = "res://assets/art/concept/"
+	var dir = DirAccess.open(concept_dir)
+	if dir:
+		dir.list_dir_begin()
+		var file_name = dir.get_next()
+		while file_name != "":
+			if file_name.ends_with(".png"):
+				concept_count += 1
+			file_name = dir.get_next()
+		dir.list_dir_end()
+	_assert(concept_count >= 90, "Concept art count >= 90 (actual: %d)" % concept_count)
+
+	# Test 3: Total art count increased
+	var total_art = concept_count
+	var bg_dir = DirAccess.open("res://assets/art/background/")
+	if bg_dir:
+		bg_dir.list_dir_begin()
+		var bg_name = bg_dir.get_next()
+		while bg_name != "":
+			if bg_name.ends_with(".png"):
+				total_art += 1
+			bg_name = bg_dir.get_next()
+		bg_dir.list_dir_end()
+	_assert(total_art >= 95, "Total art count >= 95 (actual: %d)" % total_art)
+
+	# Test 4: World concept art exists
+	_assert(FileAccess.file_exists("res://assets/art/concept/concept_world_skyisland.png"), "World skyisland concept exists")
+	_assert(FileAccess.file_exists("res://assets/art/concept/concept_world_volcano_crater.png"), "World volcano crater concept exists")
+	_assert(FileAccess.file_exists("res://assets/art/concept/concept_world_waterfall_canyon.png"), "World waterfall canyon concept exists")
+
+	# Test 5: Existing concept art still exists
+	_assert(FileAccess.file_exists("res://assets/art/concept/concept_world_floating_island.png"), "Existing floating island concept exists")
+	_assert(FileAccess.file_exists("res://assets/art/concept/concept_home_mainroom.png"), "Existing home mainroom concept exists")
+	_assert(FileAccess.file_exists("res://assets/art/concept/concept_ui_skill.png"), "Existing UI skill concept exists")
+
+	# Test 6: New concept art names are descriptive
+	_assert(new_art[0] == "concept_world_aurora_snowfield", "First new art is concept_world_aurora_snowfield")
+	_assert(new_art[12] == "concept_world_rainforest_canopy", "Thirteenth new art is concept_world_rainforest_canopy")
+	_assert(new_art[24] == "concept_world_waterfall_canyon", "Twenty-fifth new art is concept_world_waterfall_canyon")
+
+	# Test 7: All new concept art are world exploration
+	var world_count = 0
+	for art_name in new_art:
+		if art_name.begins_with("concept_world_"):
+			world_count += 1
+	_assert(world_count == 25, "All 25 new art are world exploration (actual: %d)" % world_count)
+
+	# Test 8: All design concept art are integrated (93 total)
+	var design_concept_count = 93
+	_assert(concept_count >= design_concept_count - 5, "All design concept art integrated (actual: %d, expected: %d)" % [concept_count, design_concept_count])

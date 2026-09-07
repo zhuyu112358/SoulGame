@@ -2041,3 +2041,69 @@
 - 修复端到端验证中发现的bug
 - 优化UI细节和视觉效果
 - 集成更多设计资源（概念图）
+
+## 2026-09-07 - M2可玩原型冲刺第四十三轮
+
+### 完成功能
+
+#### 新概念图集成（第五轮 - 全部完成） (P2)
+- **新增资源**: 25张剩余世界探索概念图文件
+- **测试**: 38个新概念图集成测试
+- **里程碑**: 所有93张概念图全部集成完成！
+
+**新增概念图文件（25张）**:
+- concept_world_aurora_snowfield.png - 极光雪原世界概念图
+- concept_world_cloud_peak.png - 云峰世界概念图
+- concept_world_crystal_garden.png - 水晶花园世界概念图
+- concept_world_grassland.png - 草原世界概念图
+- concept_world_highland.png - 高地世界概念图
+- concept_world_hot_spring.png - 温泉世界概念图
+- concept_world_icefield.png - 冰原世界概念图
+- concept_world_lake.png - 湖泊世界概念图
+- concept_world_meadow.png - 草甸世界概念图
+- concept_world_meteor_shower.png - 流星雨世界概念图
+- concept_world_moonlit_garden.png - 月光花园世界概念图
+- concept_world_mushroom_forest.png - 蘑菇森林世界概念图
+- concept_world_rainforest_canopy.png - 雨林树冠世界概念图
+- concept_world_ruins.png - 遗迹世界概念图
+- concept_world_sakura_shrine.png - 樱花神社世界概念图
+- concept_world_skyisland.png - 天空岛世界概念图
+- concept_world_snow.png - 雪世界概念图
+- concept_world_sunset.png - 日落世界概念图
+- concept_world_swamp.png - 沼泽世界概念图
+- concept_world_town.png - 城镇世界概念图
+- concept_world_tundra.png - 苔原世界概念图
+- concept_world_underground_cavern.png - 地下洞穴世界概念图
+- concept_world_underground_city.png - 地下城市世界概念图
+- concept_world_volcano_crater.png - 火山口世界概念图
+- concept_world_waterfall_canyon.png - 瀑布峡谷世界概念图
+
+**美术资源总数**:
+- 概念图: 68 -> 93（全部完成！）
+- 背景图: 5
+- 总美术资源: 73 -> 98
+- 设计资源集成率: 73/91 (80.2%) -> 98/91 (107.7%)
+
+### 里程碑
+- **所有93张概念图全部集成完成！**
+- 设计资源中的所有概念图已全部复制到项目
+
+### 测试
+- 新概念图集成测试（第五轮）: 38个（文件存在、数量验证、世界概念图、已有概念图验证、名称描述性、类别覆盖、全部完成验证）
+- M2测试: 2648 -> 2686
+- 总计测试: 2832 -> 2870
+
+### 已知问题
+- 新复制的.png/.wav文件缺少.import文件，需要在Godot编辑器中打开项目自动导入
+- headless模式load()新资源会失败，但FileAccess.file_exists()检查正常
+- 编译时会显示资源导入警告，但不是代码错误
+
+### [设计需求]
+- 需要: 概念图 - 灵魂之家背景（温馨、像素风）- P1（已用concept_home_mainroom作为占位）
+- 需要: 音效 - 灵魂之家环境音（温暖、空灵）- P1（已用env_home_indoor作为环境音）
+
+### 下一步
+- 可玩原型端到端验证（实际运行游戏，从头玩到尾）
+- 修复端到端验证中发现的bug
+- 优化UI细节和视觉效果
+- 考虑M2完成，进入M3（灵魂之家深化+成长系统完善+优化阶段）
