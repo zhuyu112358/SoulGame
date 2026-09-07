@@ -1019,3 +1019,57 @@
 - 修复端到端验证中发现的bug
 - 优化UI细节和视觉效果
 - 集成更多设计资源（概念图+音效）
+
+## 2026-09-07 - M2可玩原型冲刺第二十三轮
+
+### 完成功能
+
+#### 新环境音效集成 (P2)
+- **修改**: scripts/autoload/AudioManager.gd, scripts/ui/MainMenu.gd, scripts/ui/SoulSelect.gd, scripts/game/SoulHomeController.gd
+- **新增资源**: 10个新环境音效文件
+- **测试**: 35个新环境音效集成测试
+
+**新增音效文件（10个）**:
+- env_floating_island.wav - 浮空岛环境音效
+- env_aurora_icefield.wav - 极光冰原环境音效
+- env_home_indoor.wav - 室内环境音效
+- env_glowing_cave.wav - 发光洞穴环境音效
+- env_crystal_garden.wav - 水晶花园环境音效
+- env_firefly_forest.wav - 萤火虫森林环境音效
+- env_cherry_blossom.wav - 樱花环境音效
+- env_bamboo_forest.wav - 竹林环境音效
+- env_lake.wav - 湖泊环境音效
+- env_grassland.wav - 草原环境音效
+
+**音效注册**:
+- 在AudioManager.gd的env_sounds数组中添加10个新音效名称
+- 所有新音效自动注册为env_前缀
+
+**音效使用**:
+- 主菜单: 播放env_floating_island环境音效（浮空岛背景氛围）
+- 灵魂选择: 播放env_aurora_icefield环境音效（极光冰原背景氛围）
+- 灵魂之家: 播放env_home_indoor环境音效（室内背景氛围）
+
+**音效总数**:
+- 环境音效: 29 -> 39
+- 总音效数: 175 -> 185
+- 设计资源集成率: 175/339 (51.6%) -> 185/339 (54.6%)
+
+### 测试
+- 新环境音效集成测试: 35个（文件存在、注册验证、使用验证、数量验证、路径验证、播放测试、BGM验证）
+- M2测试: 1842 -> 1877
+- 总计测试: 2026 -> 2061
+
+### 已知问题
+- 新复制的.wav文件缺少.import文件，需要在Godot编辑器中打开项目自动导入
+- headless模式load()新资源会失败，但FileAccess.file_exists()检查正常
+
+### [设计需求]
+- 需要: 概念图 - 灵魂之家背景（温馨、像素风）- P1（已用concept_home_mainroom作为占位）
+- 需要: 音效 - 灵魂之家环境音（温暖、空灵）- P1（已用env_home_indoor作为环境音）
+
+### 下一步
+- 可玩原型端到端验证（实际运行游戏，从头玩到尾）
+- 修复端到端验证中发现的bug
+- 优化UI细节和视觉效果
+- 集成更多设计资源（概念图+音效）

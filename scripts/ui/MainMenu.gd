@@ -36,6 +36,8 @@ func _ready() -> void:
 	# Play menu music if AudioManager available
 	if AudioManager:
 		AudioManager.play_bgm("menu")
+		# Play floating island environment ambience
+		AudioManager.play_sfx("env_floating_island")
 
 
 ## Setup button hover effects (audio + visual)

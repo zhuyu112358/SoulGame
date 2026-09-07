@@ -51,6 +51,8 @@ func _play_hover_sound() -> void:
 func _play_select_music() -> void:
 	if AudioManager:
 		AudioManager.play_bgm("menu")
+		# Play aurora icefield environment ambience
+		AudioManager.play_sfx("env_aurora_icefield")
 		GameLog.info("SoulSelect: Playing menu BGM", "SoulSelect")
 
 

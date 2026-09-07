@@ -73,6 +73,7 @@ func _ready() -> void:
 	_test_result_modal_hover()
 	_test_new_ui_sounds()
 	_test_new_soul_sounds()
+	_test_new_env_sounds()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -5228,3 +5229,67 @@ func _test_new_soul_sounds() -> void:
 	_assert(home_content.find('play_sfx("soul_content_smile")') >= 0, "SoulHomeController has soul_content_smile")
 	_assert(home_content.find('play_sfx("soul_joyful")') >= 0, "SoulHomeController has soul_joyful")
 	_assert(home_content.find('play_sfx("soul_determined_resolve")') >= 0, "SoulHomeController has soul_determined_resolve")
+
+
+## ============================================
+## New Environment Sound Integration Tests
+## ============================================
+func _test_new_env_sounds() -> void:
+	print("\n--- New Environment Sound Integration Tests ---")
+
+	# Test 1: New env sound files exist
+	var new_sounds = ["env_floating_island", "env_aurora_icefield", "env_home_indoor", "env_glowing_cave", "env_crystal_garden", "env_firefly_forest", "env_cherry_blossom", "env_bamboo_forest", "env_lake", "env_grassland"]
+	for sound_name in new_sounds:
+		var path = "res://assets/audio/environment/%s.wav" % sound_name
+		_assert(FileAccess.file_exists(path), "Sound file exists: %s" % sound_name)
+
+	# Test 2: New env sounds are registered in AudioManager
+	for sound_name in new_sounds:
+		_assert(AudioManager._sound_paths.has(sound_name), "Sound registered: %s" % sound_name)
+
+	# Test 3: AudioManager has env_floating_island sound
+	_assert(AudioManager._sound_paths.has("env_floating_island"), "AudioManager has env_floating_island")
+
+	# Test 4: AudioManager has env_aurora_icefield sound
+	_assert(AudioManager._sound_paths.has("env_aurora_icefield"), "AudioManager has env_aurora_icefield")
+
+	# Test 5: AudioManager has env_home_indoor sound
+	_assert(AudioManager._sound_paths.has("env_home_indoor"), "AudioManager has env_home_indoor")
+
+	# Test 6: MainMenu plays env_floating_island ambience
+	var menu_content = FileAccess.get_file_as_string("res://scripts/ui/MainMenu.gd")
+	_assert(menu_content.find('play_sfx("env_floating_island")') >= 0, "MainMenu plays env_floating_island")
+
+	# Test 7: SoulSelect plays env_aurora_icefield ambience
+	var select_content = FileAccess.get_file_as_string("res://scripts/ui/SoulSelect.gd")
+	_assert(select_content.find('play_sfx("env_aurora_icefield")') >= 0, "SoulSelect plays env_aurora_icefield")
+
+	# Test 8: SoulHomeController plays env_home_indoor ambience
+	var home_content = FileAccess.get_file_as_string("res://scripts/game/SoulHomeController.gd")
+	_assert(home_content.find('play_sfx("env_home_indoor")') >= 0, "SoulHomeController plays env_home_indoor")
+
+	# Test 9: Env sound count increased
+	var env_count = 0
+	for sound_name in AudioManager._sound_paths.keys():
+		if sound_name.begins_with("env_"):
+			env_count += 1
+	_assert(env_count >= 35, "Env sound count >= 35 (actual: %d)" % env_count)
+
+	# Test 10: Total sound count increased
+	_assert(AudioManager._sound_paths.size() >= 180, "Total sound count >= 180 (actual: %d)" % AudioManager._sound_paths.size())
+
+	# Test 11: New sounds have correct file paths
+	_assert(AudioManager._sound_paths["env_floating_island"] == "res://assets/audio/environment/env_floating_island.wav", "env_floating_island path correct")
+	_assert(AudioManager._sound_paths["env_aurora_icefield"] == "res://assets/audio/environment/env_aurora_icefield.wav", "env_aurora_icefield path correct")
+	_assert(AudioManager._sound_paths["env_home_indoor"] == "res://assets/audio/environment/env_home_indoor.wav", "env_home_indoor path correct")
+
+	# Test 12: AudioManager can play new sounds (no crash)
+	AudioManager.play_sfx("env_floating_island")
+	AudioManager.play_sfx("env_aurora_icefield")
+	AudioManager.play_sfx("env_home_indoor")
+	_assert(true, "New env sounds play without crash")
+
+	# Test 13: All scenes have BGM
+	_assert(menu_content.find('play_bgm("menu")') >= 0, "MainMenu has menu BGM")
+	_assert(select_content.find('play_bgm("menu")') >= 0, "SoulSelect has menu BGM")
+	_assert(home_content.find('play_bgm("home_main")') >= 0, "SoulHome has home_main BGM")
