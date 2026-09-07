@@ -31,6 +31,7 @@ var _max_sfx_players: int = 16
 
 ## Loaded audio streams cache
 var _stream_cache: Dictionary = {}
+var _failed_streams: Dictionary = {}
 
 ## Sound name to path mapping
 var _sound_paths: Dictionary = {}
@@ -274,17 +275,17 @@ func _get_free_sfx_player() -> AudioStreamPlayer:
 func _get_stream(p_sound_name: String) -> AudioStream:
 	if _stream_cache.has(p_sound_name):
 		return _stream_cache[p_sound_name]
-
-	if not _sound_paths.has(p_sound_name):
-		GameLog.warning("AudioManager: Sound '%s' not found" % p_sound_name, "Audio")
+	if _failed_streams.has(p_sound_name):
 		return null
-
+	if not _sound_paths.has(p_sound_name):
+		_failed_streams[p_sound_name] = true
+		return null
 	var path = _sound_paths[p_sound_name]
 	var stream = load(path)
 	if stream == null:
-		GameLog.warning("AudioManager: Failed to load %s" % path, "Audio")
+		_failed_streams[p_sound_name] = true
+		GameLog.warning("AudioManager: Failed to load %s (suppressing future warnings)" % path, "Audio")
 		return null
-
 	_stream_cache[p_sound_name] = stream
 	return stream
 

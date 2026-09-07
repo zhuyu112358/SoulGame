@@ -996,8 +996,6 @@ func _setup_countdown_label() -> void:
 	_countdown_label = Label.new()
 	_countdown_label.name = "CountdownLabel"
 	_countdown_label.set_anchors_preset(Control.PRESET_CENTER)
-	_countdown_label.set_grow_horizontal(Control.GROW_DIRECTION_BOTH)
-	_countdown_label.set_grow_vertical(Control.GROW_DIRECTION_BOTH)
 	_countdown_label.position = Vector2(-200, -100)
 	_countdown_label.size = Vector2(400, 200)
 	_countdown_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -1324,6 +1322,11 @@ func _process(delta: float) -> void:
 		_update_unit_display()
 		return
 	_update_unit_display()
+	# Sync unit visuals to logical positions (replaces unreliable position_changed signal)
+	if _player_visual and is_instance_valid(RTSArenaManager.player_unit):
+		_player_visual.position = RTSArenaManager.player_unit.position - Vector2(32, 32)
+	if _ai_visual and is_instance_valid(RTSArenaManager.ai_unit):
+		_ai_visual.position = RTSArenaManager.ai_unit.position - Vector2(32, 32)
 	_update_skill_cooldowns()
 	_update_command_cooldown(delta)
 	_update_weather_display()
@@ -1723,12 +1726,8 @@ func _on_unit_spawned(p_unit: SoulUnit, p_is_player: bool) -> void:
 	else:
 		visual.color = Color(1.0, 0.3, 0.3)  # Red for AI
 		_ai_visual = visual
+	# Visual position synced in _process (position_changed signal unreliable in Godot 4.7)
 	add_child(visual)
-
-	# Connect position update (Node2D.position_changed has no arguments in Godot 4)
-	p_unit.position_changed.connect(func():
-		visual.position = p_unit.position - Vector2(32, 32)
-	)
 
 
 ## Handle log added

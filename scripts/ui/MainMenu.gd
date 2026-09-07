@@ -67,7 +67,7 @@ func _start_title_float() -> void:
 	if _title_label == null:
 		return
 	var float_tween = create_tween()
-	float_tween.set_looped()
+	float_tween.set_loops()
 	float_tween.tween_property(_title_label, "position:y", _title_label.position.y - 8, 2.0).set_ease(Tween.EASE_IN_OUT)
 	float_tween.tween_property(_title_label, "position:y", _title_label.position.y + 8, 2.0).set_ease(Tween.EASE_IN_OUT)
 
