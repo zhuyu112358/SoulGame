@@ -18,6 +18,14 @@ func _ready() -> void:
 	_back_button.pressed.connect(_on_back_pressed)
 	_load_available_souls()
 	_populate_soul_list()
+	_play_select_music()
+
+
+## Play soul select background music
+func _play_select_music() -> void:
+	if AudioManager:
+		AudioManager.play_bgm("menu")
+		GameLog.info("SoulSelect: Playing menu BGM", "SoulSelect")
 
 
 func _load_available_souls() -> void:

@@ -155,7 +155,7 @@ func start_battle(p_player_soul: Dictionary, p_ai_soul: Dictionary, p_map_name: 
 
 	# Play battle start audio (design doc: audio feedback for battle events)
 	AudioManager.play_sfx("ui_battle_start")
-	AudioManager.play_bgm("bgm_battle")
+	AudioManager.play_bgm("battle")
 	# Play soul emotion sound based on AI personality
 	if ai_unit.personality["aggression"] > 70:
 		AudioManager.play_sfx("soul_angry_roar", 0.5)

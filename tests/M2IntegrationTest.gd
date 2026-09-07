@@ -62,10 +62,11 @@ func _ready() -> void:
 	_test_scene_backgrounds()
 	print("\n=== M2 TEST SUMMARY ===")
 	_test_soul_home_audio()
+	_test_bgm_integration()
+	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
 	print("Total: %d" % _tests_run)
-
 	if _tests_failed > 0:
 		print("\nFAILED TESTS:")
 		for test_name in _failed_tests:
@@ -4532,3 +4533,59 @@ func _test_soul_home_audio() -> void:
 	# Test 15: Free instance
 	soul_home_instance.queue_free()
 	_assert(true, "SoulHomeController instance freed")
+
+
+## ============================================
+## BGM Integration Tests
+## ============================================
+func _test_bgm_integration() -> void:
+	print("\n--- BGM Integration Tests ---")
+
+	# Test 1: All 4 BGM tracks are registered
+	_assert(AudioManager._sound_paths.has("bgm_battle"), "bgm_battle registered")
+	_assert(AudioManager._sound_paths.has("bgm_explore"), "bgm_explore registered")
+	_assert(AudioManager._sound_paths.has("bgm_home_main"), "bgm_home_main registered")
+	_assert(AudioManager._sound_paths.has("bgm_menu"), "bgm_menu registered")
+
+	# Test 2: MainMenu uses correct BGM name (menu, not bgm_menu_01)
+	var main_menu_content = FileAccess.get_file_as_string("res://scripts/ui/MainMenu.gd")
+	_assert(main_menu_content.find('play_bgm("menu")') >= 0, "MainMenu uses play_bgm(menu)")
+	_assert(main_menu_content.find("bgm_menu_01") < 0, "MainMenu does not use bgm_menu_01")
+
+	# Test 3: SoulSelect has BGM playback
+	var soul_select_content = FileAccess.get_file_as_string("res://scripts/ui/SoulSelect.gd")
+	_assert(soul_select_content.find("_play_select_music") >= 0, "SoulSelect has _play_select_music")
+	_assert(soul_select_content.find('play_bgm("menu")') >= 0, "SoulSelect plays menu BGM")
+
+	# Test 4: SoulHome has BGM playback
+	var soul_home_content = FileAccess.get_file_as_string("res://scripts/game/SoulHomeController.gd")
+	_assert(soul_home_content.find("_play_home_ambience") >= 0, "SoulHome has _play_home_ambience")
+	_assert(soul_home_content.find('play_bgm("home_main")') >= 0, "SoulHome plays home_main BGM")
+
+	# Test 5: RTS Arena has battle BGM
+	var rts_content = FileAccess.get_file_as_string("res://scripts/game/RTSArenaController.gd")
+	_assert(rts_content.find('play_bgm("battle")') >= 0, "RTS Arena plays battle BGM")
+	_assert(rts_content.find("stop_bgm()") >= 0, "RTS Arena stops BGM on exit")
+
+	# Test 6: AudioManager has play_bgm method
+	_assert(AudioManager.has_method("play_bgm"), "AudioManager has play_bgm")
+
+	# Test 7: AudioManager has stop_bgm method
+	_assert(AudioManager.has_method("stop_bgm"), "AudioManager has stop_bgm")
+
+	# Test 8: BGM file paths are correct format
+	var bgm_path = AudioManager._sound_paths["bgm_menu"]
+	_assert(bgm_path.begins_with("res://assets/audio/bgm/"), "BGM path in correct directory")
+	_assert(bgm_path.ends_with(".wav"), "BGM path ends with .wav")
+
+	# Test 9: All BGM files exist
+	_assert(FileAccess.file_exists("res://assets/audio/bgm/bgm_battle.wav"), "bgm_battle.wav exists")
+	_assert(FileAccess.file_exists("res://assets/audio/bgm/bgm_explore.wav"), "bgm_explore.wav exists")
+	_assert(FileAccess.file_exists("res://assets/audio/bgm/bgm_home_main.wav"), "bgm_home_main.wav exists")
+	_assert(FileAccess.file_exists("res://assets/audio/bgm/bgm_menu.wav"), "bgm_menu.wav exists")
+
+	# Test 10: BGM volume control works
+	AudioManager.set_bgm_volume(0.6)
+	_assert(AudioManager.bgm_volume == 0.6, "BGM volume set to 0.6")
+	AudioManager.set_bgm_volume(0.5)
+	_assert(AudioManager.bgm_volume == 0.5, "BGM volume reset to 0.5")

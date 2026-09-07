@@ -29,7 +29,7 @@ func _ready() -> void:
 
 	# Play menu music if AudioManager available
 	if AudioManager:
-		AudioManager.play_bgm("bgm_menu_01")
+		AudioManager.play_bgm("menu")
 
 
 func _on_start_pressed() -> void:

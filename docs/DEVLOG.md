@@ -414,3 +414,47 @@
 - 修复端到端验证中发现的bug
 - 优化UI细节和视觉效果
 - 集成更多设计资源（概念图+音效）
+
+## 2026-09-07 - M2可玩原型冲刺第十一轮
+
+### 完成功能
+
+#### BGM集成与修复 (P2)
+- **修改**: scripts/ui/MainMenu.gd, scripts/ui/SoulSelect.gd, scripts/game/RTSArenaManager.gd
+- **测试**: 22个BGM集成测试
+
+**BGM名称修复**:
+- MainMenu: bgm_menu_01 -> menu（AudioManager.play_bgm自动添加bgm_前缀）
+- RTSArenaManager: bgm_battle -> battle（修复重复前缀导致的"Sound 'bgm_bgm_battle' not found"警告）
+
+**新增BGM播放**:
+- SoulSelect: 新增_play_select_music()方法，播放menu BGM
+- 所有场景现在都有对应的背景音乐：
+  - 主菜单: menu BGM
+  - 灵魂选择: menu BGM
+  - 灵魂之家: home_main BGM
+  - RTS竞技场: battle BGM
+
+**测试打印顺序修复**:
+- 修复M2IntegrationTest.gd中Passed/Failed/Total的打印顺序
+- 之前Passed在BGM测试之前打印，导致统计不准确
+- 现在所有测试完成后才打印统计信息
+
+### 测试
+- BGM集成测试: 22个（BGM注册验证、各场景BGM调用、BGM文件存在、音量控制）
+- M2测试: 1582 -> 1604
+- 总计测试: 1766 -> 1788
+
+### 已知问题
+- 新复制的.png/.wav文件缺少.import文件，需要在Godot编辑器中打开项目自动导入
+- headless模式load()新资源会失败，但FileAccess.file_exists()检查正常
+
+### [设计需求]
+- 需要: 概念图 - 灵魂之家背景（温馨、像素风）- P1（已用concept_home_mainroom作为占位）
+- 需要: 音效 - 灵魂之家环境音（温暖、空灵）- P1（已用bgm_home_main作为背景音乐）
+
+### 下一步
+- 可玩原型端到端验证（实际运行游戏，从头玩到尾）
+- 修复端到端验证中发现的bug
+- 优化UI细节和视觉效果
+- 集成更多设计资源（概念图+音效）
