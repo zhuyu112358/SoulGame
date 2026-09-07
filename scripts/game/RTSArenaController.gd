@@ -98,6 +98,11 @@ var _skill_label = null
 var _skill_timer = 0.0
 var _skill_active = false
 
+## Damage floating text display
+var _damage_label = null
+var _damage_timer = 0.0
+var _damage_active = false
+
 
 func _ready() -> void:
 	GameLog.info("RTSArenaController: RTS Arena scene ready", "Arena")
@@ -116,6 +121,7 @@ func _ready() -> void:
 	_setup_heal_label()
 	_setup_defend_label()
 	_setup_skill_label()
+	_setup_damage_label()
 
 	# Auto-start battle if config is set in GameState
 	_try_auto_start_battle()
@@ -592,6 +598,47 @@ func _get_skill_display_name(skill_name: String) -> String:
 			return skill_name.capitalize()
 
 
+## Setup damage floating text label
+func _setup_damage_label() -> void:
+	_damage_label = Label.new()
+	_damage_label.name = "DamageLabel"
+	_damage_label.text = ""
+	_damage_label.position = Vector2(540, 600)
+	_damage_label.size = Vector2(200, 50)
+	_damage_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_damage_label.add_theme_font_size_override("font_size", 32)
+	_damage_label.modulate = Color(1.0, 0.3, 0.3)
+	_damage_label.visible = false
+	add_child(_damage_label)
+
+
+## Update damage floating text display
+func _update_damage_display(delta: float) -> void:
+	if _damage_active:
+		_damage_timer -= delta
+		if _damage_timer <= 0:
+			_damage_active = false
+			if _damage_label:
+				_damage_label.visible = false
+		return
+
+	# Check if player unit just took damage
+	if RTSArenaManager.player_unit and RTSArenaManager.player_unit.last_damage_taken > 0:
+		_show_damage(RTSArenaManager.player_unit.last_damage_taken)
+		# Reset the flag to avoid repeated display
+		RTSArenaManager.player_unit.last_damage_taken = 0
+
+
+## Show damage floating text
+func _show_damage(damage_amount: int) -> void:
+	if _damage_label == null:
+		return
+	_damage_label.text = "-%d" % damage_amount
+	_damage_label.visible = true
+	_damage_active = true
+	_damage_timer = 1.0
+
+
 ## Play button hover sound
 func _play_hover_sound() -> void:
 	if AudioManager:
@@ -978,6 +1025,7 @@ func _process(delta: float) -> void:
 	_update_heal_display(delta)
 	_update_defend_display(delta)
 	_update_skill_display(delta)
+	_update_damage_display(delta)
 	if minimap:
 		minimap.update_minimap()
 

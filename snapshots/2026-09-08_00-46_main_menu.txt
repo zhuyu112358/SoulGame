@@ -1,0 +1,34 @@
+# 主菜单场景结构快照
+# 时间: 2026-09-08_00-46
+# 场景: scenes/main_menu.tscn
+# 脚本: scripts/ui/MainMenu.gd
+
+## 节点树
+- MainMenu (Control)
+  - Background (TextureRect) - 背景图: assets/art/background/main_menu_bg.png
+  - Overlay (ColorRect) - 半透明遮罩
+  - CenterContainer (CenterContainer)
+    - VBoxContainer (VBoxContainer)
+      - TitleLabel (Label) - 标题: 战策 Battleplan
+      - SubtitleLabel (Label) - 副标题: RTS灵魂对战竞技场
+      - Spacer1 (Control) - 间隔
+      - StartButton (Button) - 开始游戏按钮
+      - HomeButton (Button) - 灵魂之家按钮
+      - SettingsButton (Button) - 设置按钮
+      - QuitButton (Button) - 退出按钮
+      - Spacer2 (Control) - 间隔
+      - VersionLabel (Label) - 版本号: v0.2.0 - M2 Prototype
+
+## 关键属性
+- 背景: 浮空岛概念图 (main_menu_bg.png)
+- 按钮样式: StyleBoxFlat (普通+悬停两种状态)
+- 背景音乐: bgm_main_menu
+- 环境音: env_floating_island
+- 按钮音效: ui_button_click
+- 悬停音效: ui_hover
+
+## 功能
+- 开始游戏 -> 灵魂选择场景
+- 灵魂之家 -> 灵魂之家场景
+- 设置 -> 设置场景
+- 退出 -> 退出游戏

@@ -92,6 +92,9 @@ var last_defend_used: bool = false  # whether defend skill was just used
 ## Skill usage tracking
 var last_skill_used: String = ""  # name of last skill used
 
+## Damage tracking
+var last_damage_taken: int = 0  # amount of last damage taken
+
 ## Visual sprite
 var _sprite: Node2D = null
 
@@ -463,6 +466,7 @@ func take_damage(p_damage: int, p_attacker: Node2D = null) -> void:
 	if status_effects.has("defense_up"):
 		actual_damage = int(p_damage * 0.5)
 
+	last_damage_taken = actual_damage
 	current_hp -= actual_damage
 	emit_signal("hp_changed", current_hp, max_hp)
 	_update_hp_bar()

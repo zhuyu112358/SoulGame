@@ -1,0 +1,75 @@
+# RTS竞技场场景结构快照
+# 时间: 2026-09-08_00-46
+# 场景: scenes/rts_arena.tscn
+# 脚本: scripts/game/RTSArenaController.gd
+
+## 节点树
+- RTSArena (Control)
+  - Background (TextureRect) - 背景图: assets/art/background/rts_arena_bg.png
+  - ArenaContainer (Control) - 竞技场容器
+    - ArenaBackground (Node2D) - 程序化竞技场背景
+    - PlayerUnit (Node2D) - 玩家灵魂单位
+    - AIUnit (Node2D) - AI灵魂单位
+    - Minimap (Control) - 小地图
+  - TopBar (Control) - 顶部信息栏
+    - PlayerInfo (PanelContainer) - 玩家信息
+      - PlayerName (Label) - 玩家名称
+      - PlayerHPBar (ProgressBar) - 玩家HP条
+      - PlayerEnergyBar (ProgressBar) - 玩家能量条
+      - PlayerStatusLabel (Label) - 玩家状态效果
+    - WeatherLabel (Label) - 天气显示
+    - AIInfo (PanelContainer) - AI信息
+      - AIName (Label) - AI名称
+      - AIHPBar (ProgressBar) - AI HP条
+      - AIEnergyBar (ProgressBar) - AI能量条
+      - AIStatusLabel (Label) - AI状态效果
+  - BattleLog (RichTextLabel) - 战斗日志
+  - SkillBar (Control) - 技能栏
+    - HeavyStrikeButton (Button) - 重击技能按钮
+    - QuickStrikeButton (Button) - 快击技能按钮
+    - HealButton (Button) - 治疗技能按钮
+    - DefendButton (Button) - 防御技能按钮
+  - CommandPanel (Control) - 教练指令面板
+    - GatherButton (Button) - 集合指令
+    - AttackButton (Button) - 进攻指令
+    - DefendButton (Button) - 防守指令
+    - RetreatButton (Button) - 撤退指令
+    - CooldownLabel (Label) - 指令冷却显示
+  - PauseButton (Button) - 暂停按钮
+  - SpeedButton (Button) - 速度调节按钮 (1x/1.5x/2x)
+  - BackButton (Button) - 返回主菜单按钮
+  - CountdownLabel (Label) - 战斗开始倒计时 (3-2-1-GO!)
+  - CritLabel (Label) - 暴击提示
+  - DodgeLabel (Label) - 闪避提示
+  - HealLabel (Label) - 治疗提示
+  - DefendLabel (Label) - 防御提示
+  - SkillLabel (Label) - 技能使用提示
+  - DamageLabel (Label) - 伤害飘字
+  - PauseOverlay (Control) - 暂停遮罩
+  - ResultModal (Control) - 战斗结果弹窗
+
+## 关键属性
+- 背景: RTS竞技场概念图 (rts_arena_bg.png) + 程序化背景
+- 背景音乐: bgm_battle
+- 战斗音效: bat_attack_hit, bat_defeat, battle_critical, battle_dodge, battle_heal, battle_shield
+- 指令音效: battle_gather, battle_unit_attack, battle_shield, battle_unit_move
+- 倒计时音效: battle_countdown
+
+## 战斗系统
+- 4种技能: 重击(1.5x伤害,5s冷却), 快击(0.7x伤害,2s冷却), 治疗(15+level*2回复,8s冷却), 防御(3s减伤50%,6s冷却)
+- 4种教练指令: 集合/进攻/防守/撤退 (30s冷却)
+- 暴击系统: 10%概率, 150%伤害
+- 闪避系统: 5%概率, 免伤
+- 天气系统: 5种天气 (CLEAR/RAIN/FOG/SNOW/STORM), 60s变化周期
+- 暂停系统: 暂停/继续
+- 速度调节: 1x/1.5x/2x
+- 战斗结果弹窗: 本场统计+总体统计+再战/返回
+
+## 功能
+- 玩家vs AI实时对战
+- 技能按钮使用技能
+- 教练指令面板发布宏观指令
+- 暂停/继续战斗
+- 调节战斗速度
+- 战斗结束显示结果弹窗
+- 再战/返回主菜单

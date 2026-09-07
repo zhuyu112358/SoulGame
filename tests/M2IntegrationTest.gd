@@ -104,6 +104,7 @@ func _ready() -> void:
 	_test_heal_display()
 	_test_defend_display()
 	_test_skill_usage_display()
+	_test_damage_floating_text()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -7247,3 +7248,54 @@ func _test_skill_usage_display() -> void:
 	test_unit.current_energy = 100
 	test_unit.use_skill("defend")
 	_assert(test_unit.last_skill_used == "defend", "last_skill_used set to defend")
+
+
+## ============================================
+## Damage Floating Text Tests
+## ============================================
+func _test_damage_floating_text() -> void:
+	print("\n--- Damage Floating Text Tests ---")
+
+	# Test 1: SoulUnit has last_damage_taken variable
+	var soul_unit_script = load("res://scripts/game/SoulUnit.gd")
+	var soul_unit = soul_unit_script.new()
+	_assert(soul_unit.last_damage_taken == 0, "last_damage_taken starts at 0")
+
+	# Test 2: RTSArenaController has damage display variables
+	var controller_script = load("res://scripts/game/RTSArenaController.gd")
+	var controller = controller_script.new()
+	_assert(controller._damage_label == null, "Damage label is null initially")
+	_assert(controller._damage_timer == 0.0, "Damage timer starts at 0.0")
+	_assert(controller._damage_active == false, "Damage active starts false")
+
+	# Test 3: Controller has damage methods
+	_assert(controller.has_method("_setup_damage_label"), "Has _setup_damage_label method")
+	_assert(controller.has_method("_update_damage_display"), "Has _update_damage_display method")
+	_assert(controller.has_method("_show_damage"), "Has _show_damage method")
+
+	# Test 4: Setup damage label creates label
+	controller._setup_damage_label()
+	_assert(controller._damage_label != null, "Damage label created")
+	_assert(controller._damage_label.text == "", "Damage label starts empty")
+	_assert(controller._damage_label.visible == false, "Damage label starts hidden")
+
+	# Test 5: Show damage activates display
+	controller._show_damage(50)
+	_assert(controller._damage_active == true, "Damage active after show")
+	_assert(controller._damage_timer == 1.0, "Damage timer set to 1.0")
+	_assert(controller._damage_label.text == "-50", "Damage label shows -50")
+	_assert(controller._damage_label.visible == true, "Damage label visible after show")
+
+	# Test 6: Update damage display hides after timer
+	controller._update_damage_display(1.5)
+	_assert(controller._damage_active == false, "Damage inactive after timer expires")
+	_assert(controller._damage_label.visible == false, "Damage label hidden after timer")
+
+	# Test 7: take_damage sets last_damage_taken
+	var test_unit = soul_unit_script.new()
+	test_unit.init_from_soul("test_dmg", "DamageSoul", "fire", 5, true)
+	test_unit.dodge_rate = 0.0
+	test_unit.crit_rate = 0.0
+	test_unit.take_damage(30)
+	_assert(test_unit.last_damage_taken == 30, "last_damage_taken set to 30")
+	_assert(test_unit.current_hp == test_unit.max_hp - 30, "HP reduced by 30")
