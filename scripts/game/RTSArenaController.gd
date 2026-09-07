@@ -637,6 +637,12 @@ func _update_damage_display(delta: float) -> void:
 			_damage_active = false
 			if _damage_label:
 				_damage_label.visible = false
+		else:
+			# Animate: float upward and fade out
+			if _damage_label:
+				var progress = 1.0 - (_damage_timer / 1.0)
+				_damage_label.position.y = 600 - progress * 40
+				_damage_label.modulate.a = 1.0 - progress
 		return
 
 	# Check if player unit just took damage
@@ -652,6 +658,8 @@ func _show_damage(damage_amount: int) -> void:
 		return
 	_damage_label.text = "-%d" % damage_amount
 	_damage_label.visible = true
+	_damage_label.position = Vector2(540, 600)
+	_damage_label.modulate.a = 1.0
 	_damage_active = true
 	_damage_timer = 1.0
 
