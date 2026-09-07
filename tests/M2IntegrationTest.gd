@@ -68,6 +68,7 @@ func _ready() -> void:
 	_test_main_menu_hover()
 	_test_settings_menu_hover()
 	_test_soul_select_hover()
+	_test_soul_home_hover()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -4923,3 +4924,59 @@ func _test_soul_select_hover() -> void:
 
 	# Test 18: SoulSelect has _get_element_color method
 	_assert(soul_select_content.find("_get_element_color") >= 0, "SoulSelect has _get_element_color")
+
+
+## ============================================
+## Soul Home Hover Effects Tests
+## ============================================
+func _test_soul_home_hover() -> void:
+	print("\n--- Soul Home Hover Effects Tests ---")
+
+	# Test 1: SoulHomeController has _setup_button_hovers method
+	var soul_home_content = FileAccess.get_file_as_string("res://scripts/game/SoulHomeController.gd")
+	_assert(soul_home_content.find("_setup_button_hovers") >= 0, "SoulHomeController has _setup_button_hovers")
+
+	# Test 2: SoulHomeController has _setup_button_hover method
+	_assert(soul_home_content.find("_setup_button_hover") >= 0, "SoulHomeController has _setup_button_hover")
+
+	# Test 3: SoulHomeController has _on_button_hover method
+	_assert(soul_home_content.find("_on_button_hover") >= 0, "SoulHomeController has _on_button_hover")
+
+	# Test 4: SoulHomeController has _on_button_exit method
+	_assert(soul_home_content.find("_on_button_exit") >= 0, "SoulHomeController has _on_button_exit")
+
+	# Test 5: SoulHomeController has _play_hover_sound method
+	_assert(soul_home_content.find("_play_hover_sound") >= 0, "SoulHomeController has _play_hover_sound")
+
+	# Test 6: _ready calls _setup_button_hovers
+	_assert(soul_home_content.find("_setup_button_hovers()") >= 0, "_ready calls _setup_button_hovers")
+
+	# Test 7: Hover plays ui_hover sound
+	_assert(soul_home_content.find('play_sfx("ui_hover")') >= 0, "Hover plays ui_hover sound")
+
+	# Test 8: Hover changes button modulate to brighter color
+	_assert(soul_home_content.find("modulate = Color(1.2, 1.2, 1.0)") >= 0, "Hover changes button modulate to brighter")
+
+	# Test 9: Mouse exit resets button modulate
+	_assert(soul_home_content.find("modulate = Color(1.0, 1.0, 1.0)") >= 0, "Mouse exit resets button modulate")
+
+	# Test 10: ui_hover sound is registered
+	_assert(AudioManager._sound_paths.has("ui_hover"), "ui_hover registered")
+
+	# Test 11: SoulHomeController has interaction buttons
+	_assert(soul_home_content.find("_on_pet_button") >= 0, "SoulHomeController has pet button")
+	_assert(soul_home_content.find("_on_feed_button") >= 0, "SoulHomeController has feed button")
+	_assert(soul_home_content.find("_on_play_button") >= 0, "SoulHomeController has play button")
+	_assert(soul_home_content.find("_on_train_button") >= 0, "SoulHomeController has train button")
+
+	# Test 12: SoulHomeController has back and battle buttons
+	_assert(soul_home_content.find("_on_back_button") >= 0, "SoulHomeController has back button")
+	_assert(soul_home_content.find("_on_battle_button") >= 0, "SoulHomeController has battle button")
+
+	# Test 13: SoulHomeController has home BGM
+	_assert(soul_home_content.find('play_bgm("home_main")') >= 0, "SoulHomeController plays home_main BGM")
+
+	# Test 14: SoulHomeController has soul interaction sounds
+	_assert(soul_home_content.find('play_sfx("soul_happy")') >= 0, "SoulHomeController has soul_happy sound")
+	_assert(soul_home_content.find('play_sfx("soul_content_smile")') >= 0, "SoulHomeController has soul_content_smile sound")
+	_assert(soul_home_content.find('play_sfx("soul_joyful")') >= 0, "SoulHomeController has soul_joyful sound")

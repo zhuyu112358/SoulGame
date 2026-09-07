@@ -58,8 +58,53 @@ var home_state: Dictionary = {
 func _ready() -> void:
 	GameLog.info("SoulHome: Scene initialized", "SoulHome")
 	_setup_soul_display()
+	_setup_button_hovers()
 	_enter_home()
 	_play_home_ambience()
+
+
+## Setup hover effects for all buttons in the scene
+func _setup_button_hovers() -> void:
+	var button_paths = [
+		"InteractionPanel/ChatButton",
+		"InteractionPanel/PetButton",
+		"InteractionPanel/FeedButton",
+		"InteractionPanel/PlayButton",
+		"InteractionPanel/TrainButton",
+		"ChatPanel/ChatSend",
+		"ChatPanel/ChatClose",
+		"BackButton",
+		"BattleButton"
+	]
+	for path in button_paths:
+		var btn = get_node_or_null(path)
+		if btn and btn is Button:
+			_setup_button_hover(btn)
+
+
+## Setup button hover effects (audio + visual)
+func _setup_button_hover(p_button: Button) -> void:
+	if p_button == null:
+		return
+	p_button.mouse_entered.connect(_on_button_hover.bind(p_button))
+	p_button.mouse_exited.connect(_on_button_exit.bind(p_button))
+
+
+## Play hover sound and visual feedback
+func _on_button_hover(p_button: Button) -> void:
+	_play_hover_sound()
+	p_button.modulate = Color(1.2, 1.2, 1.0)
+
+
+## Reset button visual on mouse exit
+func _on_button_exit(p_button: Button) -> void:
+	p_button.modulate = Color(1.0, 1.0, 1.0)
+
+
+## Play button hover sound
+func _play_hover_sound() -> void:
+	if AudioManager:
+		AudioManager.play_sfx("ui_hover")
 
 
 ## Play home background music and ambient sounds
