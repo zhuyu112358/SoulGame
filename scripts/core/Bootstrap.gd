@@ -16,9 +16,13 @@ func _ready() -> void:
 	_verify_sdk_connectivity()
 
 	GameLog.info("Bootstrap complete - infrastructure ready", "Bootstrap")
-	GameLog.info("Game design not frozen - only base architecture active", "Bootstrap")
+	GameLog.info("Game design frozen - M2 prototype active", "Bootstrap")
 
 	EventBus.emit("bootstrap_complete", {})
+
+	# Transition to main menu after bootstrap
+	await get_tree().process_frame
+	SceneManager.change_scene("res://scenes/main_menu.tscn")
 
 
 func _initialize_config() -> void:

@@ -1,0 +1,61 @@
+extends Control
+## MainMenu - Main menu scene controller
+##
+## Provides the main menu UI with game title, start game, soul home,
+## settings, and quit buttons. Handles scene transitions and button sounds.
+
+@onready var _title_label: Label = $CenterContainer/VBoxContainer/TitleLabel
+@onready var _start_button: Button = $CenterContainer/VBoxContainer/StartButton
+@onready var _home_button: Button = $CenterContainer/VBoxContainer/HomeButton
+@onready var _settings_button: Button = $CenterContainer/VBoxContainer/SettingsButton
+@onready var _quit_button: Button = $CenterContainer/VBoxContainer/QuitButton
+@onready var _version_label: Label = $CenterContainer/VBoxContainer/VersionLabel
+
+var _selected_soul_id: String = ""
+
+
+func _ready() -> void:
+	GameLog.info("MainMenu initialized", "MainMenu")
+
+	# Connect button signals
+	_start_button.pressed.connect(_on_start_pressed)
+	_home_button.pressed.connect(_on_home_pressed)
+	_settings_button.pressed.connect(_on_settings_pressed)
+	_quit_button.pressed.connect(_on_quit_pressed)
+
+	# Set version text
+	var version = GameState.get_value("game", "version", "0.2.0")
+	_version_label.text = "v%s - M2 Prototype" % version
+
+	# Play menu music if AudioManager available
+	if AudioManager:
+		AudioManager.play_bgm("bgm_menu_01")
+
+
+func _on_start_pressed() -> void:
+	GameLog.info("Start game pressed - transitioning to soul select", "MainMenu")
+	_play_button_sound()
+	SceneManager.change_scene("res://scenes/soul_select.tscn")
+
+
+func _on_home_pressed() -> void:
+	GameLog.info("Soul home pressed - transitioning to soul home", "MainMenu")
+	_play_button_sound()
+	SceneManager.change_scene("res://scenes/soul_home.tscn")
+
+
+func _on_settings_pressed() -> void:
+	GameLog.info("Settings pressed - settings not implemented yet", "MainMenu")
+	_play_button_sound()
+	# TODO: Implement settings scene
+
+
+func _on_quit_pressed() -> void:
+	GameLog.info("Quit game pressed", "MainMenu")
+	_play_button_sound()
+	get_tree().quit()
+
+
+func _play_button_sound() -> void:
+	if AudioManager:
+		AudioManager.play_ui("ui_button_click_01")

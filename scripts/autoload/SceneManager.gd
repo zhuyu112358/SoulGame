@@ -196,6 +196,10 @@ func _trim_cache() -> void:
 func _register_default_aliases() -> void:
 	_scene_aliases = {
 		"main": "res://scenes/main.tscn",
+		"main_menu": "res://scenes/main_menu.tscn",
+		"soul_select": "res://scenes/soul_select.tscn",
+		"rts_arena": "res://scenes/rts_arena.tscn",
+		"soul_home": "res://scenes/soul_home.tscn",
 		"loading": "res://scenes/loading.tscn",
 		"bootstrap": "res://scenes/bootstrap.tscn"
 	}

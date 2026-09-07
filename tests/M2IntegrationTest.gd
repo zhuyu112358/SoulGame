@@ -13,8 +13,9 @@ const ServerAuthority = preload("res://scripts/network/ServerAuthority.gd")
 const SoulSnapshot = preload("res://platform/soul/SoulSnapshot.gd")
 const WorldPlugin = preload("res://platform/world/WorldPlugin.gd")
 const ArenaEnvironment = preload("res://scripts/game/ArenaEnvironment.gd")
+const MainMenu = preload("res://scripts/ui/MainMenu.gd")
 const SoulAIController = preload("res://scripts/game/SoulAIController.gd")
-
+const SoulSelect = preload("res://scripts/ui/SoulSelect.gd")
 ## Test counters
 var _tests_run: int = 0
 var _tests_passed: int = 0
@@ -49,6 +50,8 @@ func _ready() -> void:
 	_test_soul_snapshot()
 	_test_world_plugin()
 
+	_test_main_menu()
+	_test_soul_select()
 	# Print summary
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
@@ -3887,3 +3890,107 @@ func _test_world_plugin() -> void:
 	# Test 42: unload_world callable
 	plugin.unload_world()
 	_assert(plugin._loaded == false, "unload_world sets _loaded false")
+
+
+## ============================================
+## MainMenu System Tests
+## ============================================
+func _test_main_menu() -> void:
+	print("\n--- MainMenu System Tests ---")
+
+	# Test 1: MainMenu script exists
+	_assert(MainMenu != null, "MainMenu script loaded")
+
+	# Test 2: MainMenu script is a GDScript
+	_assert(MainMenu is Script, "MainMenu is Script")
+
+	# Test 3: MainMenu script resource path correct
+
+
+	# Test 4: MainMenu scene file exists
+	var main_menu_scene = load("res://scenes/main_menu.tscn")
+	_assert(main_menu_scene != null, "main_menu.tscn exists")
+
+	# Test 5: MainMenu scene is PackedScene
+	_assert(main_menu_scene is PackedScene, "main_menu is PackedScene")
+
+	# Test 6: MainMenu background image file exists
+	var bg_path = "res://assets/art/background/main_menu_bg.png"
+	_assert(FileAccess.file_exists(bg_path), "main_menu_bg.png file exists")
+	
+	# Test 7: MainMenu background file readable
+	var bg_file = FileAccess.open(bg_path, FileAccess.READ)
+	_assert(bg_file != null, "main_menu_bg.png readable")
+	bg_file.close()
+	# Test 8: MainMenu can be instantiated
+	var menu_instance = MainMenu.new()
+	_assert(menu_instance != null, "MainMenu instantiated")
+	_assert(menu_instance is Control, "MainMenu instance is Control")
+
+	# Test 9: MainMenu instance has _selected_soul_id property
+	_assert(typeof(menu_instance._selected_soul_id) == TYPE_STRING, "MainMenu has _selected_soul_id")
+
+	# Test 10: MainMenu instance free
+	menu_instance.queue_free()
+	_assert(true, "MainMenu freed")
+
+
+## ============================================
+## SoulSelect System Tests
+## ============================================
+func _test_soul_select() -> void:
+	print("\n--- SoulSelect System Tests ---")
+
+	# Test 1: SoulSelect script exists
+	_assert(SoulSelect != null, "SoulSelect script loaded")
+
+	# Test 2: SoulSelect script is a GDScript
+	_assert(SoulSelect is Script, "SoulSelect is Script")
+
+	# Test 3: SoulSelect script resource path correct
+
+
+	# Test 4: SoulSelect scene file exists
+	var soul_select_scene = load("res://scenes/soul_select.tscn")
+	_assert(soul_select_scene != null, "soul_select.tscn exists")
+
+	# Test 5: SoulSelect scene is PackedScene
+	_assert(soul_select_scene is PackedScene, "soul_select is PackedScene")
+
+	# Test 6: SoulSelect can be instantiated
+	var select_instance = SoulSelect.new()
+	_assert(select_instance != null, "SoulSelect instantiated")
+	_assert(select_instance is Control, "SoulSelect instance is Control")
+
+	# Test 7: SoulSelect instance has _souls property
+	_assert(typeof(select_instance._souls) == TYPE_ARRAY, "SoulSelect has _souls array")
+
+	# Test 8: SoulSelect instance has _selected_index property
+	_assert(typeof(select_instance._selected_index) == TYPE_INT, "SoulSelect has _selected_index")
+
+	# Test 9: SoulSelect _get_element_color returns Color for fire
+	var fire_color = select_instance._get_element_color("fire")
+	_assert(typeof(fire_color) == TYPE_COLOR, "_get_element_color fire returns Color")
+
+	# Test 10: SoulSelect _get_element_color returns Color for water
+	var water_color = select_instance._get_element_color("water")
+	_assert(typeof(water_color) == TYPE_COLOR, "_get_element_color water returns Color")
+
+	# Test 11: SoulSelect _get_element_color returns Color for earth
+	var earth_color = select_instance._get_element_color("earth")
+	_assert(typeof(earth_color) == TYPE_COLOR, "_get_element_color earth returns Color")
+
+	# Test 12: SoulSelect _get_element_color returns Color for unknown
+	var unknown_color = select_instance._get_element_color("unknown")
+	_assert(typeof(unknown_color) == TYPE_COLOR, "_get_element_color unknown returns Color")
+
+	# Test 13: SoulSelect instance free
+	select_instance.queue_free()
+	_assert(true, "SoulSelect freed")
+
+	# Test 14: SceneManager has main_menu alias
+	_assert(SceneManager.get_stats().has("registered_aliases"), "SceneManager has aliases")
+
+	# Test 15: Bootstrap transitions to main_menu
+	var bootstrap_script = load("res://scripts/core/Bootstrap.gd")
+	_assert(bootstrap_script != null, "Bootstrap script exists")

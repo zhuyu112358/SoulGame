@@ -567,9 +567,9 @@ func _on_rematch_pressed() -> void:
 ## Handle back to menu button press
 func _on_back_to_menu_pressed() -> void:
 	AudioManager.play_sfx("ui_button_click")
-	# Return to main scene (CLI menu)
+	# Return to main menu
 	RTSArenaManager.reset_battle()
-	SceneManager.change_scene("res://scenes/main.tscn")
+	SceneManager.change_scene("res://scenes/main_menu.tscn")
 
 
 ## Handle battle time update
