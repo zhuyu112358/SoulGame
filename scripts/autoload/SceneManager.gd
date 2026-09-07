@@ -64,6 +64,10 @@ func change_scene(scene_path: String, use_transition: bool = true) -> void:
 		GameLog.error("SceneManager: Unknown scene: %s" % scene_path, "Scene")
 		return
 
+	# Play panel switch sound
+	if AudioManager:
+		AudioManager.play_sfx("ui_panel_switch")
+
 	_transitioning = true
 	GameState.set_value("game", "current_scene", resolved_path)
 

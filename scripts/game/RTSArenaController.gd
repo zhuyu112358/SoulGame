@@ -158,6 +158,9 @@ func _try_auto_start_battle() -> void:
 		_battle_config["map_name"] = map_name
 		RTSArenaManager.start_battle(player_soul, ai_soul, map_name)
 		_battle_active = true
+		# Play game start sound
+		if AudioManager:
+			AudioManager.play_sfx("ui_game_start")
 		# Clear battle config from GameState after use (keep local copy for rematch)
 		GameState.set_value("battle", "player_soul", null)
 		GameState.set_value("battle", "ai_soul", null)
@@ -520,6 +523,10 @@ func _on_battle_finished(p_result: String, p_winner_id: String, p_loser_id: Stri
 
 ## Show battle result modal dialog
 func _show_result_modal(p_result: String, p_title: String, p_title_color: Color, p_exp: int, p_stats: Dictionary) -> void:
+	# Play EXP gain sound
+	if AudioManager:
+		AudioManager.play_sfx("ui_exp_gain")
+
 	# Create modal background (semi-transparent dark overlay)
 	var modal_bg = ColorRect.new()
 	modal_bg.color = Color(0, 0, 0, 0.75)

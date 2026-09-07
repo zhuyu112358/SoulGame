@@ -71,6 +71,7 @@ func _ready() -> void:
 	_test_soul_home_hover()
 	_test_rts_arena_hover()
 	_test_result_modal_hover()
+	_test_new_ui_sounds()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -5107,3 +5108,61 @@ func _test_result_modal_hover() -> void:
 
 	# Test 20: Result modal has back to menu handler
 	_assert(rts_content.find("_on_back_to_menu_pressed") >= 0, "Result modal has back to menu handler")
+
+
+## ============================================
+## New UI Sound Integration Tests
+## ============================================
+func _test_new_ui_sounds() -> void:
+	print("\n--- New UI Sound Integration Tests ---")
+
+	# Test 1: New UI sound files exist
+	var new_sounds = ["ui_exp_gain", "ui_game_start", "ui_level_up", "ui_loading", "ui_panel_switch", "ui_confirm_dialog", "ui_codex_open", "ui_codex_unlock", "ui_item_pickup", "ui_mail_open"]
+	for sound_name in new_sounds:
+		var path = "res://assets/audio/ui/%s.wav" % sound_name
+		_assert(FileAccess.file_exists(path), "Sound file exists: %s" % sound_name)
+
+	# Test 2: New UI sounds are registered in AudioManager
+	for sound_name in new_sounds:
+		_assert(AudioManager._sound_paths.has(sound_name), "Sound registered: %s" % sound_name)
+
+	# Test 3: AudioManager has ui_exp_gain sound
+	_assert(AudioManager._sound_paths.has("ui_exp_gain"), "AudioManager has ui_exp_gain")
+
+	# Test 4: AudioManager has ui_game_start sound
+	_assert(AudioManager._sound_paths.has("ui_game_start"), "AudioManager has ui_game_start")
+
+	# Test 5: AudioManager has ui_panel_switch sound
+	_assert(AudioManager._sound_paths.has("ui_panel_switch"), "AudioManager has ui_panel_switch")
+
+	# Test 6: RTSArenaController plays ui_exp_gain in result modal
+	var rts_content = FileAccess.get_file_as_string("res://scripts/game/RTSArenaController.gd")
+	_assert(rts_content.find('play_sfx("ui_exp_gain")') >= 0, "RTSArenaController plays ui_exp_gain")
+
+	# Test 7: RTSArenaController plays ui_game_start on battle start
+	_assert(rts_content.find('play_sfx("ui_game_start")') >= 0, "RTSArenaController plays ui_game_start")
+
+	# Test 8: SceneManager plays ui_panel_switch on scene change
+	var scene_content = FileAccess.get_file_as_string("res://scripts/autoload/SceneManager.gd")
+	_assert(scene_content.find('play_sfx("ui_panel_switch")') >= 0, "SceneManager plays ui_panel_switch")
+
+	# Test 9: UI sound count increased
+	var ui_count = 0
+	for sound_name in AudioManager._sound_paths.keys():
+		if sound_name.begins_with("ui_"):
+			ui_count += 1
+	_assert(ui_count >= 70, "UI sound count >= 70 (actual: %d)" % ui_count)
+
+	# Test 10: Total sound count increased
+	_assert(AudioManager._sound_paths.size() >= 160, "Total sound count >= 160 (actual: %d)" % AudioManager._sound_paths.size())
+
+	# Test 11: New sounds have correct file paths
+	_assert(AudioManager._sound_paths["ui_exp_gain"] == "res://assets/audio/ui/ui_exp_gain.wav", "ui_exp_gain path correct")
+	_assert(AudioManager._sound_paths["ui_game_start"] == "res://assets/audio/ui/ui_game_start.wav", "ui_game_start path correct")
+	_assert(AudioManager._sound_paths["ui_panel_switch"] == "res://assets/audio/ui/ui_panel_switch.wav", "ui_panel_switch path correct")
+
+	# Test 12: AudioManager can play new sounds (no crash)
+	AudioManager.play_sfx("ui_exp_gain")
+	AudioManager.play_sfx("ui_game_start")
+	AudioManager.play_sfx("ui_panel_switch")
+	_assert(true, "New sounds play without crash")

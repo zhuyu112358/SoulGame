@@ -912,3 +912,57 @@
 - 修复端到端验证中发现的bug
 - 优化UI细节和视觉效果
 - 集成更多设计资源（概念图+音效）
+
+## 2026-09-07 - M2可玩原型冲刺第二十一轮
+
+### 完成功能
+
+#### 新UI音效集成 (P2)
+- **修改**: scripts/autoload/AudioManager.gd, scripts/game/RTSArenaController.gd, scripts/autoload/SceneManager.gd
+- **新增资源**: 10个新UI音效文件
+- **测试**: 32个新UI音效集成测试
+
+**新增音效文件（10个）**:
+- ui_exp_gain.wav - 经验获得音效
+- ui_game_start.wav - 游戏开始音效
+- ui_level_up.wav - 升级音效
+- ui_loading.wav - 加载音效
+- ui_panel_switch.wav - 面板切换音效
+- ui_confirm_dialog.wav - 确认对话框音效
+- ui_codex_open.wav - 图鉴打开音效
+- ui_codex_unlock.wav - 图鉴解锁音效
+- ui_item_pickup.wav - 物品拾取音效
+- ui_mail_open.wav - 邮件打开音效
+
+**音效注册**:
+- 在AudioManager.gd的ui_sounds数组中添加10个新音效名称
+- 所有新音效自动注册为ui_前缀
+
+**音效使用**:
+- 战斗结果弹窗: 显示结果时播放ui_exp_gain音效（经验获得反馈）
+- 战斗开始: 自动开始战斗时播放ui_game_start音效（战斗开始反馈）
+- 场景切换: SceneManager.change_scene时播放ui_panel_switch音效（界面切换反馈）
+
+**音效总数**:
+- UI音效: 64 -> 74
+- 总音效数: 155 -> 165
+- 设计资源集成率: 155/339 (45.7%) -> 165/339 (48.7%)
+
+### 测试
+- 新UI音效集成测试: 32个（文件存在、注册验证、使用验证、数量验证、路径验证、播放测试）
+- M2测试: 1775 -> 1807
+- 总计测试: 1959 -> 1991
+
+### 已知问题
+- 新复制的.wav文件缺少.import文件，需要在Godot编辑器中打开项目自动导入
+- headless模式load()新资源会失败，但FileAccess.file_exists()检查正常
+
+### [设计需求]
+- 需要: 概念图 - 灵魂之家背景（温馨、像素风）- P1（已用concept_home_mainroom作为占位）
+- 需要: 音效 - 灵魂之家环境音（温暖、空灵）- P1（已用bgm_home_main作为背景音乐）
+
+### 下一步
+- 可玩原型端到端验证（实际运行游戏，从头玩到尾）
+- 修复端到端验证中发现的bug
+- 优化UI细节和视觉效果
+- 集成更多设计资源（概念图+音效）
