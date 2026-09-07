@@ -193,6 +193,9 @@ func _pause_battle() -> void:
 	_is_paused = true
 	RTSArenaManager.pause_battle()
 	_show_pause_overlay()
+	# Play panel open sound
+	if AudioManager:
+		AudioManager.play_sfx("ui_panel_open")
 	# Disable skill and command buttons during pause
 	for skill_name in skill_buttons.keys():
 		if skill_buttons[skill_name]:
@@ -212,6 +215,9 @@ func _resume_battle() -> void:
 	_is_paused = false
 	RTSArenaManager.resume_battle()
 	_hide_pause_overlay()
+	# Play panel close sound
+	if AudioManager:
+		AudioManager.play_sfx("ui_panel_close")
 	# Re-enable skill and command buttons
 	for skill_name in skill_buttons.keys():
 		if skill_buttons[skill_name]:
@@ -1166,6 +1172,9 @@ func _on_battle_finished(p_result: String, p_winner_id: String, p_loser_id: Stri
 
 ## Show battle result modal dialog
 func _show_result_modal(p_result: String, p_title: String, p_title_color: Color, p_exp: int, p_stats: Dictionary, p_battle_stats: Dictionary = {}) -> void:
+	# Play panel open sound
+	if AudioManager:
+		AudioManager.play_sfx("ui_panel_open")
 	# Play EXP gain sound
 	if AudioManager:
 		AudioManager.play_sfx("ui_exp_gain")

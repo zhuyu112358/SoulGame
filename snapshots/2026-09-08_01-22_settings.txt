@@ -1,0 +1,48 @@
+# 设置界面场景结构快照
+# 时间: 2026-09-08_01-22
+# 场景: scenes/settings.tscn
+# 脚本: scripts/ui/SettingsMenu.gd
+
+## 节点树
+- Settings (Control)
+  - BackgroundImage (TextureRect) - 背景图: assets/art/background/settings_bg.png
+  - BackgroundOverlay (ColorRect) - 半透明遮罩 (alpha 0.75)
+  - CenterContainer (CenterContainer)
+    - VBoxContainer (VBoxContainer)
+      - TitleLabel (Label) - 标题: 设置 Settings (32px金色)
+      - Spacer1 (Control) - 间隔
+      - MasterVolume (HBoxContainer) - 主音量
+        - NameLabel (Label) - "主音量"
+        - Slider (HSlider) - 主音量滑条 (0-100)
+        - ValueLabel (Label) - 数值显示
+      - SfxVolume (HBoxContainer) - 音效音量
+        - NameLabel (Label) - "音效"
+        - Slider (HSlider) - 音效滑条 (0-100)
+        - ValueLabel (Label) - 数值显示
+      - BgmVolume (HBoxContainer) - 背景音乐音量
+        - NameLabel (Label) - "背景音乐"
+        - Slider (HSlider) - BGM滑条 (0-100)
+        - ValueLabel (Label) - 数值显示
+      - Spacer2 (Control) - 间隔
+      - SaveButton (Button) - 保存设置按钮
+      - BackButton (Button) - 返回主菜单按钮
+
+## 关键属性
+- 背景: 设置UI概念图 (settings_bg.png)
+- 按钮音效: ui_button_click
+- 悬停音效: ui_hover
+- 保存音效: ui_settings_save
+- 配置文件: user://settings.cfg
+
+## 功能
+- 3个音量滑条（主音量/音效/背景音乐）
+- 保存设置按钮：将音量设置写入配置文件，播放ui_settings_save音效，按钮临时显示"已保存！"
+- 返回主菜单按钮
+- 启动时自动加载保存的设置（AudioManager.load_settings()）
+
+## 设计验收标准状态
+- 设置背景: 待验证
+- 音量设置: ✅ 已实现
+- 显示设置: 待实现
+- 设置保存: ✅ 已实现
+- 设置返回: 待验证

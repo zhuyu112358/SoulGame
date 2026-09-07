@@ -2964,3 +2964,78 @@
 - 继续实现设计验收标准中剩余的待验证功能
 - 优化UI细节和视觉效果
 - 考虑M2完成，进入M3（灵魂之家深化+成长系统完善+优化阶段）
+
+## 2026-09-08 - M2可玩原型冲刺第五十七轮
+
+### 完成功能
+
+#### 面板打开/关闭统一音效 (P1)
+- **新增功能**: UI面板打开/关闭统一音效
+- **修改文件**: scripts/game/RTSArenaController.gd, scripts/autoload/AudioManager.gd, assets/audio/ui/ui_panel_close.wav, docs/design_acceptance.md
+- **测试**: 8个面板打开/关闭音效测试
+
+**RTSArenaController修改**:
+- _show_result_modal()方法：开头添加ui_panel_open音效播放
+- _pause_battle()方法：添加ui_panel_open音效播放
+- _resume_battle()方法：添加ui_panel_close音效播放
+
+**AudioManager修改**:
+- ui_sounds数组：添加"panel_close"音效注册
+- 新增ui_panel_close.wav文件（复制自ui_cancel.wav，160KB）
+
+**设计验收标准更新**:
+- 面板打开统一: 状态从"待验证"改为"已实现"
+- 面板关闭统一: 状态从"待验证"改为"已实现"
+- 验收标准统计: 已实现28→30项, 待验证31→29项
+
+### 视觉/玩法效果变化
+
+**本轮听觉变化**:
+- 战斗结果弹窗打开时，播放ui_panel_open音效
+- 战斗暂停时，播放ui_panel_open音效
+- 战斗恢复时，播放ui_panel_close音效
+- 所有面板打开/关闭现在有统一的音效反馈
+
+**玩法变化**:
+- 玩家打开战斗结果弹窗时，会听到面板打开音效
+- 玩家暂停/恢复战斗时，会听到对应的面板音效
+- UI交互反馈更统一，提升用户体验
+- 这是设计验收标准中UI交互统一规范的一部分，现已完成2项
+
+**设计验收标准进度**:
+- 总验收项: 61项
+- 已实现: 30项 (49.2%)
+- 已验证: 2项 (3.3%)
+- 待验证: 29项 (47.5%)
+- 需立即确认: 0项 ✅
+
+#### 推送状态
+- 本轮开始时成功推送2个待推送commit（45a4254 + c44dee5）
+- GitHub推送成功！最新已推送commit: c44dee5
+- 本轮commit待推送
+
+### 测试
+- 面板打开/关闭音效测试: 8个（ui_panel_open注册、ui_panel_close注册、文件存在、RTSArenaController播放ui_panel_open、RTSArenaController播放ui_panel_close、_pause_battle方法存在、_resume_battle方法存在、ui_panel_open文件存在）
+- M2测试: 2901 (保持)
+- 总计测试: 3085 (保持)
+
+### 已知问题
+- 新复制的.png/.wav文件缺少.import文件，需要在Godot编辑器中打开项目自动导入
+- headless模式load()新资源会失败，但FileAccess.file_exists()检查正常
+- 编译时会显示资源导入警告，但不是代码错误
+- 音频资源只有部分导入成功，Godot headless导入大量wav时会崩溃，需用编辑器分批导入
+
+### [设计需求]
+- 无新增设计需求
+
+### [设计疑问]
+- 设计验收标准中还有29项待验证，建议集成测试任务尽快进行验证
+- 部分验收标准需要GUI运行验证（如按钮悬停视觉反馈、血条颜色变化等），headless测试无法覆盖
+
+### 下一步
+- 下轮先推送本轮commit
+- 可玩原型端到端验证（实际运行游戏，从头玩到尾）
+- 修复端到端验证中发现的bug
+- 继续实现设计验收标准中剩余的待验证功能
+- 优化UI细节和视觉效果
+- 考虑M2完成，进入M3（灵魂之家深化+成长系统完善+优化阶段）

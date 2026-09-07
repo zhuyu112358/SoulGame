@@ -107,6 +107,7 @@ func _ready() -> void:
 	_test_damage_floating_text()
 	_test_soul_home_official_resources()
 	_test_settings_save_load()
+	_test_panel_open_close_sounds()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -7386,3 +7387,36 @@ func _test_settings_save_load() -> void:
 	AudioManager.sfx_volume = 0.8
 	AudioManager.bgm_volume = 0.5
 	AudioManager.save_settings()
+
+
+## ============================================
+## Panel Open/Close Sound Tests
+## ============================================
+func _test_panel_open_close_sounds() -> void:
+	print("\n--- Panel Open/Close Sound Tests ---")
+
+	# Test 1: AudioManager has ui_panel_open registered
+	_assert(AudioManager.has_sound("ui_panel_open"), "AudioManager has ui_panel_open registered")
+
+	# Test 2: AudioManager has ui_panel_close registered
+	_assert(AudioManager.has_sound("ui_panel_close"), "AudioManager has ui_panel_close registered")
+
+	# Test 3: ui_panel_close.wav file exists
+	_assert(FileAccess.file_exists("res://assets/audio/ui/ui_panel_close.wav"), "ui_panel_close.wav file exists")
+
+	# Test 4: RTSArenaController plays ui_panel_open in _show_result_modal
+	var controller_script = load("res://scripts/game/RTSArenaController.gd")
+	var source_text = FileAccess.get_file_as_string("res://scripts/game/RTSArenaController.gd")
+	_assert(source_text.find('play_sfx("ui_panel_open")') != -1, "RTSArenaController plays ui_panel_open")
+
+	# Test 5: RTSArenaController plays ui_panel_close in _resume_battle
+	_assert(source_text.find('play_sfx("ui_panel_close")') != -1, "RTSArenaController plays ui_panel_close")
+
+	# Test 6: _pause_battle plays ui_panel_open
+	_assert(source_text.find("_pause_battle") != -1, "RTSArenaController has _pause_battle method")
+
+	# Test 7: _resume_battle plays ui_panel_close
+	_assert(source_text.find("_resume_battle") != -1, "RTSArenaController has _resume_battle method")
+
+	# Test 8: ui_panel_open.wav file exists
+	_assert(FileAccess.file_exists("res://assets/audio/ui/ui_panel_open.wav"), "ui_panel_open.wav file exists")

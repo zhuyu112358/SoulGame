@@ -93,7 +93,7 @@ func _init_sound_paths() -> void:
 		"success_prompt", "failure_prompt", "warning_alert", "levelup",
 		"exp_get", "item_get", "item_use", "shop_buy", "shop_open",
 		"battle_start", "battle_end", "match_found", "match_cancel",
-		"panel_open", "tab_switch", "loading_complete", "progress_loading",
+		"panel_open", "panel_close", "tab_switch", "loading_complete", "progress_loading",
 		"soul_detail_open", "soul_evolve", "achievement", "achievement_unlock",
 		"rank_up", "season_start", "season_end", "revive", "teleport",
 		"coin_get", "equip_wear", "equip_remove", "item_discard",

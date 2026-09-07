@@ -1,0 +1,61 @@
+# RTS竞技场场景结构快照
+# 时间: 2026-09-08_01-22
+# 场景: scenes/rts_arena.tscn
+# 脚本: scripts/game/RTSArenaController.gd
+
+## 节点树
+- RTSArena (Control)
+  - Background (TextureRect) - 背景图: assets/art/background/rts_arena_bg.png
+  - ArenaContainer (Control) - 竞技场容器
+    - ArenaBackground (Node2D) - 程序化竞技场背景
+    - PlayerUnit (Node2D) - 玩家灵魂单位 (HP条颜色随血量变化)
+    - AIUnit (Node2D) - AI灵魂单位 (HP条颜色随血量变化)
+    - Minimap (Control) - 小地图
+  - TopBar (Control) - 顶部信息栏
+    - PlayerInfo (PanelContainer) - 玩家信息 (名称/HP条/能量条/状态效果)
+    - WeatherLabel (Label) - 天气显示
+    - AIInfo (PanelContainer) - AI信息 (名称/HP条/能量条/状态效果)
+  - BattleLog (RichTextLabel) - 战斗日志
+  - SkillBar (Control) - 技能栏 (重击/快击/治疗/防御)
+  - CommandPanel (Control) - 教练指令面板 (集合/进攻/防守/撤退+冷却)
+  - PauseButton (Button) - 暂停按钮
+  - SpeedButton (Button) - 速度调节按钮 (1x/1.5x/2x)
+  - BackButton (Button) - 返回主菜单按钮
+  - CountdownLabel (Label) - 战斗开始倒计时 (3-2-1-GO!)
+  - CritLabel (Label) - 暴击提示 (金色, y=300)
+  - DodgeLabel (Label) - 闪避提示 (蓝色, y=360)
+  - HealLabel (Label) - 治疗提示 (绿色, y=420)
+  - DefendLabel (Label) - 防御提示 (蓝紫色, y=480)
+  - SkillLabel (Label) - 技能使用提示 (粉紫色, y=540)
+  - DamageLabel (Label) - 伤害飘字 (红色, y=600)
+  - PauseOverlay (Control) - 暂停遮罩
+  - ResultModal (Control) - 战斗结果弹窗
+
+## 面板音效系统 (✅ 本轮新增)
+- 战斗结果弹窗打开: 播放ui_panel_open音效
+- 战斗暂停: 播放ui_panel_open音效
+- 战斗恢复: 播放ui_panel_close音效
+- AudioManager新增ui_panel_close音效注册
+- 新增ui_panel_close.wav文件（160KB）
+
+## 战斗反馈系统 (完整, 不重叠)
+1. 暴击提示: 金色"暴击！" (y=300, 10%概率, 150%伤害)
+2. 闪避提示: 蓝色"闪避！" (y=360, 5%概率, 免伤)
+3. 治疗提示: 绿色"治疗 +X" (y=420, heal技能)
+4. 防御提示: 蓝紫色"防御！" (y=480, defend技能, 3秒减伤50%)
+5. 技能提示: 粉紫色技能名称 (y=540, 重击/快击/治疗/防御)
+6. 伤害飘字: 红色"-X" (y=600, 每次受到伤害)
+- 间隔60px，垂直排列不重叠，每个独立计时
+
+## 单位血条颜色
+- 绿色: HP > 50%
+- 黄色: 20% < HP <= 50%
+- 红色: HP <= 20%
+
+## 功能
+- 玩家vs AI实时对战
+- 4种技能 + 4种教练指令 (30s冷却)
+- 暴击/闪避/天气系统
+- 暂停/继续 + 速度调节 (1x/1.5x/2x)
+- 战斗结果弹窗 (本场统计+总体统计+再战/返回)
+- ✅ 面板打开/关闭统一音效
