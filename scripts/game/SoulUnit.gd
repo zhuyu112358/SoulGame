@@ -98,6 +98,10 @@ var last_damage_taken: int = 0  # amount of last damage taken
 ## Visual sprite
 var _sprite: Node2D = null
 
+## Hit flash effect (white flash when damaged)
+var _hit_flash_timer: float = 0.0
+var _hit_flash_duration: float = 0.15
+
 ## Signal for state changes
 signal hp_changed(current_hp, max_hp)
 signal energy_changed(current_energy, max_energy)
@@ -215,6 +219,7 @@ func _process(delta: float) -> void:
 	_update_cooldowns(delta)
 	_update_status_effects(delta)
 	_update_energy_regen(delta)
+	_update_hit_flash(delta)
 
 	match state:
 		UnitState.MOVING:
@@ -246,6 +251,21 @@ func _update_energy_regen(delta: float) -> void:
 	if current_energy < max_energy:
 		current_energy = min(max_energy, current_energy + delta * 2.0)
 		emit_signal("energy_changed", current_energy, max_energy)
+
+
+## Update hit flash effect (white flash when damaged)
+func _update_hit_flash(delta: float) -> void:
+	if _hit_flash_timer > 0 and _sprite != null:
+		_hit_flash_timer -= delta
+		if _hit_flash_timer > 0:
+			# Fade from overexposed white back to normal
+			var progress = 1.0 - (_hit_flash_timer / _hit_flash_duration)
+			var white_amount = 1.0 - progress
+			# Overexpose to simulate white flash (values > 1.0 brighten)
+			_sprite.modulate = Color(1.0 + white_amount * 0.8, 1.0 + white_amount * 0.8, 1.0 + white_amount * 0.8)
+		else:
+			_sprite.modulate = Color(1.0, 1.0, 1.0)
+			_hit_flash_timer = 0.0
 
 
 ## Update movement toward target position
@@ -476,6 +496,8 @@ func take_damage(p_damage: int, p_attacker: Node2D = null) -> void:
 	current_hp -= actual_damage
 	emit_signal("hp_changed", current_hp, max_hp)
 	_update_hp_bar()
+	# Trigger hit flash effect
+	_hit_flash_timer = _hit_flash_duration
 
 	# Play hit sound effect
 	if AudioManager:
