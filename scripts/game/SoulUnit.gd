@@ -89,6 +89,9 @@ var last_heal_amount: int = 0  # amount of last heal performed
 ## Defend tracking
 var last_defend_used: bool = false  # whether defend skill was just used
 
+## Skill usage tracking
+var last_skill_used: String = ""  # name of last skill used
+
 ## Visual sprite
 var _sprite: Node2D = null
 
@@ -401,6 +404,7 @@ func use_skill(p_skill_name: String, p_target: Node2D = null) -> bool:
 			if p_target != null:
 				var damage: int = _calculate_damage(attack_damage, 1.5)
 				p_target.take_damage(damage, self)
+				last_skill_used = "heavy_strike"
 				skill_cooldowns[p_skill_name] = 5.0
 				emit_signal("skill_used", p_skill_name, p_target)
 				return true
@@ -408,6 +412,7 @@ func use_skill(p_skill_name: String, p_target: Node2D = null) -> bool:
 			if p_target != null:
 				var damage: int = _calculate_damage(attack_damage, 0.7)
 				p_target.take_damage(damage, self)
+				last_skill_used = "quick_strike"
 				skill_cooldowns[p_skill_name] = 2.0
 				emit_signal("skill_used", p_skill_name, p_target)
 				return true
@@ -416,12 +421,14 @@ func use_skill(p_skill_name: String, p_target: Node2D = null) -> bool:
 			last_heal_amount = heal_amount
 			current_hp = min(max_hp, current_hp + heal_amount)
 			emit_signal("hp_changed", current_hp, max_hp)
+			last_skill_used = "heal"
 			skill_cooldowns[p_skill_name] = 8.0
 			emit_signal("skill_used", p_skill_name, self)
 			return true
 		"defend":
 			status_effects["defense_up"] = 3.0
 			last_defend_used = true
+			last_skill_used = "defend"
 			skill_cooldowns[p_skill_name] = 6.0
 			emit_signal("skill_used", p_skill_name, self)
 			return true

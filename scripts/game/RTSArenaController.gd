@@ -93,6 +93,11 @@ var _defend_label = null
 var _defend_timer = 0.0
 var _defend_active = false
 
+## Skill usage display
+var _skill_label = null
+var _skill_timer = 0.0
+var _skill_active = false
+
 
 func _ready() -> void:
 	GameLog.info("RTSArenaController: RTS Arena scene ready", "Arena")
@@ -110,6 +115,7 @@ func _ready() -> void:
 	_setup_dodge_label()
 	_setup_heal_label()
 	_setup_defend_label()
+	_setup_skill_label()
 
 	# Auto-start battle if config is set in GameState
 	_try_auto_start_battle()
@@ -528,6 +534,64 @@ func _show_defend() -> void:
 	_add_log("防御！")
 
 
+## Setup skill usage label
+func _setup_skill_label() -> void:
+	_skill_label = Label.new()
+	_skill_label.name = "SkillLabel"
+	_skill_label.text = ""
+	_skill_label.position = Vector2(540, 540)
+	_skill_label.size = Vector2(200, 50)
+	_skill_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_skill_label.add_theme_font_size_override("font_size", 24)
+	_skill_label.modulate = Color(1.0, 0.6, 0.8)
+	_skill_label.visible = false
+	add_child(_skill_label)
+
+
+## Update skill usage display
+func _update_skill_display(delta: float) -> void:
+	if _skill_active:
+		_skill_timer -= delta
+		if _skill_timer <= 0:
+			_skill_active = false
+			if _skill_label:
+				_skill_label.visible = false
+		return
+
+	# Check if player unit just used a skill
+	if RTSArenaManager.player_unit and RTSArenaManager.player_unit.last_skill_used != "":
+		_show_skill_used(RTSArenaManager.player_unit.last_skill_used)
+		# Reset the flag to avoid repeated display
+		RTSArenaManager.player_unit.last_skill_used = ""
+
+
+## Show skill usage effect
+func _show_skill_used(skill_name: String) -> void:
+	if _skill_label == null:
+		return
+	var display_name = _get_skill_display_name(skill_name)
+	_skill_label.text = display_name
+	_skill_label.visible = true
+	_skill_active = true
+	_skill_timer = 1.0
+	_add_log(display_name)
+
+
+## Get display name for skill
+func _get_skill_display_name(skill_name: String) -> String:
+	match skill_name:
+		"heavy_strike":
+			return "重击！"
+		"quick_strike":
+			return "快击！"
+		"heal":
+			return "治疗！"
+		"defend":
+			return "防御！"
+		_:
+			return skill_name.capitalize()
+
+
 ## Play button hover sound
 func _play_hover_sound() -> void:
 	if AudioManager:
@@ -913,6 +977,7 @@ func _process(delta: float) -> void:
 	_update_dodge_display(delta)
 	_update_heal_display(delta)
 	_update_defend_display(delta)
+	_update_skill_display(delta)
 	if minimap:
 		minimap.update_minimap()
 

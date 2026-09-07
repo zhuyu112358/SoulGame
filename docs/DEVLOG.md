@@ -2652,3 +2652,70 @@
 - 修复端到端验证中发现的bug
 - 优化UI细节和视觉效果
 - 考虑M2完成，进入M3（灵魂之家深化+成长系统完善+优化阶段）
+
+## 2026-09-08 - M2可玩原型冲刺第五十三轮
+
+### 完成功能
+
+#### 技能使用提示显示 (P2)
+- **新增功能**: RTS战斗技能使用提示显示
+- **修改文件**: scripts/game/SoulUnit.gd, scripts/game/RTSArenaController.gd
+- **测试**: 22个技能使用提示显示测试
+
+**SoulUnit修改**:
+- 新增last_skill_used变量（记录最后使用的技能名称）
+- 修改use_skill()方法：在每个技能分支中设置last_skill_used
+  - heavy_strike: 设置last_skill_used="heavy_strike"
+  - quick_strike: 设置last_skill_used="quick_strike"
+  - heal: 设置last_skill_used="heal"
+  - defend: 设置last_skill_used="defend"
+
+**RTSArenaController修改**:
+- 新增_skill_label、_skill_timer、_skill_active变量
+- 新增_setup_skill_label()方法：创建技能使用提示标签
+  - 24px粉紫色文字，居中显示在屏幕中央偏下
+  - 初始隐藏
+- 新增_update_skill_display(delta)方法：
+  - 检查玩家单位的last_skill_used
+  - 如果不为空，调用_show_skill_used()并重置为空
+  - 技能使用提示显示1秒后自动隐藏
+- 新增_show_skill_used(skill_name)方法：
+  - 显示技能名称（通过_get_skill_display_name转换）
+  - 添加战斗日志
+- 新增_get_skill_display_name(skill_name)方法：
+  - heavy_strike → "重击！"
+  - quick_strike → "快击！"
+  - heal → "治疗！"
+  - defend → "防御！"
+- 修改_process()方法：添加_update_skill_display(delta)调用
+
+**技能使用提示显示效果**:
+- 玩家单位使用技能时
+- 屏幕中央显示粉紫色技能名称文字，持续1秒
+- 战斗日志记录技能使用事件
+
+#### 推送状态
+- 待推送commit: 2081a40（防御效果显示）+ 本轮commit
+- GitHub连接重置，已重试2次，保留本地提交下轮重试
+
+### 测试
+- 技能使用提示显示测试: 22个（技能变量、控制器变量、方法存在、标签创建、显示激活、定时隐藏、技能名称映射、技能设置last_skill_used）
+- M2测试: 2851 -> 2873
+- 总计测试: 3035 -> 3057
+
+### 已知问题
+- 新复制的.png/.wav文件缺少.import文件，需要在Godot编辑器中打开项目自动导入
+- headless模式load()新资源会失败，但FileAccess.file_exists()检查正常
+- 编译时会显示资源导入警告，但不是代码错误
+- GitHub 443端口间歇性不可用，推送失败
+
+### [设计需求]
+- 需要: 概念图 - 灵魂之家背景（温馨、像素风）- P1（已用concept_home_mainroom作为占位）
+- 需要: 音效 - 灵魂之家环境音（温暖、空灵）- P1（已用env_home_indoor作为环境音）
+
+### 下一步
+- 下轮先重试推送本地2个commit（2081a40 + 本轮commit）
+- 可玩原型端到端验证（实际运行游戏，从头玩到尾）
+- 修复端到端验证中发现的bug
+- 优化UI细节和视觉效果
+- 考虑M2完成，进入M3（灵魂之家深化+成长系统完善+优化阶段）

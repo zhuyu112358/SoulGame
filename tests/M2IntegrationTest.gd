@@ -103,6 +103,7 @@ func _ready() -> void:
 	_test_dodge_system()
 	_test_heal_display()
 	_test_defend_display()
+	_test_skill_usage_display()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -7188,3 +7189,61 @@ func _test_defend_display() -> void:
 	test_unit.use_skill("defend")
 	_assert(test_unit.last_defend_used == true, "last_defend_used set after defend skill")
 	_assert(test_unit.status_effects.has("defense_up"), "defense_up status effect applied")
+
+
+## ============================================
+## Skill Usage Display Tests
+## ============================================
+func _test_skill_usage_display() -> void:
+	print("\n--- Skill Usage Display Tests ---")
+
+	# Test 1: SoulUnit has last_skill_used variable
+	var soul_unit_script = load("res://scripts/game/SoulUnit.gd")
+	var soul_unit = soul_unit_script.new()
+	_assert(soul_unit.last_skill_used == "", "last_skill_used starts empty")
+
+	# Test 2: RTSArenaController has skill display variables
+	var controller_script = load("res://scripts/game/RTSArenaController.gd")
+	var controller = controller_script.new()
+	_assert(controller._skill_label == null, "Skill label is null initially")
+	_assert(controller._skill_timer == 0.0, "Skill timer starts at 0.0")
+	_assert(controller._skill_active == false, "Skill active starts false")
+
+	# Test 3: Controller has skill methods
+	_assert(controller.has_method("_setup_skill_label"), "Has _setup_skill_label method")
+	_assert(controller.has_method("_update_skill_display"), "Has _update_skill_display method")
+	_assert(controller.has_method("_show_skill_used"), "Has _show_skill_used method")
+	_assert(controller.has_method("_get_skill_display_name"), "Has _get_skill_display_name method")
+
+	# Test 4: Setup skill label creates label
+	controller._setup_skill_label()
+	_assert(controller._skill_label != null, "Skill label created")
+	_assert(controller._skill_label.text == "", "Skill label starts empty")
+	_assert(controller._skill_label.visible == false, "Skill label starts hidden")
+
+	# Test 5: Show skill activates display
+	controller._show_skill_used("heavy_strike")
+	_assert(controller._skill_active == true, "Skill active after show")
+	_assert(controller._skill_timer == 1.0, "Skill timer set to 1.0")
+	_assert(controller._skill_label.text == "重击！", "Skill label shows 重击！")
+	_assert(controller._skill_label.visible == true, "Skill label visible after show")
+
+	# Test 6: Update skill display hides after timer
+	controller._update_skill_display(1.5)
+	_assert(controller._skill_active == false, "Skill inactive after timer expires")
+	_assert(controller._skill_label.visible == false, "Skill label hidden after timer")
+
+	# Test 7: Get skill display name
+	_assert(controller._get_skill_display_name("heavy_strike") == "重击！", "heavy_strike display name")
+	_assert(controller._get_skill_display_name("quick_strike") == "快击！", "quick_strike display name")
+	_assert(controller._get_skill_display_name("heal") == "治疗！", "heal display name")
+	_assert(controller._get_skill_display_name("defend") == "防御！", "defend display name")
+
+	# Test 8: Skills set last_skill_used
+	var test_unit = soul_unit_script.new()
+	test_unit.init_from_soul("test_skill", "SkillSoul", "fire", 5, true)
+	test_unit.dodge_rate = 0.0
+	test_unit.crit_rate = 0.0
+	test_unit.current_energy = 100
+	test_unit.use_skill("defend")
+	_assert(test_unit.last_skill_used == "defend", "last_skill_used set to defend")
