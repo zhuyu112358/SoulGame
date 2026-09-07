@@ -2107,3 +2107,49 @@
 - 修复端到端验证中发现的bug
 - 优化UI细节和视觉效果
 - 考虑M2完成，进入M3（灵魂之家深化+成长系统完善+优化阶段）
+
+## 2026-09-07 - M2可玩原型冲刺第四十四轮
+
+### 完成功能
+
+#### 战斗开始倒计时效果 (P2)
+- **新增功能**: RTS竞技场战斗开始前显示3-2-1-GO!倒计时
+- **修改文件**: scripts/game/RTSArenaController.gd
+- **测试**: 16个战斗开始倒计时测试
+
+**实现细节**:
+- 新增倒计时变量：_countdown_label, _countdown_timer, _countdown_active, _pending_battle_config
+- 修改_try_auto_start_battle方法，启动倒计时而不是直接开始战斗
+- 新增_start_countdown()方法：设置3秒倒计时，播放battle_countdown音效
+- 新增_setup_countdown_label()方法：创建居中大字体（96px）倒计时标签，金色文字+黑色描边
+- 新增_update_countdown_display()方法：根据剩余时间显示3/2/1/GO!
+- 新增_start_battle_after_countdown()方法：倒计时结束后开始战斗，移除倒计时标签
+- 修改_process()方法：在倒计时期间更新倒计时，倒计时结束后开始战斗
+- 修改_on_rematch_pressed()方法：重赛也使用倒计时效果
+
+**倒计时效果**:
+- 3秒倒计时（3-2-1-GO!）
+- 大字体居中显示（96px）
+- 金色文字（Color(1.0, 0.9, 0.3)）+ 黑色描边
+- 播放battle_countdown音效
+- 倒计时结束后播放ui_game_start音效并开始战斗
+
+### 测试
+- 战斗开始倒计时测试: 16个（变量初始化、方法存在、倒计时启动、显示更新、标签样式、配置保存、战斗开始后清理）
+- M2测试: 2686 -> 2702
+- 总计测试: 2870 -> 2886
+
+### 已知问题
+- 新复制的.png/.wav文件缺少.import文件，需要在Godot编辑器中打开项目自动导入
+- headless模式load()新资源会失败，但FileAccess.file_exists()检查正常
+- 编译时会显示资源导入警告，但不是代码错误
+
+### [设计需求]
+- 需要: 概念图 - 灵魂之家背景（温馨、像素风）- P1（已用concept_home_mainroom作为占位）
+- 需要: 音效 - 灵魂之家环境音（温暖、空灵）- P1（已用env_home_indoor作为环境音）
+
+### 下一步
+- 可玩原型端到端验证（实际运行游戏，从头玩到尾）
+- 修复端到端验证中发现的bug
+- 优化UI细节和视觉效果
+- 考虑M2完成，进入M3（灵魂之家深化+成长系统完善+优化阶段）

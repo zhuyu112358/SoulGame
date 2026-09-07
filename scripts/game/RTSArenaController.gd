@@ -52,6 +52,12 @@ var _was_on_cooldown = false
 var _weather_label = null
 var _weather_icon = null
 
+## Battle start countdown
+var _countdown_label = null
+var _countdown_timer = 0.0
+var _countdown_active = false
+var _pending_battle_config = null
+
 
 func _ready() -> void:
 	GameLog.info("RTSArenaController: RTS Arena scene ready", "Arena")
@@ -151,23 +157,89 @@ func _try_auto_start_battle() -> void:
 	var map_name = GameState.get_value("battle", "map_name", "default_arena")
 
 	if player_soul != null and ai_soul != null:
-		GameLog.info("RTSArenaController: Auto-starting battle with config from GameState", "Arena")
-		# Save config for rematch
+		GameLog.info("RTSArenaController: Starting battle countdown with config from GameState", "Arena")
+		# Save config for rematch and pending start
 		_battle_config["player_soul"] = player_soul
 		_battle_config["ai_soul"] = ai_soul
 		_battle_config["map_name"] = map_name
-		RTSArenaManager.start_battle(player_soul, ai_soul, map_name)
-		_battle_active = true
-		# Play game start sound
-		if AudioManager:
-			AudioManager.play_sfx("ui_game_start")
-			AudioManager.play_sfx("battle_countdown")
+		_pending_battle_config = {
+			"player_soul": player_soul,
+			"ai_soul": ai_soul,
+			"map_name": map_name
+		}
+		# Start countdown
+		_start_countdown()
 		# Clear battle config from GameState after use (keep local copy for rematch)
 		GameState.set_value("battle", "player_soul", null)
 		GameState.set_value("battle", "ai_soul", null)
 	else:
 		_add_log("No battle config found. Use CLI 'rts_battle' to set up a battle.")
 		_add_log("Or call start_test_battle() for a quick test.")
+
+
+## Start battle countdown (3-2-1-GO!)
+func _start_countdown() -> void:
+	_countdown_active = true
+	_countdown_timer = 3.0
+	_setup_countdown_label()
+	_update_countdown_display()
+	# Play countdown start sound
+	if AudioManager:
+		AudioManager.play_sfx("battle_countdown")
+
+
+## Setup countdown label UI
+func _setup_countdown_label() -> void:
+	if _countdown_label != null:
+		return
+	_countdown_label = Label.new()
+	_countdown_label.name = "CountdownLabel"
+	_countdown_label.set_anchors_preset(Control.PRESET_CENTER)
+	_countdown_label.set_grow_horizontal(Control.GROW_DIRECTION_BOTH)
+	_countdown_label.set_grow_vertical(Control.GROW_DIRECTION_BOTH)
+	_countdown_label.position = Vector2(-200, -100)
+	_countdown_label.size = Vector2(400, 200)
+	_countdown_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_countdown_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_countdown_label.add_theme_font_size_override("font_size", 96)
+	_countdown_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.3))
+	_countdown_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.8))
+	_countdown_label.add_theme_constant_override("outline_size", 6)
+	add_child(_countdown_label)
+
+
+## Update countdown display
+func _update_countdown_display() -> void:
+	if _countdown_label == null:
+		return
+	if _countdown_timer > 2.0:
+		_countdown_label.text = "3"
+	elif _countdown_timer > 1.0:
+		_countdown_label.text = "2"
+	elif _countdown_timer > 0.0:
+		_countdown_label.text = "1"
+	else:
+		_countdown_label.text = "GO!"
+
+
+## Start actual battle after countdown
+func _start_battle_after_countdown() -> void:
+	if _pending_battle_config == null:
+		return
+	var player_soul = _pending_battle_config["player_soul"]
+	var ai_soul = _pending_battle_config["ai_soul"]
+	var map_name = _pending_battle_config["map_name"]
+	RTSArenaManager.start_battle(player_soul, ai_soul, map_name)
+	_battle_active = true
+	# Play game start sound
+	if AudioManager:
+		AudioManager.play_sfx("ui_game_start")
+	# Remove countdown label
+	if _countdown_label != null:
+		_countdown_label.queue_free()
+		_countdown_label = null
+	_pending_battle_config = null
+	_countdown_active = false
 
 
 ## Setup UI node references
@@ -398,6 +470,13 @@ func _update_weather_display() -> void:
 
 ## Process real-time UI updates
 func _process(delta: float) -> void:
+	# Update countdown if active
+	if _countdown_active:
+		_countdown_timer -= delta
+		_update_countdown_display()
+		if _countdown_timer <= 0.0:
+			_start_battle_after_countdown()
+		return
 	if not _battle_active:
 		return
 	_update_unit_display()
@@ -635,10 +714,15 @@ func _on_rematch_pressed() -> void:
 	var map_name = _battle_config["map_name"]
 
 	if player_soul != null and ai_soul != null:
-		# Reset and restart battle
+		# Reset battle and start countdown
 		RTSArenaManager.reset_battle()
-		RTSArenaManager.start_battle(player_soul, ai_soul, map_name)
-		_battle_active = true
+		_battle_active = false
+		_pending_battle_config = {
+			"player_soul": player_soul,
+			"ai_soul": ai_soul,
+			"map_name": map_name
+		}
+		_start_countdown()
 		# Re-enable skill buttons
 		for skill_name in skill_buttons.keys():
 			if skill_buttons[skill_name]:

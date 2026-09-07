@@ -94,6 +94,7 @@ func _ready() -> void:
 	_test_new_concept_art_round3()
 	_test_new_concept_art_round4()
 	_test_new_concept_art_round5()
+	_test_battle_countdown()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -6662,3 +6663,67 @@ func _test_new_concept_art_round5() -> void:
 	# Test 8: All design concept art are integrated (93 total)
 	var design_concept_count = 93
 	_assert(concept_count >= design_concept_count - 5, "All design concept art integrated (actual: %d, expected: %d)" % [concept_count, design_concept_count])
+
+
+## ============================================
+## Battle Start Countdown Tests
+## ============================================
+func _test_battle_countdown() -> void:
+	print("\n--- Battle Start Countdown Tests ---")
+
+	# Test 1: RTSArenaController has countdown variables
+	var controller_script = load("res://scripts/game/RTSArenaController.gd")
+	_assert(controller_script != null, "RTSArenaController script loaded")
+
+	# Test 2: Countdown methods exist
+	var controller = controller_script.new()
+	_assert(controller.has_method("_start_countdown"), "Has _start_countdown method")
+	_assert(controller.has_method("_setup_countdown_label"), "Has _setup_countdown_label method")
+	_assert(controller.has_method("_update_countdown_display"), "Has _update_countdown_display method")
+	_assert(controller.has_method("_start_battle_after_countdown"), "Has _start_battle_after_countdown method")
+
+	# Test 3: Countdown variables initialized correctly
+	_assert(controller._countdown_timer == 0.0, "Countdown timer initialized to 0.0")
+	_assert(controller._countdown_active == false, "Countdown active initialized to false")
+	_assert(controller._countdown_label == null, "Countdown label initialized to null")
+	_assert(controller._pending_battle_config == null, "Pending battle config initialized to null")
+
+	# Test 4: Countdown starts with 3 seconds
+	controller._start_countdown()
+	_assert(controller._countdown_active == true, "Countdown active after start")
+	_assert(controller._countdown_timer == 3.0, "Countdown timer set to 3.0")
+
+	# Test 5: Countdown display updates correctly
+	controller._countdown_timer = 2.5
+	controller._update_countdown_display()
+	_assert(controller._countdown_label != null, "Countdown label created")
+	_assert(controller._countdown_label.text == "3", "Countdown shows 3 at 2.5s")
+
+	controller._countdown_timer = 1.5
+	controller._update_countdown_display()
+	_assert(controller._countdown_label.text == "2", "Countdown shows 2 at 1.5s")
+
+	controller._countdown_timer = 0.5
+	controller._update_countdown_display()
+	_assert(controller._countdown_label.text == "1", "Countdown shows 1 at 0.5s")
+
+	controller._countdown_timer = 0.0
+	controller._update_countdown_display()
+	_assert(controller._countdown_label.text == "GO!", "Countdown shows GO! at 0.0s")
+
+	# Test 6: Countdown label styling
+	_assert(controller._countdown_label.get_theme_font_size_override("font_size") == 96, "Countdown font size is 96")
+	_assert(controller._countdown_label.horizontal_alignment == HORIZONTAL_ALIGNMENT_CENTER, "Countdown horizontal alignment is center")
+
+	# Test 7: Pending battle config is set during auto-start
+	var test_config = {"player_soul": {"id": "test", "name": "Test"}, "ai_soul": {"id": "ai", "name": "AI"}, "map_name": "test_map"}
+	controller._pending_battle_config = test_config
+	_assert(controller._pending_battle_config["player_soul"]["name"] == "Test", "Pending config has player soul")
+	_assert(controller._pending_battle_config["ai_soul"]["name"] == "AI", "Pending config has AI soul")
+	_assert(controller._pending_battle_config["map_name"] == "test_map", "Pending config has map name")
+
+	# Test 8: Countdown label is removed after battle starts
+	controller._countdown_label.queue_free()
+	controller._countdown_label = null
+	_assert(controller._countdown_label == null, "Countdown label cleared after battle start")
+	_assert(controller._countdown_active == false, "Countdown inactive after battle start")
