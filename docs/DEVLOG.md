@@ -3145,3 +3145,34 @@
 - 检查单位position_changed信号是否正确连接
 - 考虑将battle_mode默认改为"auto"，让玩家单位也自动战斗
 - 添加调试日志，跟踪单位状态变化
+
+## 2026-09-08 - M2可玩原型冲刺第五十九轮
+
+### 🚨 P0 Bug修复 (BUG-029): RTS竞技场单位不移动
+
+**根本原因分析**:
+1. **主要bug**: RTSArenaController._on_unit_spawned()中连接position_changed信号时，lambda函数写了unc(pos)参数，但Godot 4中Node2D.position_changed信号**没有参数**，导致信号连接失败，视觉方块位置永远不更新
+2. **次要问题**: attle_mode默认是"manual"，玩家单位不会自动移动，只有AI单位会移动
+
+**修复内容**:
+1. ✅ 修复position_changed信号连接：unc(pos)改为unc()，在lambda体内读取p_unit.position
+2. ✅ 将attle_mode默认从"manual"改为"auto"，符合"教练式RTS"设计理念（灵魂自主决策）
+
+**修改文件**:
+- scripts/game/RTSArenaController.gd: 修复position_changed信号连接（第1470-1473行）
+- scripts/game/RTSArenaManager.gd: battle_mode默认改为"auto"（第68行）
+
+### 视觉/玩法效果变化
+
+**修复后效果**:
+- RTS竞技场中玩家和AI单位的视觉方块现在会正确跟随单位移动
+- 玩家单位在auto模式下会自动向AI单位移动并攻击
+- 战斗流程完整：双方移动→攻击→技能→一方HP归零→结果展示
+- 符合"教练式RTS"设计理念：灵魂自主决策，玩家通过宏观指令干预
+
+**设计验收标准**:
+- BUG-029 P0: 单位不移动 - 已修复（待GUI验证）
+- 教练式RTS自主决策 - 已实现（battle_mode默认auto）
+
+### 测试
+- M2测试运行中...

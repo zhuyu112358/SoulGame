@@ -64,7 +64,8 @@ var _player_ai_controller: SoulAIController = null
 var _environment: ArenaEnvironment = null
 
 ## Battle mode: "manual" (player controls skills) or "auto" (AI controls both)
-var battle_mode: String = "manual"
+## Default is "auto" for coach-style RTS: souls make autonomous decisions
+var battle_mode: String = "auto"
 
 ## Battle speed multiplier (1.0 = normal, 2.0 = double speed)
 var battle_speed: float = 1.0

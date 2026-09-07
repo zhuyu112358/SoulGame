@@ -1467,9 +1467,9 @@ func _on_unit_spawned(p_unit: SoulUnit, p_is_player: bool) -> void:
 		_ai_visual = visual
 	add_child(visual)
 
-	# Connect position update
-	p_unit.position_changed.connect(func(pos):
-		visual.position = pos - Vector2(32, 32)
+	# Connect position update (Node2D.position_changed has no arguments in Godot 4)
+	p_unit.position_changed.connect(func():
+		visual.position = p_unit.position - Vector2(32, 32)
 	)
 
 
