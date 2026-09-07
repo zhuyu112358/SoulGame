@@ -94,4 +94,5 @@ func _on_back_pressed() -> void:
 	GameLog.info("Settings: Back to main menu", "Settings")
 	if AudioManager:
 		AudioManager.play_ui("ui_button_click_01")
+		AudioManager.play_sfx("ui_settings_close")
 	SceneManager.change_scene("res://scenes/main_menu.tscn")

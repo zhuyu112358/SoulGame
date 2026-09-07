@@ -44,7 +44,7 @@ func _on_button_exit(p_button: Button) -> void:
 ## Play button hover sound
 func _play_hover_sound() -> void:
 	if AudioManager:
-		AudioManager.play_sfx("ui_hover")
+		AudioManager.play_sfx("ui_soul_select_hover")
 
 
 ## Play soul select background music
@@ -215,6 +215,7 @@ func _start_battle(soul: Dictionary) -> void:
 	# Play soul excited sound when entering battle
 	if AudioManager:
 		AudioManager.play_sfx("soul_excited")
+		AudioManager.play_sfx("ui_soul_select_confirm")
 
 	SceneManager.change_scene("res://scenes/rts_arena.tscn")
 

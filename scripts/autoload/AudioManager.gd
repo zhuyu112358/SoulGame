@@ -76,7 +76,10 @@ func _init_sound_paths() -> void:
 		"hover", "menu_open", "notification", "open",
 		"select", "success", "tab", "tick", "toggle", "warning",
 		"exp_gain", "game_start", "level_up", "loading", "panel_switch",
-		"confirm_dialog", "codex_open", "codex_unlock", "item_pickup", "mail_open"
+		"confirm_dialog", "codex_open", "codex_unlock", "item_pickup", "mail_open",
+		"button_hover", "friends_open", "friend_request", "leaderboard_open",
+		"mail_receive", "season_open", "season_reward", "settings_close",
+		"soul_select_confirm", "soul_select_hover"
 	]
 	for sound_name in ui_sounds:
 		_sound_paths["ui_%s" % sound_name] = "res://assets/audio/ui/ui_%s.wav" % sound_name

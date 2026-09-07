@@ -1189,3 +1189,58 @@
 - 修复端到端验证中发现的bug
 - 优化UI细节和视觉效果
 - 集成更多设计资源（概念图+音效）
+
+## 2026-09-07 - M2可玩原型冲刺第二十六轮
+
+### 完成功能
+
+#### 新UI音效集成（第二轮） (P2)
+- **修改**: scripts/autoload/AudioManager.gd, scripts/ui/SettingsMenu.gd, scripts/ui/SoulSelect.gd
+- **新增资源**: 10个新UI音效文件
+- **测试**: 33个新UI音效集成测试 + 2个旧测试更新
+
+**新增音效文件（10个）**:
+- ui_button_hover.wav - 按钮悬停音效
+- ui_friends_open.wav - 好友打开音效
+- ui_friend_request.wav - 好友请求音效
+- ui_leaderboard_open.wav - 排行榜打开音效
+- ui_mail_receive.wav - 邮件接收音效
+- ui_season_open.wav - 赛季打开音效
+- ui_season_reward.wav - 赛季奖励音效
+- ui_settings_close.wav - 设置关闭音效
+- ui_soul_select_confirm.wav - 灵魂选择确认音效
+- ui_soul_select_hover.wav - 灵魂选择悬停音效
+
+**音效注册**:
+- 在AudioManager.gd的ui_sounds数组中添加10个新音效名称
+- 所有新音效自动注册为ui_前缀
+
+**音效使用**:
+- 设置界面关闭: ui_settings_close（返回主菜单时播放）
+- 灵魂选择确认: ui_soul_select_confirm（开始战斗时播放）
+- 灵魂选择悬停: ui_soul_select_hover（替换原有的ui_hover音效）
+
+**音效总数**:
+- UI音效: 74 -> 84
+- 总音效数: 202 -> 212
+- 设计资源集成率: 202/339 (59.6%) -> 212/339 (62.5%)
+
+### 测试
+- 新UI音效集成测试（第二轮）: 33个（文件存在、注册验证、使用验证、数量验证、路径验证、播放测试、已有音效验证）
+- 更新2个旧测试以匹配新音效名称
+- M2测试: 1948 -> 1983
+- 总计测试: 2132 -> 2167
+
+### 已知问题
+- 新复制的.wav文件缺少.import文件，需要在Godot编辑器中打开项目自动导入
+- headless模式load()新资源会失败，但FileAccess.file_exists()检查正常
+
+### [设计需求]
+- 需要: 概念图 - 灵魂之家背景（温馨、像素风）- P1（已用concept_home_mainroom作为占位）
+- 需要: 音效 - 灵魂之家环境音（温暖、空灵）- P1（已用env_home_indoor作为环境音）
+
+### 下一步
+- 可玩原型端到端验证（实际运行游戏，从头玩到尾）
+- 修复端到端验证中发现的bug
+- 优化UI细节和视觉效果
+- 集成更多设计资源（概念图+音效）

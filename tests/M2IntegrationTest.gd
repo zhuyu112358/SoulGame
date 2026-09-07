@@ -76,6 +76,7 @@ func _ready() -> void:
 	_test_new_env_sounds()
 	_test_new_battle_sounds()
 	_test_new_bgm_sounds()
+	_test_new_ui_sounds_round2()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -4897,7 +4898,7 @@ func _test_soul_select_hover() -> void:
 	_assert(soul_select_content.find("_setup_button_hover(card)") >= 0, "_create_soul_card sets up card hover")
 
 	# Test 7: Hover plays ui_hover sound
-	_assert(soul_select_content.find('play_sfx("ui_hover")') >= 0, "Hover plays ui_hover sound")
+	_assert(soul_select_content.find('play_sfx("ui_soul_select_hover")') >= 0, "Hover plays ui_soul_select_hover sound")
 
 	# Test 8: Hover changes button modulate to brighter color
 	_assert(soul_select_content.find("modulate = Color(1.2, 1.2, 1.0)") >= 0, "Hover changes button modulate to brighter")
@@ -5438,3 +5439,66 @@ func _test_new_bgm_sounds() -> void:
 	_assert(menu_content.find("play_bgm(") >= 0, "MainMenu has BGM")
 	_assert(home_content.find("play_bgm(") >= 0, "SoulHome has BGM")
 	_assert(controller_content.find("play_bgm(") >= 0, "RTSArena has BGM")
+
+
+## ============================================
+## New UI Sound Integration Tests (Round 2)
+## ============================================
+func _test_new_ui_sounds_round2() -> void:
+	print("\n--- New UI Sound Integration Tests (Round 2) ---")
+
+	# Test 1: New UI sound files exist
+	var new_sounds = ["ui_button_hover", "ui_friends_open", "ui_friend_request", "ui_leaderboard_open", "ui_mail_receive", "ui_season_open", "ui_season_reward", "ui_settings_close", "ui_soul_select_confirm", "ui_soul_select_hover"]
+	for sound_name in new_sounds:
+		var path = "res://assets/audio/ui/%s.wav" % sound_name
+		_assert(FileAccess.file_exists(path), "Sound file exists: %s" % sound_name)
+
+	# Test 2: New UI sounds are registered in AudioManager
+	for sound_name in new_sounds:
+		_assert(AudioManager._sound_paths.has(sound_name), "Sound registered: %s" % sound_name)
+
+	# Test 3: AudioManager has ui_settings_close sound
+	_assert(AudioManager._sound_paths.has("ui_settings_close"), "AudioManager has ui_settings_close")
+
+	# Test 4: AudioManager has ui_soul_select_confirm sound
+	_assert(AudioManager._sound_paths.has("ui_soul_select_confirm"), "AudioManager has ui_soul_select_confirm")
+
+	# Test 5: AudioManager has ui_soul_select_hover sound
+	_assert(AudioManager._sound_paths.has("ui_soul_select_hover"), "AudioManager has ui_soul_select_hover")
+
+	# Test 6: SettingsMenu plays ui_settings_close on back
+	var settings_content = FileAccess.get_file_as_string("res://scripts/ui/SettingsMenu.gd")
+	_assert(settings_content.find('play_sfx("ui_settings_close")') >= 0, "SettingsMenu plays ui_settings_close")
+
+	# Test 7: SoulSelect plays ui_soul_select_confirm on battle start
+	var select_content = FileAccess.get_file_as_string("res://scripts/ui/SoulSelect.gd")
+	_assert(select_content.find('play_sfx("ui_soul_select_confirm")') >= 0, "SoulSelect plays ui_soul_select_confirm")
+
+	# Test 8: SoulSelect uses ui_soul_select_hover for hover
+	_assert(select_content.find('play_sfx("ui_soul_select_hover")') >= 0, "SoulSelect uses ui_soul_select_hover")
+
+	# Test 9: UI sound count increased
+	var ui_count = 0
+	for sound_name in AudioManager._sound_paths.keys():
+		if sound_name.begins_with("ui_"):
+			ui_count += 1
+	_assert(ui_count >= 80, "UI sound count >= 80 (actual: %d)" % ui_count)
+
+	# Test 10: Total sound count increased
+	_assert(AudioManager._sound_paths.size() >= 210, "Total sound count >= 210 (actual: %d)" % AudioManager._sound_paths.size())
+
+	# Test 11: New sounds have correct file paths
+	_assert(AudioManager._sound_paths["ui_settings_close"] == "res://assets/audio/ui/ui_settings_close.wav", "ui_settings_close path correct")
+	_assert(AudioManager._sound_paths["ui_soul_select_confirm"] == "res://assets/audio/ui/ui_soul_select_confirm.wav", "ui_soul_select_confirm path correct")
+	_assert(AudioManager._sound_paths["ui_soul_select_hover"] == "res://assets/audio/ui/ui_soul_select_hover.wav", "ui_soul_select_hover path correct")
+
+	# Test 12: AudioManager can play new sounds (no crash)
+	AudioManager.play_sfx("ui_settings_close")
+	AudioManager.play_sfx("ui_soul_select_confirm")
+	AudioManager.play_sfx("ui_soul_select_hover")
+	_assert(true, "New UI sounds play without crash")
+
+	# Test 13: Existing UI sounds still registered
+	_assert(AudioManager._sound_paths.has("ui_button_click"), "Existing ui_button_click still registered")
+	_assert(AudioManager._sound_paths.has("ui_hover"), "Existing ui_hover still registered")
+	_assert(AudioManager._sound_paths.has("ui_confirm"), "Existing ui_confirm still registered")
