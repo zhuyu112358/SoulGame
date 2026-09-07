@@ -1501,10 +1501,13 @@ func _show_result_modal(p_result: String, p_title: String, p_title_color: Color,
 
 	# Create modal background (semi-transparent dark overlay)
 	var modal_bg = ColorRect.new()
-	modal_bg.color = Color(0, 0, 0, 0.75)
+	modal_bg.color = Color(0, 0, 0, 0.0)
 	modal_bg.size = Vector2(1280, 720)
 	modal_bg.name = "ResultModalBG"
 	add_child(modal_bg)
+	# Fade in modal background
+	var bg_tween = create_tween()
+	bg_tween.tween_property(modal_bg, "color:a", 0.75, 0.2)
 
 	# Create result panel (taller to fit more stats)
 	var panel = Panel.new()
@@ -1512,6 +1515,14 @@ func _show_result_modal(p_result: String, p_title: String, p_title_color: Color,
 	panel.size = Vector2(500, 440)
 	panel.name = "ResultModal"
 	add_child(panel)
+	# Animate panel appearance (scale up + fade in)
+	panel.scale = Vector2(0.8, 0.8)
+	panel.modulate = Color(1, 1, 1, 0)
+	var tween = create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(panel, "scale", Vector2(1.0, 1.0), 0.3).set_ease(Tween.EASE_OUT)
+	tween.tween_property(panel, "modulate:a", 1.0, 0.3)
+	tween.set_parallel(false)
 
 	# Title
 	var title = Label.new()
