@@ -60,9 +60,9 @@ func _ready() -> void:
 	_test_art_resources()
 	_test_game_flow()
 	_test_scene_backgrounds()
-	print("\n=== M2 TEST SUMMARY ===")
 	_test_soul_home_audio()
 	_test_bgm_integration()
+	_test_combat_audio()
 	print("\n=== M2 TEST SUMMARY ===")
 	print("Passed: %d" % _tests_passed)
 	print("Failed: %d" % _tests_failed)
@@ -4589,3 +4589,63 @@ func _test_bgm_integration() -> void:
 	_assert(AudioManager.bgm_volume == 0.6, "BGM volume set to 0.6")
 	AudioManager.set_bgm_volume(0.5)
 	_assert(AudioManager.bgm_volume == 0.5, "BGM volume reset to 0.5")
+
+
+## ============================================
+## Combat Audio Integration Tests
+## ============================================
+func _test_combat_audio() -> void:
+	print("\n--- Combat Audio Integration Tests ---")
+
+	# Test 1: SoulUnit has hit sound in take_damage
+	var soul_unit_content = FileAccess.get_file_as_string("res://scripts/game/SoulUnit.gd")
+	_assert(soul_unit_content.find('play_sfx("bat_attack_hit")') >= 0, "SoulUnit.take_damage plays bat_attack_hit")
+
+	# Test 2: SoulUnit has death sound on unit death
+	_assert(soul_unit_content.find('play_sfx("bat_defeat")') >= 0, "SoulUnit death plays bat_defeat")
+
+	# Test 3: bat_attack_hit sound is registered
+	_assert(AudioManager._sound_paths.has("bat_attack_hit"), "bat_attack_hit registered")
+
+	# Test 4: bat_defeat sound is registered
+	_assert(AudioManager._sound_paths.has("bat_defeat"), "bat_defeat registered")
+
+	# Test 5: bat_skill_cast sound is registered
+	_assert(AudioManager._sound_paths.has("bat_skill_cast"), "bat_skill_cast registered")
+
+	# Test 6: bat_defend sound is registered
+	_assert(AudioManager._sound_paths.has("bat_defend"), "bat_defend registered")
+
+	# Test 7: bat_victory sound is registered
+	_assert(AudioManager._sound_paths.has("bat_victory"), "bat_victory registered")
+
+	# Test 8: bat_defeat sound is registered
+	_assert(AudioManager._sound_paths.has("bat_defeat"), "bat_defeat registered")
+
+	# Test 9: RTSArenaController has skill cast sounds
+	var rts_content = FileAccess.get_file_as_string("res://scripts/game/RTSArenaController.gd")
+	_assert(rts_content.find('play_sfx("bat_skill_cast")') >= 0, "RTSArenaController has bat_skill_cast")
+
+	# Test 10: RTSArenaController has defend sound
+	_assert(rts_content.find('play_sfx("bat_defend")') >= 0, "RTSArenaController has bat_defend")
+
+	# Test 11: RTSArenaController has victory sound
+	_assert(rts_content.find('play_sfx("bat_victory")') >= 0, "RTSArenaController has bat_victory")
+
+	# Test 12: RTSArenaController has defeat sound
+	_assert(rts_content.find('play_sfx("bat_defeat")') >= 0, "RTSArenaController has bat_defeat")
+
+	# Test 13: RTSArenaManager has battle start sound
+	var manager_content = FileAccess.get_file_as_string("res://scripts/game/RTSArenaManager.gd")
+	_assert(manager_content.find('play_sfx("ui_battle_start")') >= 0, "RTSArenaManager has ui_battle_start")
+
+	# Test 14: RTSArenaManager has battle end sound
+	_assert(manager_content.find('play_sfx("ui_battle_end")') >= 0, "RTSArenaManager has ui_battle_end")
+
+	# Test 15: All combat sound files exist
+	_assert(FileAccess.file_exists("res://assets/audio/battle/bat_attack_hit.wav"), "bat_attack_hit.wav exists")
+	_assert(FileAccess.file_exists("res://assets/audio/battle/bat_defeat.wav"), "bat_defeat.wav exists")
+	_assert(FileAccess.file_exists("res://assets/audio/battle/bat_skill_cast.wav"), "bat_skill_cast.wav exists")
+	_assert(FileAccess.file_exists("res://assets/audio/battle/bat_defend.wav"), "bat_defend.wav exists")
+	_assert(FileAccess.file_exists("res://assets/audio/battle/bat_victory.wav"), "bat_victory.wav exists")
+	_assert(FileAccess.file_exists("res://assets/audio/battle/bat_defeat.wav"), "bat_defeat.wav exists")

@@ -431,6 +431,10 @@ func take_damage(p_damage: int, p_attacker: Node2D = null) -> void:
 	emit_signal("hp_changed", current_hp, max_hp)
 	_update_hp_bar()
 
+	# Play hit sound effect
+	if AudioManager:
+		AudioManager.play_sfx("bat_attack_hit")
+
 	GameLog.debug("SoulUnit: %s takes %d damage (HP: %d/%d)" % [soul_name, actual_damage, current_hp, max_hp], "Arena")
 
 	if current_hp <= 0:
@@ -438,6 +442,9 @@ func take_damage(p_damage: int, p_attacker: Node2D = null) -> void:
 		state = UnitState.DEAD
 		emit_signal("state_changed", state)
 		emit_signal("unit_died", self)
+		# Play death sound effect
+		if AudioManager:
+			AudioManager.play_sfx("bat_defeat")
 		GameLog.info("SoulUnit: %s has been defeated!" % soul_name, "Arena")
 
 
