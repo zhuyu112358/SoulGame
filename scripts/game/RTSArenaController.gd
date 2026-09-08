@@ -150,6 +150,7 @@ var _skill_particles = []  # Array of {particle, timer, duration}
 
 ## Atmosphere effects
 var _ambient_particles = []  # Array of {particle, velocity, base_y, phase}
+var _magic_dust = []  # Array of {particle, velocity, phase, base_x, base_y}
 var _vignette_sprite: Sprite2D = null
 var _ambient_time: float = 0.0
 
@@ -1183,7 +1184,39 @@ func _setup_atmosphere_effects() -> void:
 			"phase": randf() * TAU,
 			"base_x": start_x
 		})
-	GameLog.info("RTSArenaController: Atmosphere effects setup (20 ambient particles + vignette)", "Arena")
+
+	# Create magic dust particles (golden, slow drifting, weather effect)
+	for i in range(30):
+		var dust = Sprite2D.new()
+		dust.name = "MagicDust_%d" % i
+		dust.centered = true
+		var dust_x = randf_range(0, 1280)
+		var dust_y = randf_range(80, 720)
+		dust.position = Vector2(dust_x, dust_y)
+		dust.z_index = 3  # Below ambient particles, above background
+		dust.modulate = Color(1.0, 0.85, 0.5, randf_range(0.2, 0.5))
+		dust.scale = Vector2(randf_range(0.06, 0.15), randf_range(0.06, 0.15))
+		# Procedural soft dust texture (small golden glow)
+		var dust_img = Image.create(16, 16, false, Image.FORMAT_RGBA8)
+		dust_img.fill(Color(0, 0, 0, 0))
+		for dx in range(16):
+			for dy in range(16):
+				var ddx = dx - 8.0
+				var ddy = dy - 8.0
+				var dd = sqrt(ddx * ddx + ddy * ddy) / 8.0
+				if dd < 1.0:
+					var d_alpha = pow(1.0 - dd, 2.0)
+					dust_img.set_pixel(dx, dy, Color(1.0, 0.9, 0.6, d_alpha))
+		dust.texture = ImageTexture.create_from_image(dust_img)
+		add_child(dust)
+		_magic_dust.append({
+			"particle": dust,
+			"velocity": Vector2(randf_range(-3, 3), randf_range(-4, -1)),
+			"phase": randf() * TAU,
+			"base_x": dust_x,
+			"base_y": dust_y
+		})
+	GameLog.info("RTSArenaController: Atmosphere effects setup (20 ambient particles + 30 magic dust + vignette)", "Arena")
 
 
 ## Update atmosphere effects: floating particles drift and twinkle
@@ -1206,6 +1239,29 @@ func _update_atmosphere(delta: float) -> void:
 			particle.position.y = 710
 			p_data.base_x = randf_range(50, 1230)
 			particle.position.x = p_data.base_x
+
+	# Update magic dust (golden, slower, wider sway)
+	for d_data in _magic_dust:
+		var dust = d_data.particle
+		if not is_instance_valid(dust):
+			continue
+		d_data.phase += delta * 0.3
+		# Slow drift with wide horizontal sway
+		var dust_sway = sin(d_data.phase) * 25.0
+		dust.position.x = d_data.base_x + dust_sway
+		dust.position.y += d_data.velocity.y * delta
+		# Gentle twinkle (slower, subtler)
+		var dust_twinkle = 0.35 + sin(_ambient_time * 1.2 + d_data.phase * 2.0) * 0.25
+		dust.modulate.a = dust_twinkle
+		# Reset when off screen top or bottom
+		if dust.position.y < 70:
+			dust.position.y = 720
+			d_data.base_x = randf_range(0, 1280)
+			dust.position.x = d_data.base_x
+		elif dust.position.y > 730:
+			dust.position.y = 80
+			d_data.base_x = randf_range(0, 1280)
+			dust.position.x = d_data.base_x
 
 
 ## Try to auto-start battle from GameState configuration
