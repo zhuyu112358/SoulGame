@@ -1868,6 +1868,9 @@ func _on_battle_started(p_battle_info: Dictionary) -> void:
 ## Handle battle finished
 func _on_battle_finished(p_result: String, p_winner_id: String, p_loser_id: String) -> void:
 	_battle_active = false
+	# Trigger victory particles if player won
+	if p_result == "player_win" and RTSArenaManager.player_unit:
+		_spawn_victory_particles(RTSArenaManager.player_unit.position)
 	# Reset pause state
 	if _is_paused:
 		_is_paused = false
@@ -2400,6 +2403,120 @@ func _on_unit_spawned(p_unit: SoulUnit, p_is_player: bool) -> void:
 		_ai_visual = visual
 	# Visual position synced in _process (position_changed signal unreliable in Godot 4.7)
 	add_child(visual)
+
+	# Connect unit signals for particle effects
+	p_unit.hp_changed.connect(_on_unit_hp_changed.bind(p_unit))
+	p_unit.unit_died.connect(_on_unit_died.bind(p_unit))
+
+
+## Handle unit HP change (trigger hit particles when damaged)
+func _on_unit_hp_changed(p_current_hp: int, p_max_hp: int, p_unit: SoulUnit) -> void:
+	# Only spawn hit particles if HP decreased (damage taken)
+	if p_unit.last_damage_taken > 0:
+		var hit_color = Color(1.0, 0.4, 0.2) if p_unit.is_player_controlled else Color(1.0, 0.6, 0.3)
+		_spawn_hit_particles(p_unit.position, hit_color)
+
+
+## Handle unit death (trigger death particles)
+func _on_unit_died(p_unit: SoulUnit) -> void:
+	var death_color = Color(1.0, 0.3, 0.2) if p_unit.is_player_controlled else Color(1.0, 0.5, 0.3)
+	_spawn_death_particles(p_unit.position, death_color)
+
+
+## Spawn hit effect particles (small burst of sparks)
+func _spawn_hit_particles(p_position: Vector2, p_color: Color) -> void:
+	for i in range(6):
+		var angle = randf() * TAU
+		var particle = Sprite2D.new()
+		particle.name = "HitParticle_%d" % Time.get_ticks_msec()
+		particle.centered = true
+		particle.position = p_position
+		particle.modulate = p_color
+		particle.scale = Vector2(0.2, 0.2)
+		particle.z_index = 50
+		# Procedural circle texture
+		var img = Image.create(12, 12, false, Image.FORMAT_RGBA8)
+		img.fill(Color(0, 0, 0, 0))
+		for x in range(12):
+			for y in range(12):
+				var dx = x - 6
+				var dy = y - 6
+				var dist = sqrt(dx * dx + dy * dy)
+				if dist < 5:
+					img.set_pixel(x, y, Color(1, 1, 1, 1.0 - dist / 5.0))
+		particle.texture = ImageTexture.create_from_image(img)
+		add_child(particle)
+		_skill_particles.append({
+			"particle": particle,
+			"timer": 0.3,
+			"duration": 0.3,
+			"velocity": Vector2(cos(angle), sin(angle)) * randf_range(40, 100),
+			"start_pos": p_position
+		})
+
+
+## Spawn death effect particles (large burst)
+func _spawn_death_particles(p_position: Vector2, p_color: Color) -> void:
+	for i in range(16):
+		var angle = (TAU / 16.0) * i + randf_range(-0.2, 0.2)
+		var particle = Sprite2D.new()
+		particle.name = "DeathParticle_%d" % Time.get_ticks_msec()
+		particle.centered = true
+		particle.position = p_position
+		particle.modulate = p_color
+		particle.scale = Vector2(0.3, 0.3)
+		particle.z_index = 50
+		# Procedural circle texture
+		var img = Image.create(16, 16, false, Image.FORMAT_RGBA8)
+		img.fill(Color(0, 0, 0, 0))
+		for x in range(16):
+			for y in range(16):
+				var dx = x - 8
+				var dy = y - 8
+				var dist = sqrt(dx * dx + dy * dy)
+				if dist < 7:
+					img.set_pixel(x, y, Color(1, 1, 1, 1.0 - dist / 7.0))
+		particle.texture = ImageTexture.create_from_image(img)
+		add_child(particle)
+		_skill_particles.append({
+			"particle": particle,
+			"timer": 0.8,
+			"duration": 0.8,
+			"velocity": Vector2(cos(angle), sin(angle)) * randf_range(60, 150),
+			"start_pos": p_position
+		})
+
+
+## Spawn victory effect particles (golden celebration)
+func _spawn_victory_particles(p_position: Vector2) -> void:
+	for i in range(24):
+		var angle = randf() * TAU
+		var particle = Sprite2D.new()
+		particle.name = "VictoryParticle_%d" % Time.get_ticks_msec()
+		particle.centered = true
+		particle.position = p_position
+		particle.modulate = Color(1.0, 0.85, 0.3)  # Golden
+		particle.scale = Vector2(0.25, 0.25)
+		particle.z_index = 50
+		# Procedural star texture
+		var img = Image.create(16, 16, false, Image.FORMAT_RGBA8)
+		img.fill(Color(0, 0, 0, 0))
+		for x in range(16):
+			for y in range(16):
+				var dx = x - 8
+				var dy = y - 8
+				var dist = sqrt(dx * dx + dy * dy)
+				if dist < 6:
+					img.set_pixel(x, y, Color(1, 1, 1, 1.0 - dist / 6.0))
+		particle.texture = ImageTexture.create_from_image(img)
+		add_child(particle)
+		_skill_particles.append({
+			"particle": particle,
+			"timer": 1.2,
+			"duration": 1.2,
+			"velocity": Vector2(cos(angle), sin(angle)) * randf_range(30, 120),
+			"start_pos": p_position
+		})
 
 
 ## Handle log added
