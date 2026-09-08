@@ -70,6 +70,10 @@ var _hit_flash_duration = 0.0
 var _skill_particles = []
 var _skill_particle_timer = 0.0
 
+## Cached particle textures from particle_texture_sheet.png (2x4 atlas)
+var _particle_textures = {}  # {skill_name: Texture2D}
+var _particle_textures_loaded = false
+
 ## Skill cooldown overlays (visual cooldown indicator)
 var _skill_cooldown_overlays = {}
 
@@ -148,6 +152,7 @@ func _ready() -> void:
 	_apply_ui_theme()
 	_apply_hp_energy_styles()
 	_apply_hud_skin()
+	_load_particle_textures()
 	_setup_arena_background()
 	_connect_signals()
 	_setup_skill_buttons()
@@ -811,6 +816,37 @@ func _update_screen_shake(delta: float) -> void:
 
 ## Spawn skill particle effect at position
 ## p_skill: heavy_strike=earth(brown), quick_strike=fire(orange), heal=green, defend=blue
+## Load particle textures from particle_texture_sheet.png (2x4 atlas)
+## Falls back to procedural circle textures if sheet not available
+func _load_particle_textures() -> void:
+	var sheet_path := "res://assets/art/particle_texture_sheet.png"
+	if not ResourceLoader.exists(sheet_path):
+		GameLog.warning("RTSArenaController: particle_texture_sheet.png not found, using procedural", "UI")
+		return
+	var sheet = load(sheet_path)
+	if not sheet:
+		GameLog.warning("RTSArenaController: Failed to load particle texture sheet", "UI")
+		return
+	# Sheet is 2 rows x 4 cols, each cell ~480x540 (1920x1080 total)
+	var cell_w = 480
+	var cell_h = 540
+	# Map skills to atlas positions (col, row)
+	var skill_atlas = {
+		"heavy_strike": Vector2i(0, 0),  # Orange explosion
+		"quick_strike": Vector2i(1, 1),  # Red fire
+		"heal": Vector2i(1, 0),          # Gold starlight
+		"defend": Vector2i(2, 0),        # Gray smoke
+	}
+	for skill_name in skill_atlas.keys():
+		var pos = skill_atlas[skill_name]
+		var atlas = AtlasTexture.new()
+		atlas.atlas = sheet
+		atlas.region = Rect2(pos.x * cell_w, pos.y * cell_h, cell_w, cell_h)
+		_particle_textures[skill_name] = atlas
+	_particle_textures_loaded = true
+	GameLog.info("RTSArenaController: Loaded %d particle textures from sheet" % _particle_textures.size(), "UI")
+
+
 func _spawn_skill_particle(p_skill: String, p_position: Vector2) -> void:
 	var colors = {
 		"heavy_strike": Color(0.7, 0.5, 0.3, 1.0),
@@ -819,6 +855,9 @@ func _spawn_skill_particle(p_skill: String, p_position: Vector2) -> void:
 		"defend": Color(0.4, 0.6, 0.9, 1.0),
 	}
 	var particle_color = colors.get(p_skill, Color(1.0, 1.0, 1.0, 1.0))
+	# Use design texture if available, otherwise procedural
+	var use_design_texture = _particle_textures_loaded and _particle_textures.has(p_skill)
+	var design_texture = _particle_textures.get(p_skill, null) if use_design_texture else null
 	# Create 8 particle sprites radiating outward
 	for i in range(8):
 		var angle = (TAU / 8.0) * i
@@ -827,19 +866,22 @@ func _spawn_skill_particle(p_skill: String, p_position: Vector2) -> void:
 		particle.centered = true
 		particle.position = p_position
 		particle.modulate = particle_color
-		particle.scale = Vector2(0.3, 0.3)
+		particle.scale = Vector2(0.15, 0.15) if use_design_texture else Vector2(0.3, 0.3)
 		particle.z_index = 50
-		# Create simple circle texture
-		var img = Image.create(16, 16, false, Image.FORMAT_RGBA8)
-		img.fill(Color(0, 0, 0, 0))
-		for x in range(16):
-			for y in range(16):
-				var dx = x - 8
-				var dy = y - 8
-				var dist = sqrt(dx * dx + dy * dy)
-				if dist < 7:
-					img.set_pixel(x, y, Color(1, 1, 1, 1.0 - dist / 7.0))
-		particle.texture = ImageTexture.create_from_image(img)
+		if use_design_texture and design_texture:
+			particle.texture = design_texture
+		else:
+			# Procedural circle texture fallback
+			var img = Image.create(16, 16, false, Image.FORMAT_RGBA8)
+			img.fill(Color(0, 0, 0, 0))
+			for x in range(16):
+				for y in range(16):
+					var dx = x - 8
+					var dy = y - 8
+					var dist = sqrt(dx * dx + dy * dy)
+					if dist < 7:
+						img.set_pixel(x, y, Color(1, 1, 1, 1.0 - dist / 7.0))
+			particle.texture = ImageTexture.create_from_image(img)
 		add_child(particle)
 		_skill_particles.append({
 			"particle": particle,

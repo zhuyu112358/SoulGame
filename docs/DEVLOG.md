@@ -6104,3 +6104,52 @@ ame (String) - 唯一可见属性
 - [ ] 粒子纹理配置到战斗特效
 - [ ] 游戏流程端到端验证
 - [ ] BUG-030音频导入
+
+## 2026-09-09 - 视觉提升P0：粒子纹理配置到战斗特效
+
+### 完成工作
+
+#### 粒子纹理集成
+
+**背景**：设计产出particle_texture_sheet.png（2行4列共8种粒子纹理），包含橙色爆炸/金色星光/灰色烟雾/紫蓝魔法球/青色星光/红色火焰/蓝色雪花/紫色骷髅。
+
+**实现方案**：
+
+1. **新增_particle_textures缓存**
+   - Dictionary缓存4种技能对应的AtlasTexture
+   - _particle_textures_loaded标志位
+
+2. **新增_load_particle_textures()方法**
+   - 从particle_texture_sheet.png加载图集
+   - 用AtlasTexture裁剪单个粒子纹理（cell 480x540）
+   - 技能映射：
+     - heavy_strike（大地震击）→ 橙色爆炸(0,0)
+     - quick_strike（火球术）→ 红色火焰(1,1)
+     - heal（治疗术）→ 金色星光(1,0)
+     - defend（岩石护盾）→ 灰色烟雾(2,0)
+   - 加载失败时fallback到程序化圆形纹理
+
+3. **修改_spawn_skill_particle()**
+   - 优先使用设计资源纹理（scale 0.15，因为纹理较大480x540）
+   - 加载失败时使用原程序化16x16圆形纹理（scale 0.3）
+   - 保持8个粒子辐射扩散效果
+
+**调用位置**：_ready()中_apply_hud_skin()之后调用_load_particle_textures()
+
+### 视觉/玩法效果变化
+- 技能释放粒子从程序化圆形变为设计资源纹理
+- 4种技能有4种不同粒子外观（爆炸/火焰/星光/烟雾）
+- 粒子颜色仍通过modulate控制（棕/橙/绿/蓝）
+- headless模式下若纹理未导入自动fallback，不影响测试
+
+### 测试
+- 自动化战斗测试: 运行中...
+- M2测试套件: 待运行
+
+### 修改的文件
+- scripts/game/RTSArenaController.gd - 新增_load_particle_textures()+修改_spawn_skill_particle()
+
+### 待办
+- [ ] 自定义像素字体应用
+- [ ] 游戏流程端到端验证
+- [ ] BUG-030音频导入

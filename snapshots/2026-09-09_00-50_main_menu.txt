@@ -1,0 +1,19 @@
+﻿=== main_menu 场景结构快照 ===
+时间: 2026-09-09_00-50
+节点数: 14
+
+  [Control] MainMenu (parent: .)
+  [TextureRect] Background (parent: .)
+  [ColorRect] Overlay (parent: .)
+  [CenterContainer] CenterContainer (parent: .)
+  [VBoxContainer] VBoxContainer (parent: CenterContainer)
+  [Label] TitleLabel (parent: CenterContainer/VBoxContainer)
+  [Label] SubtitleLabel (parent: CenterContainer/VBoxContainer)
+  [Control] Spacer1 (parent: CenterContainer/VBoxContainer)
+  [Button] StartButton (parent: CenterContainer/VBoxContainer)
+  [Button] HomeButton (parent: CenterContainer/VBoxContainer)
+  [Button] SettingsButton (parent: CenterContainer/VBoxContainer)
+  [Button] QuitButton (parent: CenterContainer/VBoxContainer)
+  [Control] Spacer2 (parent: CenterContainer/VBoxContainer)
+  [Label] VersionLabel (parent: CenterContainer/VBoxContainer)
+
