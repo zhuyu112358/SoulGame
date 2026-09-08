@@ -5843,3 +5843,52 @@ ame (String) - 唯一可见属性
 - [ ] 灵魂单位扩展动画（死亡/胜利/特殊技能）
 - [ ] UI HUD皮肤图集应用（ui_hud_skin.png）
 - [ ] BUG-030音频导入
+
+## 2026-09-08 - 视觉提升P1：命中闪光效果改进（白色扩散光环）
+
+### 完成工作
+
+#### 命中闪光效果改进
+
+**背景**：之前命中闪光使用_sprite.modulate RGB>1.0来模拟白色过曝，但Godot中modulate RGB值被clamp到0-1，效果不明显。
+
+**修改SoulUnit.gd**：
+
+1. **新增_hit_flash_sprite变量**
+   - 白色圆形闪光覆盖层Sprite2D
+   - z_index=10确保在单位精灵上方
+   - 初始透明度0，缩放0.5x
+
+2. **在_create_visual()中创建闪光纹理**
+   - 程序化生成64x64白色圆形渐变纹理
+   - 中心不透明，边缘透明（径向渐变）
+   - 使用Image.create()和ImageTexture.create_from_image()
+
+3. **修改_update_hit_flash()方法**
+   - 从修改_sprite.modulate改为动画化_hit_flash_sprite
+   - 缩放从0.5x扩展到1.7x（扩散效果）
+   - 透明度从1.0淡出到0.0
+   - 持续时间从0.15秒增加到0.2秒
+
+4. **take_damage()中触发**
+   - _hit_flash_timer = _hit_flash_duration（已有，无需修改）
+
+### 视觉/玩法效果变化
+- 受击时单位周围出现白色扩散光环
+- 光环从中心向外扩散并淡出
+- 比之前的modulate过曝效果更明显、更美观
+- 符合RTS游戏受击反馈惯例
+- 玩家和AI单位受击都有闪光效果
+
+### 测试
+- 自动化战斗测试: 运行中...
+- M2测试套件: 待运行
+
+### 修改的文件
+- scripts/game/SoulUnit.gd - 命中闪光效果改进
+
+### 待办
+- [ ] 技能释放粒子效果（使用particle_texture_sheet.png）
+- [ ] 灵魂单位扩展动画（死亡/胜利/特殊技能）
+- [ ] UI HUD皮肤图集应用（ui_hud_skin.png）
+- [ ] BUG-030音频导入

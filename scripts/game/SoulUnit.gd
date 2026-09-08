@@ -113,7 +113,8 @@ var _use_pathfinding: bool = true
 
 ## Hit flash effect (white flash when damaged)
 var _hit_flash_timer: float = 0.0
-var _hit_flash_duration: float = 0.15
+var _hit_flash_duration: float = 0.2
+var _hit_flash_sprite = null  # White flash overlay sprite
 
 ## HP bar smooth transition
 var _target_hp_ratio: float = 1.0
@@ -208,6 +209,28 @@ func _create_visual() -> void:
 	_sprite.scale = Vector2(0.4, 0.4)  # Design sprites are larger (480x540), scale down
 	_sprite.centered = true
 	add_child(_sprite)
+
+	# Create hit flash overlay (white circle that expands and fades on damage)
+	_hit_flash_sprite = Sprite2D.new()
+	_hit_flash_sprite.name = "HitFlash"
+	_hit_flash_sprite.centered = true
+	_hit_flash_sprite.scale = Vector2(0.5, 0.5)
+	_hit_flash_sprite.modulate = Color(1.0, 1.0, 1.0, 0.0)
+	_hit_flash_sprite.z_index = 10
+	# Create a simple white circle texture for flash
+	var flash_image = Image.create(64, 64, false, Image.FORMAT_RGBA8)
+	flash_image.fill(Color(0, 0, 0, 0))
+	for x in range(64):
+		for y in range(64):
+			var dx = x - 32
+			var dy = y - 32
+			var dist = sqrt(dx * dx + dy * dy)
+			if dist < 28:
+				var alpha = 1.0 - (dist / 28.0)
+				flash_image.set_pixel(x, y, Color(1.0, 1.0, 1.0, alpha))
+	var flash_texture = ImageTexture.create_from_image(flash_image)
+	_hit_flash_sprite.texture = flash_texture
+	add_child(_hit_flash_sprite)
 
 	# Create name label
 	var name_label = Label.new()
@@ -357,18 +380,19 @@ func _update_energy_regen(delta: float) -> void:
 		emit_signal("energy_changed", current_energy, max_energy)
 
 
-## Update hit flash effect (white flash when damaged)
+## Update hit flash effect (white expanding flash when damaged)
 func _update_hit_flash(delta: float) -> void:
-	if _hit_flash_timer > 0 and _sprite != null:
+	if _hit_flash_timer > 0 and _hit_flash_sprite != null:
 		_hit_flash_timer -= delta
 		if _hit_flash_timer > 0:
-			# Fade from overexposed white back to normal
+			# Animate: expand from 0.5x to 1.5x, fade from opaque to transparent
 			var progress = 1.0 - (_hit_flash_timer / _hit_flash_duration)
-			var white_amount = 1.0 - progress
-			# Overexpose to simulate white flash (values > 1.0 brighten)
-			_sprite.modulate = Color(1.0 + white_amount * 0.8, 1.0 + white_amount * 0.8, 1.0 + white_amount * 0.8)
+			var scale_amount = 0.5 + progress * 1.2
+			_hit_flash_sprite.scale = Vector2(scale_amount, scale_amount)
+			_hit_flash_sprite.modulate.a = 1.0 - progress
 		else:
-			_sprite.modulate = Color(1.0, 1.0, 1.0)
+			_hit_flash_sprite.modulate.a = 0.0
+			_hit_flash_sprite.scale = Vector2(0.5, 0.5)
 			_hit_flash_timer = 0.0
 
 
