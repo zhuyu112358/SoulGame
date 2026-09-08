@@ -190,12 +190,19 @@ func _build_context(p_self, p_enemy, p_perception: Dictionary) -> Dictionary:
 ## Convert Ember decision type to Battleplan Decision enum
 func _convert_ember_decision(p_decision: Dictionary, p_self, p_enemy) -> Dictionary:
 	var decision_type = p_decision.get("type", "idle")
+	var distance = 0.0
+	var in_range = false
+	if p_enemy != null and is_instance_valid(p_enemy):
+		distance = p_self.position.distance_to(p_enemy.position)
+		in_range = distance <= p_self.attack_range
 
 	match decision_type:
 		"attack":
 			return {"decision": Decision.ATTACK, "target": p_enemy}
 		"move", "move_to":
-			# Ember says move - if enemy exists, move toward enemy
+			# If enemy in attack range, attack instead of moving
+			if p_enemy != null and in_range:
+				return {"decision": Decision.ATTACK, "target": p_enemy}
 			if p_enemy != null:
 				return {"decision": Decision.MOVE_TO_TARGET, "target": p_enemy.position}
 			return {"decision": Decision.EXPLORE, "target": null}
@@ -210,8 +217,7 @@ func _convert_ember_decision(p_decision: Dictionary, p_self, p_enemy) -> Diction
 		_:
 			# Unknown decision type - use distance-based fallback
 			if p_enemy != null:
-				var dist = p_self.position.distance_to(p_enemy.position)
-				if dist <= p_self.attack_range:
+				if in_range:
 					return {"decision": Decision.ATTACK, "target": p_enemy}
 				return {"decision": Decision.MOVE_TO_TARGET, "target": p_enemy.position}
 			return {"decision": Decision.IDLE, "target": null}

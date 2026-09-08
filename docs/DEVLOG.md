@@ -4484,3 +4484,81 @@
 - [ ] 等待建木修复ArboreusPathfinder大网格bug
 - [ ] BUG-030音频导入
 - [ ] 视觉提升计划
+
+## 2026-09-08 - SDK集成期：Ember AI近距离攻击修复+SoulUnit替换方案设计
+
+### 完成工作
+
+#### 1. 修复EmberSoulAIController近距离攻击bug（P0）
+**问题**：上一轮集成EmberSoulAIController后，自动化战斗测试中两个单位相遇后停在IDLE状态，不自动攻击。
+**根因**：Ember CognitiveEngine.decide()即使enemy_in_range=true也返回"move"决策（SDK决策逻辑较简单），_convert_ember_decision将"move"直接转换为MOVE_TO_TARGET，未检查敌人是否在攻击范围内。
+**修复**：在_convert_ember_decision的"move"分支和默认分支中添加距离检查：
+- 如果敌人在attack_range内，将"move"决策转换为ATTACK
+- 这样即使Ember返回"move"，近距离也会自动攻击
+
+**验证结果**：
+- 第8秒：两单位距离80.9，都在移动
+- 第9秒：玩家state=ATTACKING，AI HP 120→101（受到19点伤害）
+- 第11秒：AI state=ATTACKING，玩家HP 120→107（受到13点伤害）
+- 双方都在攻击对方，战斗正常进行
+- 玩家移动515px，AI移动406px
+
+#### 2. Ember Soul+SoulData API探索（P1准备）
+创建tests/ember_soul_api_test.gd探索Ember灵魂数据API：
+
+**SoulData**（完整灵魂数据模型）：
+- 属性：id, name, level, experience, stats, skills, relationships
+- stats包含：health, max_health, energy, max_energy, attack, defense, speed, intelligence, wisdom, charisma, luck
+- 方法：serialize/deserialize/clone/validate, get/set各属性, add_experience, get_experience_to_next_level
+
+**Personality**：
+- 大五人格：openness, conscientiousness, extraversion, agreeableness, neuroticism
+- 战策属性：aggression(0.3), curiosity, loyalty, courage
+- temperament: "balanced"
+
+**EmotionState**：
+- PAD三维：pleasure, arousal, dominance
+- 八情绪：joy, sadness, anger, fear, disgust, surprise, trust, anticipation
+
+**Soul**：
+- get_personality() -> Personality对象
+- decide(context) -> {type, confidence, reasoning, influences}
+- perceive() -> void（无返回值，结果内部存储）
+
+**SoulUnit替换方案设计**：
+- SoulUnit(Node2D)内部持有Ember Soul对象作为灵魂核心
+- 灵魂数据(HP/攻击/防御/个性/情绪)从Ember Soul获取
+- 视觉表现、移动、攻击执行仍由战策实现（表现层+玩法层）
+- AI决策已通过EmberSoulAIController使用Ember CognitiveEngine
+- 这是较大重构，下一轮执行
+
+### 视觉/玩法效果变化
+- Ember AI现在能正确进行近距离攻击，战斗流程完整（移动→相遇→攻击→双方掉血）
+- 修复前：单位相遇后停住不动，战斗无法进行
+- 修复后：单位相遇后自动攻击，双方HP正常下降
+
+### 测试
+- 自动化战斗测试: [OK] Both units moved and attacked!
+  - 玩家: (200,300)→(714,343), HP 120→107
+  - AI: (1080,300)→(679,368), HP 120→101
+  - 第9秒开始攻击，第11秒双方互攻
+- Ember Soul API测试: SoulData/Personality/EmotionState/Soul全部可用
+- M2测试套件: 运行中...
+
+### 修改的文件
+- scripts/game/EmberSoulAIController.gd - 修复_convert_ember_decision近距离攻击逻辑
+- tests/ember_soul_api_test.gd - 新建，Ember Soul API探索测试
+
+### 架构合规进度
+- [x] A*寻路：临时替代（待ArboreusPathfinder修复）
+- [x] SoulAIController：已替换为Ember（含近距离攻击修复）
+- [ ] SoulUnit：方案设计完成，下一轮替换为Ember Soul+SoulData（P1）
+- [ ] EventBus：待替换为ArboreusEventBus（P1）
+- [ ] RTSArenaManager/ArenaMap/GameState（P2）
+
+### 待办
+- [ ] P1: 替换SoulUnit为Ember Soul+SoulData（方案已设计）
+- [ ] P1: 替换EventBus为ArboreusEventBus
+- [ ] 等待建木修复ArboreusPathfinder大网格bug
+- [ ] BUG-030音频导入
+- [ ] 视觉提升计划
