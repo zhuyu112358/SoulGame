@@ -190,7 +190,7 @@ func _load_defaults() -> void:
 			},
 			"debug": {
 				"show_fps": false,
-				"show_debug_overlay": true,
+				"show_debug_overlay": false,
 				"log_level": "DEBUG"
 			}
 		},

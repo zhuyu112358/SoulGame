@@ -5949,3 +5949,46 @@ ame (String) - 唯一可见属性
 - [ ] UI HUD皮肤图集应用（ui_hud_skin.png）
 - [ ] 场景氛围（动态光影/环境粒子）
 - [ ] BUG-030音频导入
+
+## 2026-09-09 - 视觉提升P0：调试面板默认隐藏（按~键切换）
+
+### 完成工作
+
+#### 调试面板默认隐藏
+
+**背景**：用户要求调试面板必须默认隐藏，按快捷键切换显示，不能默认显示影响游戏体验。
+
+**修改文件**：
+
+1. **ConfigManager.gd**
+   - show_debug_overlay默认值从true改为false
+   - 位置：scripts/autoload/ConfigManager.gd 第193行
+
+2. **DebugOverlay.gd**
+   - ConfigManager.get_value()的默认值参数从true改为false
+   - 双重保险，即使配置缺失也默认隐藏
+   - 位置：scripts/core/DebugOverlay.gd 第34行
+
+**切换方式**：
+- 按（反引号/tilde键）切换调试面板显示/隐藏
+- InputManager中已绑定toggle_debug动作到KEY_QUOTELEFT
+
+### 视觉/玩法效果变化
+- 游戏启动时调试面板不再默认显示
+- 玩家看到的是纯净的游戏界面，没有FPS/状态/网络等调试信息
+- 开发者需要时按键可以随时调出调试面板
+- 符合Steam EA上架要求（不能默认显示调试UI）
+
+### 测试
+- 自动化战斗测试: 运行中...
+- M2测试套件: 待运行
+
+### 修改的文件
+- scripts/autoload/ConfigManager.gd - show_debug_overlay默认false
+- scripts/core/DebugOverlay.gd - 默认值参数false
+
+### 待办
+- [ ] 战斗结算界面UI升级
+- [ ] UI HUD皮肤应用到战斗界面
+- [ ] 游戏流程端到端验证
+- [ ] BUG-030音频导入

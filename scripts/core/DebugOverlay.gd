@@ -31,7 +31,7 @@ var _max_fps_history: int = 60
 func _ready() -> void:
 	layer = 1000
 	_build_ui()
-	_visible = ConfigManager.get_value("game", "debug", "show_debug_overlay", true)
+	_visible = ConfigManager.get_value("game", "debug", "show_debug_overlay", false)
 	_panel.visible = _visible
 	GameLog.info("DebugOverlay initialized", "Debug")
 
