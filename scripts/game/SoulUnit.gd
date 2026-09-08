@@ -322,12 +322,13 @@ func _update_movement(delta: float) -> void:
 			elif _is_position_valid(slide_y):
 				position = slide_y
 			else:
-				# Blocked completely, try to navigate around obstacle
-				# Try moving perpendicular to target direction (up or down)
-				var perp_up: Vector2 = position + Vector2(0, -move_amount)
-				var perp_down: Vector2 = position + Vector2(0, move_amount)
-				var perp_left: Vector2 = position + Vector2(-move_amount, 0)
-				var perp_right: Vector2 = position + Vector2(move_amount, 0)
+				# Blocked completely, navigate around obstacle with larger steps
+				# Use larger navigation step (20x normal) to quickly get around obstacle
+				var nav_step: float = move_amount * 20.0
+				var perp_up: Vector2 = position + Vector2(0, -nav_step)
+				var perp_down: Vector2 = position + Vector2(0, nav_step)
+				var perp_left: Vector2 = position + Vector2(-nav_step, 0)
+				var perp_right: Vector2 = position + Vector2(nav_step, 0)
 				
 				# Prefer direction that moves closer to target while avoiding obstacle
 				var best_pos: Vector2 = position
@@ -341,6 +342,8 @@ func _update_movement(delta: float) -> void:
 							best_pos = test_pos
 				
 				if best_pos != position:
+					# Set temporary navigation target to keep moving around obstacle
+					target_position = best_pos
 					position = best_pos
 				else:
 					# Truly stuck, stop moving
