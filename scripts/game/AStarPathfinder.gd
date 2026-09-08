@@ -1,5 +1,6 @@
 ﻿extends RefCounted
 class_name AStarPathfinder
+## TODO: 临时实现，待Arboreus SDK提供GDScript版本PathfinderSystem后替换
 ## A* pathfinding algorithm over a GridMap.
 ## Ported from Arboreus SDK pathfinding system.
 ## Uses binary heap for open set, octile distance heuristic.

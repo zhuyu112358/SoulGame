@@ -4155,3 +4155,79 @@
 ### BUG状态
 - BUG-029（单位被障碍物卡住）: ✅ 已修复（A*寻路）
 - BUG-030（音频导入率低）: ⏳ 待处理（需编辑器分批导入）
+
+## 2026-09-08 - 🔴 紧急架构合规整改（最高优先级）
+
+### 架构合规检查
+
+**1.1 架构红线文档**：✅ 已读取 `docs/ARCHITECTURE_BOUNDARY.md`
+- 战策 = 应用层 + 玩法层 + 表现层
+- 禁止做：灵魂数据/行为/AI决策/世界模拟/物理碰撞/路径寻路/事件系统/经济系统
+
+**1.2 Ember SDK检查**：✅ 已读取 `SDK_README.md`
+- Ember SDK v2.3.0，v5.59.0引擎，189个认知子系统
+- 集成方式：HTTP API（localhost:3000）
+  - `POST /api/souls` - 创建灵魂
+  - `POST /api/souls/:id/enter-world` - 进入世界
+  - `POST /api/souls/:id/perceive` - 发送感知，接收行动
+  - `POST /api/souls/:id/action-result` - 反馈行动结果
+- **AI决策能力**：Ember SDK有完整的感知-决策-行动循环，通过perceive API提供
+- **结论**：SoulAIController应替换为调用Ember SDK的perceive API
+
+**1.3 Arboreus SDK检查**：✅ 已读取 `SDK.md` 和 `SDK_API.md`
+- Arboreus SDK有完整的PathfinderSystem（`dist/pathfinding/`目录）
+  - AStarPathfinder.js - A*寻路算法
+  - GridMap.js - 网格地图
+  - PathfinderSystem.js - 寻路系统
+  - PathFollowerSystem.js - 路径跟随
+  - PathSmoother.js - 路径平滑
+- **路径寻路能力**：Arboreus SDK有完整实现，但为JavaScript
+- **结论**：战策的A*寻路是从Arboreus SDK移植到GDScript的（因为SDK是JS，Godot无法直接调用），属于临时替代方案
+
+**1.4 越界实现检查**：
+- 本轮新增A*寻路：从Arboreus SDK移植，非完全自行实现，已标记为临时替代方案
+- 未新增其他越界实现
+
+### SDK使用情况
+
+- **本轮复用SDK能力**：Arboreus SDK的A*寻路算法（移植到GDScript）
+- **本轮发现SDK缺失**：
+  - [SDK需求] Arboreus SDK需要提供GDScript版本的PathfinderSystem，或HTTP API接口（P1）
+  - [SDK需求] Ember SDK的perceive API需要战策适配层，将游戏状态转换为perceive输入（P1）
+- **SDK集成问题**：Arboreus SDK是JavaScript，战策是GDScript，无法直接调用，需要移植或HTTP封装
+
+### 越界模块替换进度
+
+| 模块 | 当前实现 | 应依赖 | 优先级 | 替换状态 | 备注 |
+|------|---------|--------|--------|---------|------|
+| SoulAIController | 自己实现AI决策 | Ember perceive API | P1 | 未开始 | 需开发Ember SDK适配层 |
+| SoulUnit | 自己实现灵魂数据/行为 | Ember 灵魂数据 | P1 | 未开始 | 需评估Ember SDK数据结构 |
+| A*寻路 | 移植Arboreus SDK | Arboreus Pathfinder | P1 | 临时替代 | 已从Arboreus移植，待SDK提供GDScript版本 |
+| RTSArenaManager | 自己实现世界状态 | Arboreus 世界模拟 | P2 | 未开始 | |
+| ArenaMap | 自己实现碰撞/空间 | Arboreus 物理/空间 | P2 | 未开始 | |
+| EventBus | 自己实现事件系统 | Arboreus 事件总线 | P2 | 未开始 | |
+| GameState | 自己实现状态管理 | Arboreus 世界状态 | P3 | 未开始 | |
+
+### 替换计划
+
+**P0（立即）**：
+- 在A*寻路代码中添加`// TODO: 临时实现，待Arboreus SDK提供GDScript版本后替换`注释
+- 确认Ember SDK服务运行状态，评估SoulAIController替换可行性
+
+**P1（近期）**：
+- 开发Ember SDK适配层，将SoulAIController替换为调用perceive API
+- 评估SoulUnit数据结构与Ember SDK的对齐
+
+**P2（中期）**：
+- 评估Arboreus SDK的WorldBuilder/PhysicsSystem在战策中的集成方式
+- 逐步替换RTSArenaManager和ArenaMap
+
+### 视觉/玩法效果变化
+- 本轮为架构合规整改轮，无玩法变化
+- A*寻路已在上轮生效，单位能够智能绕行障碍物
+
+### 待办
+- [ ] 给A*寻路代码添加TODO临时实现注释
+- [ ] 验证Ember SDK服务（localhost:3000）运行状态
+- [ ] 设计Ember SDK适配层接口
+- [ ] 继续修复automated_battle_test.gd监控循环

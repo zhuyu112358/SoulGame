@@ -1,5 +1,6 @@
 ﻿extends RefCounted
 class_name NavigationGrid
+## TODO: 临时实现，待Arboreus SDK提供GDScript版本后替换
 ## Grid-based navigation map for A* pathfinding.
 ## Ported from Arboreus SDK pathfinding system.
 ## Supports obstacle marking, 8-directional movement, and world/cell coordinate conversion.
