@@ -452,11 +452,24 @@ func _setup_speed_button() -> void:
 	# Create speed button next to pause button
 	_speed_button = Button.new()
 	_speed_button.name = "SpeedButton"
-	_speed_button.text = "1x"
+	_speed_button.text = "⚡ 1x"
 	_speed_button.position = Vector2(690, 10)
-	_speed_button.size = Vector2(60, 35)
+	_speed_button.size = Vector2(70, 35)
 	_speed_button.add_theme_font_size_override("font_size", 14)
-	_speed_button.modulate = Color(0.7, 0.9, 0.7)
+	# Custom style: dark purple with gold border
+	var speed_style = StyleBoxFlat.new()
+	speed_style.bg_color = Color(0.12, 0.08, 0.22)
+	speed_style.border_color = Color(0.83, 0.66, 0.36)
+	speed_style.border_width_left = 2
+	speed_style.border_width_right = 2
+	speed_style.border_width_top = 2
+	speed_style.border_width_bottom = 2
+	speed_style.corner_radius_top_left = 6
+	speed_style.corner_radius_top_right = 6
+	speed_style.corner_radius_bottom_left = 6
+	speed_style.corner_radius_bottom_right = 6
+	_speed_button.add_theme_stylebox_override("normal", speed_style)
+	_speed_button.add_theme_color_override("font_color", Color(0.9, 0.95, 0.9))
 	_speed_button.pressed.connect(_on_speed_button_pressed)
 	_setup_button_hover(_speed_button)
 	add_child(_speed_button)
@@ -474,9 +487,22 @@ func _on_speed_button_pressed() -> void:
 	_current_speed = _speed_options[next_index]
 	# Apply speed to battle manager
 	RTSArenaManager.set_battle_speed(_current_speed)
-	# Update button text
+	# Update button text and color based on speed
 	if _speed_button:
-		_speed_button.text = "%.1fx" % _current_speed
+		_speed_button.text = "⚡ %.1fx" % _current_speed
+		match _current_speed:
+			1.0:
+				_speed_button.add_theme_color_override("font_color", Color(0.9, 0.95, 0.9))
+			2.0:
+				_speed_button.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+			3.0:
+				_speed_button.add_theme_color_override("font_color", Color(1.0, 0.5, 0.4))
+			_:
+				_speed_button.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+		# Pulse animation on speed change
+		_speed_button.scale = Vector2(1.2, 1.2)
+		var tween = create_tween()
+		tween.tween_property(_speed_button, "scale", Vector2(1.0, 1.0), 0.2)
 	_add_log("战斗速度: %.1fx" % _current_speed)
 
 
@@ -2224,7 +2250,7 @@ func _on_battle_started(p_battle_info: Dictionary) -> void:
 	_current_speed = 1.0
 	RTSArenaManager.set_battle_speed(1.0)
 	if _speed_button:
-		_speed_button.text = "1x"
+		_speed_button.text = "⚡ 1x"
 		_speed_button.disabled = false
 	_add_log("Battle started!")
 
@@ -2823,7 +2849,7 @@ func _on_rematch_pressed() -> void:
 		_current_speed = 1.0
 		RTSArenaManager.set_battle_speed(1.0)
 		if _speed_button:
-			_speed_button.text = "1x"
+			_speed_button.text = "⚡ 1x"
 			_speed_button.disabled = false
 		_pending_battle_config = {
 			"player_soul": player_soul,
