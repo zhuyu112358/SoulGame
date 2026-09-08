@@ -90,15 +90,33 @@ func _setup_button_hover(p_button: Button) -> void:
 	p_button.mouse_exited.connect(_on_button_exit.bind(p_button))
 
 
-## Play hover sound and visual feedback
+## Play hover sound and visual feedback (scale + gold glow)
 func _on_button_hover(p_button: Button) -> void:
 	_play_hover_sound()
-	p_button.modulate = Color(1.2, 1.2, 1.0)
+	if p_button.has_meta("hover_tween"):
+		var old_tween = p_button.get_meta("hover_tween")
+		if old_tween and old_tween.is_valid():
+			old_tween.kill()
+	var tween = create_tween()
+	tween.set_ease(Tween.EASE_OUT)
+	tween.set_trans(Tween.TRANS_BACK)
+	tween.tween_property(p_button, "scale", Vector2(1.06, 1.06), 0.15)
+	tween.parallel().tween_property(p_button, "modulate", Color(1.25, 1.1, 0.75), 0.15)
+	p_button.set_meta("hover_tween", tween)
 
 
 ## Reset button visual on mouse exit
 func _on_button_exit(p_button: Button) -> void:
-	p_button.modulate = Color(1.0, 1.0, 1.0)
+	if p_button.has_meta("hover_tween"):
+		var old_tween = p_button.get_meta("hover_tween")
+		if old_tween and old_tween.is_valid():
+			old_tween.kill()
+	var tween = create_tween()
+	tween.set_ease(Tween.EASE_OUT)
+	tween.set_trans(Tween.TRANS_SINE)
+	tween.tween_property(p_button, "scale", Vector2(1.0, 1.0), 0.2)
+	tween.parallel().tween_property(p_button, "modulate", Color(1.0, 1.0, 1.0), 0.2)
+	p_button.set_meta("hover_tween", tween)
 
 
 ## Play button hover sound

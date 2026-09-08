@@ -1,0 +1,28 @@
+﻿=== settings 场景结构快照 ===
+时间: 2026-09-09_05-39
+节点数: 23
+
+  [Control] Settings (parent: .)
+  [TextureRect] BackgroundImage (parent: .)
+  [TextureRect] BackgroundImage (parent: .)
+  [ColorRect] BackgroundOverlay (parent: .)
+  [CenterContainer] CenterContainer (parent: .)
+  [VBoxContainer] VBoxContainer (parent: CenterContainer)
+  [Label] TitleLabel (parent: CenterContainer/VBoxContainer)
+  [Control] Spacer1 (parent: CenterContainer/VBoxContainer)
+  [HBoxContainer] MasterVolume (parent: CenterContainer/VBoxContainer)
+  [Label] NameLabel (parent: CenterContainer/VBoxContainer/MasterVolume)
+  [HSlider] Slider (parent: CenterContainer/VBoxContainer/MasterVolume)
+  [Label] ValueLabel (parent: CenterContainer/VBoxContainer/MasterVolume)
+  [HBoxContainer] SfxVolume (parent: CenterContainer/VBoxContainer)
+  [Label] NameLabel (parent: CenterContainer/VBoxContainer/SfxVolume)
+  [HSlider] Slider (parent: CenterContainer/VBoxContainer/SfxVolume)
+  [Label] ValueLabel (parent: CenterContainer/VBoxContainer/SfxVolume)
+  [HBoxContainer] BgmVolume (parent: CenterContainer/VBoxContainer)
+  [Label] NameLabel (parent: CenterContainer/VBoxContainer/BgmVolume)
+  [HSlider] Slider (parent: CenterContainer/VBoxContainer/BgmVolume)
+  [Label] ValueLabel (parent: CenterContainer/VBoxContainer/BgmVolume)
+  [Control] Spacer2 (parent: CenterContainer/VBoxContainer)
+  [Button] SaveButton (parent: CenterContainer/VBoxContainer)
+  [Button] BackButton (parent: CenterContainer/VBoxContainer)
+
