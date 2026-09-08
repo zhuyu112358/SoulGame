@@ -1,4 +1,4 @@
-extends Node2D
+﻿extends Node2D
 ## ArenaMap - Manages arena terrain, obstacles, and spawn points
 ##
 ## Handles the RTS arena layout: terrain types, obstacle placement,
@@ -253,6 +253,11 @@ func _render_obstacles() -> void:
 				rect.color = Color(0.45, 0.4, 0.5)
 
 		_obstacle_layer.add_child(rect)
+
+
+## Get all obstacles
+func get_obstacles() -> Array:
+	return obstacles
 
 
 ## Check if a position is valid (not colliding with obstacles)

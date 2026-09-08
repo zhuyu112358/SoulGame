@@ -63,6 +63,12 @@ var _player_ai_controller: SoulAIController = null
 ## Arena environment (weather + terrain effects)
 var _environment: ArenaEnvironment = null
 
+## A* pathfinding
+var _grid_map: RefCounted = null
+var _pathfinder: RefCounted = null
+var _grid_map_script: Script = null
+var _pathfinder_script: Script = null
+
 ## Battle mode: "manual" (player controls skills) or "auto" (AI controls both)
 ## Default is "auto" for coach-style RTS: souls make autonomous decisions
 var battle_mode: String = "auto"
@@ -116,6 +122,18 @@ func start_battle(p_player_soul: Dictionary, p_ai_soul: Dictionary, p_map_name: 
 	_environment.setup_for_map(p_map_name)
 	battle_config["weather"] = _environment.get_weather_name()
 
+	# Initialize A* pathfinding grid (use load to avoid class_name scan issues)
+	if _grid_map_script == null:
+		_grid_map_script = load("res://scripts/game/GridMap.gd")
+	if _pathfinder_script == null:
+		_pathfinder_script = load("res://scripts/game/AStarPathfinder.gd")
+	_grid_map = _grid_map_script.new(32.0, 40, 19, 0.0, 0.0, true)
+	_pathfinder = _pathfinder_script.new(100000)
+	_sync_obstacles_to_grid()
+	GameLog.info("RTSArenaManager: A* grid initialized (%dx%d, %d blocked cells)" % [
+		_grid_map.width, _grid_map.height, _grid_map.get_blocked_count()
+	], "Arena")
+
 	# Spawn player unit
 	player_unit = SoulUnit.new()
 	player_unit.init_from_soul(
@@ -126,6 +144,7 @@ func start_battle(p_player_soul: Dictionary, p_ai_soul: Dictionary, p_map_name: 
 		true
 	)
 	player_unit.position = battle_config["player_spawn"]
+	player_unit.set_pathfinding(_pathfinder, _grid_map)
 	player_unit.unit_died.connect(_on_unit_died)
 	add_child(player_unit)
 	emit_signal("unit_spawned", player_unit, true)
@@ -140,6 +159,7 @@ func start_battle(p_player_soul: Dictionary, p_ai_soul: Dictionary, p_map_name: 
 		false
 	)
 	ai_unit.position = battle_config["ai_spawn"]
+	ai_unit.set_pathfinding(_pathfinder, _grid_map)
 	ai_unit.unit_died.connect(_on_unit_died)
 	add_child(ai_unit)
 	emit_signal("unit_spawned", ai_unit, false)
@@ -178,6 +198,30 @@ func start_battle(p_player_soul: Dictionary, p_ai_soul: Dictionary, p_map_name: 
 	})
 
 	return true
+
+
+## Sync ArenaMap obstacles to A* grid
+func _sync_obstacles_to_grid() -> void:
+	if _grid_map == null or ArenaMap == null:
+		return
+	_grid_map.clear()
+	# Get obstacles from ArenaMap
+	if ArenaMap.has_method("get_obstacles"):
+		var obstacles = ArenaMap.get_obstacles()
+		for obs in obstacles:
+			var pos: Vector2 = obs.get("position", Vector2.ZERO)
+			var size: Vector2 = obs.get("size", Vector2(40, 40))
+			# Add margin for unit collision radius
+			var margin: float = 16.0
+			_grid_map.block_region(
+				pos.x - size.x / 2 - margin,
+				pos.y - size.y / 2 - margin,
+				pos.x + size.x / 2 + margin,
+				pos.y + size.y / 2 + margin
+			)
+		GameLog.debug("RTSArenaManager: Synced %d obstacles to A* grid" % obstacles.size(), "Arena")
+	else:
+		GameLog.warning("RTSArenaManager: ArenaMap has no get_obstacles method", "Arena")
 
 
 ## Apply soul personality to unit (design doc: 个性即战术)

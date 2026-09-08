@@ -98,6 +98,13 @@ var last_damage_taken: int = 0  # amount of last damage taken
 ## Visual sprite
 var _sprite: Node2D = null
 
+## A* pathfinding
+var _path: Array = []  # Array of Vector2 waypoints
+var _path_index: int = 0
+var _pathfinder: RefCounted = null
+var _grid_map: RefCounted = null
+var _use_pathfinding: bool = true
+
 ## Hit flash effect (white flash when damaged)
 var _hit_flash_timer: float = 0.0
 var _hit_flash_duration: float = 0.15
@@ -290,6 +297,17 @@ func _update_movement(delta: float) -> void:
 	var distance: float = direction.length()
 
 	if distance < 5.0:
+		# If following a path, move to next waypoint
+		if _path.size() > 0 and _path_index < _path.size() - 1:
+			_path_index += 1
+			target_position = _path[_path_index]
+			GameLog.debug("Unit: %s path waypoint %d/%d, target=(%.0f,%.0f)" % [
+				soul_name, _path_index + 1, _path.size(), target_position.x, target_position.y
+			], "Arena")
+			return
+		# Reached final target
+		_path.clear()
+		_path_index = 0
 		state = UnitState.IDLE
 		emit_signal("state_changed", state)
 		return
@@ -394,10 +412,31 @@ func move_to(p_position: Vector2) -> void:
 	GameLog.debug("Unit: %s move_to target=(%.0f,%.0f) from=(%.0f,%.0f) dist=%.1f" % [
 		soul_name, p_position.x, p_position.y, position.x, position.y, position.distance_to(p_position)
 	], "Arena")
-	target_position = p_position
+	
+	# Use A* pathfinding if available
+	if _use_pathfinding and _pathfinder != null and _grid_map != null:
+		_path = _pathfinder.find_path(position.x, position.y, p_position.x, p_position.y, _grid_map)
+		_path_index = 0
+		if _path.size() > 0:
+			GameLog.debug("Unit: %s A* path found: %d waypoints, first=(%.0f,%.0f)" % [
+				soul_name, _path.size(), _path[0].x, _path[0].y
+			], "Arena")
+			target_position = _path[0]
+		else:
+			GameLog.warning("Unit: %s A* path not found, using direct movement" % soul_name, "Arena")
+			target_position = p_position
+	else:
+		target_position = p_position
+	
 	state = UnitState.MOVING
 	attack_target = null
 	emit_signal("state_changed", state)
+
+
+## Set pathfinding references
+func set_pathfinding(p_pathfinder: RefCounted, p_grid_map: RefCounted) -> void:
+	_pathfinder = p_pathfinder
+	_grid_map = p_grid_map
 
 
 ## Set attack target
