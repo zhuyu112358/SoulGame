@@ -174,6 +174,13 @@ func _init_sound_paths() -> void:
 	for sh_name in soul_home_sounds:
 		_sound_paths["soul_home_%s" % sh_name] = "res://assets/audio/soul_home_%s.wav" % sh_name
 
+	# Soul training sounds (design task new)
+	var soul_training_sounds: Array = [
+		"start", "complete", "success"
+	]
+	for st_name in soul_training_sounds:
+		_sound_paths["soul_training_%s" % st_name] = "res://assets/audio/soul_training_%s.wav" % st_name
+
 	# BGM
 	var bgm_tracks: Array = ["battle", "explore", "home_main", "menu",
 		"main_menu", "battle_calm", "battle_tension",

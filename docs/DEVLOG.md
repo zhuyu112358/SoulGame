@@ -3935,3 +3935,43 @@
 
 ### 测试
 - M2测试运行中...
+
+## 2026-09-08 - M2可玩原型冲刺第八十一轮
+
+### 完成工作
+
+#### 1. Git推送成功
+- 成功推送1个待推送commit到GitHub（5fcd576..46961fc）
+- 包含：灵魂之家音效集成（6个新音效）
+
+#### 2. 设计任务新产出训练音效集成（3个新音效）
+- **AudioManager**: 注册3个灵魂训练音效
+  - soul_training_start（训练开始）
+  - soul_training_complete（训练完成）
+  - soul_training_success（训练成功）
+- **SoulHomeController**: 在训练功能中使用新音效
+  - _on_train_button(): 添加soul_training_start、soul_training_complete、soul_training_success三个音效
+  - 与原有的soul_chivalrous和soul_home_training音效配合
+- **效果**:
+  - 训练灵魂时有完整的训练音效序列（开始→完成→成功）
+  - 训练体验更加丰富和有成就感
+  - 与M1灵魂成长系统完美配合
+
+### 视觉/玩法效果变化
+
+**听觉效果提升**:
+- 训练灵魂时播放完整的训练音效序列
+  - soul_training_start（训练开始）
+  - soul_training_complete（训练完成）
+  - soul_training_success（训练成功）
+- 与原有的soul_chivalrous和soul_home_training音效配合
+- 训练体验更加丰富和有成就感
+- 与M1灵魂成长系统完美配合
+
+**设计符合度**:
+- 积极集成设计任务新产出的3个训练音效
+- 设计驱动开发机制持续有效
+- 所有音效AI生成无第三方版权
+
+### 测试
+- M2测试运行中...

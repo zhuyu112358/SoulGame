@@ -455,6 +455,9 @@ func _on_train_button() -> void:
 	if AudioManager:
 		AudioManager.play_sfx("soul_chivalrous")
 		AudioManager.play_sfx("soul_home_training")
+		AudioManager.play_sfx("soul_training_start")
+		AudioManager.play_sfx("soul_training_complete")
+		AudioManager.play_sfx("soul_training_success")
 
 
 ## Handle chat send
