@@ -60,6 +60,7 @@ var _skill_was_on_cooldown = {}
 ## Screen shake effect (combat feedback)
 var _screen_shake_timer = 0.0
 var _screen_shake_intensity = 0.0
+var _screen_shake_max_duration = 0.2
 var _base_position = Vector2.ZERO
 
 ## Hit flash effect (combat feedback)
@@ -803,23 +804,35 @@ func _show_damage_at(damage_amount: int, p_position: Vector2, p_color: Color = C
 
 ## Trigger screen shake effect
 func _trigger_screen_shake(p_intensity: float = 3.0, p_duration: float = 0.2) -> void:
-	_screen_shake_intensity = p_intensity
-	_screen_shake_timer = p_duration
+	# Only override if new shake is stronger or previous is almost done
+	if p_intensity > _screen_shake_intensity or _screen_shake_timer < 0.05:
+		_screen_shake_intensity = p_intensity
+		_screen_shake_timer = p_duration
+		_screen_shake_max_duration = p_duration
 
 
-## Update screen shake effect
+## Update screen shake effect with decay and rotation
 func _update_screen_shake(delta: float) -> void:
 	if _screen_shake_timer > 0:
 		_screen_shake_timer -= delta
 		if _screen_shake_timer > 0:
-			# Random offset within intensity range
-			var shake_x = randf_range(-_screen_shake_intensity, _screen_shake_intensity)
-			var shake_y = randf_range(-_screen_shake_intensity, _screen_shake_intensity)
+			# Decay intensity over time (ease-out curve)
+			var progress = _screen_shake_timer / _screen_shake_max_duration
+			var decay = progress * progress  # Quadratic ease-out
+			var current_intensity = _screen_shake_intensity * decay
+			# Natural shake using layered sine waves (more organic than random)
+			var t = Time.get_ticks_msec() / 1000.0
+			var shake_x = sin(t * 45.0) * current_intensity * 0.6 + sin(t * 27.0) * current_intensity * 0.4
+			var shake_y = cos(t * 38.0) * current_intensity * 0.5 + sin(t * 31.0) * current_intensity * 0.5
 			position = _base_position + Vector2(shake_x, shake_y)
+			# Subtle rotation for impact feel (max 1.5 degrees)
+			rotation = deg_to_rad(sin(t * 20.0) * current_intensity * 0.3)
 		else:
 			# Reset to base position when shake ends
 			position = _base_position
+			rotation = 0.0
 			_screen_shake_timer = 0.0
+			_screen_shake_intensity = 0.0
 
 
 ## Spawn skill particle effect at position
