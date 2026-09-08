@@ -323,6 +323,9 @@ func _update_movement(delta: float) -> void:
 				position = slide_y
 			else:
 				# Blocked completely, navigate around obstacle with larger steps
+				GameLog.debug("Unit: %s BLOCKED at (%.0f,%.0f) target=(%.0f,%.0f) dist=%.1f, navigating around" % [
+					soul_name, position.x, position.y, target_position.x, target_position.y, distance
+				], "Arena")
 				# Use larger navigation step (20x normal) to quickly get around obstacle
 				var nav_step: float = move_amount * 20.0
 				var perp_up: Vector2 = position + Vector2(0, -nav_step)
@@ -343,10 +346,16 @@ func _update_movement(delta: float) -> void:
 				
 				if best_pos != position:
 					# Set temporary navigation target to keep moving around obstacle
+					GameLog.debug("Unit: %s NAVIGATE to (%.0f,%.0f) (was at %.0f,%.0f)" % [
+						soul_name, best_pos.x, best_pos.y, position.x, position.y
+					], "Arena")
 					target_position = best_pos
 					position = best_pos
 				else:
 					# Truly stuck, stop moving
+					GameLog.warning("Unit: %s STUCK at (%.0f,%.0f) target=(%.0f,%.0f), all directions blocked" % [
+						soul_name, position.x, position.y, target_position.x, target_position.y
+					], "Arena")
 					state = UnitState.IDLE
 					emit_signal("state_changed", state)
 
@@ -382,6 +391,9 @@ func _update_attack(delta: float) -> void:
 func move_to(p_position: Vector2) -> void:
 	if state == UnitState.DEAD:
 		return
+	GameLog.debug("Unit: %s move_to target=(%.0f,%.0f) from=(%.0f,%.0f) dist=%.1f" % [
+		soul_name, p_position.x, p_position.y, position.x, position.y, position.distance_to(p_position)
+	], "Arena")
 	target_position = p_position
 	state = UnitState.MOVING
 	attack_target = null

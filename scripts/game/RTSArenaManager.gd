@@ -1,4 +1,4 @@
-extends Node
+﻿extends Node
 ## RTSArenaManager - Manages real-time strategy arena battles
 ##
 ## Handles RTS battle flow: unit spawning, real-time combat, AI control,
@@ -222,6 +222,15 @@ func _process(delta: float) -> void:
 	_ai_decision_timer += scaled_delta
 	if _ai_decision_timer >= _ai_decision_interval:
 		_ai_decision_timer = 0.0
+		GameLog.debug("RTS: AI decision tick - player=%s ai=%s player_pos=(%.0f,%.0f) ai_pos=(%.0f,%.0f) dist=%.1f" % [
+			player_unit.soul_name if player_unit else "null",
+			ai_unit.soul_name if ai_unit else "null",
+			player_unit.position.x if player_unit else -1,
+			player_unit.position.y if player_unit else -1,
+			ai_unit.position.x if ai_unit else -1,
+			ai_unit.position.y if ai_unit else -1,
+			player_unit.position.distance_to(ai_unit.position) if (player_unit and ai_unit) else -1
+		], "Arena")
 		_update_ai()
 
 	# Auto-battle mode: player unit also controlled by AI

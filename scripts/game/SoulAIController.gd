@@ -1,4 +1,4 @@
-extends RefCounted
+﻿extends RefCounted
 ## SoulAIController - AI decision system for soul units in RTS battle
 ##
 ## Implements the "coach-style RTS" design: souls make autonomous decisions
@@ -153,11 +153,21 @@ func _calculate_decision_scores(p_self, p_enemy, p_distance: float, p_hp_ratio: 
 
 ## Execute the current decision on the unit
 func execute_decision(p_self, p_enemy) -> void:
+	var dist: float = -1.0
+	if p_enemy != null:
+		dist = p_self.position.distance_to(p_enemy.position)
+	GameLog.debug("AI: %s decision=%s dist=%.1f attack_range=%.1f pos=(%.0f,%.0f) enemy_pos=(%.0f,%.0f)" % [
+		p_self.soul_name, _decision_name(current_decision), dist, p_self.attack_range,
+		p_self.position.x, p_self.position.y,
+		p_enemy.position.x if p_enemy != null else -1, p_enemy.position.y if p_enemy != null else -1
+	], "Arena")
 	match current_decision:
 		Decision.ATTACK:
-			if p_enemy != null and p_self.position.distance_to(p_enemy.position) <= p_self.attack_range:
+			if p_enemy != null and dist <= p_self.attack_range:
+				GameLog.debug("AI: %s ATTACK - in range, attacking %s" % [p_self.soul_name, p_enemy.soul_name], "Arena")
 				p_self.set_attack_target(p_enemy)
 			else:
+				GameLog.debug("AI: %s ATTACK - out of range (%.1f > %.1f), moving to enemy" % [p_self.soul_name, dist, p_self.attack_range], "Arena")
 				p_self.move_to(p_enemy.position)
 		Decision.USE_SKILL:
 			_use_best_skill(p_self, p_enemy)
@@ -317,3 +327,17 @@ func get_state_info() -> Dictionary:
 		"last_command_obeyed": last_command_obeyed,
 		"decision_cooldown": decision_cooldown
 	}
+
+
+## Helper: get decision name for logging
+func _decision_name(p_decision: int) -> String:
+	match p_decision:
+		Decision.IDLE: return "IDLE"
+		Decision.MOVE_TO_TARGET: return "MOVE_TO_TARGET"
+		Decision.ATTACK: return "ATTACK"
+		Decision.USE_SKILL: return "USE_SKILL"
+		Decision.DEFEND: return "DEFEND"
+		Decision.RETREAT: return "RETREAT"
+		Decision.EXPLORE: return "EXPLORE"
+		Decision.FOLLOW_COMMAND: return "FOLLOW_COMMAND"
+	return "UNKNOWN(%d)" % p_decision
