@@ -116,6 +116,15 @@ var _hit_flash_timer: float = 0.0
 var _hit_flash_duration: float = 0.2
 var _hit_flash_sprite = null  # White flash overlay sprite
 
+## Animation system
+var _anim_time: float = 0.0  # Animation time accumulator
+var _base_scale: Vector2 = Vector2(0.4, 0.4)  # Base sprite scale
+var _attack_pulse_timer: float = 0.0  # Attack pulse effect timer
+var _attack_pulse_duration: float = 0.15  # Attack pulse duration
+var _hit_shake_timer: float = 0.0  # Hit shake timer
+var _hit_shake_duration: float = 0.15  # Hit shake duration
+var _sprite_base_position: Vector2 = Vector2.ZERO  # Base sprite position (for shake offset)
+
 ## HP bar smooth transition
 var _target_hp_ratio: float = 1.0
 var _current_hp_ratio: float = 1.0
@@ -233,6 +242,7 @@ func _create_visual() -> void:
 	_sprite.scale = Vector2(0.4, 0.4)  # Design sprites are larger (480x540), scale down
 	_sprite.centered = true
 	add_child(_sprite)
+	_sprite_base_position = _sprite.position
 
 	# Create hit flash overlay (white circle that expands and fades on damage)
 	_hit_flash_sprite = Sprite2D.new()
@@ -367,6 +377,7 @@ func _process(delta: float) -> void:
 	_update_energy_regen(delta)
 	_update_hit_flash(delta)
 	_update_hp_bar_smooth(delta)
+	_update_animation(delta)
 
 	match state:
 		UnitState.IDLE:
@@ -418,6 +429,53 @@ func _update_hit_flash(delta: float) -> void:
 			_hit_flash_sprite.modulate.a = 0.0
 			_hit_flash_sprite.scale = Vector2(0.5, 0.5)
 			_hit_flash_timer = 0.0
+
+
+## Update sprite animation: idle breathing, movement bob, attack pulse, hit shake
+func _update_animation(delta: float) -> void:
+	if _sprite == null:
+		return
+	_anim_time += delta
+
+	# Idle breathing animation: subtle scale pulse (±5%)
+	var breath_scale: float = 1.0 + sin(_anim_time * 2.5) * 0.05
+	var current_scale: Vector2 = _base_scale * breath_scale
+
+	# Movement bob: vertical position offset when moving
+	var bob_offset: float = 0.0
+	if state == UnitState.MOVING:
+		bob_offset = sin(_anim_time * 8.0) * 3.0
+
+	# Attack pulse: scale up briefly when attacking
+	if _attack_pulse_timer > 0:
+		_attack_pulse_timer -= delta
+		var pulse_progress: float = 1.0 - (_attack_pulse_timer / _attack_pulse_duration)
+		var pulse_amount: float = sin(pulse_progress * PI) * 0.15
+		current_scale *= (1.0 + pulse_amount)
+
+	# Hit shake: random position offset when hit
+	var shake_offset: Vector2 = Vector2.ZERO
+	if _hit_shake_timer > 0:
+		_hit_shake_timer -= delta
+		var shake_intensity: float = (_hit_shake_timer / _hit_shake_duration) * 4.0
+		shake_offset = Vector2(
+			randf_range(-shake_intensity, shake_intensity),
+			randf_range(-shake_intensity, shake_intensity)
+		)
+
+	# Apply transforms
+	_sprite.scale = current_scale
+	_sprite.position = _sprite_base_position + Vector2(0, bob_offset) + shake_offset
+
+
+## Trigger attack pulse animation
+func trigger_attack_pulse() -> void:
+	_attack_pulse_timer = _attack_pulse_duration
+
+
+## Trigger hit shake animation
+func trigger_hit_shake() -> void:
+	_hit_shake_timer = _hit_shake_duration
 
 
 ## Update movement toward target position
@@ -597,6 +655,7 @@ func _perform_basic_attack() -> void:
 	attack_target.take_damage(damage, self)
 	attack_cooldown = 1.0 / attack_speed
 	emit_signal("attack_performed", attack_target, damage)
+	trigger_attack_pulse()
 	# Play attack sound
 	if AudioManager:
 		AudioManager.play_sfx("soul_unit_attack", 0.6)
@@ -729,6 +788,8 @@ func take_damage(p_damage: int, p_attacker: Node2D = null) -> void:
 	_update_hp_bar()
 	# Trigger hit flash effect
 	_hit_flash_timer = _hit_flash_duration
+	# Trigger hit shake animation
+	trigger_hit_shake()
 
 	# Play hit sound effect
 	if AudioManager:
