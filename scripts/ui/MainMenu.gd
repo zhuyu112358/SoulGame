@@ -4,6 +4,8 @@ extends Control
 ## Provides the main menu UI with game title, start game, soul home,
 ## settings, and quit buttons. Handles scene transitions and button sounds.
 
+const FontLoader = preload("res://scripts/core/FontLoader.gd")
+
 @onready var _title_label: Label = $CenterContainer/VBoxContainer/TitleLabel
 @onready var _start_button: Button = $CenterContainer/VBoxContainer/StartButton
 @onready var _home_button: Button = $CenterContainer/VBoxContainer/HomeButton
@@ -19,6 +21,7 @@ func _ready() -> void:
 
 	# Apply Battleplan UI theme (gold/dark pixel-fantasy style)
 	_apply_ui_theme()
+	FontLoader.apply_font_to_control(self)
 
 	# Connect button signals
 	_start_button.pressed.connect(_on_start_pressed)

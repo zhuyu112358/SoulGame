@@ -4,6 +4,8 @@ extends Control
 ## Displays available souls for the player to choose before entering battle.
 ## Shows soul cards with name, element, level, and stat preview.
 
+const FontLoader = preload("res://scripts/core/FontLoader.gd")
+
 @onready var _title_label: Label = $MarginContainer/VBoxContainer/TitleLabel
 @onready var _soul_list: VBoxContainer = $MarginContainer/VBoxContainer/ScrollContainer/SoulList
 @onready var _back_button: Button = $MarginContainer/VBoxContainer/BackButton
@@ -16,6 +18,7 @@ var _selected_index: int = -1
 func _ready() -> void:
 	GameLog.info("SoulSelect initialized", "SoulSelect")
 	_apply_ui_theme()
+	FontLoader.apply_font_to_control(self)
 	_back_button.pressed.connect(_on_back_pressed)
 	_setup_button_hover(_back_button)
 	_load_available_souls()

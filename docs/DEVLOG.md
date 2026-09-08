@@ -6153,3 +6153,58 @@ ame (String) - 唯一可见属性
 - [ ] 自定义像素字体应用
 - [ ] 游戏流程端到端验证
 - [ ] BUG-030音频导入
+
+## 2026-09-09 - 视觉提升P0：自定义像素字体加载系统（设计需求记录）
+
+### 完成工作
+
+#### 字体加载系统创建
+
+**背景**：设计产出pixel_font_reference.png（完整像素字体参考图，英文A-Z+数字符号+中文常用字，金色像素风格），但这是PNG参考图，不是可直接使用的字体文件（.ttf/.otf/.fnt）。
+
+**实现方案**：
+
+1. **创建FontLoader.gd**（scripts/core/FontLoader.gd）
+   - 静态工具类，提供字体加载和应用功能
+   - get_custom_font()：按顺序尝试加载4个字体路径
+   - apply_font_to_control()：递归应用字体到Control及其子节点
+   - has_custom_font()：检查是否有自定义字体
+   - 加载失败自动fallback到Godot默认字体
+
+2. **创建assets/fonts/目录**
+   - 存放自定义字体文件
+   - README.md说明字体需求和加载机制
+
+3. **应用到全部4个UI场景**
+   - MainMenu.gd：_ready中调用FontLoader.apply_font_to_control(self)
+   - SoulSelect.gd：同上
+   - SettingsMenu.gd：同上
+   - RTSArenaController.gd：同上
+
+### [设计需求] 需设计产出
+- **pixel_font.ttf** 或 **pixel_font.otf**：完整像素字体（英文+数字+常用中文）
+- 风格：金色像素风，奇幻魔法主题
+- 参考：assets/art/pixel_font_reference.png
+- 放入目录：assets/fonts/
+
+### 视觉/玩法效果变化
+- 当前无实际字体文件，使用Godot默认字体（fallback正常工作）
+- 字体文件到位后自动加载，无需修改代码
+- 全部4个UI场景统一应用字体
+
+### 测试
+- 自动化战斗测试: 运行中...
+- M2测试套件: 待运行
+
+### 修改的文件
+- scripts/core/FontLoader.gd - 新建，字体加载工具类
+- scripts/ui/MainMenu.gd - 添加FontLoader调用
+- scripts/ui/SoulSelect.gd - 添加FontLoader调用
+- scripts/ui/SettingsMenu.gd - 添加FontLoader调用
+- scripts/game/RTSArenaController.gd - 添加FontLoader调用
+- assets/fonts/README.md - 新建，字体需求说明
+
+### 待办
+- [ ] [设计需求] 设计产出实际像素字体文件（.ttf/.otf）
+- [ ] 游戏流程端到端验证
+- [ ] BUG-030音频导入

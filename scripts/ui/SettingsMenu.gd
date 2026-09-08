@@ -4,6 +4,8 @@ extends Control
 ## Provides volume controls (master, SFX, BGM) and back to main menu.
 ## Follows pixel art UI style consistent with v1.1 design.
 
+const FontLoader = preload("res://scripts/core/FontLoader.gd")
+
 @onready var _master_slider: HSlider = $CenterContainer/VBoxContainer/MasterVolume/Slider
 @onready var _master_label: Label = $CenterContainer/VBoxContainer/MasterVolume/ValueLabel
 @onready var _sfx_slider: HSlider = $CenterContainer/VBoxContainer/SfxVolume/Slider
@@ -17,6 +19,7 @@ extends Control
 func _ready() -> void:
 	GameLog.info("SettingsMenu initialized", "Settings")
 	_apply_ui_theme()
+	FontLoader.apply_font_to_control(self)
 
 	# Load current volume values
 	if AudioManager:

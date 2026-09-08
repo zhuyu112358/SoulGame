@@ -8,6 +8,7 @@ extends Node2D
 
 ## Arena background generator (procedural pixel art)
 const ArenaBackgroundGenerator = preload("res://scripts/game/ArenaBackgroundGenerator.gd")
+const FontLoader = preload("res://scripts/core/FontLoader.gd")
 
 ## UI node references
 var player_hp_bar = null
@@ -153,6 +154,7 @@ func _ready() -> void:
 	_apply_hp_energy_styles()
 	_apply_hud_skin()
 	_load_particle_textures()
+	FontLoader.apply_font_to_control(self)
 	_setup_arena_background()
 	_connect_signals()
 	_setup_skill_buttons()
