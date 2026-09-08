@@ -1,0 +1,28 @@
+﻿=== rts_arena 场景结构快照 ===
+时间: 2026-09-09_02-48
+节点数: 23
+
+  [Node2D] RTSArena (parent: .)
+  [TextureRect] Background (parent: .)
+  [Panel] TopBar (parent: .)
+  [VBoxContainer] PlayerPanel (parent: TopBar)
+  [Label] NameLabel (parent: TopBar/PlayerPanel)
+  [ProgressBar] HPBar (parent: TopBar/PlayerPanel)
+  [ProgressBar] EnergyBar (parent: TopBar/PlayerPanel)
+  [Label] TimeLabel (parent: TopBar)
+  [VBoxContainer] AIPanel (parent: TopBar)
+  [Label] NameLabel (parent: TopBar/AIPanel)
+  [ProgressBar] HPBar (parent: TopBar/AIPanel)
+  [ProgressBar] EnergyBar (parent: TopBar/AIPanel)
+  [ColorRect] ArenaArea (parent: .)
+  [Control] Minimap (parent: .)
+  [Panel] BattleLog (parent: .)
+  [RichTextLabel] LogText (parent: BattleLog)
+  [Panel] BottomBar (parent: .)
+  [HBoxContainer] SkillButtons (parent: BottomBar)
+  [Button] HeavyStrike (parent: BottomBar/SkillButtons)
+  [Button] QuickStrike (parent: BottomBar/SkillButtons)
+  [Button] Heal (parent: BottomBar/SkillButtons)
+  [Button] Defend (parent: BottomBar/SkillButtons)
+  [Button] BackButton (parent: BottomBar)
+

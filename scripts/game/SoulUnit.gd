@@ -134,6 +134,13 @@ var _death_soul_sprite: Sprite2D = null
 var _extended_sheet_loaded: bool = false
 var _extended_sheet: Texture2D = null
 
+# Victory animation (using extended sprite sheet row 1)
+var _victory_anim_active: bool = false
+var _victory_anim_timer: float = 0.0
+var _victory_anim_duration: float = 2.0
+var _victory_sprite: Sprite2D = null
+var _victory_ring_sprite: Sprite2D = null
+
 ## HP bar smooth transition
 var _target_hp_ratio: float = 1.0
 var _current_hp_ratio: float = 1.0
@@ -477,6 +484,8 @@ func _update_animation(delta: float) -> void:
 	_sprite.position = _sprite_base_position + Vector2(0, bob_offset) + shake_offset
 	# Update death animation (runs even when main sprite hidden)
 	_update_death_animation(delta)
+	# Update victory animation
+	_update_victory_animation(delta)
 
 
 ## Trigger attack pulse animation
@@ -578,6 +587,79 @@ func _update_death_animation(delta: float) -> void:
 			_death_soul_sprite.queue_free()
 			_death_soul_sprite = null
 		_death_anim_active = false
+
+
+## Trigger victory animation (celebration with golden glow)
+func trigger_victory_animation() -> void:
+	if _victory_anim_active or _death_anim_active:
+		return
+	_victory_anim_active = true
+	_victory_anim_timer = _victory_anim_duration
+	# Create victory celebration sprite (row 1, col 1 - golden celebration)
+	var victory_tex = _get_extended_frame(1, 1)
+	if victory_tex:
+		_victory_sprite = Sprite2D.new()
+		_victory_sprite.name = "VictoryCelebration"
+		_victory_sprite.centered = true
+		_victory_sprite.position = _sprite_base_position
+		_victory_sprite.texture = victory_tex
+		_victory_sprite.scale = Vector2(0.35, 0.35)
+		_victory_sprite.z_index = 25
+		_victory_sprite.modulate = Color(1.0, 1.0, 1.0, 0.0)
+		add_child(_victory_sprite)
+	# Create golden ring effect (row 1, col 2 - colorful spiral, tinted gold)
+	var ring_tex = _get_extended_frame(2, 1)
+	if ring_tex:
+		_victory_ring_sprite = Sprite2D.new()
+		_victory_ring_sprite.name = "VictoryRing"
+		_victory_ring_sprite.centered = true
+		_victory_ring_sprite.position = _sprite_base_position
+		_victory_ring_sprite.texture = ring_tex
+		_victory_ring_sprite.scale = Vector2(0.3, 0.3)
+		_victory_ring_sprite.z_index = 24
+		_victory_ring_sprite.modulate = Color(1.0, 0.9, 0.5, 0.0)
+		add_child(_victory_ring_sprite)
+
+
+## Update victory animation
+func _update_victory_animation(delta: float) -> void:
+	if not _victory_anim_active:
+		return
+	_victory_anim_timer -= delta
+	var progress = 1.0 - (_victory_anim_timer / _victory_anim_duration)
+	# Victory celebration sprite: fade in, bounce scale, fade out
+	if _victory_sprite and is_instance_valid(_victory_sprite):
+		if progress < 0.2:
+			# Fade in
+			_victory_sprite.modulate.a = progress / 0.2
+			_victory_sprite.scale = Vector2(0.35, 0.35) * (0.5 + progress / 0.2 * 0.5)
+		elif progress < 0.8:
+			# Bounce celebration
+			_victory_sprite.modulate.a = 1.0
+			var bounce = 1.0 + sin(progress * 15.0) * 0.1
+			_victory_sprite.scale = Vector2(0.35, 0.35) * bounce
+			_victory_sprite.position.y = _sprite_base_position.y - abs(sin(progress * 10.0)) * 15.0
+		else:
+			# Fade out
+			var fade = 1.0 - (progress - 0.8) / 0.2
+			_victory_sprite.modulate.a = fade
+	# Golden ring: expand and rotate, fade in/out
+	if _victory_ring_sprite and is_instance_valid(_victory_ring_sprite):
+		if progress < 0.3:
+			_victory_ring_sprite.modulate.a = progress / 0.3
+		else:
+			_victory_ring_sprite.modulate.a = max(0.0, 1.0 - (progress - 0.3) / 0.7)
+		_victory_ring_sprite.scale = Vector2(0.3 + progress * 0.6, 0.3 + progress * 0.6)
+		_victory_ring_sprite.rotation = progress * TAU * 2.0
+	# Cleanup when done
+	if _victory_anim_timer <= 0:
+		if _victory_sprite and is_instance_valid(_victory_sprite):
+			_victory_sprite.queue_free()
+			_victory_sprite = null
+		if _victory_ring_sprite and is_instance_valid(_victory_ring_sprite):
+			_victory_ring_sprite.queue_free()
+			_victory_ring_sprite = null
+		_victory_anim_active = false
 
 
 ## Update movement toward target position

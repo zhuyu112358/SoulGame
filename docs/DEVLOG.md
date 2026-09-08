@@ -6548,3 +6548,52 @@ ame (String) - 唯一可见属性
 - [ ] 胜利动画（使用扩展精灵图行1的庆祝帧）
 - [ ] 游戏流程端到端验证
 - [ ] BUG-030音频导入
+
+## 2026-09-09 - 视觉提升P1：灵魂单位胜利动画（金色庆祝+光环旋转）
+
+### 完成工作
+
+#### 灵魂单位胜利动画
+
+使用soul_unit_extended_sprite_sheet.png行1的庆祝帧实现胜利动画。
+
+**胜利动画实现**（trigger_victory_animation + _update_victory_animation）：
+1. 玩家战斗胜利时触发
+2. 庆祝精灵（行1列1 - 金色庆祝跳跃）：
+   - 0-0.2秒：淡入，scale从0.5→1.0
+   - 0.2-0.8秒：弹跳庆祝（sin波上下跳动15px，scale波动±10%）
+   - 0.8-1.0秒：淡出
+3. 金色光环（行1列2 - 彩色螺旋，染金色）：
+   - 0-0.3秒：淡入
+   - 0.3-1.0秒：放大（scale 0.3→0.9）+ 旋转2圈 + 淡出
+4. 动画持续2秒，结束后自动清理
+
+**触发位置**：
+- RTSArenaController._on_battle_finished()中
+- 判断p_result == "player_win"时调用player_unit.trigger_victory_animation()
+- 与胜利粒子效果同时触发，形成完整胜利反馈
+
+**实现细节**：
+- 新增_victory_anim_active/_victory_anim_timer/_victory_sprite/_victory_ring_sprite变量
+- 新增trigger_victory_animation()和_update_victory_animation(delta)方法
+- _update_animation()中调用_update_victory_animation(delta)
+- 复用_get_extended_frame()方法裁剪扩展精灵图
+
+### 视觉/玩法效果变化
+- 玩家胜利时单位有完整的庆祝动画，不再是静态站立
+- 金色光环旋转增加仪式感和成就感
+- 弹跳庆祝增加活泼感和情感共鸣
+- 与胜利粒子效果叠加，形成多层次的胜利反馈
+
+### 测试
+- 自动化战斗测试: 运行中...
+- M2测试套件: 待运行
+
+### 修改的文件
+- scripts/game/SoulUnit.gd - 胜利动画系统
+- scripts/game/RTSArenaController.gd - 胜利动画触发
+
+### 待办
+- [ ] 游戏流程端到端验证
+- [ ] BUG-030音频导入
+- [ ] 视觉提升P2（后处理/动态光照）

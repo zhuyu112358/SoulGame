@@ -1957,6 +1957,9 @@ func _on_battle_finished(p_result: String, p_winner_id: String, p_loser_id: Stri
 	# Trigger victory particles if player won
 	if p_result == "player_win" and RTSArenaManager.player_unit:
 		_spawn_victory_particles(RTSArenaManager.player_unit.position)
+		# Trigger victory animation on player unit
+		if RTSArenaManager.player_unit.has_method("trigger_victory_animation"):
+			RTSArenaManager.player_unit.trigger_victory_animation()
 	# Reset pause state
 	if _is_paused:
 		_is_paused = false
