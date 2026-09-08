@@ -4403,3 +4403,84 @@
 - [ ] P1: 替换EventBus为ArboreusEventBus
 - [ ] BUG-030音频导入（需Godot编辑器分批导入）
 - [ ] 视觉提升计划（P0自定义字体+UI皮肤）
+
+## 2026-09-08 - SDK集成期：EmberSoulAIController替换SoulAIController（P0架构合规）
+
+### 架构合规检查
+- 已读取ARCHITECTURE_BOUNDARY.md
+- 越界模块替换进度：2/7完成（A*寻路临时替代、SoulAIController→Ember）
+- 本轮完成P0任务：SoulAIController替换为Ember CognitiveEngine+PerceptionSystem
+
+### 完成工作
+
+#### 1. Ember SDK API探索
+- 创建tests/ember_api_explore_test.gd探索Ember GDExtension实际API
+- **CognitiveEngine**: perceive(stimuli), decide(context) -> {type, target, confidence, reasoning, timestamp, influences}
+- **PerceptionSystem**: perceive(stimuli) -> {objects, entities, events, threats, opportunities, attention_focus, perception_quality}
+- **Soul**: perceive(), decide(), get_personality()
+- decide()返回的决策类型包括"move"、"attack"等，confidence 0-1
+
+#### 2. 创建EmberSoulAIController.gd（替换SoulAIController）
+**架构设计**:
+- 感知层：PerceptionSystem处理战场刺激（敌人位置、威胁等级、自身状态）
+- 决策层：CognitiveEngine基于感知结果+上下文做出决策
+- 转换层：将Ember决策类型转换为战策Decision枚举
+- 表现层：保留execute_decision执行具体动作
+- 玩法层：保留玩家指令系统、情绪修正、战斗记忆
+
+**核心流程**:
+1. _build_stimuli()：收集敌人位置/距离/威胁、自身HP/能量作为感知输入
+2. _perception.perceive(stimuli)：Ember感知处理，输出threats/opportunities
+3. _build_context()：构建决策上下文（health_percent, enemy_distance, in_range等）
+4. _cognitive.decide(context)：Ember认知决策
+5. _convert_ember_decision()：转换Ember决策为战策动作
+
+**兼容性**:
+- 与SoulAIController完全相同的接口（make_decision/execute_decision/update/issue_command/update_emotion/get_state_info）
+- RTSArenaManager只需修改preload指向，无需其他改动
+- Ember SDK不可用时自动降级为简单启发式决策
+
+#### 3. RTSArenaManager集成
+- 修改preload：SoulAIController.gd → EmberSoulAIController.gd
+- 变量类型、创建代码、调用代码无需修改（接口兼容）
+
+### 视觉/玩法效果变化
+- AI决策现在由Ember CognitiveEngine驱动，不再是战策自实现的评分系统
+- Ember决策带有confidence和reasoning字段，可用于UI显示AI思考过程
+- 感知系统会识别威胁和机会，未来可扩展为更复杂的战场感知
+- 自动化测试中两个单位都能正常移动并相遇（玩家移动497px，AI移动388px）
+
+### 测试
+- M2测试套件: 2901/2901通过，0失败
+- 自动化战斗测试: [OK] Both units moved successfully!
+  - 玩家: (200,300)→(693,366), 移动497.3px
+  - AI: (1080,300)→(697,366), 移动388.6px
+  - Ember决策: type=move, confidence=0.60, reasoning='Searching for enemies'
+- Ember API探索测试: 7个类全部可用
+
+### 已知问题/待优化
+- Ember CognitiveEngine在近距离时可能持续返回"move"而非"attack"，需要优化context参数或添加距离判断
+- 两个单位相遇后停在IDLE状态，未自动开始攻击（需在_convert_ember_decision中添加距离检查）
+- Personality和Emotion对Ember决策的影响需要进一步集成（当前context包含但CognitiveEngine可能未充分利用）
+
+### 修改的文件
+- scripts/game/EmberSoulAIController.gd - 新建，Ember SDK AI控制器（350行）
+- scripts/game/RTSArenaManager.gd - 修改preload指向EmberSoulAIController
+- tests/ember_api_explore_test.gd - 新建，Ember API探索测试
+
+### 架构合规进度
+- [x] A*寻路：临时替代（AStarPathfinder.gd，待ArboreusPathfinder修复大网格bug后替换）
+- [x] SoulAIController：已替换为Ember CognitiveEngine+PerceptionSystem
+- [ ] SoulUnit：待替换为Ember Soul+SoulData（P1）
+- [ ] EventBus：待替换为ArboreusEventBus（P1）
+- [ ] RTSArenaManager：待替换为Arboreus World（P2）
+- [ ] ArenaMap：待替换为Arboreus GridMap+Physics（P2）
+- [ ] GameState：待替换为Arboreus World状态（P2）
+
+### 待办
+- [ ] 优化EmberSoulAIController近距离攻击决策
+- [ ] P1: 替换SoulUnit为Ember Soul+SoulData
+- [ ] P1: 替换EventBus为ArboreusEventBus
+- [ ] 等待建木修复ArboreusPathfinder大网格bug
+- [ ] BUG-030音频导入
+- [ ] 视觉提升计划

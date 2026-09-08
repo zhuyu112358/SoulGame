@@ -12,8 +12,8 @@
 ## SoulUnit preload
 const SoulUnit = preload("res://scripts/game/SoulUnit.gd")
 
-## SoulAIController preload (coach-style RTS AI)
-const SoulAIController = preload("res://scripts/game/SoulAIController.gd")
+## EmberSoulAIController preload (Ember SDK AI - architecture compliant)
+const SoulAIController = preload("res://scripts/game/EmberSoulAIController.gd")
 
 ## ArenaEnvironment preload (weather + terrain effects)
 const ArenaEnvironment = preload("res://scripts/game/ArenaEnvironment.gd")
