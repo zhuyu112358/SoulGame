@@ -147,6 +147,7 @@ func _ready() -> void:
 	_setup_ui_refs()
 	_apply_ui_theme()
 	_apply_hp_energy_styles()
+	_apply_hud_skin()
 	_setup_arena_background()
 	_connect_signals()
 	_setup_skill_buttons()
@@ -1219,6 +1220,117 @@ func _apply_ui_theme() -> void:
 			panel.theme = theme
 			applied += 1
 	GameLog.debug("RTSArenaController: Applied UI theme to %d panels" % applied, "UI")
+
+
+## Apply HUD skin based on ui_hud_skin.png design (dark purple + gold border)
+func _apply_hud_skin() -> void:
+	# HUD panel style: dark purple bg + gold border + rounded corners
+	var hud_panel_style = StyleBoxFlat.new()
+	hud_panel_style.bg_color = Color(0.12, 0.09, 0.20, 0.92)
+	hud_panel_style.border_color = Color(0.83, 0.66, 0.36, 0.9)
+	hud_panel_style.border_width_left = 2
+	hud_panel_style.border_width_right = 2
+	hud_panel_style.border_width_top = 2
+	hud_panel_style.border_width_bottom = 2
+	hud_panel_style.corner_radius_top_left = 8
+	hud_panel_style.corner_radius_top_right = 8
+	hud_panel_style.corner_radius_bottom_left = 8
+	hud_panel_style.corner_radius_bottom_right = 8
+
+	# Apply to TopBar, BottomBar, BattleLog
+	var hud_panels = [
+		get_node_or_null("TopBar"),
+		get_node_or_null("BottomBar"),
+		get_node_or_null("BattleLog"),
+	]
+	for panel in hud_panels:
+		if panel and panel is Panel:
+			panel.add_theme_stylebox_override("panel", hud_panel_style)
+		elif panel and panel is PanelContainer:
+			panel.add_theme_stylebox_override("panel", hud_panel_style)
+
+	# Player/AI status card style (smaller, with colored accent border)
+	var player_card_style = StyleBoxFlat.new()
+	player_card_style.bg_color = Color(0.10, 0.12, 0.22, 0.95)
+	player_card_style.border_color = Color(0.3, 0.5, 0.9, 0.8)
+	player_card_style.border_width_left = 2
+	player_card_style.border_width_right = 2
+	player_card_style.border_width_top = 2
+	player_card_style.border_width_bottom = 2
+	player_card_style.corner_radius_top_left = 6
+	player_card_style.corner_radius_top_right = 6
+	player_card_style.corner_radius_bottom_left = 6
+	player_card_style.corner_radius_bottom_right = 6
+
+	var ai_card_style = StyleBoxFlat.new()
+	ai_card_style.bg_color = Color(0.18, 0.10, 0.10, 0.95)
+	ai_card_style.border_color = Color(0.9, 0.35, 0.3, 0.8)
+	ai_card_style.border_width_left = 2
+	ai_card_style.border_width_right = 2
+	ai_card_style.border_width_top = 2
+	ai_card_style.border_width_bottom = 2
+	ai_card_style.corner_radius_top_left = 6
+	ai_card_style.corner_radius_top_right = 6
+	ai_card_style.corner_radius_bottom_left = 6
+	ai_card_style.corner_radius_bottom_right = 6
+
+	var player_panel = get_node_or_null("TopBar/PlayerPanel")
+	if player_panel and (player_panel is Panel or player_panel is PanelContainer):
+		player_panel.add_theme_stylebox_override("panel", player_card_style)
+
+	var ai_panel = get_node_or_null("TopBar/AIPanel")
+	if ai_panel and (ai_panel is Panel or ai_panel is PanelContainer):
+		ai_panel.add_theme_stylebox_override("panel", ai_card_style)
+
+	# Skill button style: square with gold border (matching ui_hud_skin design)
+	var skill_btn_normal = StyleBoxFlat.new()
+	skill_btn_normal.bg_color = Color(0.15, 0.10, 0.25, 0.95)
+	skill_btn_normal.border_color = Color(0.83, 0.66, 0.36, 0.9)
+	skill_btn_normal.border_width_left = 2
+	skill_btn_normal.border_width_right = 2
+	skill_btn_normal.border_width_top = 2
+	skill_btn_normal.border_width_bottom = 2
+	skill_btn_normal.corner_radius_top_left = 4
+	skill_btn_normal.corner_radius_top_right = 4
+	skill_btn_normal.corner_radius_bottom_left = 4
+	skill_btn_normal.corner_radius_bottom_right = 4
+
+	var skill_btn_hover = StyleBoxFlat.new()
+	skill_btn_hover.bg_color = Color(0.25, 0.18, 0.35, 0.98)
+	skill_btn_hover.border_color = Color(1.0, 0.85, 0.4, 1.0)
+	skill_btn_hover.border_width_left = 3
+	skill_btn_hover.border_width_right = 3
+	skill_btn_hover.border_width_top = 3
+	skill_btn_hover.border_width_bottom = 3
+	skill_btn_hover.corner_radius_top_left = 4
+	skill_btn_hover.corner_radius_top_right = 4
+	skill_btn_hover.corner_radius_bottom_left = 4
+	skill_btn_hover.corner_radius_bottom_right = 4
+
+	var skill_btn_pressed = StyleBoxFlat.new()
+	skill_btn_pressed.bg_color = Color(0.35, 0.25, 0.15, 1.0)
+	skill_btn_pressed.border_color = Color(1.0, 0.9, 0.5, 1.0)
+	skill_btn_pressed.border_width_left = 2
+	skill_btn_pressed.border_width_right = 2
+	skill_btn_pressed.border_width_top = 2
+	skill_btn_pressed.border_width_bottom = 2
+	skill_btn_pressed.corner_radius_top_left = 4
+	skill_btn_pressed.corner_radius_top_right = 4
+	skill_btn_pressed.corner_radius_bottom_left = 4
+	skill_btn_pressed.corner_radius_bottom_right = 4
+
+	for skill_name in skill_buttons.keys():
+		var btn = skill_buttons[skill_name]
+		if btn and btn is Button:
+			btn.add_theme_stylebox_override("normal", skill_btn_normal)
+			btn.add_theme_stylebox_override("hover", skill_btn_hover)
+			btn.add_theme_stylebox_override("pressed", skill_btn_pressed)
+
+	# Battle log text color adjustment
+	if battle_log:
+		battle_log.modulate = Color(0.9, 0.85, 0.75)
+
+	GameLog.info("RTSArenaController: Applied HUD skin (dark purple + gold)", "UI")
 
 
 ## Apply custom styles to HP and energy bars (orb-like with gold border)

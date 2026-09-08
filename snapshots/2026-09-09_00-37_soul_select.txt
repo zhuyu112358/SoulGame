@@ -1,0 +1,15 @@
+﻿=== soul_select 场景结构快照 ===
+时间: 2026-09-09_00-37
+节点数: 10
+
+  [Control] SoulSelect (parent: .)
+  [TextureRect] Background (parent: .)
+  [ColorRect] Overlay (parent: .)
+  [MarginContainer] MarginContainer (parent: .)
+  [VBoxContainer] VBoxContainer (parent: MarginContainer)
+  [Label] TitleLabel (parent: MarginContainer/VBoxContainer)
+  [Label] SelectedInfo (parent: MarginContainer/VBoxContainer)
+  [ScrollContainer] ScrollContainer (parent: MarginContainer/VBoxContainer)
+  [VBoxContainer] SoulList (parent: MarginContainer/VBoxContainer/ScrollContainer)
+  [Button] BackButton (parent: MarginContainer/VBoxContainer)
+
