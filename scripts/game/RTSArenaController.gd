@@ -302,32 +302,117 @@ func _resume_battle() -> void:
 	_add_log("战斗已继续")
 
 
-## Show pause overlay
+## Show pause overlay (beautified: dark purple panel + gold border + buttons)
 func _show_pause_overlay() -> void:
 	if _pause_overlay != null:
 		return
-	# Create semi-transparent overlay
+	# Create semi-transparent dark purple overlay
 	_pause_overlay = ColorRect.new()
 	_pause_overlay.name = "PauseOverlay"
-	_pause_overlay.color = Color(0, 0, 0, 0.6)
+	_pause_overlay.color = Color(0.08, 0.05, 0.15, 0.75)
 	_pause_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_pause_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(_pause_overlay)
-	# Create pause label
+
+	# Create pause panel (dark purple with gold border)
+	var panel = Panel.new()
+	panel.name = "PausePanel"
+	panel.set_anchors_preset(Control.PRESET_CENTER)
+	panel.position = Vector2(-200, -150)
+	panel.size = Vector2(400, 300)
+	var panel_style = StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.12, 0.08, 0.22, 0.95)
+	panel_style.border_color = Color(0.83, 0.66, 0.36)  # Gold #d4a85c
+	panel_style.border_width_left = 3
+	panel_style.border_width_right = 3
+	panel_style.border_width_top = 3
+	panel_style.border_width_bottom = 3
+	panel_style.corner_radius_top_left = 12
+	panel_style.corner_radius_top_right = 12
+	panel_style.corner_radius_bottom_left = 12
+	panel_style.corner_radius_bottom_right = 12
+	panel.add_theme_stylebox_override("panel", panel_style)
+	_pause_overlay.add_child(panel)
+
+	# Create pause title
 	_pause_label = Label.new()
 	_pause_label.name = "PauseLabel"
 	_pause_label.text = "战斗暂停"
 	_pause_label.set_anchors_preset(Control.PRESET_CENTER)
-	_pause_label.set_grow_horizontal(Control.GROW_DIRECTION_BOTH)
-	_pause_label.set_grow_vertical(Control.GROW_DIRECTION_BOTH)
-	_pause_label.position = Vector2(-150, -50)
-	_pause_label.size = Vector2(300, 100)
+	_pause_label.position = Vector2(-150, -120)
+	_pause_label.size = Vector2(300, 60)
 	_pause_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_pause_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_pause_label.add_theme_font_size_override("font_size", 48)
-	_pause_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.3))
-	_pause_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.8))
+	_pause_label.add_theme_font_size_override("font_size", 42)
+	_pause_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+	_pause_label.add_theme_color_override("font_outline_color", Color(0.1, 0.05, 0.0))
 	_pause_label.add_theme_constant_override("outline_size", 4)
-	_pause_overlay.add_child(_pause_label)
+	panel.add_child(_pause_label)
+
+	# Gold decorative line under title
+	var title_line = ColorRect.new()
+	title_line.name = "TitleLine"
+	title_line.color = Color(0.83, 0.66, 0.36, 0.8)
+	title_line.position = Vector2(80, -50)
+	title_line.size = Vector2(240, 2)
+	panel.add_child(title_line)
+
+	# Resume button
+	var resume_btn = Button.new()
+	resume_btn.name = "ResumeButton"
+	resume_btn.text = "▶ 继续战斗"
+	resume_btn.position = Vector2(100, -20)
+	resume_btn.size = Vector2(200, 50)
+	resume_btn.add_theme_font_size_override("font_size", 18)
+	var resume_style = StyleBoxFlat.new()
+	resume_style.bg_color = Color(0.15, 0.1, 0.28)
+	resume_style.border_color = Color(0.83, 0.66, 0.36)
+	resume_style.border_width_left = 2
+	resume_style.border_width_right = 2
+	resume_style.border_width_top = 2
+	resume_style.border_width_bottom = 2
+	resume_style.corner_radius_top_left = 8
+	resume_style.corner_radius_top_right = 8
+	resume_style.corner_radius_bottom_left = 8
+	resume_style.corner_radius_bottom_right = 8
+	resume_btn.add_theme_stylebox_override("normal", resume_style)
+	resume_btn.add_theme_color_override("font_color", Color(1.0, 0.9, 0.6))
+	resume_btn.pressed.connect(_resume_battle)
+	panel.add_child(resume_btn)
+
+	# Quit to menu button
+	var quit_btn = Button.new()
+	quit_btn.name = "QuitButton"
+	quit_btn.text = "🏠 返回主菜单"
+	quit_btn.position = Vector2(100, 50)
+	quit_btn.size = Vector2(200, 50)
+	quit_btn.add_theme_font_size_override("font_size", 18)
+	var quit_style = StyleBoxFlat.new()
+	quit_style.bg_color = Color(0.15, 0.1, 0.28)
+	quit_style.border_color = Color(0.7, 0.4, 0.4)
+	quit_style.border_width_left = 2
+	quit_style.border_width_right = 2
+	quit_style.border_width_top = 2
+	quit_style.border_width_bottom = 2
+	quit_style.corner_radius_top_left = 8
+	quit_style.corner_radius_top_right = 8
+	quit_style.corner_radius_bottom_left = 8
+	quit_style.corner_radius_bottom_right = 8
+	quit_btn.add_theme_stylebox_override("normal", quit_style)
+	quit_btn.add_theme_color_override("font_color", Color(0.95, 0.75, 0.7))
+	quit_btn.pressed.connect(_on_pause_quit_pressed)
+	panel.add_child(quit_btn)
+
+	# Hint text
+	var hint_label = Label.new()
+	hint_label.name = "HintLabel"
+	hint_label.text = "按 ESC 或 空格 继续"
+	hint_label.position = Vector2(100, 120)
+	hint_label.size = Vector2(200, 30)
+	hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	hint_label.add_theme_font_size_override("font_size", 12)
+	hint_label.add_theme_color_override("font_color", Color(0.7, 0.65, 0.5))
+	panel.add_child(hint_label)
 
 
 ## Hide pause overlay
@@ -336,6 +421,30 @@ func _hide_pause_overlay() -> void:
 		_pause_overlay.queue_free()
 		_pause_overlay = null
 		_pause_label = null
+
+
+## Handle quit to main menu from pause overlay
+func _on_pause_quit_pressed() -> void:
+	if AudioManager:
+		AudioManager.play_sfx("ui_button_click")
+	_resume_battle()
+	# Return to main menu
+	if get_tree().has_autoload("SceneManager"):
+		SceneManager.change_scene("res://scenes/main_menu.tscn")
+	else:
+		get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
+
+
+## Handle keyboard input (ESC/Space to pause/resume)
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_ESCAPE or event.keycode == KEY_SPACE:
+			if _battle_active:
+				if _is_paused:
+					_resume_battle()
+				else:
+					_pause_battle()
+				get_viewport().set_input_as_handled()
 
 
 ## Setup battle speed button UI
