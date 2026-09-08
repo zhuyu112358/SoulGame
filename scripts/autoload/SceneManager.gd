@@ -25,7 +25,7 @@ var _scene_stack: Array = []
 var _transitioning: bool = false
 
 ## Transition duration in seconds
-var _transition_duration: float = 0.3
+var _transition_duration: float = 0.4
 
 ## Loading scene path (shown during heavy scene loads)
 var _loading_scene: String = "res://scenes/loading.tscn"
@@ -155,20 +155,36 @@ func _change_scene_immediate(scene_path: String) -> void:
 
 
 func _play_transition(scene_path: String, is_push: bool) -> void:
-	# Simple fade transition using a ColorRect overlay
+	# Dark purple fade transition with gold border flash
 	var transition_layer := ColorRect.new()
-	transition_layer.color = Color.BLACK
+	transition_layer.color = Color(0.05, 0.03, 0.1, 0.0)
 	transition_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	transition_layer.z_index = 1000
 	transition_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
 	get_tree().root.add_child(transition_layer)
 
-	# Fade out
+	# Gold border flash overlay
+	var gold_border := ColorRect.new()
+	gold_border.color = Color(0.83, 0.66, 0.36, 0.0)
+	gold_border.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	gold_border.z_index = 1001
+	gold_border.set_anchors_preset(Control.PRESET_FULL_RECT)
+	get_tree().root.add_child(gold_border)
+
+	# Fade out (dark purple)
 	var tween := create_tween()
-	tween.tween_property(transition_layer, "modulate:a", 1.0, _transition_duration)
+	tween.set_parallel(true)
+	tween.tween_property(transition_layer, "color:a", 1.0, _transition_duration).set_ease(Tween.EASE_IN_OUT)
+	tween.tween_property(gold_border, "color:a", 0.6, _transition_duration * 0.8).set_ease(Tween.EASE_OUT)
+	tween.set_parallel(false)
 	tween.tween_callback(_change_scene_immediate.bind(scene_path))
-	tween.tween_property(transition_layer, "modulate:a", 0.0, _transition_duration)
+	# Fade in
+	tween.set_parallel(true)
+	tween.tween_property(transition_layer, "color:a", 0.0, _transition_duration).set_ease(Tween.EASE_IN_OUT)
+	tween.tween_property(gold_border, "color:a", 0.0, _transition_duration * 0.6).set_ease(Tween.EASE_IN)
+	tween.set_parallel(false)
 	tween.tween_callback(transition_layer.queue_free)
+	tween.tween_callback(gold_border.queue_free)
 	tween.tween_callback(func(): _transitioning = false)
 
 
