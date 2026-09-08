@@ -1,0 +1,29 @@
+﻿=== rts_arena 场景结构快照 ===
+时间: 2026-09-08_10-43
+节点总数: 23
+
+节点树:
+  - RTSArena (Node2D)
+  - Background (ColorRect)
+  - TopBar (Panel)
+  - PlayerPanel (VBoxContainer)
+  - NameLabel (Label)
+  - HPBar (ProgressBar)
+  - EnergyBar (ProgressBar)
+  - TimeLabel (Label)
+  - AIPanel (VBoxContainer)
+  - NameLabel (Label)
+  - HPBar (ProgressBar)
+  - EnergyBar (ProgressBar)
+  - ArenaArea (ColorRect)
+  - Minimap (Control)
+  - BattleLog (Panel)
+  - LogText (RichTextLabel)
+  - BottomBar (Panel)
+  - SkillButtons (HBoxContainer)
+  - HeavyStrike (Button)
+  - QuickStrike (Button)
+  - Heal (Button)
+  - Defend (Button)
+  - BackButton (Button)
+

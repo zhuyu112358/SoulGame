@@ -4231,3 +4231,53 @@
 - [ ] 验证Ember SDK服务（localhost:3000）运行状态
 - [ ] 设计Ember SDK适配层接口
 - [ ] 继续修复automated_battle_test.gd监控循环
+
+## 2026-09-08 - 自动化测试脚本修复+新bug发现
+
+### 架构合规检查
+- 已读取架构红线ARCHITECTURE_BOUNDARY.md
+- Ember SDK：服务运行中（localhost:3000），SoulArenaClient已有perceive/action_result API
+- Arboreus SDK：有完整PathfinderSystem（JS实现），战策A*为移植版（临时替代）
+- 越界实现：本轮未新增越界模块
+- SDK需求：Ember perceive API适配层（P1）、Arboreus GDScript版Pathfinder（P1）
+
+### 完成工作
+
+#### 1. 自动化战斗测试脚本修复
+- **文件**: `tests/automated_battle_test.gd`
+- **问题**: SceneTree的_process函数返回类型是bool（非void），导致签名冲突
+- **修复**: 去掉_process函数，恢复使用while循环+await process_frame
+- **关键发现**: Godot 4中SceneTree._process(float) -> bool，不是void
+- **结果**: 测试脚本正常运行，完整输出52秒监控数据
+
+#### 2. 场景结构快照导出
+- `snapshots/2026-09-08_10-43_main_menu.txt`
+- `snapshots/2026-09-08_10-43_soul_select.txt`
+- `snapshots/2026-09-08_10-43_rts_arena.txt`
+
+### 测试结果（自动化战斗测试）
+- ✅ 测试脚本正常运行，监控数据完整输出
+- ✅ AI单位正常移动（从1014→679）
+- ⚠️ 玩家单位不动（state=0 IDLE）- 自动化测试中无玩家输入，正常
+- ⚠️ **新bug发现**: AI单位在(679,300)被中心水晶挡住，没有绕行！
+  - AI从第1秒到第7秒移动，第7秒后停在(679,300)
+  - 中心水晶在(640,300)，AI停在水晶右侧16像素处
+  - A*寻路似乎没有对AI单位生效（日志中无"A* path found"）
+  - 距离玩家479.3，远超攻击范围102，无法战斗
+
+### 视觉/玩法效果变化
+- 本轮为测试修复轮，无玩法变化
+- 测试脚本现在能完整记录单位移动和AI决策过程
+
+### 新发现的BUG（待修复）
+**BUG-031: AI单位A*寻路未生效**
+- 现象: AI单位移动到水晶边缘后停住，没有绕行
+- 可能原因: SoulAIController的move_to调用没有触发A*路径计算
+- 需要检查: RTSArenaManager是否给ai_unit设置了pathfinding，AI的move_to是否调用了A*
+- 优先级: P0（影响核心战斗流程）
+
+### 待办
+- [ ] 修复BUG-031: AI单位A*寻路未生效
+- [ ] 验证玩家单位在实际GUI中是否正常移动
+- [ ] Ember SDK适配层开发（SoulAIController替换）
+- [ ] BUG-030音频导入
