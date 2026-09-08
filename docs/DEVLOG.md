@@ -6597,3 +6597,40 @@ ame (String) - 唯一可见属性
 - [ ] 游戏流程端到端验证
 - [ ] BUG-030音频导入
 - [ ] 视觉提升P2（后处理/动态光照）
+
+## 2026-09-09 - M2核心功能：游戏流程端到端验证（E2E测试）
+
+### 完成工作
+
+#### 创建E2E流程测试脚本
+
+创建tests/e2e_flow_test.gd，验证完整游戏流程：
+main_menu -> soul_select -> rts_arena -> battle -> result
+
+**测试阶段**：
+1. **Phase 1: Main Menu** - 验证主菜单场景加载、开始按钮、标题、UI主题
+2. **Phase 2: Soul Select** - 验证灵魂选择场景加载、灵魂网格、背景
+3. **Phase 3: RTS Arena Battle** - 验证竞技场场景加载、战斗管理器、战斗流程运行
+4. **Phase 4: Battle Result** - 验证战斗结果数据、BattleResultManager历史
+
+**实现细节**：
+- 继承SceneTree，使用await process_frame等待场景初始化
+- 每个阶段独立加载场景，测试完成后清理
+- 使用GameState设置战斗配置（player_soul/ai_soul/map_name）
+- 战斗阶段最多等待30秒，检测ResultModal/ResultPanel出现
+- 非阻塞断言（部分检查标记为non-blocking避免误报）
+
+**测试命令**：
+D:\Godot\Godot.exe --headless -s res://tests/e2e_flow_test.gd --path D:\Sojourn\battleplan
+
+### 测试结果
+- E2E测试: 运行中...
+- M2测试套件: 待运行
+
+### 修改的文件
+- tests/e2e_flow_test.gd - 新建E2E流程测试
+
+### 待办
+- [ ] 修复E2E测试中发现的问题
+- [ ] BUG-030音频导入
+- [ ] 视觉提升P2（后处理/动态光照）
