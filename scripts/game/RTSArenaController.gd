@@ -156,6 +156,10 @@ var _chromatic_layer: CanvasLayer = null
 var _chromatic_rect: ColorRect = null
 var _chromatic_intensity: float = 0.0
 var _chromatic_decay: float = 0.0
+var _countdown_label: Label = null
+var _countdown_active: bool = false
+var _countdown_value: int = 3
+var _countdown_timer: float = 0.0
 var _ambient_time: float = 0.0
 
 
@@ -1953,6 +1957,8 @@ func _process(delta: float) -> void:
 	_update_atmosphere(delta)
 	# Update chromatic aberration decay
 	_update_chromatic_aberration(delta)
+	# Update battle countdown
+	_update_countdown(delta)
 	# Skip battle logic updates when paused (UI still renders)
 	if _is_paused:
 		_update_unit_display()
@@ -2083,6 +2089,9 @@ func _on_battle_started(p_battle_info: Dictionary) -> void:
 		AudioManager.play_sfx("battle_ui_start")
 		AudioManager.play_bgm("battle")
 
+	# Start countdown (3-2-1-GO!)
+	_start_battle_countdown()
+
 	# Add ArenaMap to scene for rendering
 	if ArenaMap and not is_instance_valid(ArenaMap.get_parent()):
 		ArenaMap.position = Vector2(20, 90)
@@ -2100,6 +2109,82 @@ func _on_battle_started(p_battle_info: Dictionary) -> void:
 		minimap.set_arena_size(Vector2(1280, 600))
 
 	GameLog.info("RTSArenaController: Battle started", "Arena")
+
+
+## Start battle countdown (3-2-1-GO!)
+## Disables skill buttons during countdown, enables after GO!
+func _start_battle_countdown() -> void:
+	_countdown_active = true
+	_countdown_value = 3
+	_countdown_timer = 0.0
+	# Disable skill buttons during countdown
+	for skill_name in skill_buttons.keys():
+		if skill_buttons[skill_name]:
+			skill_buttons[skill_name].disabled = true
+	# Create countdown label
+	if _countdown_label == null:
+		_countdown_label = Label.new()
+		_countdown_label.name = "CountdownLabel"
+		_countdown_label.anchors_preset = Control.PRESET_CENTER
+		_countdown_label.offset_left = -100
+		_countdown_label.offset_top = -60
+		_countdown_label.offset_right = 100
+		_countdown_label.offset_bottom = 60
+		_countdown_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_countdown_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		_countdown_label.add_theme_font_size_override("font_size", 72)
+		_countdown_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+		_countdown_label.add_theme_color_override("font_outline_color", Color(0.2, 0.1, 0.05))
+		_countdown_label.add_theme_constant_override("outline_size", 4)
+		_countdown_label.z_index = 200
+		add_child(_countdown_label)
+	_countdown_label.text = "3"
+	_countdown_label.scale = Vector2(1.5, 1.5)
+	_countdown_label.modulate.a = 1.0
+	if AudioManager:
+		AudioManager.play_sfx("battle_ui_start")
+
+
+## Update countdown timer and display
+func _update_countdown(delta: float) -> void:
+	if not _countdown_active:
+		return
+	_countdown_timer += delta
+	# Each number lasts 0.8 seconds
+	var number_duration = 0.8
+	if _countdown_timer >= number_duration:
+		_countdown_timer = 0.0
+		_countdown_value -= 1
+		if _countdown_value > 0:
+			_countdown_label.text = str(_countdown_value)
+			_countdown_label.scale = Vector2(1.5, 1.5)
+			if AudioManager:
+				AudioManager.play_sfx("battle_ui_start")
+		elif _countdown_value == 0:
+			_countdown_label.text = "GO!"
+			_countdown_label.scale = Vector2(2.0, 2.0)
+			_countdown_label.add_theme_color_override("font_color", Color(0.4, 1.0, 0.5))
+			if AudioManager:
+				AudioManager.play_sfx("battle_critical")
+		else:
+			# Countdown finished
+			_countdown_active = false
+			_countdown_label.visible = false
+			# Re-enable skill buttons
+			for skill_name in skill_buttons.keys():
+				if skill_buttons[skill_name]:
+					skill_buttons[skill_name].disabled = false
+			_add_log("Fight!")
+			return
+	# Scale animation (pop effect)
+	var scale_progress = _countdown_timer / number_duration
+	var pop_scale = 1.5 - scale_progress * 0.5 if _countdown_value > 0 else 2.0 - scale_progress * 1.0
+	_countdown_label.scale = Vector2(pop_scale, pop_scale)
+	# Fade out in last 30%
+	if scale_progress > 0.7:
+		_countdown_label.modulate.a = 1.0 - (scale_progress - 0.7) / 0.3
+	else:
+		_countdown_label.modulate.a = 1.0
 
 
 ## Handle battle finished
