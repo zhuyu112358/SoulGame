@@ -4562,3 +4562,74 @@
 - [ ] 等待建木修复ArboreusPathfinder大网格bug
 - [ ] BUG-030音频导入
 - [ ] 视觉提升计划
+
+## 2026-09-08 - SDK集成期：SoulUnit集成Ember SoulData（P1架构合规）
+
+### 完成工作
+
+#### 1. 创建EmberSoulDataBridge.gd（灵魂数据桥接层）
+**架构设计**：
+- 封装Ember SoulData + Personality + EmotionState三个SDK对象
+- 提供战策兼容的Dictionary接口（personality/emotion）
+- 自动同步战策Dictionary与Ember对象之间的数据
+
+**核心功能**：
+- init_from_soul_data()：从灵魂数据初始化Ember对象
+- _sync_personality_to_ember()：战策0-100数值 → Ember 0-1属性
+- update_emotion()：更新情绪并同步到Ember EmotionState
+- get_damage_modifier()/get_defense_modifier()：情绪修正
+- get_soul_data()/get_personality_obj()/get_emotion_state()：直接SDK访问
+
+**属性映射**：
+- 战策aggression/curiosity/loyalty/courage → Ember同名属性
+- 战策patience → Ember conscientiousness
+- 战策intelligence → Ember openness
+- 战策emotion.anger/fear/excitement → Ember EmotionState.anger/fear/joy
+
+#### 2. SoulUnit集成EmberSoulDataBridge
+- 添加EmberSoulDataBridge preload和_ember_bridge属性
+- 修改init_from_soul()：初始化bridge，将personality/emotion指向bridge的字典
+- 现有代码无需修改（personality/emotion仍是Dictionary，只是底层由Ember管理）
+- 初始化日志显示Ember:true/false状态
+
+#### 3. 修复_apply_soul_personality类型错误（已存在bug）
+**问题**：测试脚本中personality是String（"brave"/"aggressive"），但_apply_soul_personality期望Dictionary，导致"SCRIPT ERROR: Trying to assign value of type 'String' to a variable of type 'Dictionary'"
+**修复**：
+- 支持Dictionary（完整属性数据）和String（预设名）两种类型
+- 新增_apply_personality_preset()方法，支持brave/aggressive/cautious/wise四种预设
+- 未知预设名回退到随机生成
+
+### 视觉/玩法效果变化
+- SoulUnit现在由Ember SDK管理灵魂数据（个性/情绪），架构合规
+- 个性预设系统：brave（高勇气高忠诚）、aggressive（高攻击低耐心）、cautious（高耐心高忠诚）、wise（高智力）
+- 玩家和AI单位初始化时显示Ember:true，确认SDK集成成功
+- 战斗行为不变（移动/攻击/技能逻辑仍在战策表现层）
+
+### 测试
+- 自动化战斗测试: [OK] Both units moved successfully!
+  - 无SCRIPT ERROR（修复前有2个类型错误）
+  - 玩家: (200,300)→(749,339), 移动550px, Ember:true
+  - AI: (1080,300)→(749,339), 移动333px, Ember:true
+  - 两单位最终相遇，距离0.0
+- M2测试套件: 运行中...
+
+### 修改的文件
+- scripts/game/EmberSoulDataBridge.gd - 新建，Ember灵魂数据桥接层（230行）
+- scripts/game/SoulUnit.gd - 修改，集成EmberSoulDataBridge
+- scripts/game/RTSArenaManager.gd - 修改，修复personality类型错误+新增预设系统
+- addons/ember/plugin.cfg - 新建（Ember编辑器插件配置）
+- addons/ember/plugin.gd - 新建（Ember编辑器插件脚本）
+
+### 架构合规进度
+- [x] A*寻路：临时替代（待ArboreusPathfinder修复）
+- [x] SoulAIController：已替换为Ember CognitiveEngine+PerceptionSystem
+- [x] SoulUnit：灵魂数据层已集成Ember SoulData+Personality+EmotionState（战斗逻辑保留在战策）
+- [ ] EventBus：待替换为ArboreusEventBus（P1，下一轮）
+- [ ] RTSArenaManager/ArenaMap/GameState（P2）
+
+### 待办
+- [ ] P1: 替换EventBus为ArboreusEventBus
+- [ ] 优化SoulUnit：战斗属性（HP/攻击/防御）也从Ember SoulData.stats获取
+- [ ] 等待建木修复ArboreusPathfinder大网格bug
+- [ ] BUG-030音频导入
+- [ ] 视觉提升计划

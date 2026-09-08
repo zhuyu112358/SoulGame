@@ -229,14 +229,16 @@ func _sync_obstacles_to_grid() -> void:
 ## Apply soul personality to unit (design doc: 个性即战术)
 func _apply_soul_personality(p_unit, p_soul_data: Dictionary) -> void:
 	if p_soul_data.has("personality"):
-		var personality_data: Dictionary = p_soul_data["personality"]
-		var trait_names: Array = personality_data.keys()
-		var i: int = 0
-		while i < trait_names.size():
-			var t_name = trait_names[i]
-			if p_unit.personality.has(t_name):
-				p_unit.personality[t_name] = personality_data[t_name]
-			i += 1
+		var personality_val = p_soul_data["personality"]
+		# Support both Dictionary (full trait data) and String (preset name)
+		if typeof(personality_val) == TYPE_DICTIONARY:
+			var personality_data: Dictionary = personality_val
+			for t_name in personality_data.keys():
+				if p_unit.personality.has(t_name):
+					p_unit.personality[t_name] = personality_data[t_name]
+		elif typeof(personality_val) == TYPE_STRING:
+			# String preset name -> apply corresponding trait values
+			_apply_personality_preset(p_unit, personality_val)
 	else:
 		# Generate random personality for prototype
 		p_unit.personality["aggression"] = randi_range(20, 80)
@@ -245,6 +247,42 @@ func _apply_soul_personality(p_unit, p_soul_data: Dictionary) -> void:
 		p_unit.personality["patience"] = randi_range(20, 80)
 		p_unit.personality["loyalty"] = randi_range(40, 90)
 		p_unit.personality["intelligence"] = randi_range(30, 80)
+
+
+## Apply personality preset by name (design doc: named personality archetypes)
+func _apply_personality_preset(p_unit, p_preset: String) -> void:
+	match p_preset.to_lower():
+		"brave":
+			p_unit.personality["aggression"] = 70
+			p_unit.personality["courage"] = 85
+			p_unit.personality["loyalty"] = 75
+			p_unit.personality["patience"] = 40
+			p_unit.personality["intelligence"] = 50
+		"aggressive":
+			p_unit.personality["aggression"] = 90
+			p_unit.personality["courage"] = 75
+			p_unit.personality["loyalty"] = 50
+			p_unit.personality["patience"] = 20
+			p_unit.personality["intelligence"] = 45
+		"cautious":
+			p_unit.personality["aggression"] = 30
+			p_unit.personality["courage"] = 40
+			p_unit.personality["loyalty"] = 80
+			p_unit.personality["patience"] = 85
+			p_unit.personality["intelligence"] = 70
+		"wise":
+			p_unit.personality["aggression"] = 40
+			p_unit.personality["courage"] = 60
+			p_unit.personality["loyalty"] = 70
+			p_unit.personality["patience"] = 75
+			p_unit.personality["intelligence"] = 90
+		_:
+			# Unknown preset -> random
+			p_unit.personality["aggression"] = randi_range(20, 80)
+			p_unit.personality["courage"] = randi_range(20, 80)
+			p_unit.personality["loyalty"] = randi_range(40, 90)
+			p_unit.personality["patience"] = randi_range(20, 80)
+			p_unit.personality["intelligence"] = randi_range(30, 80)
 
 
 ## Process real-time battle updates

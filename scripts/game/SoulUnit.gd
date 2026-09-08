@@ -14,6 +14,9 @@
 ## Pixel sprite generator (procedural 64x64 pixel art)
 const PixelSpriteGenerator = preload("res://scripts/game/PixelSpriteGenerator.gd")
 
+## Ember soul data bridge (SDK integration - architecture compliant)
+const EmberSoulDataBridge = preload("res://scripts/game/EmberSoulDataBridge.gd")
+
 ## Unit state constants
 enum UnitState {
 	IDLE,
@@ -50,6 +53,9 @@ var emotion: Dictionary = {
 	"excitement": 0.0,     # 0-1
 	"calmness": 1.0        # 0-1
 }
+
+## Ember SDK soul data bridge (manages personality/emotion via Ember SDK)
+var _ember_bridge: EmberSoulDataBridge = null
 
 ## Combat stats
 var max_hp: int = 100
@@ -193,8 +199,17 @@ func init_from_soul(p_soul_id: String, p_soul_name: String, p_element: String, p
 	attack_range = 100.0 + level * 2
 	move_speed = 150.0 + level * 5
 
+	# Initialize Ember SDK soul data bridge (architecture compliant)
+	_ember_bridge = EmberSoulDataBridge.new()
+	_ember_bridge.init_from_soul_data(p_soul_id, p_soul_name, p_level, p_element, personality)
+	# Sync personality/emotion dictionaries to bridge (so existing code works unchanged)
+	personality = _ember_bridge.personality
+	emotion = _ember_bridge.emotion
+
 	_setup_skill_cooldowns()
-	GameLog.info("SoulUnit: %s initialized from soul data (Lvl %d, HP:%d)" % [soul_name, level, max_hp], "Arena")
+	GameLog.info("SoulUnit: %s initialized from soul data (Lvl %d, HP:%d, Ember:%s)" % [
+		soul_name, level, max_hp, _ember_bridge.is_ember_available()
+	], "Arena")
 
 
 ## Update HP bar visual
