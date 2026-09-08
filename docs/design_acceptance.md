@@ -174,6 +174,8 @@
 | VIS-17 | 单位血条平滑过渡动画效果 | 单位受伤或治疗时血条使用lerp平滑过渡动画，_target_hp_ratio保存目标HP比例_current_hp_ratio保存当前显示HP比例_hp_bar_smooth_speed默认5.0，_update_hp_bar_smooth(delta)方法在_process中调用，血条宽度从当前值平滑插值到目标值，血条颜色仍然根据HP比例即时变化（绿>50%黄>25%红<=25%），战斗中血条变化更加流畅和自然 | GUI运行验证 | 已实现（第七十七轮） |
 | VIS-18 | 能量条平滑过渡动画效果 | 玩家和AI能量条使用lerp平滑过渡动画，_target_player_energy/_target_ai_energy保存目标能量值_current_player_energy/_current_ai_energy保存当前显示能量值_energy_bar_smooth_speed默认5.0，_update_energy_bars_smooth(delta)方法在_process开头调用确保始终平滑更新，能量恢复时平滑增加使用技能时平滑减少，与血条平滑过渡保持一致的视觉风格，战斗中能量条变化更加流畅和自然 | GUI运行验证 | 已实现（第七十八轮） |
 | VIS-19 | 天气变化视觉提示动画效果 | 天气变化时天气标签有缩放动画提示，_last_weather变量跟踪上一个天气，每当天气变化时（Clear→Rain→Fog→Snow→Storm）天气标签缩放从1.3→1.0持续0.5秒EASE_OUT缓动，首次显示天气时不触发动画，天气颜色编码保持不变（Clear暖黄/Rain蓝色/Fog灰色/Snow浅蓝/Storm红色），配合天气颜色变化玩家可以清楚感知天气变化，提升战斗中的环境氛围和沉浸感 | GUI运行验证 | 已实现（第七十九轮） |
+| BUG-029-v2 | BUG-029 P0修复v2：AI单位障碍物绕行逻辑改进 | 中心水晶(640,300)正好在玩家(200,300)和AI(1080,300)连线上导致单位被挡住后停止移动，SoulUnit.gd改进_update_movement绕行逻辑，绕行步长从move_amount改为move_amount*20（约48像素/帧），当找到有效绕行方向时设置target_position为绕行点，单位会持续移动到绕行点然后下一次AI决策会重新设置目标，单位能够快速绕过中心水晶等障碍物不会在障碍物旁边卡住，AI每1.5秒重新决策时单位已经绕过障碍物可以继续朝着玩家移动，玩家和AI单位能够正常进入攻击范围并交战 | GUI运行验证 | 已实现（BUG-029修复v2） |
+
 
 
 
