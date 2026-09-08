@@ -4281,3 +4281,60 @@
 - [ ] 验证玩家单位在实际GUI中是否正常移动
 - [ ] Ember SDK适配层开发（SoulAIController替换）
 - [ ] BUG-030音频导入
+
+## 2026-09-08 - SDK集成期：GDExtension加载验证+API探索
+
+### 架构合规检查
+- 已读取架构红线ARCHITECTURE_BOUNDARY.md
+- Ember SDK：GDExtension加载成功，7个类全部注册（SoulData/Personality/EmotionState/CognitiveEngine/MemorySystem/Soul/PerceptionSystem）
+- Arboreus SDK：GDExtension加载成功，18个类全部注册（Arboreus前缀）
+- 越界实现：7个模块待替换（本轮开始集成SDK）
+
+### 完成工作
+
+#### 1. GDExtension文件集成到战策项目
+- 创建addons/ember/bin/和addons/arboreus/bin/目录
+- 复制ember.gdextension + libember.windows.release.x86_64.dll (0.82MB)
+- 复制arboreus.gdextension + arboreus.windows.Release.x86_64.dll (1.04MB)
+- 创建.godot/extension_list.cfg注册两个GDExtension
+
+#### 2. SDK加载验证
+- Ember: 7/7类加载成功（SoulData, Personality, EmotionState, CognitiveEngine, MemorySystem, Soul, PerceptionSystem）
+- Arboreus: 18/18类加载成功（ArboreusWorld, ArboreusEntity, ArboreusPathfinder, ArboreusGridMap, ArboreusEventBus, ArboreusEvent, ArboreusPhysicsSystem, ArboreusMovementSystem, ArboreusSpatialIndex, ArboreusWorldClock, ArboreusBehaviorTree, ArboreusBuildingSystem, ArboreusEconomySystem, ArboreusNavigationMesh, ArboreusPerceptionSystem, ArboreusSocialSystem, ArboreusSteeringBehaviors, ArboreusTerritorySystem, ArboreusWeatherSystem）
+- Soul类可正常实例化
+
+#### 3. Arboreus API探索（参考minimal_test/main.gd）
+**ArboreusGridMap**:
+- `grid.create(width, height, cell_size)` → 返回网格对象
+- `g.get_width()/get_height()/get_cell_size()`
+- `g.is_walkable(x, y)`, `g.set_walkable(x, y, walkable)`
+- `g.grid_to_world(Vector2i)`, `g.world_to_grid(Vector2)`
+
+**ArboreusPathfinder**:
+- `pf.set_grid(grid_obj)` - 设置create()返回的网格对象
+- `pf.find_path(Vector2i start, Vector2i goal)` - 使用网格坐标
+- `pf.set_allow_diagonal(bool)`, `pf.smooth_path(path)`, `pf.get_path_length(path)`
+
+**其他关键API**:
+- ArboreusWorld: create_entity(), get_entity_count()
+- ArboreusMovementSystem: register_entity(), set_speed(), move_towards(), update(), get_position()
+- ArboreusEventBus: subscribe(event_type, callable)
+- ArboreusPhysicsSystem: add_body(), check_collision()
+- ArboreusSteeringBehaviors: register_agent(), seek(), flock(), update()
+
+### 视觉/玩法效果变化
+- 本轮为SDK集成轮，无玩法变化
+- GDExtension已就绪，下一轮开始替换越界实现
+
+### 待办（下一轮）
+- [ ] P0: 替换A*寻路为ArboreusPathfinder（修复BUG-031 AI单位不绕行）
+- [ ] P0: 替换SoulAIController为Ember PerceptionSystem+CognitiveEngine
+- [ ] P1: 替换SoulUnit为Ember Soul+SoulData
+- [ ] P1: 替换EventBus为ArboreusEventBus
+- [ ] P2: 替换RTSArenaManager/ArenaMap/GameState
+
+### 测试文件
+- tests/gdextension_load_test.gd - GDExtension加载验证
+- tests/list_custom_classes.gd - 自定义类列表
+- tests/arboreus_pathfinder_api_test.gd - Pathfinder API探索
+- tests/arboreus_pathfinder_functional_test.gd - Pathfinder功能测试
