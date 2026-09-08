@@ -136,14 +136,41 @@ func _ready() -> void:
 
 
 ## Create visual representation (pixel sprite + name label + HP bar)
+## Load soul unit sprite from design asset sheet
+## Sprite sheet layout: 2 rows x 4 columns
+## Row 0 (y=0): blue/player side, idle 4 frames
+## Row 1 (y=1): red/AI side, idle/dash/attack/hit
+## Returns AtlasTexture for first frame, or null if load fails
+func _load_design_sprite() -> Texture2D:
+	var sheet_path := "res://assets/art/soul_unit_sprite_sheet.png"
+	if not ResourceLoader.exists(sheet_path):
+		GameLog.debug("SoulUnit: Design sprite sheet not found, using procedural", "Unit")
+		return null
+	var sheet = load(sheet_path)
+	if sheet == null or not (sheet is Texture2D):
+		GameLog.warning("SoulUnit: Failed to load design sprite sheet", "Unit")
+		return null
+	# Sprite sheet: 1920x1080, 2 rows x 4 cols, each cell ~480x540
+	var cell_w: int = 480
+	var cell_h: int = 540
+	var row: int = 0 if is_player_controlled else 1
+	var atlas = AtlasTexture.new()
+	atlas.atlas = sheet
+	atlas.region = Rect2(0, row * cell_h, cell_w, cell_h)
+	GameLog.debug("SoulUnit: Loaded design sprite (row=%d, %dx%d)" % [row, cell_w, cell_h], "Unit")
+	return atlas
+
+
 func _create_visual() -> void:
-	# Create pixel sprite using procedural generator
-	var generator = PixelSpriteGenerator.new()
-	var texture = generator.generate_soul_sprite(element, personality)
+	# Try to use design asset sprite sheet first, fallback to procedural generator
+	var sprite_texture = _load_design_sprite()
+	if sprite_texture == null:
+		var generator = PixelSpriteGenerator.new()
+		sprite_texture = generator.generate_soul_sprite(element, personality)
 
 	_sprite = Sprite2D.new()
-	_sprite.texture = texture
-	_sprite.scale = Vector2(1.5, 1.5)  # Scale up for visibility (64x64 -> 96x96)
+	_sprite.texture = sprite_texture
+	_sprite.scale = Vector2(0.4, 0.4)  # Design sprites are larger (480x540), scale down
 	_sprite.centered = true
 	add_child(_sprite)
 

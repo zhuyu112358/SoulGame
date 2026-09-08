@@ -5475,3 +5475,60 @@ ame (String) - 唯一可见属性
 - [ ] 视觉提升P1：战斗特效+灵魂单位精灵化+战斗UI升级
 - [ ] BUG-030音频导入
 - [ ] 战斗逻辑迁移到Arboreus SDK（长期，需SDK支持）
+
+## 2026-09-08 - 视觉提升P0/P1：设计资源集成（主菜单背景图+灵魂单位精灵图）
+
+### 完成工作
+
+#### 设计资源集成（设计任务第62轮同步的6项核心资源）
+
+设计任务已同步以下资源到assets/art/：
+- ui_skin_sheet.png - UI皮肤图集
+- pixel_font_reference.png - 像素字体参考图集
+- soul_unit_sprite_sheet.png - 灵魂单位精灵图集
+- main_menu_bg.png - 主菜单背景图
+- skill_icon_sheet.png - 技能图标图集
+- particle_texture_sheet.png - 粒子纹理图集
+
+**本轮集成2项**：
+
+1. **主菜单背景图集成**
+   - 修改scenes/main_menu.tscn：背景图路径从assets/art/background/改为assets/art/
+   - 背景图：像素风格浮空岛+金色雕像+星空，深紫+金色配色
+   - 替换之前的纯色/缺失背景
+
+2. **灵魂单位精灵图集成**
+   - 修改SoulUnit.gd：新增_load_design_sprite()方法
+   - 优先加载soul_unit_sprite_sheet.png，使用AtlasTexture选择帧
+   - 精灵图集布局：2行x4列
+     - 第一行（y=0）：蓝色/玩家方，待机4帧
+     - 第二行（y=1）：红色/AI方，待机/前冲/攻击/受击
+   - 每帧480x540像素，scale=0.4适配战场
+   - 加载失败时fallback到程序化生成（PixelSpriteGenerator）
+   - 玩家方使用蓝色灵魂球，AI方使用红色灵魂球
+
+### 视觉/玩法效果变化
+- 主菜单背景从纯色变为像素风格浮空岛场景（星空+浮岛+金色雕像）
+- 灵魂单位从程序化生成的64x64像素精灵变为设计资源中的480x540发光灵魂球
+- 玩家方蓝色灵魂球，AI方红色灵魂球，符合设计概念图
+- 整体视觉风格与设计概念图一致（深紫+金色像素奇幻）
+
+### 注意事项
+- 新PNG资源缺少.import文件，需要Godot编辑器打开项目自动导入
+- headless模式下load()新资源可能失败，已添加fallback处理
+- 技能图标和粒子纹理待后续轮次集成
+
+### 测试
+- 自动化战斗测试: 运行中...
+- M2测试套件: 待运行
+
+### 修改的文件
+- scenes/main_menu.tscn - 背景图路径修复
+- scripts/game/SoulUnit.gd - 灵魂单位精灵图集成
+
+### 待办
+- [ ] 技能图标集成到RTS竞技场技能栏
+- [ ] UI皮肤图集替换纯色StyleBox
+- [ ] 粒子纹理配置到战斗特效
+- [ ] 像素字体集成
+- [ ] BUG-030音频导入

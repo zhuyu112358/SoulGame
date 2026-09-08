@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://bmainmenu000001"]
 
 [ext_resource type="Script" path="res://scripts/ui/MainMenu.gd" id="1_mainmenu"]
-[ext_resource type="Texture2D" path="res://assets/art/background/main_menu_bg.png" id="2_bg"]
+[ext_resource type="Texture2D" path="res://assets/art/main_menu_bg.png" id="2_bg"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button"]
 bg_color = Color(0.1, 0.1, 0.15, 0.85)
