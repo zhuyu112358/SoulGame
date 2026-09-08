@@ -2834,7 +2834,29 @@ func _show_result_modal(p_result: String, p_title: String, p_title_color: Color,
 	_setup_button_hover(back_btn)
 	panel.add_child(back_btn)
 
+	# Animate internal elements appearing sequentially
+	_animate_result_elements(panel)
+
 	GameLog.info("RTSArenaController: Result modal shown (visualized UI)", "Arena")
+
+
+## Animate result modal elements appearing sequentially (staggered fade in + slide up)
+func _animate_result_elements(p_panel: Panel) -> void:
+	var children = p_panel.get_children()
+	var delay = 0.1
+	for child in children:
+		if child is CanvasItem:
+			# Save original position and set initial state
+			var orig_pos = child.position
+			child.position = orig_pos + Vector2(0, 15)
+			child.modulate.a = 0.0
+			# Create tween for this element
+			var elem_tween = create_tween()
+			elem_tween.set_parallel(true)
+			elem_tween.tween_interval(delay)
+			elem_tween.tween_property(child, "modulate:a", 1.0, 0.25).set_ease(Tween.EASE_OUT)
+			elem_tween.tween_property(child, "position:y", orig_pos.y, 0.25).set_ease(Tween.EASE_OUT)
+			delay += 0.06
 
 
 ## Handle rematch button press
