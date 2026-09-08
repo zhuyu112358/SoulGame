@@ -138,14 +138,38 @@ func _ready() -> void:
 
 ## Create visual representation (pixel sprite + name label + HP bar)
 ## Load soul unit sprite from design asset sheet
-## Prefers 4-element sprite sheet (fire/water/earth/wind), falls back to 2-row sheet
-## Element sheet layout: 3 rows x 4 columns
-## Row 0: fire element (idle/breath/dash/hit)
-## Row 1: water element (idle/wave/dash/hit)
-## Row 2: earth (col 0) + wind (col 1) + dash + hit
+## Prefers element-specific sprite sheet (player or AI variant), falls back to 2-row sheet
+## Player sheet: 3 rows x 4 cols, cell 480x270 (fire/water/earth+wind)
+## AI sheet: 4 rows x 6 cols, cell 320x270 (fire/water/earth/wind, col 0-2 idle frames)
 ## Returns AtlasTexture for idle frame, or null if load fails
 func _load_design_sprite() -> Texture2D:
-	# Try 4-element sprite sheet first
+	# AI units: try AI-specific element sprite sheet first (darker/redder style)
+	if not is_player_controlled:
+		var ai_sheet_path := "res://assets/art/ai_soul_unit_element_sprite_sheet.png"
+		if ResourceLoader.exists(ai_sheet_path):
+			var ai_sheet = load(ai_sheet_path)
+			if ai_sheet != null and ai_sheet is Texture2D:
+				# AI sheet: 1920x1080, 4 rows x 6 cols, each cell 320x270
+				var cell_w: int = 320
+				var cell_h: int = 270
+				var row: int = 0
+				match element:
+					"fire":
+						row = 0
+					"water":
+						row = 1
+					"earth":
+						row = 2
+					"wind":
+						row = 3
+					_:
+						row = 0  # Default AI: fire (red)
+				var atlas = AtlasTexture.new()
+				atlas.atlas = ai_sheet
+				atlas.region = Rect2(0, row * cell_h, cell_w, cell_h)
+				GameLog.debug("SoulUnit: Loaded AI element sprite (element=%s, row=%d)" % [element, row], "Unit")
+				return atlas
+	# Player units (or AI fallback): try 4-element sprite sheet
 	var element_sheet_path := "res://assets/art/soul_unit_element_sprite_sheet.png"
 	if ResourceLoader.exists(element_sheet_path):
 		var sheet = load(element_sheet_path)
