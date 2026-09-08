@@ -2437,11 +2437,53 @@ func _on_battle_finished(p_result: String, p_winner_id: String, p_loser_id: Stri
 	# Disable macro command buttons
 	_set_commands_enabled(false)
 
+	# Play full-screen victory/defeat effect before showing modal
+	_play_battle_end_effect(p_result)
+
 	# Show battle result modal
 	var battle_stats = RTSArenaManager.last_battle_stats
 	_show_result_modal(p_result, result_text, result_color, exp_gained, stats, battle_stats)
 
 	GameLog.info("RTSArenaController: Battle finished - %s, EXP: +%d" % [p_result, exp_gained], "Arena")
+
+
+## Play full-screen battle end effect (victory flash / defeat darken)
+func _play_battle_end_effect(p_result: String) -> void:
+	# Full-screen overlay layer
+	var effect_layer := CanvasLayer.new()
+	effect_layer.layer = 90
+	effect_layer.name = "BattleEndEffect"
+	add_child(effect_layer)
+
+	var overlay := ColorRect.new()
+	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	effect_layer.add_child(overlay)
+
+	if p_result == "victory" or p_result == "player_win":
+		# Victory: golden flash + brighten
+		overlay.color = Color(1.0, 0.85, 0.4, 0.0)
+		var tween := create_tween()
+		tween.tween_property(overlay, "color:a", 0.7, 0.15).set_ease(Tween.EASE_OUT)
+		tween.tween_property(overlay, "color:a", 0.0, 0.6).set_ease(Tween.EASE_IN)
+		tween.tween_callback(effect_layer.queue_free)
+		# Extra screen shake for victory
+		_trigger_screen_shake(4.0, 0.3)
+	elif p_result == "defeat":
+		# Defeat: red darken + slow fade
+		overlay.color = Color(0.6, 0.1, 0.1, 0.0)
+		var tween := create_tween()
+		tween.tween_property(overlay, "color:a", 0.5, 0.3).set_ease(Tween.EASE_OUT)
+		tween.tween_property(overlay, "color:a", 0.0, 0.8).set_ease(Tween.EASE_IN)
+		tween.tween_callback(effect_layer.queue_free)
+		_trigger_screen_shake(3.0, 0.25)
+	else:
+		# Draw: neutral white flash
+		overlay.color = Color(0.8, 0.8, 0.8, 0.0)
+		var tween := create_tween()
+		tween.tween_property(overlay, "color:a", 0.4, 0.2).set_ease(Tween.EASE_OUT)
+		tween.tween_property(overlay, "color:a", 0.0, 0.5).set_ease(Tween.EASE_IN)
+		tween.tween_callback(effect_layer.queue_free)
 
 
 ## Show battle result modal dialog
