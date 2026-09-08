@@ -78,6 +78,10 @@ var _arboreus_world: ArboreusWorldBridge = null
 var _player_entity_id: int = -1
 var _ai_entity_id: int = -1
 
+## World state sync timer (sync ArboreusWorld status to GameState periodically)
+var _world_state_sync_timer: float = 0.0
+var _world_state_sync_interval: float = 1.0  # Sync every 1 second
+
 ## Battle mode: "manual" (player controls skills) or "auto" (AI controls both)
 ## Default is "auto" for coach-style RTS: souls make autonomous decisions
 var battle_mode: String = "auto"
@@ -327,6 +331,12 @@ func _process(delta: float) -> void:
 	if _arboreus_world and _arboreus_world.is_running():
 		_arboreus_world.update(scaled_delta)
 
+	# Sync ArboreusWorld state to GameState periodically (architecture compliant)
+	_world_state_sync_timer += scaled_delta
+	if _world_state_sync_timer >= _world_state_sync_interval:
+		_world_state_sync_timer = 0.0
+		_sync_world_state_to_game_state()
+
 	# Update AI controllers
 	if _ai_controller:
 		_ai_controller.update(scaled_delta)
@@ -455,6 +465,10 @@ func _finish_battle(p_winner_id: String, p_result: String) -> void:
 			_ai_entity_id = -1
 		_arboreus_world.stop()
 		GameLog.info("RTSArenaManager: ArboreusWorld simulation stopped", "Arena")
+
+	# Clear world state in GameState
+	GameState.set_world_state("arboreus_world_running", false)
+	GameState.set_world_state("battle_active", false)
 
 	var loser_id: String = ""
 	if p_winner_id == player_unit.soul_id:
@@ -712,3 +726,37 @@ func get_recent_log(p_count: int = 10) -> Array:
 	if battle_log.size() <= p_count:
 		return battle_log.duplicate()
 	return battle_log.slice(battle_log.size() - p_count, battle_log.size())
+
+
+## Sync ArboreusWorld state to GameState (architecture compliant)
+## Arboreus SDK owns world simulation; GameState is Battleplan's state store (application layer)
+func _sync_world_state_to_game_state() -> void:
+	if not _arboreus_world or not _arboreus_world.is_arboreus_available():
+		return
+
+	var world_status = _arboreus_world.get_status()
+	if world_status == null or not (world_status is Dictionary):
+		return
+
+	# Sync world simulation state to GameState "world" namespace
+	GameState.set_world_state("arboreus_world_running", world_status.get("is_running", false))
+	GameState.set_world_state("arboreus_world_time", world_status.get("time", 0.0))
+	GameState.set_world_state("arboreus_entity_count", world_status.get("entity_count", 0))
+	GameState.set_world_state("arboreus_spatial_entity_count", world_status.get("spatial_entity_count", 0))
+	GameState.set_world_state("arboreus_day_count", world_status.get("day_count", 0))
+	GameState.set_world_state("arboreus_time_of_day", world_status.get("time_of_day", "unknown"))
+	GameState.set_world_state("arboreus_queued_events", world_status.get("queued_events", 0))
+
+	# Sync battle-specific state
+	GameState.set_world_state("battle_active", battle_state == BattleState.ACTIVE)
+	GameState.set_world_state("battle_time", battle_time)
+	GameState.set_world_state("battle_speed", battle_speed)
+	GameState.set_world_state("battle_mode", battle_mode)
+
+	# Sync unit positions (presentation layer, from SoulUnit)
+	if player_unit:
+		GameState.set_world_state("player_position", player_unit.position)
+		GameState.set_world_state("player_hp", player_unit.current_hp)
+	if ai_unit:
+		GameState.set_world_state("ai_position", ai_unit.position)
+		GameState.set_world_state("ai_hp", ai_unit.current_hp)

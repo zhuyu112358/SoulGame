@@ -5039,3 +5039,74 @@ ame (String) - 唯一可见属性
 - [ ] 等待建木修复ArboreusPathfinder大网格bug
 - [ ] BUG-030音频导入
 - [ ] 视觉提升计划
+
+## 2026-09-08 - SDK集成期：GameState集成Arboreus World状态同步（P2架构合规）
+
+### 完成工作
+
+#### 1. GameState世界状态同步
+**集成策略**：定期同步，保持架构分层
+- ArboreusWorld负责世界模拟（引擎层）
+- GameState负责战策状态存储（应用层）
+- RTSArenaManager负责同步两者（玩法层）
+
+**修改内容**:
+- 添加_world_state_sync_timer和_world_state_sync_interval（1秒同步一次）
+- _process中：每1秒调用_sync_world_state_to_game_state()
+- 新增_sync_world_state_to_game_state()方法：
+  - 同步ArboreusWorld状态：is_running, time, entity_count, spatial_entity_count, day_count, time_of_day, queued_events
+  - 同步战斗状态：battle_active, battle_time, battle_speed, battle_mode
+  - 同步单位状态：player_position, player_hp, ai_position, ai_hp
+- _finish_battle中：清理GameState世界状态（arboreus_world_running=false, battle_active=false）
+
+**同步字段映射**:
+| GameState key | 来源 | 说明 |
+|---|---|---|
+| arboreus_world_running | ArboreusWorld.get_status() | 世界是否运行 |
+| arboreus_world_time | ArboreusWorld.get_status() | 世界时间 |
+| arboreus_entity_count | ArboreusWorld.get_status() | 实体数量 |
+| arboreus_spatial_entity_count | ArboreusWorld.get_status() | 空间实体数量 |
+| arboreus_day_count | ArboreusWorld.get_status() | 天数 |
+| arboreus_time_of_day | ArboreusWorld.get_status() | 时段 |
+| arboreus_queued_events | ArboreusWorld.get_status() | 排队事件数 |
+| battle_active | RTSArenaManager | 战斗是否激活 |
+| battle_time | RTSArenaManager | 战斗时间 |
+| battle_speed | RTSArenaManager | 战斗速度 |
+| battle_mode | RTSArenaManager | 战斗模式 |
+| player_position | SoulUnit | 玩家位置 |
+| player_hp | SoulUnit | 玩家HP |
+| ai_position | SoulUnit | AI位置 |
+| ai_hp | SoulUnit | AI HP |
+
+### 视觉/玩法效果变化
+- GameState现在实时反映ArboreusWorld的模拟状态
+- 调试面板和UI可以通过GameState.get_world_state()获取世界状态
+- 游戏行为无可见变化（状态同步是后台逻辑）
+
+### 测试
+- 自动化战斗测试: [OK] Both units moved successfully!
+  - 无SCRIPT ERROR
+  - GameState正常初始化
+  - 玩家移动550px, AI移动334px, 最终距离0.6
+  - 两个SoulUnit均Ember:true
+- M2测试套件: 运行中...
+
+### 修改的文件
+- scripts/game/RTSArenaManager.gd - 修改，添加GameState世界状态同步
+
+### 架构合规进度
+- [x] A*寻路网格层 → ArboreusGridMapBridge
+- [x] SoulAIController → Ember
+- [x] SoulUnit灵魂数据层 → Ember
+- [x] EventBus → ArboreusEventBus
+- [x] ArenaMap网格 → ArboreusGridMapBridge
+- [x] RTSArenaManager世界模拟层 → ArboreusWorldBridge
+- [x] GameState世界状态 → ArboreusWorld状态同步（P2完成）
+- [ ] RTSArenaManager实体位置/战斗逻辑 → ArboreusEntity（待SDK位置API明确）
+
+### 待办
+- [ ] 等待建木明确ArboreusEntity位置管理API
+- [ ] 深化RTSArenaManager集成：将实体位置同步到ArboreusEntity
+- [ ] 等待建木修复ArboreusPathfinder大网格bug
+- [ ] BUG-030音频导入
+- [ ] 视觉提升计划
