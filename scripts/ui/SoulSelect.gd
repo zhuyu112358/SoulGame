@@ -15,6 +15,7 @@ var _selected_index: int = -1
 
 func _ready() -> void:
 	GameLog.info("SoulSelect initialized", "SoulSelect")
+	_apply_ui_theme()
 	_back_button.pressed.connect(_on_back_pressed)
 	_setup_button_hover(_back_button)
 	_load_available_souls()
@@ -254,3 +255,17 @@ func _on_back_pressed() -> void:
 func _play_button_sound() -> void:
 	if AudioManager:
 		AudioManager.play_sfx("ui_button_click")
+
+
+## Apply Battleplan UI theme (gold/dark pixel-fantasy style)
+func _apply_ui_theme() -> void:
+	var theme_path := "res://assets/ui/battleplan_theme.tres"
+	if ResourceLoader.exists(theme_path):
+		var theme = load(theme_path)
+		if theme:
+			self.theme = theme
+			GameLog.debug("SoulSelect: Applied Battleplan UI theme", "UI")
+		else:
+			GameLog.warning("SoulSelect: Failed to load UI theme", "UI")
+	else:
+		GameLog.warning("SoulSelect: UI theme not found at %s" % theme_path, "UI")

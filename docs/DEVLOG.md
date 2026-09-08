@@ -5365,3 +5365,50 @@ ame (String) - 唯一可见属性
 - preload路径保持不变（RTSArenaManager用EmberSoulAIController.gd，M2IntegrationTest用旧SoulAIController.gd）
 
 **教训**：Ember SDK类名会与战策代码中的const名冲突，后续命名需避免使用Ember SDK已注册的类名。
+
+## 2026-09-08 - 视觉提升P0：UI主题全场景应用（主菜单+灵魂选择+设置+RTS竞技场）
+
+### 完成工作
+
+#### UI主题全场景应用
+将battleplan_theme.tres（金色/深色像素奇幻风格）应用到所有核心场景：
+
+1. **MainMenu.gd** - 已有（上一轮完成）
+2. **SoulSelect.gd** - 新增_apply_ui_theme()，_ready()中加载应用
+3. **SettingsMenu.gd** - 新增_apply_ui_theme()，_ready()中加载应用
+4. **RTSArenaController.gd** - 新增_apply_ui_theme()，由于是Node2D，分别应用到TopBar、BattleLog、BottomBar三个Panel
+
+**主题效果**：
+- 按钮：深紫背景(#1f1a2e) + 金色边框(#cc9933)，悬停金色发光
+- 标签：金色(#ffd65c) / 米白(#f2e6bf)文字
+- 面板：深紫半透明背景 + 金色边框
+- 进度条：深色背景 + 绿色填充
+- 滑条：继承主题样式
+
+### 视觉/玩法效果变化
+- 主菜单、灵魂选择、设置界面的按钮和面板全部变为金色/深色风格
+- RTS竞技场的TopBar（玩家/AI状态）、BattleLog（战斗日志）、BottomBar（技能栏）应用主题
+- 整体UI从Godot默认灰色变为统一的像素奇幻金色风格
+- 与设计概念图的配色方向一致（深色背景+金色装饰）
+
+### 测试
+- 自动化战斗测试: 运行中...
+- M2测试套件: 待运行
+
+### 修改的文件
+- scripts/ui/SoulSelect.gd - 添加UI主题加载
+- scripts/ui/SettingsMenu.gd - 添加UI主题加载
+- scripts/game/RTSArenaController.gd - 添加UI主题加载（应用到3个Panel）
+
+### [设计需求]（仍需设计任务产出）
+- 像素风格字体（中英文）- 当前使用Godot默认字体
+- UI皮肤图集（按钮、面板、边框的像素纹理，替代纯色StyleBox）
+- 灵魂单位精灵图（代替彩色方块）
+- 主菜单背景图（星空+浮岛+雕像）
+- 技能图标、粒子纹理
+
+### 待办
+- [ ] 深化实体战斗逻辑集成：HP/ATK同步到ArboreusEntity组件
+- [ ] BUG-030音频导入
+- [ ] 视觉提升P0：自定义字体+UI皮肤图集
+- [ ] 视觉提升P1：战斗特效+灵魂单位精灵化+战斗UI升级

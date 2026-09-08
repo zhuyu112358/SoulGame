@@ -143,6 +143,7 @@ func _ready() -> void:
 	GameLog.info("RTSArenaController: RTS Arena scene ready", "Arena")
 	_base_position = position
 	_setup_ui_refs()
+	_apply_ui_theme()
 	_setup_arena_background()
 	_connect_signals()
 	_setup_skill_buttons()
@@ -1089,6 +1090,31 @@ func _setup_ui_refs() -> void:
 	skill_buttons["defend"] = get_node_or_null("BottomBar/SkillButtons/Defend")
 
 	GameLog.debug("RTSArenaController: UI refs setup", "Arena")
+
+
+## Apply Battleplan UI theme to all UI panels (gold/dark pixel-fantasy style)
+## Since RTSArenaController is Node2D, apply theme to individual UI controls
+func _apply_ui_theme() -> void:
+	var theme_path := "res://assets/ui/battleplan_theme.tres"
+	if not ResourceLoader.exists(theme_path):
+		GameLog.warning("RTSArenaController: UI theme not found at %s" % theme_path, "UI")
+		return
+	var theme = load(theme_path)
+	if not theme:
+		GameLog.warning("RTSArenaController: Failed to load UI theme", "UI")
+		return
+	# Apply theme to top-level UI panels
+	var ui_panels = [
+		get_node_or_null("TopBar"),
+		get_node_or_null("BattleLog"),
+		get_node_or_null("BottomBar"),
+	]
+	var applied := 0
+	for panel in ui_panels:
+		if panel and panel is Control:
+			panel.theme = theme
+			applied += 1
+	GameLog.debug("RTSArenaController: Applied UI theme to %d panels" % applied, "UI")
 
 
 ## Connect to RTSArenaManager signals

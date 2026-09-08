@@ -16,6 +16,7 @@ extends Control
 
 func _ready() -> void:
 	GameLog.info("SettingsMenu initialized", "Settings")
+	_apply_ui_theme()
 
 	# Load current volume values
 	if AudioManager:
@@ -144,3 +145,17 @@ func _on_back_pressed() -> void:
 		AudioManager.play_sfx("ui_button_click")
 		AudioManager.play_sfx("ui_settings_close")
 	SceneManager.change_scene("res://scenes/main_menu.tscn")
+
+
+## Apply Battleplan UI theme (gold/dark pixel-fantasy style)
+func _apply_ui_theme() -> void:
+	var theme_path := "res://assets/ui/battleplan_theme.tres"
+	if ResourceLoader.exists(theme_path):
+		var theme = load(theme_path)
+		if theme:
+			self.theme = theme
+			GameLog.debug("SettingsMenu: Applied Battleplan UI theme", "UI")
+		else:
+			GameLog.warning("SettingsMenu: Failed to load UI theme", "UI")
+	else:
+		GameLog.warning("SettingsMenu: UI theme not found at %s" % theme_path, "UI")
