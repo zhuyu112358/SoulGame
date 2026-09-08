@@ -6502,3 +6502,49 @@ ame (String) - 唯一可见属性
 - [ ] 灵魂单位扩展动画集成
 - [ ] 游戏流程端到端验证
 - [ ] BUG-030音频导入
+
+## 2026-09-09 - 视觉提升P1：灵魂单位扩展动画集成（死亡爆炸+灵魂消散）
+
+### 完成工作
+
+#### 灵魂单位扩展动画集成
+
+使用soul_unit_extended_sprite_sheet.png（3行4列12帧，766KB）实现死亡动画效果。
+
+**扩展精灵图结构**：
+- 行0：待机/发光/爆炸/灵魂消散
+- 行1：蓝色光环/金色庆祝/彩色螺旋/金色站立
+- 行2：魔法阵/魔法阵强化/大爆炸/双重灵魂
+
+**死亡动画实现**（trigger_death_animation + _update_death_animation）：
+1. 单位死亡时隐藏主体_sprite
+2. 爆炸帧（行0列2）：scale 0.3→1.1放大，透明度淡出，持续0.5秒
+   - 根据元素染色：火(橙红)/水(蓝)/土(棕)/风(绿)
+3. 灵魂消散帧（行0列3）：从0.2秒开始向上飘动80像素，透明度淡出，持续1秒
+   - 金色灵魂光效
+4. 动画结束后自动清理精灵节点
+
+**实现细节**：
+- 新增_death_anim_active/_death_anim_timer/_death_explosion_sprite/_death_soul_sprite变量
+- 新增_get_extended_frame(col, row)方法，用AtlasTexture裁剪扩展精灵图
+- 新增trigger_death_animation()和_update_death_animation(delta)方法
+- take_damage()死亡处理中调用trigger_death_animation()
+- _update_animation()中调用_update_death_animation(delta)
+
+### 视觉/玩法效果变化
+- 单位死亡不再是直接消失，有爆炸+灵魂消散的完整动画
+- 爆炸颜色根据元素变化，更有辨识度
+- 灵魂向上飘散增加仪式感和情感共鸣
+- 死亡动画持续1.2秒，给玩家足够的反馈时间
+
+### 测试
+- 自动化战斗测试: 运行中...
+- M2测试套件: 待运行
+
+### 修改的文件
+- scripts/game/SoulUnit.gd - 死亡动画系统
+
+### 待办
+- [ ] 胜利动画（使用扩展精灵图行1的庆祝帧）
+- [ ] 游戏流程端到端验证
+- [ ] BUG-030音频导入

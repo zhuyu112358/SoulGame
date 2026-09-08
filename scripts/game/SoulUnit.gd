@@ -125,6 +125,15 @@ var _hit_shake_timer: float = 0.0  # Hit shake timer
 var _hit_shake_duration: float = 0.15  # Hit shake duration
 var _sprite_base_position: Vector2 = Vector2.ZERO  # Base sprite position (for shake offset)
 
+# Death animation (using extended sprite sheet)
+var _death_anim_active: bool = false
+var _death_anim_timer: float = 0.0
+var _death_anim_duration: float = 1.2
+var _death_explosion_sprite: Sprite2D = null
+var _death_soul_sprite: Sprite2D = null
+var _extended_sheet_loaded: bool = false
+var _extended_sheet: Texture2D = null
+
 ## HP bar smooth transition
 var _target_hp_ratio: float = 1.0
 var _current_hp_ratio: float = 1.0
@@ -466,6 +475,8 @@ func _update_animation(delta: float) -> void:
 	# Apply transforms
 	_sprite.scale = current_scale
 	_sprite.position = _sprite_base_position + Vector2(0, bob_offset) + shake_offset
+	# Update death animation (runs even when main sprite hidden)
+	_update_death_animation(delta)
 
 
 ## Trigger attack pulse animation
@@ -476,6 +487,97 @@ func trigger_attack_pulse() -> void:
 ## Trigger hit shake animation
 func trigger_hit_shake() -> void:
 	_hit_shake_timer = _hit_shake_duration
+
+
+## Load extended sprite sheet and crop a frame (3 rows x 4 cols, cell 480x270)
+func _get_extended_frame(p_col: int, p_row: int) -> Texture2D:
+	if not _extended_sheet_loaded:
+		var sheet_path := "res://assets/art/soul_unit_extended_sprite_sheet.png"
+		if ResourceLoader.exists(sheet_path):
+			_extended_sheet = load(sheet_path)
+			_extended_sheet_loaded = true
+		else:
+			return null
+	if _extended_sheet == null:
+		return null
+	var atlas := AtlasTexture.new()
+	atlas.atlas = _extended_sheet
+	atlas.region = Rect2(p_col * 480, p_row * 270, 480, 270)
+	return atlas
+
+
+## Trigger death animation (explosion + soul rising)
+func trigger_death_animation() -> void:
+	if _death_anim_active:
+		return
+	_death_anim_active = true
+	_death_anim_timer = _death_anim_duration
+	# Hide main sprite
+	if _sprite:
+		_sprite.visible = false
+	# Create explosion sprite (row 0, col 2 - explosion frame)
+	var explosion_tex = _get_extended_frame(2, 0)
+	if explosion_tex:
+		_death_explosion_sprite = Sprite2D.new()
+		_death_explosion_sprite.name = "DeathExplosion"
+		_death_explosion_sprite.centered = true
+		_death_explosion_sprite.position = _sprite_base_position
+		_death_explosion_sprite.texture = explosion_tex
+		_death_explosion_sprite.scale = Vector2(0.3, 0.3)
+		_death_explosion_sprite.z_index = 20
+		# Tint by element
+		var tint = Color(1, 1, 1, 1)
+		match element:
+			"fire": tint = Color(1.2, 0.7, 0.5, 1)
+			"water": tint = Color(0.5, 0.8, 1.2, 1)
+			"earth": tint = Color(0.9, 0.7, 0.5, 1)
+			"wind": tint = Color(0.7, 1.0, 0.8, 1)
+		_death_explosion_sprite.modulate = tint
+		add_child(_death_explosion_sprite)
+	# Create soul rising sprite (row 0, col 3 - soul dissipate frame)
+	var soul_tex = _get_extended_frame(3, 0)
+	if soul_tex:
+		_death_soul_sprite = Sprite2D.new()
+		_death_soul_sprite.name = "DeathSoul"
+		_death_soul_sprite.centered = true
+		_death_soul_sprite.position = _sprite_base_position
+		_death_soul_sprite.texture = soul_tex
+		_death_soul_sprite.scale = Vector2(0.25, 0.25)
+		_death_soul_sprite.z_index = 21
+		_death_soul_sprite.modulate = Color(1.0, 0.9, 0.6, 0.9)
+		add_child(_death_soul_sprite)
+
+
+## Update death animation
+func _update_death_animation(delta: float) -> void:
+	if not _death_anim_active:
+		return
+	_death_anim_timer -= delta
+	var progress = 1.0 - (_death_anim_timer / _death_anim_duration)
+	# Explosion: scale up and fade out (first 0.5s)
+	if _death_explosion_sprite and is_instance_valid(_death_explosion_sprite):
+		if progress < 0.5:
+			var exp_progress = progress / 0.5
+			_death_explosion_sprite.scale = Vector2(0.3 + exp_progress * 0.8, 0.3 + exp_progress * 0.8)
+			_death_explosion_sprite.modulate.a = 1.0 - exp_progress * 0.8
+		else:
+			_death_explosion_sprite.modulate.a = 0.0
+	# Soul: rise up and fade out (0.3s to 1.2s)
+	if _death_soul_sprite and is_instance_valid(_death_soul_sprite):
+		if progress > 0.2:
+			var soul_progress = (progress - 0.2) / 0.8
+			_death_soul_sprite.position.y = _sprite_base_position.y - soul_progress * 80.0
+			_death_soul_sprite.modulate.a = 0.9 * (1.0 - soul_progress)
+			_death_soul_sprite.scale = Vector2(0.25 + soul_progress * 0.15, 0.25 + soul_progress * 0.15)
+	# Cleanup when done
+	if _death_anim_timer <= 0:
+		if _death_explosion_sprite and is_instance_valid(_death_explosion_sprite):
+			_death_explosion_sprite.queue_free()
+			_death_explosion_sprite = null
+		if _death_soul_sprite and is_instance_valid(_death_soul_sprite):
+			_death_soul_sprite.queue_free()
+			_death_soul_sprite = null
+		_death_anim_active = false
 
 
 ## Update movement toward target position
@@ -802,6 +904,8 @@ func take_damage(p_damage: int, p_attacker: Node2D = null) -> void:
 		state = UnitState.DEAD
 		emit_signal("state_changed", state)
 		emit_signal("unit_died", self)
+		# Trigger death animation
+		trigger_death_animation()
 		# Play death sound effect
 		if AudioManager:
 			AudioManager.play_sfx("soul_unit_death", 1.0)
