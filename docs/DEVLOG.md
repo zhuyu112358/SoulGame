@@ -5412,3 +5412,66 @@ ame (String) - 唯一可见属性
 - [ ] BUG-030音频导入
 - [ ] 视觉提升P0：自定义字体+UI皮肤图集
 - [ ] 视觉提升P1：战斗特效+灵魂单位精灵化+战斗UI升级
+
+## 2026-09-08 - 架构合规深化：实体战斗属性同步到ArboreusEntity组件（P2架构合规）
+
+### 完成工作
+
+#### 实体战斗属性同步到ArboreusEntity组件
+
+**背景**：之前ArboreusEntity只有transform组件（position, team），战斗属性（HP/ATK/DEF等）仍由SoulUnit管理，未同步到引擎层。
+
+**修改RTSArenaManager.gd**：
+
+1. **实体创建时添加combat_stats组件**：
+   - 玩家实体：添加combat_stats组件（hp, max_hp, attack, attack_range, move_speed, level, element）
+   - AI实体：同样添加combat_stats组件
+
+2. **定期同步战斗属性到ArboreusEntity**：
+   - 新增_combat_stats_sync_timer和_combat_stats_sync_interval（0.5秒）
+   - 新增_sync_combat_stats_to_entities()方法
+   - _process中每0.5秒同步一次HP和战斗属性
+   - 表现层（SoulUnit）→ 引擎层（ArboreusEntity combat_stats组件）
+
+**combat_stats组件包含**：
+- hp: 当前生命值
+- max_hp: 最大生命值
+- attack: 攻击力
+- attack_range: 攻击范围
+- move_speed: 移动速度
+- level: 等级
+- element: 元素属性
+
+### 架构合规意义
+- ArboreusEntity现在包含完整的实体状态（transform + combat_stats）
+- 世界模拟层可以通过ArboreusEntity获取战斗属性
+- 为后续将战斗逻辑迁移到Arboreus SDK打下基础
+- 战策仍负责战斗逻辑计算（应用层），但状态已同步到引擎层
+
+### 视觉/玩法效果变化
+- 无可见变化（战斗属性同步是后台逻辑）
+- ArboreusWorld中的实体现在有完整的战斗属性数据
+
+### 测试
+- 自动化战斗测试: 运行中...
+- M2测试套件: 待运行
+
+### 修改的文件
+- scripts/game/RTSArenaManager.gd - 添加combat_stats组件同步
+
+### 架构合规进度（全部完成+深化）
+- [x] A*寻路 → ArboreusPathfinder
+- [x] SoulAIController → Ember CognitiveEngine+PerceptionSystem
+- [x] SoulUnit灵魂数据层 → Ember SoulData+Personality+EmotionState
+- [x] EventBus → ArboreusEventBus SDK（渐进式）
+- [x] ArenaMap网格 → ArboreusGridMapBridge
+- [x] RTSArenaManager世界模拟层 → ArboreusWorldBridge
+- [x] GameState世界状态 → ArboreusWorld状态同步
+- [x] 实体位置 → ArboreusMovementSystem
+- [x] 实体战斗属性 → ArboreusEntity combat_stats组件（本轮完成）
+
+### 待办
+- [ ] 视觉提升P0：自定义字体+UI皮肤图集（需设计任务产出）
+- [ ] 视觉提升P1：战斗特效+灵魂单位精灵化+战斗UI升级
+- [ ] BUG-030音频导入
+- [ ] 战斗逻辑迁移到Arboreus SDK（长期，需SDK支持）

@@ -82,6 +82,10 @@ var _ai_entity_id: int = -1
 var _world_state_sync_timer: float = 0.0
 var _world_state_sync_interval: float = 1.0  # Sync every 1 second
 
+## Combat stats sync timer (sync HP/attributes to ArboreusEntity components)
+var _combat_stats_sync_timer: float = 0.0
+var _combat_stats_sync_interval: float = 0.5  # Sync every 0.5 seconds
+
 ## Battle mode: "manual" (player controls skills) or "auto" (AI controls both)
 ## Default is "auto" for coach-style RTS: souls make autonomous decisions
 var battle_mode: String = "auto"
@@ -184,6 +188,16 @@ func start_battle(p_player_soul: Dictionary, p_ai_soul: Dictionary, p_map_name: 
 		_arboreus_world.register_entity_to_movement(_player_entity_id, player_unit.position)
 		# Add transform component to entity (Arboreus SDK component system)
 		_arboreus_world.entity_add_component(_player_entity_id, "transform", {"position": player_unit.position, "team": "player"})
+		# Add combat stats component (battle attributes synced to ArboreusEntity)
+		_arboreus_world.entity_add_component(_player_entity_id, "combat_stats", {
+			"hp": player_unit.current_hp,
+			"max_hp": player_unit.max_hp,
+			"attack": player_unit.attack_damage,
+			"attack_range": player_unit.attack_range,
+			"move_speed": player_unit.move_speed,
+			"level": player_unit.level,
+			"element": player_unit.element
+		})
 
 	# Spawn AI unit
 	ai_unit = SoulUnit.new()
@@ -207,6 +221,16 @@ func start_battle(p_player_soul: Dictionary, p_ai_soul: Dictionary, p_map_name: 
 		_arboreus_world.register_entity_to_movement(_ai_entity_id, ai_unit.position)
 		# Add transform component to entity (Arboreus SDK component system)
 		_arboreus_world.entity_add_component(_ai_entity_id, "transform", {"position": ai_unit.position, "team": "ai"})
+		# Add combat stats component (battle attributes synced to ArboreusEntity)
+		_arboreus_world.entity_add_component(_ai_entity_id, "combat_stats", {
+			"hp": ai_unit.current_hp,
+			"max_hp": ai_unit.max_hp,
+			"attack": ai_unit.attack_damage,
+			"attack_range": ai_unit.attack_range,
+			"move_speed": ai_unit.move_speed,
+			"level": ai_unit.level,
+			"element": ai_unit.element
+		})
 
 	# AI starts attacking player
 	ai_unit.set_attack_target(player_unit)
@@ -378,6 +402,12 @@ func _process(delta: float) -> void:
 			_arboreus_world.set_entity_position(_player_entity_id, player_unit.position)
 		if ai_unit and _ai_entity_id >= 0:
 			_arboreus_world.set_entity_position(_ai_entity_id, ai_unit.position)
+
+	# Sync combat stats (HP) to ArboreusEntity components periodically
+	_combat_stats_sync_timer += scaled_delta
+	if _combat_stats_sync_timer >= _combat_stats_sync_interval:
+		_combat_stats_sync_timer = 0.0
+		_sync_combat_stats_to_entities()
 
 	# Update AI controllers
 	if _ai_controller:
@@ -808,3 +838,36 @@ func _sync_world_state_to_game_state() -> void:
 	if ai_unit:
 		GameState.set_world_state("ai_position", ai_unit.position)
 		GameState.set_world_state("ai_hp", ai_unit.current_hp)
+
+
+## Sync combat stats (HP etc.) from SoulUnit to ArboreusEntity components
+## Presentation layer (SoulUnit) -> engine layer (ArboreusEntity combat_stats component)
+func _sync_combat_stats_to_entities() -> void:
+	if not _arboreus_world or not _arboreus_world.is_arboreus_available():
+		return
+	if not _arboreus_world.is_running():
+		return
+
+	# Sync player entity combat stats
+	if player_unit and _player_entity_id >= 0:
+		_arboreus_world.entity_add_component(_player_entity_id, "combat_stats", {
+			"hp": player_unit.current_hp,
+			"max_hp": player_unit.max_hp,
+			"attack": player_unit.attack_damage,
+			"attack_range": player_unit.attack_range,
+			"move_speed": player_unit.move_speed,
+			"level": player_unit.level,
+			"element": player_unit.element
+		})
+
+	# Sync AI entity combat stats
+	if ai_unit and _ai_entity_id >= 0:
+		_arboreus_world.entity_add_component(_ai_entity_id, "combat_stats", {
+			"hp": ai_unit.current_hp,
+			"max_hp": ai_unit.max_hp,
+			"attack": ai_unit.attack_damage,
+			"attack_range": ai_unit.attack_range,
+			"move_speed": ai_unit.move_speed,
+			"level": ai_unit.level,
+			"element": ai_unit.element
+		})
