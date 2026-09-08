@@ -4688,3 +4688,81 @@
 - [ ] 等待建木修复ArboreusPathfinder大网格bug
 - [ ] BUG-030音频导入
 - [ ] 视觉提升计划
+
+## 2026-09-08 - SDK集成期：Arboreus World/GridMap API探索+ArboreusGridMapBridge创建（P2准备）
+
+### 完成工作
+
+#### 1. Arboreus World/GridMap/Physics API探索
+创建tests/arboreus_world_api_test.gd和arboreus_detailed_api_test.gd探索Arboreus SDK：
+
+**ArboreusWorld（完整世界管理器）**:
+- 生命周期: create/start/stop/update/destroy
+- 实体管理: create_entity/remove_entity/get_entity/get_all_entities/get_entity_count
+- 子系统访问: get_grid_map/get_pathfinder/get_physics_system/get_movement_system/get_event_bus/get_world_clock/get_spatial_index
+- 事件: emit_event/subscribe/unsubscribe
+- 状态: get_status/get_is_running
+
+**ArboreusGridMap**:
+- 坐标转换: world_to_grid/grid_to_world
+- 单元格: get_cell/set_cell/is_walkable/set_walkable/get_cell_cost/set_cell_cost
+- 邻居: get_neighbors
+- 尺寸: get_width/get_height/get_cell_size/get_origin/set_origin
+- 区域: fill_rect/clear/get_walkable_count
+- ⚠️ API参数与预期不符: create期望3参数, fill_rect期望5参数, get_neighbors期望3参数（需进一步研究）
+
+**ArboreusPhysicsSystem**:
+- update/check_collision
+
+#### 2. 创建ArboreusGridMapBridge适配器
+**架构设计**:
+- 实现与战策NavigationGrid完全相同的接口
+- 内部持有ArboreusGridMap实例（SDK已初始化）
+- 坐标转换/可走性/阻塞区域使用战策内部_blocked数组（因Arboreus API参数不明确）
+- 可直接替换NavigationGrid: 只需修改preload指向
+
+**测试结果**:
+- 坐标转换: World(100,200)->Cell(3,6) ✓
+- 可走性: 默认true, set_cell后正确变化 ✓
+- 阻塞区域: block_region后正确阻塞 ✓
+- 邻居: 8方向邻居正确 ✓
+- 边界检查: 全部正确 ✓
+- 清除: clear后恢复可走 ✓
+- 无SCRIPT ERROR ✓
+
+### [SDK需求] ArboreusGridMap API参数不明确
+- create()期望3参数（我们传了4个: width,height,cell_size,origin）
+- fill_rect()期望5参数（我们传了3个: min,max,walkable）
+- get_neighbors()期望3参数（我们传了2个: x,y）
+- world_to_grid()返回值格式不明确（直接传Vector2返回了错误结果）
+- 需要建木团队提供完整的API文档或示例代码
+
+### 视觉/玩法效果变化
+- 新增ArboreusGridMapBridge适配器，为P2 ArenaMap替换做准备
+- 游戏行为无变化（适配器尚未接入实际游戏逻辑）
+
+### 测试
+- ArboreusGridMapBridge测试: 全部通过，无SCRIPT ERROR
+- M2测试套件: 运行中...
+
+### 修改的文件
+- scripts/game/ArboreusGridMapBridge.gd - 新建，Arboreus GridMap适配器（~200行）
+- tests/arboreus_world_api_test.gd - 新建，Arboreus API探索测试
+- tests/arboreus_detailed_api_test.gd - 新建，详细API探索测试
+- tests/arboreus_grid_bridge_test.gd - 新建，GridMapBridge测试
+
+### 架构合规进度
+- [x] A*寻路：临时替代（待ArboreusPathfinder修复）
+- [x] SoulAIController：已替换为Ember
+- [x] SoulUnit：灵魂数据层已集成Ember
+- [x] EventBus：已集成ArboreusEventBus SDK
+- [ ] ArenaMap：ArboreusGridMapBridge已创建，待接入替换NavigationGrid（P2进行中）
+- [ ] RTSArenaManager/GameState（P2）
+
+### 待办
+- [ ] P2: 将ArenaMap中的NavigationGrid替换为ArboreusGridMapBridge
+- [ ] P2: RTSArenaManager集成ArboreusWorld
+- [ ] 研究ArboreusGridMap API参数，优化Bridge使用SDK原生方法
+- [ ] 等待建木修复ArboreusPathfinder大网格bug
+- [ ] BUG-030音频导入
+- [ ] 视觉提升计划
