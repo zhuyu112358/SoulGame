@@ -133,10 +133,9 @@ var _skill_label = null
 var _skill_timer = 0.0
 var _skill_active = false
 
-## Damage floating text display
-var _damage_label = null
-var _damage_timer = 0.0
-var _damage_active = false
+## Damage floating text display (multiple labels for simultaneous damage)
+var _damage_labels = []  # Array of {label, timer, duration, start_y}
+var _damage_max_labels = 8
 
 
 func _ready() -> void:
@@ -692,55 +691,71 @@ func _get_skill_display_name(skill_name: String) -> String:
 			return skill_name.capitalize()
 
 
-## Setup damage floating text label
+## Setup damage floating text system (multiple labels for simultaneous damage)
 func _setup_damage_label() -> void:
-	_damage_label = Label.new()
-	_damage_label.name = "DamageLabel"
-	_damage_label.text = ""
-	_damage_label.position = Vector2(540, 600)
-	_damage_label.size = Vector2(200, 50)
-	_damage_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_damage_label.add_theme_font_size_override("font_size", 32)
-	_damage_label.modulate = Color(1.0, 0.3, 0.3)
-	_damage_label.visible = false
-	add_child(_damage_label)
+	_damage_labels = []
+	GameLog.debug("RTSArena: Damage floating text system initialized", "UI")
 
 
-## Update damage floating text display
+## Update all damage floating text displays
 func _update_damage_display(delta: float) -> void:
-	if _damage_active:
-		_damage_timer -= delta
-		if _damage_timer <= 0:
-			_damage_active = false
-			if _damage_label:
-				_damage_label.visible = false
+	# Update existing damage labels
+	var to_remove = []
+	for dmg_data in _damage_labels:
+		dmg_data.timer -= delta
+		if dmg_data.timer <= 0:
+			if dmg_data.label:
+				dmg_data.label.queue_free()
+			to_remove.append(dmg_data)
 		else:
-			# Animate: float upward and fade out
-			if _damage_label:
-				var progress = 1.0 - (_damage_timer / 1.0)
-				_damage_label.position.y = 600 - progress * 40
-				_damage_label.modulate.a = 1.0 - progress
-		return
+			if dmg_data.label:
+				var progress = 1.0 - (dmg_data.timer / dmg_data.duration)
+				dmg_data.label.position.y = dmg_data.start_y - progress * 50
+				dmg_data.label.modulate.a = 1.0 - progress
+	for dmg_data in to_remove:
+		_damage_labels.erase(dmg_data)
 
 	# Check if player unit just took damage
 	if RTSArenaManager.player_unit and RTSArenaManager.player_unit.last_damage_taken > 0:
-		_show_damage(RTSArenaManager.player_unit.last_damage_taken)
-		# Reset the flag to avoid repeated display
+		var player_pos = RTSArenaManager.player_unit.position
+		_show_damage_at(RTSArenaManager.player_unit.last_damage_taken, player_pos, Color(1.0, 0.3, 0.3))
 		RTSArenaManager.player_unit.last_damage_taken = 0
+		# Trigger hit flash on player damage taken
+		_trigger_hit_flash(Color(1.0, 0.2, 0.2, 0.2), 0.12)
+
+	# Check if AI unit just took damage
+	if RTSArenaManager.ai_unit and RTSArenaManager.ai_unit.last_damage_taken > 0:
+		var ai_pos = RTSArenaManager.ai_unit.position
+		_show_damage_at(RTSArenaManager.ai_unit.last_damage_taken, ai_pos, Color(1.0, 0.7, 0.2))
+		RTSArenaManager.ai_unit.last_damage_taken = 0
 
 
-## Show damage floating text
-func _show_damage(damage_amount: int) -> void:
-	if _damage_label == null:
-		return
-	_damage_label.text = "-%d" % damage_amount
-	_damage_label.visible = true
-	_damage_label.position = Vector2(540, 600)
-	_damage_label.modulate.a = 1.0
-	_damage_active = true
-	_damage_timer = 1.0
-	# Trigger hit flash on damage taken
-	_trigger_hit_flash(Color(1.0, 0.2, 0.2, 0.25), 0.15)
+## Show damage floating text at specific position
+## p_color: red=player damage, orange=AI damage, green=heal, gold=crit
+func _show_damage_at(damage_amount: int, p_position: Vector2, p_color: Color = Color(1.0, 0.3, 0.3)) -> void:
+	# Limit max simultaneous labels
+	if _damage_labels.size() >= _damage_max_labels:
+		var oldest = _damage_labels[0]
+		if oldest.label:
+			oldest.label.queue_free()
+		_damage_labels.pop_front()
+	# Create new damage label
+	var label = Label.new()
+	label.name = "DamageText_%d" % Time.get_ticks_msec()
+	label.text = "-%d" % damage_amount
+	label.position = Vector2(p_position.x - 30, p_position.y - 60)
+	label.size = Vector2(60, 30)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", 24)
+	label.modulate = p_color
+	label.z_index = 100
+	add_child(label)
+	_damage_labels.append({
+		"label": label,
+		"timer": 1.0,
+		"duration": 1.0,
+		"start_y": p_position.y - 60
+	})
 
 
 ## Trigger screen shake effect
