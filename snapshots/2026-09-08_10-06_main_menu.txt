@@ -1,0 +1,20 @@
+﻿=== main_menu 场景结构快照 ===
+时间: 2026-09-08_10-06
+节点总数: 14
+
+节点树:
+  - MainMenu (Control)
+  - Background (TextureRect)
+  - Overlay (ColorRect)
+  - CenterContainer (CenterContainer)
+  - VBoxContainer (VBoxContainer)
+  - TitleLabel (Label)
+  - SubtitleLabel (Label)
+  - Spacer1 (Control)
+  - StartButton (Button)
+  - HomeButton (Button)
+  - SettingsButton (Button)
+  - QuitButton (Button)
+  - Spacer2 (Control)
+  - VersionLabel (Label)
+
