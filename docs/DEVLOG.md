@@ -4979,3 +4979,63 @@ ame (String) - 唯一可见属性
 - [ ] 等待建木修复ArboreusPathfinder大网格bug
 - [ ] BUG-030音频导入
 - [ ] 视觉提升计划
+
+## 2026-09-08 - SDK集成期：RTSArenaManager集成ArboreusWorldBridge（P2架构合规）
+
+### 完成工作
+
+#### 1. RTSArenaManager渐进式集成ArboreusWorldBridge
+**集成策略**：渐进式集成，保持游戏可运行
+- ArboreusWorld作为**世界模拟层**：时间推进、实体生命周期、事件系统
+- SoulUnit保持**表现层**：位置管理、视觉渲染、战斗逻辑
+- 两者通过ArboreusWorldBridge关联
+
+**修改内容**:
+- 添加ArboreusWorldBridge preload和_arboreus_world属性
+- 添加_player_entity_id和_ai_entity_id跟踪实体
+- start_battle中：初始化ArboreusWorldBridge并start()
+- 生成玩家/AI单位时：创建对应的ArboreusEntity
+- _process中：调用_arboreus_world.update(scaled_delta)
+- _finish_battle中：移除实体并stop()世界模拟
+
+**集成点**:
+1. 世界初始化：start_battle中创建ArboreusWorldBridge，配置arena_width/arena_height/cell_size
+2. 实体创建：每个SoulUnit生成时同步创建ArboreusEntity
+3. 世界更新：每帧_process中调用bridge.update(delta)
+4. 世界清理：战斗结束时移除实体并stop()
+
+### 视觉/玩法效果变化
+- RTS竞技场现在运行在Arboreus世界模拟层之上
+- 玩家和AI灵魂在ArboreusWorld中都有对应的实体
+- 世界时间由Arboreus SDK驱动（与战斗时间同步）
+- 游戏行为无可见变化（渐进式集成，表现层仍由SoulUnit管理）
+
+### 测试
+- 自动化战斗测试: [OK] Both units moved successfully!
+  - 无SCRIPT ERROR
+  - ArboreusWorld初始化: available=true
+  - 实体创建: 玩家(id=1) + AI(id=2)
+  - 玩家移动550px, AI移动334px, 最终距离0.4
+  - 两个SoulUnit均Ember:true
+- M2测试套件: 运行中...
+
+### 修改的文件
+- scripts/game/RTSArenaManager.gd - 修改，集成ArboreusWorldBridge（世界模拟层）
+
+### 架构合规进度
+- [x] A*寻路网格层 → ArboreusGridMapBridge
+- [x] SoulAIController → Ember
+- [x] SoulUnit灵魂数据层 → Ember
+- [x] EventBus → ArboreusEventBus
+- [x] ArenaMap网格 → ArboreusGridMapBridge
+- [x] RTSArenaManager世界模拟层 → ArboreusWorldBridge（P2部分完成）
+- [ ] RTSArenaManager实体位置/战斗逻辑 → ArboreusEntity（待SDK位置API明确）
+- [ ] GameState → Arboreus World状态
+
+### 待办
+- [ ] 等待建木明确ArboreusEntity位置管理API（当前Entity无位置属性）
+- [ ] 深化RTSArenaManager集成：将实体位置同步到ArboreusEntity
+- [ ] P2: GameState集成Arboreus World状态
+- [ ] 等待建木修复ArboreusPathfinder大网格bug
+- [ ] BUG-030音频导入
+- [ ] 视觉提升计划

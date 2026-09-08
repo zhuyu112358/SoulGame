@@ -71,6 +71,13 @@ var _pathfinder: RefCounted = null
 var _grid_map_script: Script = null
 var _pathfinder_script: Script = null
 
+## ArboreusWorldBridge (Arboreus SDK world simulation - architecture compliant)
+## Progressive integration: world simulation layer, SoulUnit remains presentation layer
+const ArboreusWorldBridge = preload("res://scripts/game/ArboreusWorldBridge.gd")
+var _arboreus_world: ArboreusWorldBridge = null
+var _player_entity_id: int = -1
+var _ai_entity_id: int = -1
+
 ## Battle mode: "manual" (player controls skills) or "auto" (AI controls both)
 ## Default is "auto" for coach-style RTS: souls make autonomous decisions
 var battle_mode: String = "auto"
@@ -137,6 +144,17 @@ func start_battle(p_player_soul: Dictionary, p_ai_soul: Dictionary, p_map_name: 
 		_grid_map.width, _grid_map.height, _grid_map.get_blocked_count()
 	], "Arena")
 
+	# Initialize Arboreus World simulation (Arboreus SDK - architecture compliant)
+	# Progressive integration: world sim layer, SoulUnit remains presentation layer
+	_arboreus_world = ArboreusWorldBridge.new({
+		"name": "rts_arena",
+		"width": battle_config["arena_width"],
+		"height": battle_config["arena_height"],
+		"cell_size": 32
+	})
+	_arboreus_world.start()
+	GameLog.info("RTSArenaManager: ArboreusWorld simulation started (available: %s)" % _arboreus_world.is_arboreus_available(), "Arena")
+
 	# Spawn player unit
 	player_unit = SoulUnit.new()
 	player_unit.init_from_soul(
@@ -152,6 +170,10 @@ func start_battle(p_player_soul: Dictionary, p_ai_soul: Dictionary, p_map_name: 
 	add_child(player_unit)
 	emit_signal("unit_spawned", player_unit, true)
 
+	# Create corresponding Arboreus entity (world simulation layer)
+	if _arboreus_world and _arboreus_world.is_arboreus_available():
+		_player_entity_id = _arboreus_world.create_entity(p_player_soul.get("name", "Player"), battle_config["player_spawn"])
+
 	# Spawn AI unit
 	ai_unit = SoulUnit.new()
 	ai_unit.init_from_soul(
@@ -166,6 +188,10 @@ func start_battle(p_player_soul: Dictionary, p_ai_soul: Dictionary, p_map_name: 
 	ai_unit.unit_died.connect(_on_unit_died)
 	add_child(ai_unit)
 	emit_signal("unit_spawned", ai_unit, false)
+
+	# Create corresponding Arboreus entity (world simulation layer)
+	if _arboreus_world and _arboreus_world.is_arboreus_available():
+		_ai_entity_id = _arboreus_world.create_entity(p_ai_soul.get("name", "AI Opponent"), battle_config["ai_spawn"])
 
 	# AI starts attacking player
 	ai_unit.set_attack_target(player_unit)
@@ -297,6 +323,10 @@ func _process(delta: float) -> void:
 	battle_time += scaled_delta
 	emit_signal("battle_time_updated", battle_time)
 
+	# Update Arboreus World simulation (Arboreus SDK - architecture compliant)
+	if _arboreus_world and _arboreus_world.is_running():
+		_arboreus_world.update(scaled_delta)
+
 	# Update AI controllers
 	if _ai_controller:
 		_ai_controller.update(scaled_delta)
@@ -414,6 +444,17 @@ func _finish_battle(p_winner_id: String, p_result: String) -> void:
 	battle_state = BattleState.FINISHED
 	winner_id = p_winner_id
 	battle_result = p_result
+
+	# Cleanup Arboreus World simulation (Arboreus SDK - architecture compliant)
+	if _arboreus_world and _arboreus_world.is_running():
+		if _player_entity_id >= 0:
+			_arboreus_world.remove_entity(_player_entity_id)
+			_player_entity_id = -1
+		if _ai_entity_id >= 0:
+			_arboreus_world.remove_entity(_ai_entity_id)
+			_ai_entity_id = -1
+		_arboreus_world.stop()
+		GameLog.info("RTSArenaManager: ArboreusWorld simulation stopped", "Arena")
 
 	var loser_id: String = ""
 	if p_winner_id == player_unit.soul_id:
