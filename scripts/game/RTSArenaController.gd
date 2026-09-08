@@ -1777,10 +1777,8 @@ func _show_result_modal(p_result: String, p_title: String, p_title_color: Color,
 	# Play battle end sound
 	if AudioManager:
 		AudioManager.play_sfx("battle_ui_end")
-	# Play panel open sound
 	if AudioManager:
 		AudioManager.play_sfx("ui_panel_open")
-	# Play EXP gain sound
 	if AudioManager:
 		AudioManager.play_sfx("ui_exp_gain")
 
@@ -1790,126 +1788,381 @@ func _show_result_modal(p_result: String, p_title: String, p_title_color: Color,
 	modal_bg.size = Vector2(1280, 720)
 	modal_bg.name = "ResultModalBG"
 	add_child(modal_bg)
-	# Fade in modal background
 	var bg_tween = create_tween()
-	bg_tween.tween_property(modal_bg, "color:a", 0.75, 0.2)
+	bg_tween.tween_property(modal_bg, "color:a", 0.8, 0.2)
 
-	# Create result panel (taller to fit more stats)
+	# Create result panel with gold border style
 	var panel = Panel.new()
-	panel.position = Vector2(390, 140)
-	panel.size = Vector2(500, 440)
+	panel.position = Vector2(340, 100)
+	panel.size = Vector2(600, 520)
 	panel.name = "ResultModal"
+	# Apply custom style: dark purple bg + gold border
+	var panel_style = StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.10, 0.08, 0.18, 0.97)
+	panel_style.border_color = Color(0.83, 0.66, 0.36, 1.0)
+	panel_style.border_width_left = 3
+	panel_style.border_width_right = 3
+	panel_style.border_width_top = 3
+	panel_style.border_width_bottom = 3
+	panel_style.corner_radius_top_left = 12
+	panel_style.corner_radius_top_right = 12
+	panel_style.corner_radius_bottom_left = 12
+	panel_style.corner_radius_bottom_right = 12
+	panel.add_theme_stylebox_override("panel", panel_style)
 	add_child(panel)
-	# Animate panel appearance (scale up + fade in)
-	panel.scale = Vector2(0.8, 0.8)
+	# Animate panel appearance
+	panel.scale = Vector2(0.85, 0.85)
 	panel.modulate = Color(1, 1, 1, 0)
 	var tween = create_tween()
 	tween.set_parallel(true)
-	tween.tween_property(panel, "scale", Vector2(1.0, 1.0), 0.3).set_ease(Tween.EASE_OUT)
-	tween.tween_property(panel, "modulate:a", 1.0, 0.3)
+	tween.tween_property(panel, "scale", Vector2(1.0, 1.0), 0.35).set_ease(Tween.EASE_OUT)
+	tween.tween_property(panel, "modulate:a", 1.0, 0.35)
 	tween.set_parallel(false)
 
-	# Title
+	# === Title with gold decoration ===
 	var title = Label.new()
 	title.text = p_title
-	title.position = Vector2(0, 20)
-	title.size = Vector2(500, 50)
+	title.position = Vector2(0, 25)
+	title.size = Vector2(600, 55)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 36)
+	title.add_theme_font_size_override("font_size", 42)
 	title.modulate = p_title_color
 	panel.add_child(title)
 
-	# EXP gained
+	# Gold decorative line under title
+	var title_line = ColorRect.new()
+	title_line.color = Color(0.83, 0.66, 0.36, 0.8)
+	title_line.position = Vector2(150, 85)
+	title_line.size = Vector2(300, 2)
+	panel.add_child(title_line)
+
+	# === EXP gained card ===
+	var exp_card = Panel.new()
+	exp_card.position = Vector2(50, 100)
+	exp_card.size = Vector2(500, 50)
+	var exp_style = StyleBoxFlat.new()
+	exp_style.bg_color = Color(0.15, 0.12, 0.25, 0.9)
+	exp_style.border_color = Color(0.83, 0.66, 0.36, 0.6)
+	exp_style.border_width_left = 2
+	exp_style.border_width_right = 2
+	exp_style.border_width_top = 2
+	exp_style.border_width_bottom = 2
+	exp_style.corner_radius_top_left = 6
+	exp_style.corner_radius_top_right = 6
+	exp_style.corner_radius_bottom_left = 6
+	exp_style.corner_radius_bottom_right = 6
+	exp_card.add_theme_stylebox_override("panel", exp_style)
+	panel.add_child(exp_card)
+
+	var exp_icon = Label.new()
+	exp_icon.text = "★"
+	exp_icon.position = Vector2(20, 8)
+	exp_icon.size = Vector2(30, 35)
+	exp_icon.add_theme_font_size_override("font_size", 24)
+	exp_icon.modulate = Color(1.0, 0.85, 0.3)
+	exp_card.add_child(exp_icon)
+
 	var exp_label = Label.new()
-	exp_label.text = "Experience Gained: +%d" % p_exp
-	exp_label.position = Vector2(0, 75)
-	exp_label.size = Vector2(500, 30)
+	exp_label.text = "经验获得  +%d" % p_exp
+	exp_label.position = Vector2(60, 12)
+	exp_label.size = Vector2(420, 30)
 	exp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	exp_label.add_theme_font_size_override("font_size", 18)
-	exp_label.modulate = Color(0.9, 0.8, 0.4)
-	panel.add_child(exp_label)
+	exp_label.add_theme_font_size_override("font_size", 20)
+	exp_label.modulate = Color(0.95, 0.88, 0.5)
+	exp_card.add_child(exp_label)
 
-	# Separator 1
-	var sep1 = HSeparator.new()
-	sep1.position = Vector2(50, 115)
-	sep1.size = Vector2(400, 10)
-	panel.add_child(sep1)
+	# === Battle stats section (visualized with progress bars) ===
+	var section1_title = Label.new()
+	section1_title.text = "◆ 本场战斗 ◆"
+	section1_title.position = Vector2(0, 165)
+	section1_title.size = Vector2(600, 25)
+	section1_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	section1_title.add_theme_font_size_override("font_size", 16)
+	section1_title.modulate = Color(0.83, 0.66, 0.36)
+	panel.add_child(section1_title)
 
-	# Battle stats (this battle)
-	var battle_stats_text = "--- 本场战斗 ---\n"
+	# Duration
 	var duration = p_battle_stats.get("duration", 0.0)
 	var minutes = int(duration) / 60
 	var seconds = int(duration) % 60
-	battle_stats_text += "战斗时长: %02d:%02d\n" % [minutes, seconds]
-	battle_stats_text += "伤害输出: %d\n" % p_battle_stats.get("damage_dealt", 0)
-	battle_stats_text += "承受伤害: %d\n" % p_battle_stats.get("damage_taken", 0)
+	var dur_label = Label.new()
+	dur_label.text = "⏱  战斗时长: %02d:%02d" % [minutes, seconds]
+	dur_label.position = Vector2(70, 195)
+	dur_label.size = Vector2(200, 22)
+	dur_label.add_theme_font_size_override("font_size", 14)
+	dur_label.modulate = Color(0.8, 0.85, 0.95)
+	panel.add_child(dur_label)
+
+	# Damage dealt with bar
+	var dmg_dealt = p_battle_stats.get("damage_dealt", 0)
+	var dmg_taken = p_battle_stats.get("damage_taken", 0)
+	var max_dmg = max(dmg_dealt, dmg_taken, 1)
+
+	var dmg_dealt_label = Label.new()
+	dmg_dealt_label.text = "⚔ 伤害输出: %d" % dmg_dealt
+	dmg_dealt_label.position = Vector2(70, 222)
+	dmg_dealt_label.size = Vector2(200, 20)
+	dmg_dealt_label.add_theme_font_size_override("font_size", 13)
+	dmg_dealt_label.modulate = Color(1.0, 0.7, 0.5)
+	panel.add_child(dmg_dealt_label)
+
+	var dmg_dealt_bar = ProgressBar.new()
+	dmg_dealt_bar.position = Vector2(280, 224)
+	dmg_dealt_bar.size = Vector2(250, 16)
+	dmg_dealt_bar.max_value = 100
+	dmg_dealt_bar.value = float(dmg_dealt) / float(max_dmg) * 100.0
+	var dmg_dealt_bg = StyleBoxFlat.new()
+	dmg_dealt_bg.bg_color = Color(0.15, 0.08, 0.08, 0.9)
+	dmg_dealt_bg.corner_radius_top_left = 4
+	dmg_dealt_bg.corner_radius_top_right = 4
+	dmg_dealt_bg.corner_radius_bottom_left = 4
+	dmg_dealt_bg.corner_radius_bottom_right = 4
+	var dmg_dealt_fill = StyleBoxFlat.new()
+	dmg_dealt_fill.bg_color = Color(0.9, 0.35, 0.25, 1.0)
+	dmg_dealt_fill.corner_radius_top_left = 3
+	dmg_dealt_fill.corner_radius_top_right = 3
+	dmg_dealt_fill.corner_radius_bottom_left = 3
+	dmg_dealt_fill.corner_radius_bottom_right = 3
+	dmg_dealt_bar.add_theme_stylebox_override("background", dmg_dealt_bg)
+	dmg_dealt_bar.add_theme_stylebox_override("fill", dmg_dealt_fill)
+	panel.add_child(dmg_dealt_bar)
+
+	# Damage taken with bar
+	var dmg_taken_label = Label.new()
+	dmg_taken_label.text = "🛡 承受伤害: %d" % dmg_taken
+	dmg_taken_label.position = Vector2(70, 248)
+	dmg_taken_label.size = Vector2(200, 20)
+	dmg_taken_label.add_theme_font_size_override("font_size", 13)
+	dmg_taken_label.modulate = Color(0.5, 0.7, 1.0)
+	panel.add_child(dmg_taken_label)
+
+	var dmg_taken_bar = ProgressBar.new()
+	dmg_taken_bar.position = Vector2(280, 250)
+	dmg_taken_bar.size = Vector2(250, 16)
+	dmg_taken_bar.max_value = 100
+	dmg_taken_bar.value = float(dmg_taken) / float(max_dmg) * 100.0
+	var dmg_taken_bg = StyleBoxFlat.new()
+	dmg_taken_bg.bg_color = Color(0.08, 0.1, 0.18, 0.9)
+	dmg_taken_bg.corner_radius_top_left = 4
+	dmg_taken_bg.corner_radius_top_right = 4
+	dmg_taken_bg.corner_radius_bottom_left = 4
+	dmg_taken_bg.corner_radius_bottom_right = 4
+	var dmg_taken_fill = StyleBoxFlat.new()
+	dmg_taken_fill.bg_color = Color(0.3, 0.55, 0.9, 1.0)
+	dmg_taken_fill.corner_radius_top_left = 3
+	dmg_taken_fill.corner_radius_top_right = 3
+	dmg_taken_fill.corner_radius_bottom_left = 3
+	dmg_taken_fill.corner_radius_bottom_right = 3
+	dmg_taken_bar.add_theme_stylebox_override("background", dmg_taken_bg)
+	dmg_taken_bar.add_theme_stylebox_override("fill", dmg_taken_fill)
+	panel.add_child(dmg_taken_bar)
+
+	# HP remaining with bar
 	var player_hp = p_battle_stats.get("player_hp_remaining", 0)
 	var player_max_hp = p_battle_stats.get("player_max_hp", 100)
-	battle_stats_text += "剩余HP: %d/%d (%.0f%%)" % [player_hp, player_max_hp, float(player_hp) / float(player_max_hp) * 100.0]
+	var hp_pct = float(player_hp) / float(player_max_hp) * 100.0 if player_max_hp > 0 else 0
 
-	var battle_stats_label = Label.new()
-	battle_stats_label.text = battle_stats_text
-	battle_stats_label.position = Vector2(50, 130)
-	battle_stats_label.size = Vector2(400, 100)
-	battle_stats_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	battle_stats_label.add_theme_font_size_override("font_size", 14)
-	battle_stats_label.modulate = Color(0.7, 0.9, 1.0)
-	panel.add_child(battle_stats_label)
+	var hp_label = Label.new()
+	hp_label.text = "❤ 剩余生命: %d/%d (%.0f%%)" % [player_hp, player_max_hp, hp_pct]
+	hp_label.position = Vector2(70, 274)
+	hp_label.size = Vector2(200, 20)
+	hp_label.add_theme_font_size_override("font_size", 13)
+	hp_label.modulate = Color(0.9, 0.4, 0.4)
+	panel.add_child(hp_label)
 
-	# Separator 2
-	var sep2 = HSeparator.new()
-	sep2.position = Vector2(50, 240)
-	sep2.size = Vector2(400, 10)
-	panel.add_child(sep2)
+	var hp_bar = ProgressBar.new()
+	hp_bar.position = Vector2(280, 276)
+	hp_bar.size = Vector2(250, 16)
+	hp_bar.max_value = 100
+	hp_bar.value = hp_pct
+	var hp_bg = StyleBoxFlat.new()
+	hp_bg.bg_color = Color(0.15, 0.05, 0.05, 0.9)
+	hp_bg.corner_radius_top_left = 4
+	hp_bg.corner_radius_top_right = 4
+	hp_bg.corner_radius_bottom_left = 4
+	hp_bg.corner_radius_bottom_right = 4
+	var hp_fill = StyleBoxFlat.new()
+	hp_fill.bg_color = Color(0.85, 0.25, 0.25, 1.0)
+	hp_fill.corner_radius_top_left = 3
+	hp_fill.corner_radius_top_right = 3
+	hp_fill.corner_radius_bottom_left = 3
+	hp_fill.corner_radius_bottom_right = 3
+	hp_bar.add_theme_stylebox_override("background", hp_bg)
+	hp_bar.add_theme_stylebox_override("fill", hp_fill)
+	panel.add_child(hp_bar)
 
-	# Overall stats
-	var stats_text = "--- 总体统计 ---\n"
-	stats_text += "胜率: %.1f%%  (%d/%d)\n" % [
-		p_stats.get("win_rate", 0),
-		p_stats.get("victories", 0),
-		p_stats.get("total_battles", 0)
-	]
-	stats_text += "当前连胜: %d  (最佳: %d)\n" % [
-		p_stats.get("current_streak", 0),
-		p_stats.get("best_streak", 0)
-	]
-	stats_text += "总经验: %d" % p_stats.get("total_experience_gained", 0)
+	# === Overall stats section ===
+	var section2_title = Label.new()
+	section2_title.text = "◆ 总体统计 ◆"
+	section2_title.position = Vector2(0, 310)
+	section2_title.size = Vector2(600, 25)
+	section2_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	section2_title.add_theme_font_size_override("font_size", 16)
+	section2_title.modulate = Color(0.83, 0.66, 0.36)
+	panel.add_child(section2_title)
 
-	var stats_label = Label.new()
-	stats_label.text = stats_text
-	stats_label.position = Vector2(50, 255)
-	stats_label.size = Vector2(400, 90)
-	stats_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	stats_label.add_theme_font_size_override("font_size", 14)
-	stats_label.modulate = Color(0.85, 0.85, 0.9)
-	panel.add_child(stats_label)
+	# Win rate card
+	var win_rate = p_stats.get("win_rate", 0)
+	var victories = p_stats.get("victories", 0)
+	var total_battles = p_stats.get("total_battles", 0)
+	var wr_card = Panel.new()
+	wr_card.position = Vector2(50, 340)
+	wr_card.size = Vector2(160, 60)
+	var wr_style = StyleBoxFlat.new()
+	wr_style.bg_color = Color(0.12, 0.15, 0.12, 0.9)
+	wr_style.border_color = Color(0.4, 0.7, 0.4, 0.5)
+	wr_style.border_width_left = 2
+	wr_style.border_width_right = 2
+	wr_style.border_width_top = 2
+	wr_style.border_width_bottom = 2
+	wr_style.corner_radius_top_left = 6
+	wr_style.corner_radius_top_right = 6
+	wr_style.corner_radius_bottom_left = 6
+	wr_style.corner_radius_bottom_right = 6
+	wr_card.add_theme_stylebox_override("panel", wr_style)
+	panel.add_child(wr_card)
 
-	# Buttons
-	var btn_y = 360
+	var wr_value = Label.new()
+	wr_value.text = "%.1f%%" % win_rate
+	wr_value.position = Vector2(0, 8)
+	wr_value.size = Vector2(160, 28)
+	wr_value.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	wr_value.add_theme_font_size_override("font_size", 22)
+	wr_value.modulate = Color(0.5, 0.9, 0.5)
+	wr_card.add_child(wr_value)
+
+	var wr_desc = Label.new()
+	wr_desc.text = "胜率 (%d/%d)" % [victories, total_battles]
+	wr_desc.position = Vector2(0, 36)
+	wr_desc.size = Vector2(160, 18)
+	wr_desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	wr_desc.add_theme_font_size_override("font_size", 11)
+	wr_desc.modulate = Color(0.7, 0.75, 0.7)
+	wr_card.add_child(wr_desc)
+
+	# Streak card
+	var current_streak = p_stats.get("current_streak", 0)
+	var best_streak = p_stats.get("best_streak", 0)
+	var streak_card = Panel.new()
+	streak_card.position = Vector2(220, 340)
+	streak_card.size = Vector2(160, 60)
+	var streak_style = StyleBoxFlat.new()
+	streak_style.bg_color = Color(0.15, 0.12, 0.08, 0.9)
+	streak_style.border_color = Color(0.83, 0.66, 0.36, 0.5)
+	streak_style.border_width_left = 2
+	streak_style.border_width_right = 2
+	streak_style.border_width_top = 2
+	streak_style.border_width_bottom = 2
+	streak_style.corner_radius_top_left = 6
+	streak_style.corner_radius_top_right = 6
+	streak_style.corner_radius_bottom_left = 6
+	streak_style.corner_radius_bottom_right = 6
+	streak_card.add_theme_stylebox_override("panel", streak_style)
+	panel.add_child(streak_card)
+
+	var streak_value = Label.new()
+	streak_value.text = "%d" % current_streak
+	streak_value.position = Vector2(0, 8)
+	streak_value.size = Vector2(160, 28)
+	streak_value.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	streak_value.add_theme_font_size_override("font_size", 22)
+	streak_value.modulate = Color(1.0, 0.85, 0.4)
+	streak_card.add_child(streak_value)
+
+	var streak_desc = Label.new()
+	streak_desc.text = "当前连胜 (最佳%d)" % best_streak
+	streak_desc.position = Vector2(0, 36)
+	streak_desc.size = Vector2(160, 18)
+	streak_desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	streak_desc.add_theme_font_size_override("font_size", 11)
+	streak_desc.modulate = Color(0.75, 0.7, 0.6)
+	streak_card.add_child(streak_desc)
+
+	# Total EXP card
+	var total_exp = p_stats.get("total_experience_gained", 0)
+	var exp_total_card = Panel.new()
+	exp_total_card.position = Vector2(390, 340)
+	exp_total_card.size = Vector2(160, 60)
+	var exp_total_style = StyleBoxFlat.new()
+	exp_total_style.bg_color = Color(0.08, 0.1, 0.18, 0.9)
+	exp_total_style.border_color = Color(0.4, 0.6, 0.9, 0.5)
+	exp_total_style.border_width_left = 2
+	exp_total_style.border_width_right = 2
+	exp_total_style.border_width_top = 2
+	exp_total_style.border_width_bottom = 2
+	exp_total_style.corner_radius_top_left = 6
+	exp_total_style.corner_radius_top_right = 6
+	exp_total_style.corner_radius_bottom_left = 6
+	exp_total_style.corner_radius_bottom_right = 6
+	exp_total_card.add_theme_stylebox_override("panel", exp_total_style)
+	panel.add_child(exp_total_card)
+
+	var exp_total_value = Label.new()
+	exp_total_value.text = "%d" % total_exp
+	exp_total_value.position = Vector2(0, 8)
+	exp_total_value.size = Vector2(160, 28)
+	exp_total_value.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	exp_total_value.add_theme_font_size_override("font_size", 22)
+	exp_total_value.modulate = Color(0.5, 0.7, 1.0)
+	exp_total_card.add_child(exp_total_value)
+
+	var exp_total_desc = Label.new()
+	exp_total_desc.text = "累计经验"
+	exp_total_desc.position = Vector2(0, 36)
+	exp_total_desc.size = Vector2(160, 18)
+	exp_total_desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	exp_total_desc.add_theme_font_size_override("font_size", 11)
+	exp_total_desc.modulate = Color(0.65, 0.7, 0.8)
+	exp_total_card.add_child(exp_total_desc)
+
+	# === Buttons ===
+	var btn_y = 440
 
 	# Rematch button
 	var rematch_btn = Button.new()
-	rematch_btn.text = "再战一局"
-	rematch_btn.position = Vector2(80, btn_y)
-	rematch_btn.size = Vector2(150, 45)
-	rematch_btn.add_theme_font_size_override("font_size", 16)
-	rematch_btn.modulate = Color(0.4, 0.7, 0.9)
+	rematch_btn.text = "⚔ 再战一局"
+	rematch_btn.position = Vector2(100, btn_y)
+	rematch_btn.size = Vector2(170, 50)
+	rematch_btn.add_theme_font_size_override("font_size", 18)
+	var rematch_normal = StyleBoxFlat.new()
+	rematch_normal.bg_color = Color(0.15, 0.2, 0.35, 0.95)
+	rematch_normal.border_color = Color(0.4, 0.6, 0.9, 0.8)
+	rematch_normal.border_width_left = 2
+	rematch_normal.border_width_right = 2
+	rematch_normal.border_width_top = 2
+	rematch_normal.border_width_bottom = 2
+	rematch_normal.corner_radius_top_left = 8
+	rematch_normal.corner_radius_top_right = 8
+	rematch_normal.corner_radius_bottom_left = 8
+	rematch_normal.corner_radius_bottom_right = 8
+	rematch_btn.add_theme_stylebox_override("normal", rematch_normal)
 	rematch_btn.pressed.connect(_on_rematch_pressed)
 	_setup_button_hover(rematch_btn)
 	panel.add_child(rematch_btn)
 
 	# Back to menu button
 	var back_btn = Button.new()
-	back_btn.text = "返回主菜单"
-	back_btn.position = Vector2(270, btn_y)
-	back_btn.size = Vector2(150, 45)
-	back_btn.add_theme_font_size_override("font_size", 16)
-	back_btn.modulate = Color(0.7, 0.7, 0.7)
+	back_btn.text = "🏠 返回主菜单"
+	back_btn.position = Vector2(330, btn_y)
+	back_btn.size = Vector2(170, 50)
+	back_btn.add_theme_font_size_override("font_size", 18)
+	var back_normal = StyleBoxFlat.new()
+	back_normal.bg_color = Color(0.2, 0.18, 0.15, 0.95)
+	back_normal.border_color = Color(0.7, 0.6, 0.4, 0.8)
+	back_normal.border_width_left = 2
+	back_normal.border_width_right = 2
+	back_normal.border_width_top = 2
+	back_normal.border_width_bottom = 2
+	back_normal.corner_radius_top_left = 8
+	back_normal.corner_radius_top_right = 8
+	back_normal.corner_radius_bottom_left = 8
+	back_normal.corner_radius_bottom_right = 8
+	back_btn.add_theme_stylebox_override("normal", back_normal)
 	back_btn.pressed.connect(_on_back_to_menu_pressed)
 	_setup_button_hover(back_btn)
 	panel.add_child(back_btn)
 
-	GameLog.info("RTSArenaController: Result modal shown", "Arena")
+	GameLog.info("RTSArenaController: Result modal shown (visualized UI)", "Arena")
 
 
 ## Handle rematch button press

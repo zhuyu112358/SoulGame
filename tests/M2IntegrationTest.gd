@@ -5142,11 +5142,11 @@ func _test_result_modal_hover() -> void:
 	# Test 16: Result modal has EXP label
 	_assert(rts_content.find("exp_label") >= 0, "Result modal has EXP label")
 
-	# Test 17: Result modal has stats label
-	_assert(rts_content.find("stats_label") >= 0, "Result modal has stats label")
+	# Test 17: Result modal has progress bars (visualized stats)
+	_assert(rts_content.find("ProgressBar") >= 0, "Result modal has progress bars")
 
-	# Test 18: Result modal has separator
-	_assert(rts_content.find("HSeparator") >= 0, "Result modal has separator")
+	# Test 18: Result modal has stat cards (card layout)
+	_assert(rts_content.find("wr_card") >= 0, "Result modal has stat cards")
 
 	# Test 19: Result modal has rematch handler
 	_assert(rts_content.find("_on_rematch_pressed") >= 0, "Result modal has rematch handler")
