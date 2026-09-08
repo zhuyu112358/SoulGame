@@ -80,6 +80,8 @@ var _particle_textures_loaded = false
 
 ## Skill cooldown overlays (visual cooldown indicator)
 var _skill_cooldown_overlays = {}
+## Skill cooldown number labels
+var _skill_cooldown_labels = {}
 
 ## Weather/environment display
 var _weather_label = null
@@ -1693,15 +1695,31 @@ func _setup_skill_buttons() -> void:
 	for skill_name in skill_buttons.keys():
 		var button = skill_buttons[skill_name]
 		if button:
+			# Cooldown overlay (gradient fill from bottom)
 			var overlay = ColorRect.new()
 			overlay.name = "CooldownOverlay"
-			overlay.color = Color(0.0, 0.0, 0.0, 0.6)
+			overlay.color = Color(0.1, 0.05, 0.2, 0.75)
 			overlay.size = button.size
 			overlay.position = Vector2(0, 0)
 			overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			overlay.visible = false
 			button.add_child(overlay)
 			_skill_cooldown_overlays[skill_name] = overlay
+			# Cooldown number label
+			var cd_label = Label.new()
+			cd_label.name = "CooldownLabel"
+			cd_label.anchors_preset = Control.PRESET_FULL_RECT
+			cd_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			cd_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			cd_label.add_theme_font_size_override("font_size", 28)
+			cd_label.add_theme_color_override("font_color", Color(1.0, 0.95, 0.8))
+			cd_label.add_theme_color_override("font_outline_color", Color(0.1, 0.05, 0.0))
+			cd_label.add_theme_constant_override("outline_size", 3)
+			cd_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			cd_label.visible = false
+			cd_label.z_index = 10
+			button.add_child(cd_label)
+			_skill_cooldown_labels[skill_name] = cd_label
 
 
 ## Apply skill icons from design asset sheet to all skill buttons
@@ -2036,6 +2054,7 @@ func _update_skill_cooldowns() -> void:
 		button.disabled = cooldown > 0
 		# Update cooldown overlay visual
 		var overlay = _skill_cooldown_overlays.get(skill_name, null)
+		var cd_label = _skill_cooldown_labels.get(skill_name, null)
 		if overlay:
 			if cooldown > 0:
 				# Get max cooldown for this skill
@@ -2047,6 +2066,22 @@ func _update_skill_cooldowns() -> void:
 			else:
 				overlay.visible = false
 				overlay.size.y = 0
+		# Update cooldown number label
+		if cd_label:
+			if cooldown > 0:
+				cd_label.visible = true
+				cd_label.text = "%.1f" % cooldown
+				# Pulse effect when cooldown is almost done (< 1 sec)
+				if cooldown < 1.0:
+					var pulse = 1.0 + sin(Time.get_ticks_msec() * 0.02) * 0.15
+					cd_label.scale = Vector2(pulse, pulse)
+					cd_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+				else:
+					cd_label.scale = Vector2(1.0, 1.0)
+					cd_label.add_theme_color_override("font_color", Color(1.0, 0.95, 0.8))
+			else:
+				cd_label.visible = false
+				cd_label.scale = Vector2(1.0, 1.0)
 		if cooldown > 0:
 			# Button shows icon only; cooldown indicated by overlay + disabled state
 			_skill_was_on_cooldown[skill_name] = true
