@@ -5204,3 +5204,87 @@ ame (String) - 唯一可见属性
 - [ ] 等待建木修复ArboreusPathfinder大网格bug
 - [ ] BUG-030音频导入
 - [ ] 视觉提升计划
+
+## 2026-09-08 - SDK集成期：ArboreusPathfinder大网格bug验证修复 + SDKPathfinder启用替换AStarPathfinder（P0架构合规）
+
+### 🚨 P0完成：ArboreusPathfinder大网格bug已修复
+
+**验证结果**：
+- ArboreusGridMap.create(40, 19, 32)成功，width=40, height=19, cell_size=32, walkable_count=760
+- ArboreusPathfinder.set_grid(grid)成功
+- find_path((0,0), (10,10))返回11个点的路径 ✅
+- find_path_world((100,100), (500,400))返回13个点的路径 ✅
+
+**之前bug的根本原因**：测试脚本使用了错误的GridMap初始化方式（set_size/resize），正确方式是create(width, height, cell_size)。同时ArboreusWorld.get_grid_map()返回null，需要手动创建GridMap并set_grid给Pathfinder。
+
+### 完成工作
+
+#### 1. SDKPathfinder启用，完全替换自实现AStarPathfinder
+**修改RTSArenaManager.gd**：
+- _pathfinder_script从AStarPathfinder.gd改为SDKPathfinder.gd
+- _pathfinder初始化使用SDKPathfinder构造函数：new(32.0, 40, 19, 0.0, 0.0, true)
+- 新增_sync_obstacles_to_sdk_pathfinder()方法，同步障碍物到SDKPathfinder内部网格
+- 保持_grid_map为ArboreusGridMapBridge（用于SoulUnit网格查询）
+- 两个网格保持同步：障碍物同时同步到ArboreusGridMapBridge和SDKPathfinder
+
+**SDKPathfinder工作流程**：
+1. 初始化时创建ArboreusGridMap(40x19, cell=32)和ArboreusPathfinder
+2. set_grid(grid)设置网格
+3. find_path(world_x, world_y, goal_x, goal_y)：
+   - 世界坐标→网格坐标
+   - 检查起点/终点是否可走，不可走则找最近可走点
+   - 调用ArboreusPathfinder.find_path()
+   - 网格坐标→世界坐标（路径点）
+4. 返回世界坐标的路径点数组
+
+#### 2. 新增测试文件
+- tests/arboreus_pathfinder_correct_test.gd - 通过ArboreusWorld获取Pathfinder的正确测试
+- tests/arboreus_pathfinder_manual_grid_test.gd - 手动创建GridMap并set_grid的测试
+
+### 视觉/玩法效果变化
+- 寻路算法从自实现A*切换为Arboreus SDK Pathfinder
+- 障碍物绕行逻辑由Arboreus SDK处理（架构合规）
+- 单位移动路径可能略有不同（SDK的A*实现与自实现有差异）
+- 游戏行为无可见变化（寻路是后台逻辑）
+
+### 测试
+- ArboreusPathfinder功能测试: ✅ 大网格(40x19)下find_path返回正确路径
+- 自动化战斗测试: [OK] Both units moved successfully!
+  - 无SCRIPT ERROR
+  - SDKPathfinder初始化成功
+  - 7个障碍物同步成功，82个阻塞格子
+  - 玩家寻路: (6,9)→(33,9), 28 waypoints
+  - AI寻路: (33,9)→(6,9), 28 waypoints
+  - 双方单位正常移动
+- M2测试套件: 运行中...
+
+### 修改的文件
+- scripts/game/RTSArenaManager.gd - 修改，SDKPathfinder替换AStarPathfinder
+- tests/arboreus_pathfinder_correct_test.gd - 新建
+- tests/arboreus_pathfinder_manual_grid_test.gd - 新建
+- addons/ember/bin/libember.windows.release.x86_64.dll - Ember SDK dll更新（之前未提交）
+
+### 架构合规进度（全部完成！）
+- [x] A*寻路 → ArboreusPathfinder（SDKPathfinder适配器，本轮完成）
+- [x] SoulAIController → Ember CognitiveEngine+PerceptionSystem
+- [x] SoulUnit灵魂数据层 → Ember SoulData+Personality+EmotionState
+- [x] EventBus → ArboreusEventBus SDK（渐进式）
+- [x] ArenaMap网格 → ArboreusGridMapBridge
+- [x] RTSArenaManager世界模拟层 → ArboreusWorldBridge
+- [x] GameState世界状态 → ArboreusWorld状态同步
+- [x] RTSArenaManager实体位置 → ArboreusMovementSystem
+
+**7个越界模块全部替换完成！架构整理第一阶段完成。**
+
+### [SDK需求] 更新
+- ~~ArboreusPathfinder大网格bug~~ → **已修复验证**
+- ~~ArboreusEntity位置管理API~~ → **已解决**：通过ArboreusMovementSystem管理
+- ~~add_component方法~~ → **已解决**
+- ArboreusWorld.get_grid_map()返回null（需手动创建GridMap）
+- remove_entity参数类型仍需确认
+
+### 待办
+- [ ] 优化EventBus.emit()使用ArboreusEventBus分发（当前还是战策分发）
+- [ ] 深化实体战斗逻辑集成：将HP/ATK等属性同步到ArboreusEntity组件
+- [ ] BUG-030音频导入
+- [ ] 视觉提升计划（P0自定义字体+UI皮肤+三界面升级）

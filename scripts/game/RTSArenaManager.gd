@@ -135,16 +135,19 @@ func start_battle(p_player_soul: Dictionary, p_ai_soul: Dictionary, p_map_name: 
 	_environment.setup_for_map(p_map_name)
 	battle_config["weather"] = _environment.get_weather_name()
 
-	# Initialize A* pathfinding grid using ArboreusGridMapBridge (Arboreus SDK adapter)
-	# Architecture compliant: grid simulation uses Arboreus SDK through bridge adapter
+	# Initialize pathfinding using Arboreus SDK Pathfinder (architecture compliant)
+	# Grid: ArboreusGridMapBridge (for obstacle sync + SoulUnit grid queries)
+	# Pathfinder: SDKPathfinder (ArboreusPathfinder adapter, replaces self-implemented A*)
 	if _grid_map_script == null:
 		_grid_map_script = load("res://scripts/game/ArboreusGridMapBridge.gd")
 	if _pathfinder_script == null:
-		_pathfinder_script = load("res://scripts/game/AStarPathfinder.gd")
+		_pathfinder_script = load("res://scripts/game/SDKPathfinder.gd")
 	_grid_map = _grid_map_script.new(32.0, 40, 19, 0.0, 0.0, true)
-	_pathfinder = _pathfinder_script.new(100000)
+	_pathfinder = _pathfinder_script.new(32.0, 40, 19, 0.0, 0.0, true)
 	_sync_obstacles_to_grid()
-	GameLog.info("RTSArenaManager: A* grid initialized (ArboreusGridMapBridge, %dx%d, %d blocked cells)" % [
+	# Also sync obstacles to SDKPathfinder's internal ArboreusGridMap
+	_sync_obstacles_to_sdk_pathfinder()
+	GameLog.info("RTSArenaManager: Pathfinding initialized (SDKPathfinder=Arboreus SDK, ArboreusGridMapBridge, %dx%d, %d blocked cells)" % [
 		_grid_map.width, _grid_map.height, _grid_map.get_blocked_count()
 	], "Arena")
 
@@ -263,6 +266,29 @@ func _sync_obstacles_to_grid() -> void:
 		GameLog.debug("RTSArenaManager: Synced %d obstacles to A* grid" % obstacles.size(), "Arena")
 	else:
 		GameLog.warning("RTSArenaManager: ArenaMap has no get_obstacles method", "Arena")
+
+
+## Sync obstacles to SDKPathfinder's internal ArboreusGridMap (Arboreus SDK)
+## Must be called after _sync_obstacles_to_grid, keeps both grids in sync
+func _sync_obstacles_to_sdk_pathfinder() -> void:
+	if _pathfinder == null or ArenaMap == null:
+		return
+	if not _pathfinder.has_method("block_region"):
+		return
+	_pathfinder.clear()
+	if ArenaMap.has_method("get_obstacles"):
+		var obstacles = ArenaMap.get_obstacles()
+		for obs in obstacles:
+			var pos: Vector2 = obs.get("position", Vector2.ZERO)
+			var size: Vector2 = obs.get("size", Vector2(40, 40))
+			var margin: float = 16.0
+			_pathfinder.block_region(
+				pos.x - size.x / 2 - margin,
+				pos.y - size.y / 2 - margin,
+				pos.x + size.x / 2 + margin,
+				pos.y + size.y / 2 + margin
+			)
+		GameLog.debug("RTSArenaManager: Synced %d obstacles to SDKPathfinder" % obstacles.size(), "Arena")
 
 
 ## Apply soul personality to unit (design doc: 个性即战术)
