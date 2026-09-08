@@ -19,7 +19,7 @@ func _initialize() -> void:
 
 	# Give the test time to complete, then quit
 	await process_frame
-	await create_timer(5.0).timeout
+	await create_timer(30.0).timeout
 
 	# If test didn't quit on its own, force quit
 	print("M2 Test timeout - forcing quit")

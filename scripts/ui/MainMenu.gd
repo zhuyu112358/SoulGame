@@ -17,6 +17,9 @@ var _selected_soul_id: String = ""
 func _ready() -> void:
 	GameLog.info("MainMenu initialized", "MainMenu")
 
+	# Apply Battleplan UI theme (gold/dark pixel-fantasy style)
+	_apply_ui_theme()
+
 	# Connect button signals
 	_start_button.pressed.connect(_on_start_pressed)
 	_home_button.pressed.connect(_on_home_pressed)
@@ -124,3 +127,18 @@ func _on_quit_pressed() -> void:
 func _play_button_sound() -> void:
 	if AudioManager:
 		AudioManager.play_sfx("ui_button_click")
+
+
+## Apply Battleplan UI theme (gold/dark pixel-fantasy style)
+## Loads theme from assets/ui/battleplan_theme.tres and applies to root
+func _apply_ui_theme() -> void:
+	var theme_path := "res://assets/ui/battleplan_theme.tres"
+	if ResourceLoader.exists(theme_path):
+		var theme = load(theme_path)
+		if theme:
+			self.theme = theme
+			GameLog.debug("MainMenu: Applied Battleplan UI theme", "UI")
+		else:
+			GameLog.warning("MainMenu: Failed to load UI theme", "UI")
+	else:
+		GameLog.warning("MainMenu: UI theme not found at %s" % theme_path, "UI")

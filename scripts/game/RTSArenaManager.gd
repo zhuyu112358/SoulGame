@@ -13,7 +13,7 @@
 const SoulUnit = preload("res://scripts/game/SoulUnit.gd")
 
 ## EmberSoulAIController preload (Ember SDK AI - architecture compliant)
-const SoulAIController = preload("res://scripts/game/EmberSoulAIController.gd")
+const EmberAIController = preload("res://scripts/game/EmberSoulAIController.gd")
 
 ## ArenaEnvironment preload (weather + terrain effects)
 const ArenaEnvironment = preload("res://scripts/game/ArenaEnvironment.gd")
@@ -55,10 +55,10 @@ var _ai_decision_timer: float = 0.0
 var _ai_decision_interval: float = 1.5  # AI makes decision every 1.5 seconds
 
 ## Soul AI Controller (coach-style RTS: autonomous decisions based on personality/emotion)
-var _ai_controller: SoulAIController = null
+var _ai_controller: EmberAIController = null
 
 ## Player unit AI controller (for auto-battle mode)
-var _player_ai_controller: SoulAIController = null
+var _player_ai_controller: EmberAIController = null
 
 ## Arena environment (weather + terrain effects)
 var _environment: ArenaEnvironment = null
@@ -212,8 +212,8 @@ func start_battle(p_player_soul: Dictionary, p_ai_soul: Dictionary, p_map_name: 
 	ai_unit.set_attack_target(player_unit)
 
 	# Initialize AI controllers (coach-style RTS: autonomous decisions)
-	_ai_controller = SoulAIController.new()
-	_player_ai_controller = SoulAIController.new()
+	_ai_controller = EmberAIController.new()
+	_player_ai_controller = EmberAIController.new()
 
 	# Set AI personality based on soul data (design doc: 个性即战术)
 	_apply_soul_personality(ai_unit, p_ai_soul)
@@ -426,7 +426,7 @@ func _process(delta: float) -> void:
 		_finish_battle_by_time()
 
 
-## Update AI behavior using SoulAIController (coach-style RTS)
+## Update AI behavior using EmberAIController (coach-style RTS)
 func _update_ai() -> void:
 	if ai_unit == null or ai_unit.state == SoulUnit.UnitState.DEAD:
 		return
@@ -440,7 +440,7 @@ func _update_ai() -> void:
 	_ai_controller.execute_decision(ai_unit, player_unit)
 
 	# Log significant decisions
-	if decision["decision"] == SoulAIController.Decision.USE_SKILL:
+	if decision["decision"] == EmberAIController.Decision.USE_SKILL:
 		_add_log("%s makes a tactical decision!" % ai_unit.soul_name)
 
 
@@ -623,7 +623,7 @@ func issue_player_command(p_command: String, p_target_position: Vector2 = Vector
 	return {
 		"success": true,
 		"command": p_command,
-		"cooldown": SoulAIController.COMMAND_COOLDOWN
+		"cooldown": EmberAIController.COMMAND_COOLDOWN
 	}
 
 

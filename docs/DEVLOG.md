@@ -5288,3 +5288,80 @@ ame (String) - 唯一可见属性
 - [ ] 深化实体战斗逻辑集成：将HP/ATK等属性同步到ArboreusEntity组件
 - [ ] BUG-030音频导入
 - [ ] 视觉提升计划（P0自定义字体+UI皮肤+三界面升级）
+
+## 2026-09-08 - SDK集成期第二阶段：EventBus API探索 + UI主题系统创建（视觉提升P0启动）
+
+### EventBus API探索结果
+
+**ArboreusEventBus API与战策不兼容**：
+- emit(args: 1) - 只有event_name参数，**不支持data参数**
+- subscribe(args: 2) - 不支持(target, method)分开形式
+- unsubscribe(args: 1) - 只有1个参数
+- 其他方法：subscribe_once, get_subscriber_count, clear, queue_event, process_queue
+
+**结论**：emit()无法完全切换到ArboreusEventBus，因为战策需要传递事件数据(data Dictionary)。当前渐进式集成（subscribe/unsubscribe同时注册到Arboreus，emit使用战策分发）是合理的。
+
+**[SDK需求]**：ArboreusEventBus需要支持emit(event_name, data)和subscribe(event_name, target, method)，才能完全替换战策EventBus。
+
+### 视觉提升P0启动：UI主题系统创建
+
+**设计分析**（参考设计概念图）：
+- 主菜单：像素风+奇幻+金色装饰，星空背景+浮岛+雕像+金色边框按钮
+- RTS竞技场：像素风RTS，顶部状态栏+小地图+技能栏+战斗日志+金色UI装饰
+- 整体配色：深色背景(#1a1428) + 金色(#d4a85c) + 像素风格
+
+**创建的UI主题资源**：
+- assets/ui/battleplan_theme.tres - 主主题文件
+- assets/ui/styles/btn_normal.tres - 按钮正常（深紫背景+金色边框）
+- assets/ui/styles/btn_hover.tres - 按钮悬停（更亮背景+金色发光）
+- assets/ui/styles/btn_pressed.tres - 按钮按下（深色背景+暗金边框）
+- assets/ui/styles/panel.tres - 面板（深紫半透明+金色边框）
+- assets/ui/styles/progress_bg.tres - 进度条背景
+- assets/ui/styles/progress_fill.tres - 进度条填充（绿色）
+
+**应用到MainMenu**：
+- MainMenu.gd新增_apply_ui_theme()方法
+- _ready()中加载并应用主题
+- 按钮、标签、面板、进度条自动使用主题样式
+
+### 视觉/玩法效果变化
+- 主菜单按钮从Godot默认灰色变为深紫背景+金色边框
+- 悬停时有金色发光效果
+- 文字颜色变为金色/米白色
+- 面板有深色半透明背景+金色边框
+- 进度条变为深色背景+绿色填充
+
+### [设计需求]
+- 像素风格字体（中英文）- 当前使用Godot默认字体
+- UI皮肤图集（按钮、面板、边框的像素纹理）
+- 灵魂单位精灵图（代替彩色方块）
+- 主菜单背景图（星空+浮岛+雕像）
+- 技能图标、粒子纹理
+
+### 测试
+- 自动化战斗测试: 运行中...
+- M2测试套件: 待运行
+
+### 修改的文件
+- scripts/ui/MainMenu.gd - 添加UI主题加载
+- assets/ui/battleplan_theme.tres - 新建，主主题
+- assets/ui/styles/*.tres - 新建，6个样式文件
+- tests/arboreus_eventbus_api_test.gd - 新建，EventBus API探索
+
+### 待办
+- [ ] 将UI主题应用到灵魂选择、设置、RTS竞技场场景
+- [ ] 深化实体战斗逻辑集成：HP/ATK同步到ArboreusEntity组件
+- [ ] BUG-030音频导入
+- [ ] 视觉提升P0：自定义字体+UI皮肤图集+三界面完整升级
+- [ ] 视觉提升P1：战斗特效+灵魂单位精灵化+战斗UI升级
+
+### Ember SDK命名冲突修复
+
+**问题**：Ember SDK更新后注册了原生类"SoulAIController"，与战策代码中的const SoulAIController冲突，导致Parse error。
+
+**修复**：
+- RTSArenaManager.gd: const SoulAIController → const EmberAIController（9处引用）
+- M2IntegrationTest.gd: const SoulAIController → const LegacyAIController（17处引用）
+- preload路径保持不变（RTSArenaManager用EmberSoulAIController.gd，M2IntegrationTest用旧SoulAIController.gd）
+
+**教训**：Ember SDK类名会与战策代码中的const名冲突，后续命名需避免使用Ember SDK已注册的类名。

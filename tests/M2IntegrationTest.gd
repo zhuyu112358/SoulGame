@@ -14,7 +14,7 @@ const SoulSnapshot = preload("res://platform/soul/SoulSnapshot.gd")
 const WorldPlugin = preload("res://platform/world/WorldPlugin.gd")
 const ArenaEnvironment = preload("res://scripts/game/ArenaEnvironment.gd")
 const MainMenu = preload("res://scripts/ui/MainMenu.gd")
-const SoulAIController = preload("res://scripts/game/SoulAIController.gd")
+const LegacyAIController = preload("res://scripts/game/SoulAIController.gd")
 const SoulSelect = preload("res://scripts/ui/SoulSelect.gd")
 ## Test counters
 const SoulHomeController = preload("res://scripts/game/SoulHomeController.gd")
@@ -597,14 +597,14 @@ func _test_rts_arena_manager() -> void:
 	_assert(RTSArenaManager.battle_state == RTSArenaManager.BattleState.ACTIVE, "Battle resumed")
 
 ## ============================================
-## SoulAIController Tests
+## LegacyAIController Tests
 ## ============================================
 func _test_soul_ai_controller() -> void:
-	print("\n--- SoulAIController Tests ---")
+	print("\n--- LegacyAIController Tests ---")
 
 	# Test 1: Create AI controller
-	var ai = SoulAIController.new()
-	_assert(ai != null, "SoulAIController created")
+	var ai = LegacyAIController.new()
+	_assert(ai != null, "LegacyAIController created")
 
 	# Test 2: Default state
 	var state = ai.get_state_info()
@@ -627,12 +627,12 @@ func _test_soul_ai_controller() -> void:
 	# Test 5: All valid commands
 	var valid_commands = ["gather", "attack", "defend", "retreat"]
 	for cmd_name in valid_commands:
-		var ai2 = SoulAIController.new()
+		var ai2 = LegacyAIController.new()
 		var r = ai2.issue_command(cmd_name)
 		_assert(r == true, "Command '%s' is valid" % cmd_name)
 
 	# Test 6: Invalid command
-	var ai3 = SoulAIController.new()
+	var ai3 = LegacyAIController.new()
 	var invalid = ai3.issue_command("invalid_cmd")
 	_assert(invalid == false, "Invalid command rejected")
 
@@ -660,7 +660,7 @@ func _test_soul_ai_controller() -> void:
 	var enemy_unit = SoulUnit.new()
 	enemy_unit.init_from_soul("test_enemy", "TestEnemy", "water", 5, true)
 
-	var ai4 = SoulAIController.new()
+	var ai4 = LegacyAIController.new()
 	var decision = ai4.make_decision(self_unit, enemy_unit)
 	_assert(decision.has("decision"), "Decision has decision field")
 	_assert(decision.has("target"), "Decision has target field")
@@ -679,7 +679,7 @@ func _test_soul_ai_controller() -> void:
 	_assert(def_mod >= 1.0, "Fear increases defense modifier (%.2f)" % def_mod)
 
 	# Test 13: issue_command valid commands
-	var ai5 = SoulAIController.new()
+	var ai5 = LegacyAIController.new()
 	_assert(ai5.issue_command("gather") == true, "issue_command gather succeeds")
 	_assert(ai5.player_command == "gather", "player_command set to gather")
 	ai5.command_cooldown = 0.0  # Reset cooldown for next test
@@ -741,14 +741,14 @@ func _test_soul_ai_controller() -> void:
 
 
 	# Test 21: Decision enum values
-	_assert(SoulAIController.Decision.IDLE == 0, "IDLE decision = 0")
-	_assert(SoulAIController.Decision.MOVE_TO_TARGET == 1, "MOVE_TO_TARGET decision = 1")
-	_assert(SoulAIController.Decision.ATTACK == 2, "ATTACK decision = 2")
-	_assert(SoulAIController.Decision.USE_SKILL == 3, "USE_SKILL decision = 3")
-	_assert(SoulAIController.Decision.DEFEND == 4, "DEFEND decision = 4")
-	_assert(SoulAIController.Decision.RETREAT == 5, "RETREAT decision = 5")
-	_assert(SoulAIController.Decision.EXPLORE == 6, "EXPLORE decision = 6")
-	_assert(SoulAIController.Decision.FOLLOW_COMMAND == 7, "FOLLOW_COMMAND decision = 7")
+	_assert(LegacyAIController.Decision.IDLE == 0, "IDLE decision = 0")
+	_assert(LegacyAIController.Decision.MOVE_TO_TARGET == 1, "MOVE_TO_TARGET decision = 1")
+	_assert(LegacyAIController.Decision.ATTACK == 2, "ATTACK decision = 2")
+	_assert(LegacyAIController.Decision.USE_SKILL == 3, "USE_SKILL decision = 3")
+	_assert(LegacyAIController.Decision.DEFEND == 4, "DEFEND decision = 4")
+	_assert(LegacyAIController.Decision.RETREAT == 5, "RETREAT decision = 5")
+	_assert(LegacyAIController.Decision.EXPLORE == 6, "EXPLORE decision = 6")
+	_assert(LegacyAIController.Decision.FOLLOW_COMMAND == 7, "FOLLOW_COMMAND decision = 7")
 
 	# Test 23: decision_interval field
 	_assert(ai5.decision_interval == 1.5, "decision_interval = 1.5")
