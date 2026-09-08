@@ -145,6 +145,11 @@ var _damage_max_labels = 8
 ## Skill particle effects
 var _skill_particles = []  # Array of {particle, timer, duration}
 
+## Atmosphere effects
+var _ambient_particles = []  # Array of {particle, velocity, base_y, phase}
+var _vignette_sprite: Sprite2D = null
+var _ambient_time: float = 0.0
+
 
 func _ready() -> void:
 	GameLog.info("RTSArenaController: RTS Arena scene ready", "Arena")
@@ -156,6 +161,7 @@ func _ready() -> void:
 	_load_particle_textures()
 	FontLoader.apply_font_to_control(self)
 	_setup_arena_background()
+	_setup_atmosphere_effects()
 	_connect_signals()
 	_setup_skill_buttons()
 	_setup_macro_commands()
@@ -1109,6 +1115,84 @@ func _setup_arena_background() -> void:
 	GameLog.info("RTSArenaController: Arena background generated (%s)" % arena_type, "Arena")
 
 
+## Setup atmosphere effects: ambient floating particles + vignette
+func _setup_atmosphere_effects() -> void:
+	# Create vignette overlay (darkened edges for depth)
+	_vignette_sprite = Sprite2D.new()
+	_vignette_sprite.name = "Vignette"
+	_vignette_sprite.centered = false
+	_vignette_sprite.position = Vector2(0, 80)
+	_vignette_sprite.z_index = 100  # Above arena, below UI
+	_vignette_sprite.modulate = Color(1, 1, 1, 0.35)
+	# Generate radial gradient vignette texture (1280x640)
+	var img = Image.create(1280, 640, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0, 0, 0, 0))
+	var center = Vector2(640, 320)
+	var max_dist = sqrt(640 * 640 + 320 * 320)
+	for x in range(1280):
+		for y in range(640):
+			var dist = Vector2(x, y).distance_to(center)
+			var alpha = clamp((dist / max_dist - 0.4) / 0.6, 0.0, 1.0) * 0.6
+			if alpha > 0.01:
+				img.set_pixel(x, y, Color(0.05, 0.02, 0.1, alpha))
+	_vignette_sprite.texture = ImageTexture.create_from_image(img)
+	add_child(_vignette_sprite)
+
+	# Create ambient floating particles (magical starlight)
+	for i in range(20):
+		var particle = Sprite2D.new()
+		particle.name = "AmbientParticle_%d" % i
+		particle.centered = true
+		var start_x = randf_range(50, 1230)
+		var start_y = randf_range(100, 700)
+		particle.position = Vector2(start_x, start_y)
+		particle.z_index = 5
+		particle.modulate = Color(0.8, 0.7, 1.0, randf_range(0.3, 0.7))
+		particle.scale = Vector2(randf_range(0.1, 0.25), randf_range(0.1, 0.25))
+		# Procedural star texture
+		var star_img = Image.create(8, 8, false, Image.FORMAT_RGBA8)
+		star_img.fill(Color(0, 0, 0, 0))
+		for sx in range(8):
+			for sy in range(8):
+				var dx = sx - 4
+				var dy = sy - 4
+				var d = sqrt(dx * dx + dy * dy)
+				if d < 3:
+					star_img.set_pixel(sx, sy, Color(1, 1, 1, 1.0 - d / 3.0))
+		particle.texture = ImageTexture.create_from_image(star_img)
+		add_child(particle)
+		_ambient_particles.append({
+			"particle": particle,
+			"velocity": Vector2(randf_range(-5, 5), randf_range(-8, -3)),
+			"base_y": start_y,
+			"phase": randf() * TAU,
+			"base_x": start_x
+		})
+	GameLog.info("RTSArenaController: Atmosphere effects setup (20 ambient particles + vignette)", "Arena")
+
+
+## Update atmosphere effects: floating particles drift and twinkle
+func _update_atmosphere(delta: float) -> void:
+	_ambient_time += delta
+	for p_data in _ambient_particles:
+		var particle = p_data.particle
+		if not is_instance_valid(particle):
+			continue
+		# Slow upward drift with horizontal sway
+		p_data.phase += delta * 0.5
+		var sway = sin(p_data.phase) * 15.0
+		particle.position.x = p_data.base_x + sway
+		particle.position.y -= p_data.velocity.y * delta
+		# Twinkle effect (opacity pulse)
+		var twinkle = 0.5 + sin(_ambient_time * 2.0 + p_data.phase) * 0.3
+		particle.modulate.a = twinkle
+		# Reset when off screen top
+		if particle.position.y < 90:
+			particle.position.y = 710
+			p_data.base_x = randf_range(50, 1230)
+			particle.position.x = p_data.base_x
+
+
 ## Try to auto-start battle from GameState configuration
 func _try_auto_start_battle() -> void:
 	var player_soul = GameState.get_value("battle", "player_soul", null)
@@ -1725,6 +1809,8 @@ func _process(delta: float) -> void:
 	_update_hit_flash(delta)
 	# Update skill particle effect (runs even when paused)
 	_update_skill_particles(delta)
+	# Update atmosphere effects (runs even when paused)
+	_update_atmosphere(delta)
 	# Skip battle logic updates when paused (UI still renders)
 	if _is_paused:
 		_update_unit_display()
