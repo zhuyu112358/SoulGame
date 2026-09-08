@@ -5110,3 +5110,97 @@ ame (String) - 唯一可见属性
 - [ ] 等待建木修复ArboreusPathfinder大网格bug
 - [ ] BUG-030音频导入
 - [ ] 视觉提升计划
+
+## 2026-09-08 - SDK集成期：ArboreusEntity位置管理突破 + MovementSystem集成（P2架构合规深化）
+
+### 重大API发现
+
+通过全面的API探索测试，发现了之前遗漏的关键API：
+
+#### 1. ArboreusEntity组件系统（之前遗漏）
+- **add_component(name: String, data: Dictionary)** - 添加组件（返回void）
+- **get_component(name: String) -> Dictionary** - 获取组件
+- **get_component_types() -> Array** - 获取所有组件类型
+- **get_all_components() -> Dictionary** - 获取所有组件
+- **has_component(name: String) -> bool** - 检查是否有组件
+- **remove_component(name: String)** - 移除组件
+
+#### 2. ArboreusMovementSystem位置管理（关键突破！）
+- **register_entity(id: int, position: Vector2)** - 注册实体到移动系统（2个参数！）
+- **set_position(id: int, position: Vector2)** - 设置实体位置
+- **get_position(id: int) -> Vector2** - 获取实体位置
+- **unregister_entity(id: int)** - 从移动系统注销实体
+
+**关键发现**：实体位置不是直接在ArboreusEntity上管理，而是通过ArboreusMovementSystem管理，使用int ID标识实体。
+
+### 完成工作
+
+#### 1. ArboreusWorldBridge扩展
+新增MovementSystem封装方法：
+- register_entity_to_movement(entity_id, position)
+- set_entity_position(entity_id, position)
+- get_entity_position(entity_id)
+- unregister_entity_from_movement(entity_id)
+
+新增组件系统封装方法：
+- entity_add_component(entity_id, component_name, data)
+- entity_get_component(entity_id, component_name)
+- entity_get_component_types(entity_id)
+
+#### 2. RTSArenaManager深化集成
+**实体创建时**：
+- register_entity_to_movement，初始位置为SoulUnit的位置
+- entity_add_component("transform", {position, team})
+
+**每帧_process中**：
+- 同步SoulUnit位置到ArboreusMovementSystem（表现层→引擎层）
+- 玩家和AI单位的位置每帧同步
+
+**战斗结束时**：
+- unregister_entity_from_movement
+- remove_entity
+- stop()世界
+
+### 视觉/玩法效果变化
+- ArboreusWorld现在实时跟踪两个战斗单位的位置
+- 实体有transform组件，包含位置和队伍信息
+- 游戏行为无可见变化（位置同步是后台逻辑）
+- 为后续物理碰撞、空间查询、群体AI奠定基础
+
+### 测试
+- 自动化战斗测试: [OK] Both units moved successfully!
+  - 无SCRIPT ERROR
+  - ArboreusWorld初始化: available=true
+  - 实体创建: 玩家(id=1) + AI(id=2)
+  - 玩家移动550px, AI移动334px, 最终距离0.3
+  - 两个SoulUnit均Ember:true
+- M2测试套件: 运行中...
+
+### 修改的文件
+- scripts/game/ArboreusWorldBridge.gd - 修改，添加MovementSystem和组件系统封装
+- scripts/game/RTSArenaManager.gd - 修改，深化实体位置集成
+- tests/arboreus_entity_comprehensive_test.gd - 新建，全面API探索
+- tests/arboreus_entity_movement_test.gd - 新建，MovementSystem验证
+
+### 架构合规进度
+- [x] A*寻路网格层 → ArboreusGridMapBridge
+- [x] SoulAIController → Ember
+- [x] SoulUnit灵魂数据层 → Ember
+- [x] EventBus → ArboreusEventBus
+- [x] ArenaMap网格 → ArboreusGridMapBridge
+- [x] RTSArenaManager世界模拟层 → ArboreusWorldBridge
+- [x] GameState世界状态 → ArboreusWorld状态同步
+- [x] RTSArenaManager实体位置 → ArboreusMovementSystem（P2深化完成）
+- [ ] 实体战斗逻辑 → ArboreusEntity组件（待进一步深化）
+
+### [SDK需求] 更新
+- ~~ArboreusEntity位置管理API~~ → **已解决**：通过ArboreusMovementSystem管理
+- ~~add_component方法~~ → **已解决**：add_component(name, data)返回void
+- ArboreusPathfinder大网格bug仍待建木修复
+- remove_entity参数类型仍需确认（当前用int ID）
+
+### 待办
+- [ ] 深化实体战斗逻辑集成：将HP/ATK等属性同步到ArboreusEntity组件
+- [ ] 等待建木修复ArboreusPathfinder大网格bug
+- [ ] BUG-030音频导入
+- [ ] 视觉提升计划

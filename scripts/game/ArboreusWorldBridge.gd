@@ -249,3 +249,74 @@ func get_world() -> Object:
 
 func is_running() -> bool:
 	return _is_running
+
+
+## --- Movement System (Arboreus SDK position management) ---
+
+## Register entity to movement system with initial position
+## ArboreusMovementSystem.register_entity(int_id, Vector2 position)
+func register_entity_to_movement(p_entity_id: int, p_position: Vector2) -> bool:
+	var move_sys = get_movement_system()
+	if move_sys == null:
+		return false
+	move_sys.register_entity(p_entity_id, p_position)
+	return true
+
+
+## Set entity position in movement system
+## ArboreusMovementSystem.set_position(int_id, Vector2 position)
+func set_entity_position(p_entity_id: int, p_position: Vector2) -> bool:
+	var move_sys = get_movement_system()
+	if move_sys == null:
+		return false
+	move_sys.set_position(p_entity_id, p_position)
+	return true
+
+
+## Get entity position from movement system
+## ArboreusMovementSystem.get_position(int_id) -> Vector2
+func get_entity_position(p_entity_id: int) -> Vector2:
+	var move_sys = get_movement_system()
+	if move_sys == null:
+		return Vector2.ZERO
+	return move_sys.get_position(p_entity_id)
+
+
+## Unregister entity from movement system
+func unregister_entity_from_movement(p_entity_id: int) -> bool:
+	var move_sys = get_movement_system()
+	if move_sys == null:
+		return false
+	if move_sys.has_method("unregister_entity"):
+		move_sys.unregister_entity(p_entity_id)
+		return true
+	return false
+
+
+## --- Entity Component System (Arboreus SDK) ---
+
+## Add component to entity
+## ArboreusEntity.add_component(String name, Dictionary data)
+func entity_add_component(p_entity_id: int, p_component_name: String, p_data: Dictionary) -> bool:
+	var entity = get_entity(p_entity_id)
+	if entity == null:
+		return false
+	entity.add_component(p_component_name, p_data)
+	return true
+
+
+## Get component from entity
+## ArboreusEntity.get_component(String name) -> Dictionary
+func entity_get_component(p_entity_id: int, p_component_name: String) -> Dictionary:
+	var entity = get_entity(p_entity_id)
+	if entity == null:
+		return {}
+	return entity.get_component(p_component_name)
+
+
+## Get all component types from entity
+func entity_get_component_types(p_entity_id: int) -> Array:
+	var entity = get_entity(p_entity_id)
+	if entity == null:
+		return []
+	return entity.get_component_types()

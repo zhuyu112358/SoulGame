@@ -177,6 +177,10 @@ func start_battle(p_player_soul: Dictionary, p_ai_soul: Dictionary, p_map_name: 
 	# Create corresponding Arboreus entity (world simulation layer)
 	if _arboreus_world and _arboreus_world.is_arboreus_available():
 		_player_entity_id = _arboreus_world.create_entity(p_player_soul.get("name", "Player"), battle_config["player_spawn"])
+		# Register entity to movement system with initial position (Arboreus SDK)
+		_arboreus_world.register_entity_to_movement(_player_entity_id, player_unit.position)
+		# Add transform component to entity (Arboreus SDK component system)
+		_arboreus_world.entity_add_component(_player_entity_id, "transform", {"position": player_unit.position, "team": "player"})
 
 	# Spawn AI unit
 	ai_unit = SoulUnit.new()
@@ -196,6 +200,10 @@ func start_battle(p_player_soul: Dictionary, p_ai_soul: Dictionary, p_map_name: 
 	# Create corresponding Arboreus entity (world simulation layer)
 	if _arboreus_world and _arboreus_world.is_arboreus_available():
 		_ai_entity_id = _arboreus_world.create_entity(p_ai_soul.get("name", "AI Opponent"), battle_config["ai_spawn"])
+		# Register entity to movement system with initial position (Arboreus SDK)
+		_arboreus_world.register_entity_to_movement(_ai_entity_id, ai_unit.position)
+		# Add transform component to entity (Arboreus SDK component system)
+		_arboreus_world.entity_add_component(_ai_entity_id, "transform", {"position": ai_unit.position, "team": "ai"})
 
 	# AI starts attacking player
 	ai_unit.set_attack_target(player_unit)
@@ -337,6 +345,14 @@ func _process(delta: float) -> void:
 		_world_state_sync_timer = 0.0
 		_sync_world_state_to_game_state()
 
+	# Sync SoulUnit positions to ArboreusMovementSystem every frame (Arboreus SDK)
+	# Presentation layer (SoulUnit) -> engine layer (ArboreusMovementSystem)
+	if _arboreus_world and _arboreus_world.is_running():
+		if player_unit and _player_entity_id >= 0:
+			_arboreus_world.set_entity_position(_player_entity_id, player_unit.position)
+		if ai_unit and _ai_entity_id >= 0:
+			_arboreus_world.set_entity_position(_ai_entity_id, ai_unit.position)
+
 	# Update AI controllers
 	if _ai_controller:
 		_ai_controller.update(scaled_delta)
@@ -457,6 +473,12 @@ func _finish_battle(p_winner_id: String, p_result: String) -> void:
 
 	# Cleanup Arboreus World simulation (Arboreus SDK - architecture compliant)
 	if _arboreus_world and _arboreus_world.is_running():
+		# Unregister entities from movement system (Arboreus SDK)
+		if _player_entity_id >= 0:
+			_arboreus_world.unregister_entity_from_movement(_player_entity_id)
+		if _ai_entity_id >= 0:
+			_arboreus_world.unregister_entity_from_movement(_ai_entity_id)
+		# Remove entities from world
 		if _player_entity_id >= 0:
 			_arboreus_world.remove_entity(_player_entity_id)
 			_player_entity_id = -1
