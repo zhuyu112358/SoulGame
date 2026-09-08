@@ -49,8 +49,8 @@ config/secrets.cfg
 .env
 .env.local
 
-# SDK dependencies (pulled via package manager or build script)
-addons/
+# SDK dependencies (GDExtension SDKs are committed directly)
+# addons/
 /sdk/
 
 # Temporary files

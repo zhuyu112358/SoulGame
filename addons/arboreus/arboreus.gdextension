@@ -1,0 +1,11 @@
+[configuration]
+entry_symbol = "arboreus_library_init"
+compatibility_minimum = "4.2"
+
+[libraries]
+windows.debug.x86_64 = "res://addons/arboreus/bin/arboreus.windows.Release.x86_64.dll"
+windows.release.x86_64 = "res://addons/arboreus/bin/arboreus.windows.Release.x86_64.dll"
+linux.debug.x86_64 = "res://addons/arboreus/bin/libarboreus.linux.debug.x86_64.so"
+linux.release.x86_64 = "res://addons/arboreus/bin/libarboreus.linux.release.x86_64.so"
+macos.debug = "res://addons/arboreus/bin/libarboreus.macos.debug.dylib"
+macos.release = "res://addons/arboreus/bin/libarboreus.macos.release.dylib"

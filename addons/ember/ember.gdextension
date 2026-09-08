@@ -1,0 +1,11 @@
+[configuration]
+entry_symbol = "ember_library_init"
+compatibility_minimum = "4.2"
+
+[libraries]
+windows.debug.x86_64 = "res://addons/ember/bin/libember.windows.release.x86_64.dll"
+windows.release.x86_64 = "res://addons/ember/bin/libember.windows.release.x86_64.dll"
+linux.debug.x86_64 = "res://addons/ember/bin/libember.linux.debug.x86_64.so"
+linux.release.x86_64 = "res://addons/ember/bin/libember.linux.release.x86_64.so"
+macos.debug = "res://addons/ember/bin/libember.macos.debug.dylib"
+macos.release = "res://addons/ember/bin/libember.macos.release.dylib"
