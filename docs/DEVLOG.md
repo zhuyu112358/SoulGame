@@ -5590,3 +5590,58 @@ ame (String) - 唯一可见属性
 - [ ] UI通用图标集应用到各界面按钮
 - [ ] 灵魂之家背景图集成（如有灵魂之家场景）
 - [ ] BUG-030音频导入
+
+## 2026-09-08 - 视觉提升P1：技能图标集成到RTS竞技场技能栏
+
+### 完成工作
+
+#### 技能图标集成（设计任务第64轮skill_icon_sheet_v2.png）
+
+设计任务第64轮同步了16技能图标图集v2：
+- 火球术、冰霜箭、雷电术、岩石护盾、治疗术、暗影突袭
+- 音影之光、神圣之光、毒雾斩、旋风斩、大地震击、灵魂抽取
+- 狂暴、血气、隐身术、召唤亡灵、时间减缓、终极爆发
+
+**修改RTSArenaController.gd**：
+
+1. **新增_apply_skill_icons()方法**
+   - 加载skill_icon_sheet_v2.png（3行6列，每格320x360）
+   - 使用AtlasTexture裁剪对应技能图标
+   - 技能映射：
+     - heavy_strike（重击）→ 大地震击（index=10）
+     - quick_strike（快击）→ 火球术（index=0）
+     - heal（治疗）→ 治疗术（index=4）
+     - defend（防御）→ 岩石护盾（index=3）
+   - 设置button.icon，清除button.text，expand_icon=true
+
+2. **修改_setup_skill_buttons()**
+   - 在连接信号前调用_apply_skill_icons()
+
+3. **修改_update_skill_cooldowns()**
+   - 移除冷却时的文字设置（按钮现在只有图标）
+   - 冷却状态通过overlay遮罩+disabled状态表示
+   - 保留技能就绪音效
+
+### 视觉/玩法效果变化
+- 技能栏从纯文字按钮（Heavy/Quick/Heal/Defend）变为图标按钮
+- 每个技能有对应的像素风格图标（火球/治疗/护盾/大地震击）
+- 冷却时图标变暗+遮罩覆盖，符合设计概念图
+- 整体战斗UI更接近设计概念图中的技能栏样式
+
+### 注意事项
+- 新PNG资源缺少.import文件，需要Godot编辑器打开项目自动导入
+- headless模式下load()新资源可能失败，已添加fallback（使用文字按钮）
+- 图标尺寸320x360，按钮100x40，expand_icon会自动缩放
+
+### 测试
+- 自动化战斗测试: 运行中...
+- M2测试套件: 待运行
+
+### 修改的文件
+- scripts/game/RTSArenaController.gd - 技能图标集成
+
+### 待办
+- [ ] UI HUD皮肤应用到战斗界面（血条/能量条样式）
+- [ ] 4元素灵魂单位精灵图集成（火/水/土/风）
+- [ ] UI通用图标集应用到各界面按钮
+- [ ] BUG-030音频导入

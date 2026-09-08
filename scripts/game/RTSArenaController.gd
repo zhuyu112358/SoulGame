@@ -1128,6 +1128,8 @@ func _connect_signals() -> void:
 
 ## Setup skill button signals
 func _setup_skill_buttons() -> void:
+	# Apply skill icons from design asset sheet
+	_apply_skill_icons()
 	if skill_buttons["heavy_strike"]:
 		skill_buttons["heavy_strike"].pressed.connect(_on_heavy_strike_pressed)
 	if skill_buttons["quick_strike"]:
@@ -1151,6 +1153,48 @@ func _setup_skill_buttons() -> void:
 			overlay.visible = false
 			button.add_child(overlay)
 			_skill_cooldown_overlays[skill_name] = overlay
+
+
+## Apply skill icons from design asset sheet to all skill buttons
+## Sprite sheet: 3 rows x 6 cols, 16 skill icons
+## Mapping: heavy_strike->earthquake(10), quick_strike->fireball(0),
+## heal->heal(4), defend->rock_shield(3)
+func _apply_skill_icons() -> void:
+	var sheet_path := "res://assets/art/skill_icon_sheet_v2.png"
+	if not ResourceLoader.exists(sheet_path):
+		GameLog.debug("RTSArena: Skill icon sheet not found, using text buttons", "UI")
+		return
+	var sheet = load(sheet_path)
+	if sheet == null or not (sheet is Texture2D):
+		GameLog.warning("RTSArena: Failed to load skill icon sheet", "UI")
+		return
+	# Sheet: 1920x1080, 3 rows x 6 cols, each cell 320x360
+	var cell_w: int = 320
+	var cell_h: int = 360
+	# Skill name -> sheet index (row*6 + col)
+	var skill_indices := {
+		"heavy_strike": 10,  # 大地震击 (row 2, col 4)
+		"quick_strike": 0,   # 火球术 (row 0, col 0)
+		"heal": 4,           # 治疗术 (row 0, col 4)
+		"defend": 3,         # 岩石护盾 (row 0, col 3)
+	}
+	for skill_name in skill_buttons.keys():
+		var button = skill_buttons[skill_name]
+		if button == null:
+			continue
+		var idx = skill_indices.get(skill_name, -1)
+		if idx < 0:
+			continue
+		var row: int = idx / 6
+		var col: int = idx % 6
+		var atlas = AtlasTexture.new()
+		atlas.atlas = sheet
+		atlas.region = Rect2(col * cell_w, row * cell_h, cell_w, cell_h)
+		button.icon = atlas
+		button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		button.text = ""  # Clear text, icon only
+		button.expand_icon = true
+		GameLog.debug("RTSArena: Applied icon for %s (idx=%d)" % [skill_name, idx], "UI")
 
 
 ## Setup macro command UI (design doc: coach-style RTS)
@@ -1439,10 +1483,9 @@ func _update_skill_cooldowns() -> void:
 				overlay.visible = false
 				overlay.size.y = 0
 		if cooldown > 0:
-			button.text = "%s (%.1f)" % [skill_name.capitalize(), cooldown]
+			# Button shows icon only; cooldown indicated by overlay + disabled state
 			_skill_was_on_cooldown[skill_name] = true
 		else:
-			button.text = skill_name.capitalize()
 			# Play skill ready sound when cooldown finishes
 			if was_on_cd and AudioManager:
 				AudioManager.play_sfx("bat_skill_ready", 0.5)
