@@ -3888,3 +3888,50 @@
 
 ### 测试
 - M2测试运行中...
+
+## 2026-09-08 - M2可玩原型冲刺第八十轮
+
+### 完成工作
+
+#### 1. Git状态确认
+- 之前的3个待推送commit已被监控任务推送
+- 当前没有待推送commit
+
+#### 2. 设计任务第25轮灵魂之家音效集成（6个新音效）
+- **AudioManager**: 注册6个灵魂之家交互音效
+  - soul_home_ambience（环境氛围）
+  - soul_home_dialogue（对话）
+  - soul_home_equipment（装备）
+  - soul_home_growth（成长）
+  - soul_home_interaction（交互）
+  - soul_home_training（训练）
+- **SoulHomeController**: 在灵魂之家各功能中使用新音效
+  - _play_home_ambience(): 添加soul_home_ambience环境氛围音效
+  - _on_chat_button(): 添加soul_home_dialogue对话音效
+  - _on_train_button(): 添加soul_home_training训练音效
+  - _on_pet_button(): 添加soul_home_interaction交互音效
+  - _on_feed_button(): 添加soul_home_interaction交互音效
+  - _on_play_button(): 添加soul_home_interaction交互音效
+- **效果**:
+  - 灵魂之家进入时有专属的环境氛围音效
+  - 聊天、训练、抚摸、喂食、玩耍等交互都有专属音效
+  - 灵魂之家的听觉体验更加丰富和沉浸
+  - 与M1灵魂之家功能完美配合
+
+### 视觉/玩法效果变化
+
+**听觉效果提升**:
+- 灵魂之家进入时播放专属的soul_home_ambience环境氛围音效
+- 聊天时播放soul_home_dialogue对话音效
+- 训练时播放soul_home_training训练音效
+- 抚摸、喂食、玩耍时播放soul_home_interaction交互音效
+- 灵魂之家的听觉体验更加丰富和沉浸
+- 与M1灵魂之家功能完美配合
+
+**设计符合度**:
+- 积极集成设计任务第25轮产出的6个灵魂之家音效
+- 设计驱动开发机制持续有效
+- 所有音效AI生成无第三方版权
+
+### 测试
+- M2测试运行中...

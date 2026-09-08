@@ -167,6 +167,13 @@ func _init_sound_paths() -> void:
 	for ach_name in steam_achievement_sounds:
 		_sound_paths["steam_achievement_%s" % ach_name] = "res://assets/audio/steam_achievement_%s.wav" % ach_name
 
+	# Soul home interaction sounds (design task round 25)
+	var soul_home_sounds: Array = [
+		"ambience", "dialogue", "equipment", "growth", "interaction", "training"
+	]
+	for sh_name in soul_home_sounds:
+		_sound_paths["soul_home_%s" % sh_name] = "res://assets/audio/soul_home_%s.wav" % sh_name
+
 	# BGM
 	var bgm_tracks: Array = ["battle", "explore", "home_main", "menu",
 		"main_menu", "battle_calm", "battle_tension",

@@ -113,6 +113,8 @@ func _play_home_ambience() -> void:
 		AudioManager.play_bgm("soul_home_day")
 		# Play home indoor environment ambience
 		AudioManager.play_sfx("env_soul_home")
+		# Play soul home interaction ambience (design task round 25)
+		AudioManager.play_sfx("soul_home_ambience")
 		GameLog.info("SoulHome: Playing home BGM", "SoulHome")
 
 
@@ -407,6 +409,7 @@ func _on_chat_button() -> void:
 	GameLog.info("SoulHome: Chat toggled", "SoulHome")
 	if AudioManager:
 		AudioManager.play_sfx("ui_button_click")
+		AudioManager.play_sfx("soul_home_dialogue")
 	var chat_panel = get_node_or_null("ChatPanel")
 	if chat_panel:
 		chat_panel.visible = not chat_panel.visible
@@ -418,6 +421,7 @@ func _on_pet_button() -> void:
 	_update_event_log("You petted the soul. It feels happy.")
 	if AudioManager:
 		AudioManager.play_sfx("soul_happy")
+		AudioManager.play_sfx("soul_home_interaction")
 
 
 ## Handle feed button
@@ -426,6 +430,7 @@ func _on_feed_button() -> void:
 	_update_event_log("You fed the soul. Energy restored.")
 	if AudioManager:
 		AudioManager.play_sfx("soul_content_smile")
+		AudioManager.play_sfx("soul_home_interaction")
 
 
 ## Handle play button
@@ -434,6 +439,7 @@ func _on_play_button() -> void:
 	_update_event_log("You played with the soul. Skills improved.")
 	if AudioManager:
 		AudioManager.play_sfx("soul_joyful")
+		AudioManager.play_sfx("soul_home_interaction")
 
 
 ## Handle train button
@@ -448,6 +454,7 @@ func _on_train_button() -> void:
 	_update_event_log("You trained the soul. Skills increased.")
 	if AudioManager:
 		AudioManager.play_sfx("soul_chivalrous")
+		AudioManager.play_sfx("soul_home_training")
 
 
 ## Handle chat send
