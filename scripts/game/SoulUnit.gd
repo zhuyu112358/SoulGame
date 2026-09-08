@@ -245,6 +245,10 @@ func _process(delta: float) -> void:
 	_update_hp_bar_smooth(delta)
 
 	match state:
+		UnitState.IDLE:
+			# If has attack target, resume attacking
+			if attack_target != null and is_instance_valid(attack_target):
+				state = UnitState.ATTACKING
 		UnitState.MOVING:
 			_update_movement(delta)
 		UnitState.ATTACKING:
@@ -394,10 +398,13 @@ func _update_attack(delta: float) -> void:
 
 	var distance: float = position.distance_to(attack_target.position)
 
-	# Move into range if too far
+	# Move into range if too far (use pathfinding to avoid obstacles)
 	if distance > attack_range:
-		target_position = attack_target.position
-		_update_movement(delta)
+		# Only recalculate path if not already moving along one
+		if _path.is_empty() or _path_index >= _path.size() - 1:
+			move_to(attack_target.position)  # Sets state=MOVING
+		elif state == UnitState.ATTACKING:
+			state = UnitState.MOVING  # Let MOVING state handle path following
 		return
 
 	# Attack if cooldown ready
@@ -412,29 +419,37 @@ func move_to(p_position: Vector2) -> void:
 	GameLog.debug("Unit: %s move_to target=(%.0f,%.0f) from=(%.0f,%.0f) dist=%.1f" % [
 		soul_name, p_position.x, p_position.y, position.x, position.y, position.distance_to(p_position)
 	], "Arena")
-	
-	# Use A* pathfinding if available
-	if _use_pathfinding and _pathfinder != null and _grid_map != null:
-		_path = _pathfinder.find_path(position.x, position.y, p_position.x, p_position.y, _grid_map)
+
+	# Use pathfinding if available
+	if _use_pathfinding and _pathfinder != null:
+		# SDKPathfinder: find_path(start_x, start_y, goal_x, goal_y) - no grid param
+		if _pathfinder.has_method("find_path") and _pathfinder.get_method_argument_count("find_path") == 4:
+			_path = _pathfinder.find_path(position.x, position.y, p_position.x, p_position.y)
+		# Legacy AStarPathfinder: find_path(start_x, start_y, goal_x, goal_y, grid)
+		elif _grid_map != null:
+			_path = _pathfinder.find_path(position.x, position.y, p_position.x, p_position.y, _grid_map)
+		else:
+			_path = []
+
 		_path_index = 0
 		if _path.size() > 0:
-			GameLog.debug("Unit: %s A* path found: %d waypoints, first=(%.0f,%.0f)" % [
+			GameLog.debug("Unit: %s path found: %d waypoints, first=(%.0f,%.0f)" % [
 				soul_name, _path.size(), _path[0].x, _path[0].y
 			], "Arena")
 			target_position = _path[0]
 		else:
-			GameLog.warning("Unit: %s A* path not found, using direct movement" % soul_name, "Arena")
+			GameLog.warning("Unit: %s path not found, using direct movement" % soul_name, "Arena")
 			target_position = p_position
 	else:
 		target_position = p_position
-	
+
 	state = UnitState.MOVING
 	attack_target = null
 	emit_signal("state_changed", state)
 
 
-## Set pathfinding references
-func set_pathfinding(p_pathfinder: RefCounted, p_grid_map: RefCounted) -> void:
+## Set pathfinding references (supports both SDKPathfinder and legacy pathfinder+grid)
+func set_pathfinding(p_pathfinder: RefCounted, p_grid_map: RefCounted = null) -> void:
 	_pathfinder = p_pathfinder
 	_grid_map = p_grid_map
 

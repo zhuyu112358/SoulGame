@@ -63,7 +63,9 @@ var _player_ai_controller: SoulAIController = null
 ## Arena environment (weather + terrain effects)
 var _environment: ArenaEnvironment = null
 
-## A* pathfinding
+## A* pathfinding (temporary: ArboreusPathfinder has bug with large grids)
+## [SDK需求] ArboreusPathfinder.find_path returns only 2 incorrect points on 40x19/cell=32 grids
+## Works correctly on 10x10/cell=1 grids. Need Arboreus team to fix large grid support.
 var _grid_map: RefCounted = null
 var _pathfinder: RefCounted = null
 var _grid_map_script: Script = null
@@ -122,7 +124,7 @@ func start_battle(p_player_soul: Dictionary, p_ai_soul: Dictionary, p_map_name: 
 	_environment.setup_for_map(p_map_name)
 	battle_config["weather"] = _environment.get_weather_name()
 
-	# Initialize A* pathfinding grid (use load to avoid class_name scan issues)
+	# Initialize A* pathfinding grid (temporary: ArboreusPathfinder has bug with large grids)
 	if _grid_map_script == null:
 		_grid_map_script = load("res://scripts/game/GridMap.gd")
 	if _pathfinder_script == null:

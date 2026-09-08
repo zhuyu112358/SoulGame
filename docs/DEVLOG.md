@@ -4338,3 +4338,68 @@
 - tests/list_custom_classes.gd - 自定义类列表
 - tests/arboreus_pathfinder_api_test.gd - Pathfinder API探索
 - tests/arboreus_pathfinder_functional_test.gd - Pathfinder功能测试
+
+## 2026-09-08 - SDK集成期：BUG-031修复+ArboreusPathfinder bug发现
+
+### 架构合规检查
+- 已读取ARCHITECTURE_BOUNDARY.md
+- 越界模块：7个（A*寻路、SoulAIController、SoulUnit、EventBus、RTSArenaManager、ArenaMap、GameState）
+- 本轮尝试替换A*寻路为ArboreusPathfinder，发现SDK bug后暂时回退
+
+### 完成工作
+
+#### 1. BUG-031修复：AI单位A*寻路未生效（P0）
+**根本原因**: SoulUnit._update_attack()在ATTACKING状态下，当距离>attack_range时直接设置target_position=attack_target.position，绕过了move_to()函数，导致A*寻路从未被调用。AI单位直线冲向玩家，被中心水晶挡住后停住。
+
+**修复方案**:
+- 修改SoulUnit._update_attack()：距离>attack_range时调用move_to()触发A*寻路
+- 修改SoulUnit._process()：添加IDLE状态处理，有attack_target时自动恢复ATTACKING
+- 简化状态机：ATTACKING→MOVING（寻路移动）→IDLE（路径走完）→ATTACKING（重新寻路/攻击）
+
+**验证结果**:
+- AI单位从(1080,300)出发，A*计算27个路径点
+- 路径点10-18显示y从304→368→336，成功绕过中心水晶下方
+- 15秒到达玩家附近(221,316)，距离26.7<attack_range(102)，开始攻击
+- 玩家HP从120降到107，AI HP从120降到92，战斗正常进行
+
+#### 2. ArboreusPathfinder SDK集成尝试（发现bug）
+- 创建SDKPathfinder.gd适配器类，封装ArboreusGridMap+ArboreusPathfinder
+- 修改SoulUnit.gd支持SDKPathfinder（4参数find_path）和旧AStarPathfinder（5参数）
+- 修改RTSArenaManager.gd集成SDKPathfinder
+
+**发现SDK bug**:
+- ArboreusPathfinder在10x10/cell_size=1网格下正常工作（路径长度6，从起点到终点）
+- ArboreusPathfinder在40x19/cell_size=32网格下异常：find_path((33,9),(6,9))只返回2个点[(48,16),(16,16)]，对应网格(1,0)和(0,0)，完全错误
+- 无论是否有障碍物，大网格下都返回同样的错误结果
+- 已在RTSArenaManager.gd中记录[SDK需求]，暂时回退到战策自实现AStarPathfinder
+
+### 视觉/玩法效果变化
+- **AI单位现在能绕过障碍物了！** 之前AI会被中心水晶挡住停住，现在会沿A*路径绕开水晶下方继续前进
+- 战斗流程完整：AI寻路接近→进入攻击范围→双方互相攻击→HP减少
+- 玩家能感受到AI单位有智能地绕开障碍，而不是傻站着
+
+### [SDK需求] ArboreusPathfinder大网格支持
+- **问题**: ArboreusPathfinder.find_path在40x19/cell_size=32网格下返回错误路径（只有2个点，坐标完全不对）
+- **复现**: tests/arboreus_pf_battle_test.gd，小网格(10x10/cell=1)正常，大网格(40x19/cell=32)异常
+- **影响**: 战策无法使用ArboreusPathfinder替换自实现A*，暂时保留AStarPathfinder.gd作为临时替代
+- **需要**: 建木团队修复ArboreusPathfinder的大网格/cell_size>1支持
+
+### 测试
+- M2测试套件: 2901/2901通过，0失败
+- 自动化战斗测试: AI成功绕行并攻击，战斗流程完整
+- SDKPathfinder测试: 适配器类创建成功，但SDK本身有bug
+
+### 修改的文件
+- scripts/game/SoulUnit.gd - ATTACKING状态寻路修复+状态机简化+SDKPathfinder支持
+- scripts/game/RTSArenaManager.gd - SDKPathfinder集成尝试（已回退到AStarPathfinder）
+- scripts/game/SDKPathfinder.gd - 新建，Arboreus SDK寻路适配器（待SDK修复后启用）
+- tests/arboreus_pf_battle_test.gd - 新建，ArboreusPathfinder大网格bug复现测试
+- tests/arboreus_pf_debug_test.gd - 新建，Pathfinder详细调试测试
+
+### 待办
+- [ ] 等待建木修复ArboreusPathfinder大网格bug，然后启用SDKPathfinder
+- [ ] P0: 替换SoulAIController为Ember PerceptionSystem+CognitiveEngine
+- [ ] P1: 替换SoulUnit为Ember Soul+SoulData
+- [ ] P1: 替换EventBus为ArboreusEventBus
+- [ ] BUG-030音频导入（需Godot编辑器分批导入）
+- [ ] 视觉提升计划（P0自定义字体+UI皮肤）
