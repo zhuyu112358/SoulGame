@@ -115,6 +115,8 @@ var _use_pathfinding: bool = true
 var _hit_flash_timer: float = 0.0
 var _hit_flash_duration: float = 0.2
 var _hit_flash_sprite = null  # White flash overlay sprite
+var _selection_ring_sprite = null  # Gold selection ring for player unit
+var _selection_pulse_time: float = 0.0
 
 ## Animation system
 var _anim_time: float = 0.0  # Animation time accumulator
@@ -282,6 +284,35 @@ func _create_visual() -> void:
 	_hit_flash_sprite.texture = flash_texture
 	add_child(_hit_flash_sprite)
 
+	# Create selection ring for player unit (gold breathing pulse)
+	if is_player_controlled:
+		_selection_ring_sprite = Sprite2D.new()
+		_selection_ring_sprite.name = "SelectionRing"
+		_selection_ring_sprite.centered = true
+		_selection_ring_sprite.scale = Vector2(1.2, 1.2)
+		_selection_ring_sprite.modulate = Color(1.0, 0.85, 0.3, 0.7)
+		_selection_ring_sprite.z_index = -1
+		# Create gold ring texture (128x128, thick ring with gradient)
+		var ring_image = Image.create(128, 128, false, Image.FORMAT_RGBA8)
+		ring_image.fill(Color(0, 0, 0, 0))
+		for x in range(128):
+			for y in range(128):
+				var dx = x - 64
+				var dy = y - 64
+				var dist = sqrt(dx * dx + dy * dy)
+				# Ring: outer radius 58, inner radius 48, gradient edge
+				if dist < 58 and dist > 48:
+					var edge_dist = min(dist - 48, 58 - dist)
+					var alpha = clamp(edge_dist / 5.0, 0.0, 1.0)
+					ring_image.set_pixel(x, y, Color(1.0, 0.85, 0.3, alpha * 0.8))
+				elif dist <= 48 and dist > 46:
+					# Inner glow
+					var alpha = (48 - dist) / 2.0
+					ring_image.set_pixel(x, y, Color(1.0, 0.9, 0.5, alpha * 0.3))
+		var ring_texture = ImageTexture.create_from_image(ring_image)
+		_selection_ring_sprite.texture = ring_texture
+		add_child(_selection_ring_sprite)
+
 	# Create name label
 	var name_label = Label.new()
 	name_label.text = soul_name
@@ -394,6 +425,7 @@ func _process(delta: float) -> void:
 	_update_hit_flash(delta)
 	_update_hp_bar_smooth(delta)
 	_update_animation(delta)
+	_update_selection_ring(delta)
 
 	match state:
 		UnitState.IDLE:
@@ -486,6 +518,22 @@ func _update_animation(delta: float) -> void:
 	_update_death_animation(delta)
 	# Update victory animation
 	_update_victory_animation(delta)
+
+
+## Update selection ring breathing pulse animation (player unit only)
+func _update_selection_ring(delta: float) -> void:
+	if _selection_ring_sprite == null:
+		return
+	_selection_pulse_time += delta
+	# Breathing pulse: scale 1.0-1.3, 2Hz sine wave
+	var pulse = sin(_selection_pulse_time * 2.0 * PI) * 0.15 + 1.15
+	_selection_ring_sprite.scale = Vector2(pulse, pulse)
+	# Subtle opacity variation
+	var alpha = 0.5 + sin(_selection_pulse_time * 2.0 * PI + 0.5) * 0.2
+	_selection_ring_sprite.modulate.a = alpha
+	# Hide ring when dead
+	if state == UnitState.DEAD:
+		_selection_ring_sprite.visible = false
 
 
 ## Trigger attack pulse animation
