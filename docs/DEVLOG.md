@@ -4827,3 +4827,79 @@
 - [ ] 等待建木修复ArboreusPathfinder大网格bug（修复后可完全替换AStarPathfinder）
 - [ ] BUG-030音频导入
 - [ ] 视觉提升计划
+
+## 2026-09-08 - SDK集成期：ArboreusWorld API探索+ArboreusWorldBridge骨架（P2准备）
+
+### 完成工作
+
+#### 1. ArboreusWorld详细API探索
+创建tests/arboreus_world_detailed_test.gd和arboreus_world_simple_test.gd探索ArboreusWorld：
+
+**已确认API**:
+- create(config: Dictionary) -> ArboreusWorld - 期望Dictionary参数（非String/int）
+- start() - 启动世界模拟
+- stop() - 停止世界模拟
+- update(delta: float) - 更新世界
+- create_entity() -> ArboreusEntity - 期望0参数（非1参数）
+- emove_entity(?) - 参数类型待探索（Object不兼容）
+- get_entity_count() -> int
+- get_status() -> Dictionary - 返回{entity_count, is_running, time, day_count, time_of_day, spatial_entity_count, queued_events}
+- get_grid_map() -> Object - 当前返回null（需单独配置）
+- get_pathfinder() -> ArboreusPathfinder - 可用
+- get_physics_system() -> ArboreusPhysicsSystem - 可用
+- get_movement_system(), get_event_bus(), get_world_clock() - 存在
+
+#### 2. 创建ArboreusWorldBridge骨架
+**架构设计**:
+- 封装ArboreusWorld SDK，提供战策兼容接口
+- 实体管理：create_entity/remove_entity/get_entity/get_all_entities
+- 生命周期：start/stop/update
+- 子系统访问：get_grid_map/get_pathfinder/get_physics_system等
+- 战策侧实体ID跟踪（_entities字典映射id->ArboreusEntity）
+
+**测试结果**:
+- Bridge初始化: ✓ ArboreusWorld SDK initialized
+- start(): ✓ World started, is_running=true
+- create_entity(): ✓ Entity created id=1, count=1
+- update(0.016): ✓ Update done
+- get_status(): ✓ 返回完整状态字典
+- get_pathfinder(): ✓ ArboreusPathfinder实例
+- get_physics_system(): ✓ ArboreusPhysicsSystem实例
+- get_grid_map(): ⚠️ 返回null（需单独配置）
+- remove_entity(): ⚠️ 参数类型不兼容（需进一步探索）
+- stop(): ✓ World stopped
+
+### [SDK需求] ArboreusWorld API待明确
+1. emove_entity()参数类型：Object不兼容，可能是int（entity ID）或String
+2. get_grid_map()返回null：是否需要在create config中指定grid配置？
+3. create_entity()返回的ArboreusEntity有哪些方法和属性？
+4. 实体位置/属性如何设置？（create_entity无参数，后续如何设置position？）
+
+### 视觉/玩法效果变化
+- 新增ArboreusWorldBridge骨架，为P2 RTSArenaManager替换做准备
+- 游戏行为无变化（Bridge尚未接入实际游戏逻辑）
+
+### 修改的文件
+- scripts/game/ArboreusWorldBridge.gd - 新建，Arboreus World适配器骨架（~200行）
+- tests/arboreus_world_detailed_test.gd - 新建，详细API探索
+- tests/arboreus_world_simple_test.gd - 新建，简单API测试
+- tests/arboreus_world_bridge_test.gd - 新建，Bridge测试
+
+### 架构合规进度
+- [x] A*寻路网格层 → ArboreusGridMapBridge
+- [x] SoulAIController → Ember
+- [x] SoulUnit灵魂数据层 → Ember
+- [x] EventBus → ArboreusEventBus
+- [x] ArenaMap网格 → ArboreusGridMapBridge
+- [ ] RTSArenaManager核心逻辑 → ArboreusWorld（Bridge骨架已创建，待集成）
+- [ ] GameState → Arboreus World状态
+
+### 待办
+- [ ] 探索ArboreusEntity API（位置/属性设置方法）
+- [ ] 明确remove_entity参数类型
+- [ ] 解决get_grid_map返回null问题
+- [ ] P2: 将RTSArenaManager实体管理替换为ArboreusWorldBridge
+- [ ] P2: GameState集成Arboreus World状态
+- [ ] 等待建木修复ArboreusPathfinder大网格bug
+- [ ] BUG-030音频导入
+- [ ] 视觉提升计划
