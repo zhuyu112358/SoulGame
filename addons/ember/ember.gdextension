@@ -7,5 +7,13 @@ windows.debug.x86_64 = "res://addons/ember/bin/libember.windows.release.x86_64.d
 windows.release.x86_64 = "res://addons/ember/bin/libember.windows.release.x86_64.dll"
 linux.debug.x86_64 = "res://addons/ember/bin/libember.linux.debug.x86_64.so"
 linux.release.x86_64 = "res://addons/ember/bin/libember.linux.release.x86_64.so"
-macos.debug = "res://addons/ember/bin/libember.macos.debug.dylib"
-macos.release = "res://addons/ember/bin/libember.macos.release.dylib"
+macos.debug = "res://addons/ember/bin/libember.macos.debug.universal.dylib"
+macos.release = "res://addons/ember/bin/libember.macos.release.universal.dylib"
+
+[dependencies]
+windows.debug.x86_64 = []
+windows.release.x86_64 = []
+linux.debug.x86_64 = []
+linux.release.x86_64 = []
+macos.debug = []
+macos.release = []

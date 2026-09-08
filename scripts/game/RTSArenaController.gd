@@ -143,6 +143,7 @@ func _ready() -> void:
 	_base_position = position
 	_setup_ui_refs()
 	_apply_ui_theme()
+	_apply_hp_energy_styles()
 	_setup_arena_background()
 	_connect_signals()
 	_setup_skill_buttons()
@@ -1155,6 +1156,67 @@ func _apply_ui_theme() -> void:
 			panel.theme = theme
 			applied += 1
 	GameLog.debug("RTSArenaController: Applied UI theme to %d panels" % applied, "UI")
+
+
+## Apply custom styles to HP and energy bars (orb-like with gold border)
+func _apply_hp_energy_styles() -> void:
+	# HP bar style: red gradient fill with gold border
+	var hp_bg = StyleBoxFlat.new()
+	hp_bg.bg_color = Color(0.15, 0.05, 0.05, 0.9)
+	hp_bg.border_color = Color(0.8, 0.6, 0.2, 1.0)
+	hp_bg.border_width_left = 2
+	hp_bg.border_width_right = 2
+	hp_bg.border_width_top = 2
+	hp_bg.border_width_bottom = 2
+	hp_bg.corner_radius_top_left = 6
+	hp_bg.corner_radius_top_right = 6
+	hp_bg.corner_radius_bottom_left = 6
+	hp_bg.corner_radius_bottom_right = 6
+
+	var hp_fill = StyleBoxFlat.new()
+	hp_fill.bg_color = Color(0.9, 0.2, 0.2, 1.0)
+	hp_fill.corner_radius_top_left = 4
+	hp_fill.corner_radius_top_right = 4
+	hp_fill.corner_radius_bottom_left = 4
+	hp_fill.corner_radius_bottom_right = 4
+
+	# Energy bar style: blue gradient fill with gold border
+	var energy_bg = StyleBoxFlat.new()
+	energy_bg.bg_color = Color(0.05, 0.08, 0.15, 0.9)
+	energy_bg.border_color = Color(0.8, 0.6, 0.2, 1.0)
+	energy_bg.border_width_left = 2
+	energy_bg.border_width_right = 2
+	energy_bg.border_width_top = 2
+	energy_bg.border_width_bottom = 2
+	energy_bg.corner_radius_top_left = 6
+	energy_bg.corner_radius_top_right = 6
+	energy_bg.corner_radius_bottom_left = 6
+	energy_bg.corner_radius_bottom_right = 6
+
+	var energy_fill = StyleBoxFlat.new()
+	energy_fill.bg_color = Color(0.2, 0.5, 0.9, 1.0)
+	energy_fill.corner_radius_top_left = 4
+	energy_fill.corner_radius_top_right = 4
+	energy_fill.corner_radius_bottom_left = 4
+	energy_fill.corner_radius_bottom_right = 4
+
+	# Apply to player bars
+	if player_hp_bar:
+		player_hp_bar.add_theme_stylebox_override("background", hp_bg)
+		player_hp_bar.add_theme_stylebox_override("fill", hp_fill)
+	if player_energy_bar:
+		player_energy_bar.add_theme_stylebox_override("background", energy_bg)
+		player_energy_bar.add_theme_stylebox_override("fill", energy_fill)
+
+	# Apply to AI bars
+	if ai_hp_bar:
+		ai_hp_bar.add_theme_stylebox_override("background", hp_bg)
+		ai_hp_bar.add_theme_stylebox_override("fill", hp_fill)
+	if ai_energy_bar:
+		ai_energy_bar.add_theme_stylebox_override("background", energy_bg)
+		ai_energy_bar.add_theme_stylebox_override("fill", energy_fill)
+
+	GameLog.debug("RTSArenaController: Applied HP/energy bar orb styles", "UI")
 
 
 ## Connect to RTSArenaManager signals
