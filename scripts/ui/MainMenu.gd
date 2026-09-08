@@ -68,14 +68,20 @@ func _ready() -> void:
 			btn_tween.tween_property(btn, "modulate:a", 1.0, 0.4).set_ease(Tween.EASE_OUT)
 
 
-## Start title floating animation (subtle up-down motion)
+## Start title floating + breathing glow animation
 func _start_title_float() -> void:
 	if _title_label == null:
 		return
+	# Floating animation (up-down motion)
 	var float_tween = create_tween()
 	float_tween.set_loops()
 	float_tween.tween_property(_title_label, "position:y", _title_label.position.y - 8, 2.0).set_ease(Tween.EASE_IN_OUT)
 	float_tween.tween_property(_title_label, "position:y", _title_label.position.y + 8, 2.0).set_ease(Tween.EASE_IN_OUT)
+	# Breathing glow animation (golden brightness pulse)
+	var glow_tween = create_tween()
+	glow_tween.set_loops()
+	glow_tween.tween_property(_title_label, "modulate", Color(1.3, 1.1, 0.7), 1.5).set_ease(Tween.EASE_IN_OUT)
+	glow_tween.tween_property(_title_label, "modulate", Color(1.0, 0.95, 0.8), 1.5).set_ease(Tween.EASE_IN_OUT)
 
 
 ## Setup button hover effects (audio + visual)

@@ -38,12 +38,24 @@ func _animate_entrance() -> void:
 		title_tween.set_parallel(true)
 		title_tween.tween_property(_title_label, "modulate:a", 1.0, 0.6).set_ease(Tween.EASE_OUT)
 		title_tween.tween_property(_title_label, "scale", Vector2(1.0, 1.0), 0.6).set_ease(Tween.EASE_OUT)
+		title_tween.set_parallel(false)
+		title_tween.tween_callback(_start_title_glow)
 	# Back button animation
 	if _back_button:
 		_back_button.modulate = Color(1, 1, 1, 0)
 		var back_tween = create_tween()
 		back_tween.tween_interval(0.3)
 		back_tween.tween_property(_back_button, "modulate:a", 1.0, 0.4).set_ease(Tween.EASE_OUT)
+
+
+## Start title breathing glow animation
+func _start_title_glow() -> void:
+	if _title_label == null:
+		return
+	var glow_tween = create_tween()
+	glow_tween.set_loops()
+	glow_tween.tween_property(_title_label, "modulate", Color(1.25, 1.05, 0.65), 1.5).set_ease(Tween.EASE_IN_OUT)
+	glow_tween.tween_property(_title_label, "modulate", Color(1.0, 0.95, 0.8), 1.5).set_ease(Tween.EASE_IN_OUT)
 
 
 ## Setup button hover effects (audio + visual)
