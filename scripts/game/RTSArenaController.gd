@@ -38,6 +38,8 @@ const Minimap = preload("res://scripts/ui/Minimap.gd")
 ## Visual unit nodes
 var _player_visual = null
 var _ai_visual = null
+var _player_light = null
+var _ai_light = null
 
 ## Battle active flag
 var _battle_active = false
@@ -1834,6 +1836,15 @@ func _process(delta: float) -> void:
 		_player_visual.position = RTSArenaManager.player_unit.position - Vector2(32, 32)
 	if _ai_visual and is_instance_valid(RTSArenaManager.ai_unit):
 		_ai_visual.position = RTSArenaManager.ai_unit.position - Vector2(32, 32)
+	# Sync dynamic lights to unit positions with subtle pulse
+	if _player_light and is_instance_valid(RTSArenaManager.player_unit):
+		_player_light.position = RTSArenaManager.player_unit.position
+		var pulse = 1.0 + sin(Time.get_ticks_msec() / 300.0) * 0.15
+		_player_light.energy = 1.2 * pulse
+	if _ai_light and is_instance_valid(RTSArenaManager.ai_unit):
+		_ai_light.position = RTSArenaManager.ai_unit.position
+		var ai_pulse = 1.0 + sin(Time.get_ticks_msec() / 350.0 + 1.0) * 0.15
+		_ai_light.energy = 1.2 * ai_pulse
 	_update_skill_cooldowns()
 	_update_command_cooldown(delta)
 	_update_weather_display()
@@ -2506,9 +2517,41 @@ func _on_unit_spawned(p_unit: SoulUnit, p_is_player: bool) -> void:
 	# Visual position synced in _process (position_changed signal unreliable in Godot 4.7)
 	add_child(visual)
 
+	# Create dynamic point light for unit glow
+	var light = PointLight2D.new()
+	light.position = p_unit.position
+	light.energy = 1.2
+	light.texture = _create_light_texture()
+	if p_is_player:
+		light.color = Color(0.3, 0.5, 1.0, 0.6)  # Blue glow for player
+		light.texture_scale = 3.5
+		_player_light = light
+	else:
+		light.color = Color(1.0, 0.3, 0.2, 0.6)  # Red glow for AI
+		light.texture_scale = 3.5
+		_ai_light = light
+	light.z_index = 5  # Below unit visual, above background
+	add_child(light)
+
 	# Connect unit signals for particle effects
 	p_unit.hp_changed.connect(_on_unit_hp_changed.bind(p_unit))
 	p_unit.unit_died.connect(_on_unit_died.bind(p_unit))
+
+
+## Create radial gradient texture for point light
+func _create_light_texture() -> Texture2D:
+	var img = Image.create(128, 128, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0, 0, 0, 0))
+	for y in range(128):
+		for x in range(128):
+			var dx = x - 64.0
+			var dy = y - 64.0
+			var dist = sqrt(dx * dx + dy * dy) / 64.0
+			if dist < 1.0:
+				var alpha = pow(1.0 - dist, 1.5)
+				img.set_pixel(x, y, Color(1, 1, 1, alpha))
+	var tex = ImageTexture.create_from_image(img)
+	return tex
 
 
 ## Handle unit HP change (trigger hit particles when damaged)
