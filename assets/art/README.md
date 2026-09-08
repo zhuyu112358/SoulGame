@@ -4,7 +4,7 @@
 > 设计资源由设计任务产出，应用开发任务集成使用。
 
 ## 资源清单
-$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries| concept_post_processing.png | 2026-09-08 | 视觉提升计划P2 | 后处理效果参考概念图（4种后处理效果2x2网格：泛光Bloom竞技场灵魂单位和技能特效柔和发光+色差Chromatic Aberration战斗激烈时画面边缘红蓝色差分离+暗角Vignette画面四角自然暗角渐变聚焦视线+色彩分级Color Grading整体暖金色调暗部蓝紫高光暖黄电影感，每种有像素风格和参数标注，精致像素风场景氛围资源） | 设计任务第10轮 |
+$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries$newEntries| concept_post_processing.png | 2026-09-08 | 视觉提升计划P2 | 后处理效果参考概念图（4种后处理效果2x2网格：泛光Bloom竞技场灵魂单位和技能特效柔和发光+色差Chromatic Aberration战斗激烈时画面边缘红蓝色差分离+暗角Vignette画面四角自然暗角渐变聚焦视线+色彩分级Color Grading整体暖金色调暗部蓝紫高光暖黄电影感，每种有像素风格和参数标注，精致像素风场景氛围资源） | 设计任务第10轮 |
 | concept_scene_atmosphere.png | 2026-09-08 | 视觉提升计划P2 | 场景氛围资源参考概念图（4种场景氛围2x2网格：竞技场白天氛围明亮天空阳光洒下+竞技场黄昏氛围夕阳西下橙红渐变+竞技场夜晚氛围深蓝夜空星星月亮火把魔法光源+竞技场魔法氛围魔法能量笼罩地面发光符文魔法粒子，每种有像素风格和时间/天气标注，精致像素风场景氛围资源） | 设计任务第10轮 |
 | concept_dynamic_lighting.png | 2026-09-08 | 视觉提升计划P2 | 动态光影参考概念图（4种动态光影效果2x2网格：竞技场主光源顶部聚光灯+灵魂单位发光效果炎灵红色/水灵蓝色光晕+技能释放光影火球橙色/水箭蓝色光芒+战斗结算光影胜利金色/失败深蓝色，每种有像素风格和颜色标注，精致像素风场景氛围资源） | 设计任务第9轮 |
 | concept_environment_particles.png | 2026-09-08 | 视觉提升计划P2 | 环境粒子参考概念图（6种环境粒子效果2x3网格：竞技场尘埃粒子+灵魂光球粒子紫色/蓝色/金色+魔法符文粒子+战斗烟雾粒子+星光粒子+能量流粒子，每种有像素风格和粒子数量/速度标注，深色背景带透明棋盘格示意，精致像素风场景氛围资源） | 设计任务第9轮 |
