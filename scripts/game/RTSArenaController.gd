@@ -137,6 +137,9 @@ var _skill_active = false
 var _damage_labels = []  # Array of {label, timer, duration, start_y}
 var _damage_max_labels = 8
 
+## Skill particle effects
+var _skill_particles = []  # Array of {particle, timer, duration}
+
 
 func _ready() -> void:
 	GameLog.info("RTSArenaController: RTS Arena scene ready", "Arena")
@@ -803,6 +806,66 @@ func _update_screen_shake(delta: float) -> void:
 			# Reset to base position when shake ends
 			position = _base_position
 			_screen_shake_timer = 0.0
+
+
+## Spawn skill particle effect at position
+## p_skill: heavy_strike=earth(brown), quick_strike=fire(orange), heal=green, defend=blue
+func _spawn_skill_particle(p_skill: String, p_position: Vector2) -> void:
+	var colors = {
+		"heavy_strike": Color(0.7, 0.5, 0.3, 1.0),
+		"quick_strike": Color(1.0, 0.5, 0.2, 1.0),
+		"heal": Color(0.3, 0.9, 0.4, 1.0),
+		"defend": Color(0.4, 0.6, 0.9, 1.0),
+	}
+	var particle_color = colors.get(p_skill, Color(1.0, 1.0, 1.0, 1.0))
+	# Create 8 particle sprites radiating outward
+	for i in range(8):
+		var angle = (TAU / 8.0) * i
+		var particle = Sprite2D.new()
+		particle.name = "SkillParticle_%d" % Time.get_ticks_msec()
+		particle.centered = true
+		particle.position = p_position
+		particle.modulate = particle_color
+		particle.scale = Vector2(0.3, 0.3)
+		particle.z_index = 50
+		# Create simple circle texture
+		var img = Image.create(16, 16, false, Image.FORMAT_RGBA8)
+		img.fill(Color(0, 0, 0, 0))
+		for x in range(16):
+			for y in range(16):
+				var dx = x - 8
+				var dy = y - 8
+				var dist = sqrt(dx * dx + dy * dy)
+				if dist < 7:
+					img.set_pixel(x, y, Color(1, 1, 1, 1.0 - dist / 7.0))
+		particle.texture = ImageTexture.create_from_image(img)
+		add_child(particle)
+		_skill_particles.append({
+			"particle": particle,
+			"timer": 0.5,
+			"duration": 0.5,
+			"velocity": Vector2(cos(angle), sin(angle)) * 80.0,
+			"start_pos": p_position
+		})
+
+
+## Update all skill particle effects
+func _update_skill_particles(delta: float) -> void:
+	var to_remove = []
+	for p_data in _skill_particles:
+		p_data.timer -= delta
+		if p_data.timer <= 0:
+			if p_data.particle:
+				p_data.particle.queue_free()
+			to_remove.append(p_data)
+		else:
+			if p_data.particle:
+				var progress = 1.0 - (p_data.timer / p_data.duration)
+				p_data.particle.position = p_data.start_pos + p_data.velocity * progress
+				p_data.particle.modulate.a = 1.0 - progress
+				p_data.particle.scale = Vector2(0.3 + progress * 0.5, 0.3 + progress * 0.5)
+	for p_data in to_remove:
+		_skill_particles.erase(p_data)
 
 
 ## Setup error message label
@@ -1526,6 +1589,7 @@ func _process(delta: float) -> void:
 	_update_defend_display(delta)
 	_update_skill_display(delta)
 	_update_damage_display(delta)
+	_update_skill_particles(delta)
 	_update_error_display(delta)
 	_update_success_display(delta)
 	if minimap:
@@ -1945,21 +2009,29 @@ func _add_log(p_message: String) -> void:
 ## Skill button handlers
 func _on_heavy_strike_pressed() -> void:
 	RTSArenaManager.player_use_skill("heavy_strike")
+	if RTSArenaManager.player_unit:
+		_spawn_skill_particle("heavy_strike", RTSArenaManager.player_unit.position)
 	if AudioManager:
 		AudioManager.play_sfx("skill_rock")
 
 func _on_quick_strike_pressed() -> void:
 	RTSArenaManager.player_use_skill("quick_strike")
+	if RTSArenaManager.player_unit:
+		_spawn_skill_particle("quick_strike", RTSArenaManager.player_unit.position)
 	if AudioManager:
 		AudioManager.play_sfx("skill_windblade")
 
 func _on_heal_pressed() -> void:
 	RTSArenaManager.player_use_skill("heal")
+	if RTSArenaManager.player_unit:
+		_spawn_skill_particle("heal", RTSArenaManager.player_unit.position)
 	if AudioManager:
 		AudioManager.play_sfx("skill_heal")
 
 func _on_defend_pressed() -> void:
 	RTSArenaManager.player_use_skill("defend")
+	if RTSArenaManager.player_unit:
+		_spawn_skill_particle("defend", RTSArenaManager.player_unit.position)
 	if AudioManager:
 		AudioManager.play_sfx("skill_defend")
 

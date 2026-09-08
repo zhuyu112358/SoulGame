@@ -5892,3 +5892,60 @@ ame (String) - 唯一可见属性
 - [ ] 灵魂单位扩展动画（死亡/胜利/特殊技能）
 - [ ] UI HUD皮肤图集应用（ui_hud_skin.png）
 - [ ] BUG-030音频导入
+
+## 2026-09-08 - 视觉提升P1：技能释放粒子效果（4技能不同颜色）
+
+### 完成工作
+
+#### 技能释放粒子效果系统
+
+**修改RTSArenaController.gd**：
+
+1. **新增_skill_particles变量**
+   - 数组存储活跃粒子效果：{particle, timer, duration, velocity, start_pos}
+   - 每个技能释放生成8个粒子，向8个方向辐射
+
+2. **新增_spawn_skill_particle()方法**
+   - 根据技能类型选择粒子颜色：
+     - heavy_strike（大地震击）：棕色(0.7,0.5,0.3)
+     - quick_strike（火球术）：橙红色(1.0,0.5,0.2)
+     - heal（治疗术）：绿色(0.3,0.9,0.4)
+     - defend（岩石护盾）：蓝灰色(0.4,0.6,0.9)
+   - 程序化生成16x16圆形渐变粒子纹理
+   - 粒子初始缩放0.3x，z_index=50
+
+3. **新增_update_skill_particles()方法**
+   - 在_process()中每帧更新
+   - 粒子沿velocity方向移动
+   - 缩放从0.3x扩展到0.8x
+   - 透明度从1.0淡出到0.0
+   - 持续0.5秒后自动queue_free
+
+4. **修改4个技能释放方法**
+   - _on_heavy_strike_pressed()
+   - _on_quick_strike_pressed()
+   - _on_heal_pressed()
+   - _on_defend_pressed()
+   - 每个方法在player_use_skill()后调用_spawn_skill_particle()
+
+### 视觉/玩法效果变化
+- 释放技能时单位周围出现8个辐射粒子
+- 大地震击：棕色粒子
+- 火球术：橙红色粒子
+- 治疗术：绿色粒子
+- 岩石护盾：蓝灰色粒子
+- 粒子向外扩散并淡出，持续0.5秒
+- 技能释放反馈更明显，玩家能感知到技能已释放
+
+### 测试
+- 自动化战斗测试: 运行中...
+- M2测试套件: 待运行
+
+### 修改的文件
+- scripts/game/RTSArenaController.gd - 技能释放粒子效果
+
+### 待办
+- [ ] 灵魂单位扩展动画（死亡/胜利/特殊技能）
+- [ ] UI HUD皮肤图集应用（ui_hud_skin.png）
+- [ ] 场景氛围（动态光影/环境粒子）
+- [ ] BUG-030音频导入
