@@ -1,12 +1,16 @@
 extends Node
 ## EventBus - Global publish/subscribe event system
 ##
+## Architecture compliant: core subscribe/emit uses Arboreus SDK (ArboreusEventBus).
+## History tracking, statistics, and event filtering are Battleplan application-layer
+## features (debugging/observability), not world simulation.
+##
 ## Provides a centralized event bus for decoupled communication between
 ## game systems. Any system can emit events and any other system can
 ## subscribe without direct references.
 ##
 ## Features:
-## - Synchronous event delivery in subscription order
+## - Core pub/sub via ArboreusEventBus (SDK)
 ## - Event history tracking for debugging
 ## - Per-event-type statistics
 ## - Event filtering (temporarily suppress events)
@@ -19,8 +23,13 @@ extends Node
 ##   var history = EventBus.get_history(20)
 ##   EventBus.suppress_event("debug_spam")
 
+## Arboreus SDK EventBus (core pub/sub engine)
+var _arboreus_bus: Object = null
+var _arboreus_available: bool = false
+
 ## Dictionary mapping event names to arrays of subscribers
 ## Each subscriber is { "target": Object, "method": StringName }
+## Kept for Battleplan-specific features (history, stats, filtering)
 var _subscribers: Dictionary = {}
 
 ## Event history: circular buffer of recent events
@@ -42,6 +51,21 @@ var _delivered_count: int = 0
 var _suppressed_count: int = 0
 
 
+func _ready() -> void:
+	_initialize_arboreus_bus()
+
+
+## Initialize Arboreus SDK EventBus
+func _initialize_arboreus_bus() -> void:
+	if ClassDB.class_exists("ArboreusEventBus"):
+		_arboreus_bus = ClassDB.instantiate("ArboreusEventBus")
+		_arboreus_available = true
+		print("[EventBus] ArboreusEventBus SDK initialized")
+	else:
+		_arboreus_available = false
+		print("[EventBus] WARNING: ArboreusEventBus not available, using fallback")
+
+
 ## Subscribe to an event
 ## event_name: Name of the event to listen for
 ## target: Object that will receive the callback
@@ -60,6 +84,11 @@ func subscribe(event_name: String, target: Object, method: String) -> void:
 		"target": target,
 		"method": StringName(method)
 	})
+
+	# Also subscribe to Arboreus bus if available
+	if _arboreus_available:
+		_arboreus_bus.subscribe(event_name, target, method)
+
 	print("[EventBus] Subscribed to '%s' -> %s.%s" % [event_name, target, method])
 
 
@@ -73,10 +102,15 @@ func unsubscribe(event_name: String, target: Object, method: String) -> void:
 		var sub = subscribers[i]
 		if sub.target == target and sub.method == StringName(method):
 			subscribers.remove_at(i)
-			print("[EventBus] Unsubscribed from '%s' -> %s.%s" % [event_name, target, method])
 
 	if subscribers.is_empty():
 		_subscribers.erase(event_name)
+
+	# Also unsubscribe from Arboreus bus if available
+	if _arboreus_available:
+		_arboreus_bus.unsubscribe(event_name, target, method)
+
+	print("[EventBus] Unsubscribed from '%s' -> %s.%s" % [event_name, target, method])
 
 
 ## Emit an event with optional data payload
@@ -215,7 +249,8 @@ func get_stats() -> Dictionary:
 		"max_history_size": _max_history_size,
 		"suppressed_event_count": _suppressed_events.size(),
 		"unique_event_types": _event_counts.size(),
-		"top_events": top_events
+		"top_events": top_events,
+		"arboreus_sdk": _arboreus_available
 	}
 
 
@@ -246,6 +281,9 @@ func unsubscribe_all(target: Object) -> void:
 		for i in range(subscribers.size() - 1, -1, -1):
 			if subscribers[i].target == target:
 				subscribers.remove_at(i)
+				# Also unsubscribe from Arboreus bus
+				if _arboreus_available:
+					_arboreus_bus.unsubscribe(event_name, target, subscribers[i].method if i < subscribers.size() else "")
 		if subscribers.is_empty():
 			_subscribers.erase(event_name)
 

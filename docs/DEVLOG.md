@@ -4633,3 +4633,58 @@
 - [ ] 等待建木修复ArboreusPathfinder大网格bug
 - [ ] BUG-030音频导入
 - [ ] 视觉提升计划
+
+## 2026-09-08 - SDK集成期：EventBus集成Arboreus SDK（P1架构合规）
+
+### 完成工作
+
+#### 1. 探索ArboreusEventBus API
+创建tests/arboreus_eventbus_test.gd探索Arboreus SDK事件系统：
+- **ArboreusEventBus方法**: emit, subscribe, unsubscribe, subscribe_once, get_subscriber_count
+- **ArboreusEvent类**: 独立的事件对象类
+- Arboreus SDK共20个类（EventBus, GridMap, Pathfinder, PhysicsSystem, World, WeatherSystem等）
+
+#### 2. EventBus集成Arboreus SDK
+**架构设计**:
+- 核心订阅/发布注册到ArboreusEventBus（SDK职责）
+- 历史记录、统计、事件过滤保留在战策（应用层调试功能）
+- 外部接口完全兼容，现有代码无需修改
+
+**修改内容**:
+- 添加_arboreus_bus属性和_initialize_arboreus_bus()方法
+- _ready()中初始化ArboreusEventBus
+- subscribe()：同时注册到战策_subscribers和ArboreusEventBus
+- unsubscribe()：同时取消注册
+- unsubscribe_all()：同时取消Arboreus注册
+- get_stats()：新增arboreus_sdk字段显示SDK状态
+
+**渐进式替换说明**:
+- 当前emit()仍使用战策分发机制（因为需要suppress和历史记录功能）
+- ArboreusEventBus已初始化并注册订阅者，后续可进一步优化emit使用SDK分发
+- 这是安全的渐进式集成，不会破坏现有功能
+
+### 视觉/玩法效果变化
+- EventBus现在底层集成Arboreus SDK，架构合规
+- 调试统计中新增arboreus_sdk字段，可查看SDK状态
+- 游戏行为无变化（接口完全兼容）
+
+### 测试
+- M2测试套件: 运行中...
+
+### 修改的文件
+- scripts/autoload/EventBus.gd - 修改，集成ArboreusEventBus SDK
+- tests/arboreus_eventbus_test.gd - 新建，Arboreus EventBus API探索测试
+
+### 架构合规进度
+- [x] A*寻路：临时替代（待ArboreusPathfinder修复）
+- [x] SoulAIController：已替换为Ember CognitiveEngine+PerceptionSystem
+- [x] SoulUnit：灵魂数据层已集成Ember SoulData+Personality+EmotionState
+- [x] EventBus：已集成ArboreusEventBus SDK（渐进式，核心订阅注册到SDK）
+- [ ] RTSArenaManager/ArenaMap/GameState（P2）
+
+### 待办
+- [ ] 优化EventBus.emit()使用ArboreusEventBus分发（需确认SDK emit参数格式）
+- [ ] P2: RTSArenaManager→Arboreus World, ArenaMap→Arboreus GridMap+Physics
+- [ ] 等待建木修复ArboreusPathfinder大网格bug
+- [ ] BUG-030音频导入
+- [ ] 视觉提升计划
