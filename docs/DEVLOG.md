@@ -4766,3 +4766,64 @@
 - [ ] 等待建木修复ArboreusPathfinder大网格bug
 - [ ] BUG-030音频导入
 - [ ] 视觉提升计划
+
+## 2026-09-08 - SDK集成期：ArenaMap网格替换为ArboreusGridMapBridge（P2架构合规）
+
+### 完成工作
+
+#### 1. RTSArenaManager网格替换为ArboreusGridMapBridge
+**修改内容**:
+- RTSArenaManager.gd:129: 将load("res://scripts/game/GridMap.gd")替换为load("res://scripts/game/ArboreusGridMapBridge.gd")
+- 其他代码无需修改（接口完全兼容）
+- 日志更新为"ArboreusGridMapBridge"标识
+
+**替换原理**:
+- AStarPathfinder接受grid参数，调用grid.world_to_cell_x/y、is_walkable、get_neighbors等方法
+- ArboreusGridMapBridge实现了与NavigationGrid完全相同的接口
+- 只需替换grid的创建来源，AStarPathfinder和SoulUnit代码无需修改
+
+#### 2. 修复ArboreusGridMapBridge.get_neighbors格式不匹配
+**问题**:
+- NavigationGrid.get_neighbors返回Dictionary数组：[{"x":nx, "y":ny, "cost":1.0}, ...]
+- ArboreusGridMapBridge最初返回Vector2i数组
+- AStarPathfinder期望neighbor["cost"]，导致大量"SCRIPT ERROR: Invalid access to property or key 'cost'"
+
+**修复**:
+- 重写get_neighbors方法，返回与NavigationGrid完全相同的Dictionary格式
+- 包含对角线移动的角落切割检查（no corner cutting）
+- 正交移动cost=1.0，对角线cost=1.414
+
+### 视觉/玩法效果变化
+- RTS竞技场的寻路网格现在由Arboreus SDK（通过Bridge适配器）管理
+- 寻路行为与之前完全一致（AStarPathfinder算法不变，grid接口兼容）
+- 玩家和AI单位正常移动，最终相遇（距离0.8）
+- 架构合规：网格模拟层已切换到Arboreus SDK
+
+### 测试
+- 自动化战斗测试: [OK] Both units moved successfully!
+  - 无SCRIPT ERROR（修复前有150+个cost访问错误）
+  - ArboreusGridMapBridge初始化: 40x19, 82 blocked cells
+  - 玩家移动550px, AI移动334px, 最终距离0.8
+  - 两个SoulUnit均Ember:true
+- M2测试套件: 运行中...
+
+### 修改的文件
+- scripts/game/RTSArenaManager.gd - 修改，网格替换为ArboreusGridMapBridge
+- scripts/game/ArboreusGridMapBridge.gd - 修改，修复get_neighbors格式
+
+### 架构合规进度
+- [x] A*寻路：AStarPathfinder + ArboreusGridMapBridge（网格层已用Arboreus SDK）
+- [x] SoulAIController：已替换为Ember
+- [x] SoulUnit：灵魂数据层已集成Ember
+- [x] EventBus：已集成ArboreusEventBus SDK
+- [x] ArenaMap网格：已替换为ArboreusGridMapBridge（P2完成）
+- [ ] RTSArenaManager核心逻辑→ArboreusWorld（P2）
+- [ ] GameState→Arboreus World状态（P2）
+
+### 待办
+- [ ] P2: RTSArenaManager集成ArboreusWorld（实体管理/世界模拟）
+- [ ] P2: GameState集成Arboreus World状态
+- [ ] 研究ArboreusGridMap API参数，优化Bridge使用SDK原生方法
+- [ ] 等待建木修复ArboreusPathfinder大网格bug（修复后可完全替换AStarPathfinder）
+- [ ] BUG-030音频导入
+- [ ] 视觉提升计划

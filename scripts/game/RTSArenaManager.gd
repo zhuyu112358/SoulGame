@@ -124,15 +124,16 @@ func start_battle(p_player_soul: Dictionary, p_ai_soul: Dictionary, p_map_name: 
 	_environment.setup_for_map(p_map_name)
 	battle_config["weather"] = _environment.get_weather_name()
 
-	# Initialize A* pathfinding grid (temporary: ArboreusPathfinder has bug with large grids)
+	# Initialize A* pathfinding grid using ArboreusGridMapBridge (Arboreus SDK adapter)
+	# Architecture compliant: grid simulation uses Arboreus SDK through bridge adapter
 	if _grid_map_script == null:
-		_grid_map_script = load("res://scripts/game/GridMap.gd")
+		_grid_map_script = load("res://scripts/game/ArboreusGridMapBridge.gd")
 	if _pathfinder_script == null:
 		_pathfinder_script = load("res://scripts/game/AStarPathfinder.gd")
 	_grid_map = _grid_map_script.new(32.0, 40, 19, 0.0, 0.0, true)
 	_pathfinder = _pathfinder_script.new(100000)
 	_sync_obstacles_to_grid()
-	GameLog.info("RTSArenaManager: A* grid initialized (%dx%d, %d blocked cells)" % [
+	GameLog.info("RTSArenaManager: A* grid initialized (ArboreusGridMapBridge, %dx%d, %d blocked cells)" % [
 		_grid_map.width, _grid_map.height, _grid_map.get_blocked_count()
 	], "Arena")
 

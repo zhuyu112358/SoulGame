@@ -105,18 +105,33 @@ func clear() -> void:
 
 
 func get_neighbors(p_cell_x: int, p_cell_y: int) -> Array:
-	# Use Battleplan 8-directional neighbor logic
-	var neighbors := []
-	for dx in [-1, 0, 1]:
-		for dy in [-1, 0, 1]:
-			if dx == 0 and dy == 0:
-				continue
-			if not allow_diagonal and dx != 0 and dy != 0:
-				continue
-			var nx = p_cell_x + dx
-			var ny = p_cell_y + dy
-			if in_bounds(nx, ny):
-				neighbors.append(Vector2i(nx, ny))
+	# Match NavigationGrid format: array of {x, y, cost}
+	# Includes diagonal corner-cutting check
+	var neighbors: Array = []
+	var directions: Array = [
+		{"x": 0, "y": -1, "cost": 1.0},  # Up
+		{"x": 0, "y": 1, "cost": 1.0},   # Down
+		{"x": -1, "y": 0, "cost": 1.0},  # Left
+		{"x": 1, "y": 0, "cost": 1.0},   # Right
+	]
+	if allow_diagonal:
+		directions.append({"x": -1, "y": -1, "cost": 1.414})  # Up-Left
+		directions.append({"x": 1, "y": -1, "cost": 1.414})   # Up-Right
+		directions.append({"x": -1, "y": 1, "cost": 1.414})   # Down-Left
+		directions.append({"x": 1, "y": 1, "cost": 1.414})    # Down-Right
+
+	for d in directions:
+		var nx: int = p_cell_x + d["x"]
+		var ny: int = p_cell_y + d["y"]
+		if in_bounds(nx, ny) and not _blocked[height * nx + ny]:
+			# For diagonal movement, ensure both adjacent cells are walkable (no corner cutting)
+			if d["cost"] > 1.0:
+				var adj1_walkable: bool = in_bounds(p_cell_x + d["x"], p_cell_y) and not _blocked[height * (p_cell_x + d["x"]) + p_cell_y]
+				var adj2_walkable: bool = in_bounds(p_cell_x, p_cell_y + d["y"]) and not _blocked[height * p_cell_x + (p_cell_y + d["y"])]
+				if not adj1_walkable or not adj2_walkable:
+					continue
+			neighbors.append({"x": nx, "y": ny, "cost": d["cost"]})
+
 	return neighbors
 
 
