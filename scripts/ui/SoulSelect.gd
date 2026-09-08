@@ -150,6 +150,19 @@ func _create_soul_card(soul: Dictionary, index: int) -> Button:
 	var card = Button.new()
 	card.custom_minimum_size = Vector2(0, 70)
 	card.text = ""
+	# Custom style: dark purple with gold border
+	var card_style = StyleBoxFlat.new()
+	card_style.bg_color = Color(0.12, 0.08, 0.22, 0.9)
+	card_style.border_color = Color(0.83, 0.66, 0.36)
+	card_style.border_width_left = 2
+	card_style.border_width_right = 2
+	card_style.border_width_top = 2
+	card_style.border_width_bottom = 2
+	card_style.corner_radius_top_left = 8
+	card_style.corner_radius_top_right = 8
+	card_style.corner_radius_bottom_left = 8
+	card_style.corner_radius_bottom_right = 8
+	card.add_theme_stylebox_override("normal", card_style)
 
 	var hbox = HBoxContainer.new()
 	hbox.set_anchors_preset(15)
@@ -207,6 +220,21 @@ func _on_soul_selected(index: int) -> void:
 	var soul = _souls[index]
 	_selected_info.text = "已选择: %s - 点击下方按钮进入对战" % soul["name"]
 	_play_soul_select_sound(soul["element"])
+
+	# Click pulse feedback on the card
+	var card = _soul_list.get_child(index) as Button
+	if card:
+		if card.has_meta("hover_tween"):
+			var old_tween = card.get_meta("hover_tween")
+			if old_tween and old_tween.is_valid():
+				old_tween.kill()
+		var pulse_tween = create_tween()
+		pulse_tween.set_ease(Tween.EASE_OUT)
+		pulse_tween.set_trans(Tween.TRANS_BACK)
+		pulse_tween.tween_property(card, "scale", Vector2(1.12, 1.12), 0.1)
+		pulse_tween.parallel().tween_property(card, "modulate", Color(1.4, 1.2, 0.6), 0.1)
+		pulse_tween.tween_property(card, "scale", Vector2(1.0, 1.0), 0.15)
+		pulse_tween.parallel().tween_property(card, "modulate", Color(1.0, 1.0, 1.0), 0.15)
 
 	# Store selected soul in GameState
 	GameState.set_value("battle", "selected_soul", soul)
