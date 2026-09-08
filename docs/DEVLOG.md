@@ -6208,3 +6208,68 @@ ame (String) - 唯一可见属性
 - [ ] [设计需求] 设计产出实际像素字体文件（.ttf/.otf）
 - [ ] 游戏流程端到端验证
 - [ ] BUG-030音频导入
+
+## 2026-09-09 - 视觉提升P0：UI皮肤图集颜色精确匹配（ui_skin_sheet.png）
+
+### 完成工作
+
+#### UI样式颜色优化
+
+**背景**：设计产出ui_skin_sheet.png（完整UI皮肤图集，1920x1080），包含按钮4状态/面板/进度条/输入框/复选框/标签页，精确颜色值：
+- 按钮正常背景：#1f1a2e（深紫）
+- 按钮边框：#cc9933（金色）
+- 按钮悬停边框：#ffd65c（亮金）+发光阴影
+- 面板背景：#1f1a2e80（深紫半透明）
+- 进度条填充：#4ff6b（绿色）
+
+**优化6个样式文件**（assets/ui/styles/）：
+
+1. **btn_normal.tres**
+   - bg_color: Color(0.122, 0.102, 0.18, 0.95) → 精确#1f1a2e
+   - border_color: Color(0.8, 0.6, 0.2, 1) → 精确#cc9933
+
+2. **btn_hover.tres**
+   - bg_color: Color(0.18, 0.14, 0.26, 0.98) → 浅紫悬停
+   - border_color: Color(1, 0.84, 0.36, 1) → 精确#ffd65c
+   - border_width: 2→3（更亮更粗）
+   - shadow_size: 4→6，shadow_color alpha 0.3→0.4（增强发光）
+
+3. **btn_pressed.tres**
+   - bg_color: Color(0.09, 0.07, 0.14, 0.98) → 深紫按下
+   - border_color: Color(0.7, 0.55, 0.25, 1) → 暗金
+
+4. **panel.tres**
+   - bg_color: Color(0.122, 0.102, 0.18, 0.92) → 精确#1f1a2e半透明
+   - border_color: Color(0.8, 0.6, 0.2, 0.9) → 精确#cc9933
+   - corner_radius: 6→8（更大圆角）
+
+5. **progress_bg.tres**
+   - bg_color: Color(0.08, 0.06, 0.12, 0.95) → 深紫背景
+   - border_color: Color(0.8, 0.6, 0.2, 0.8) → 金色边框
+   - border_width: 1→2，corner_radius: 2→4
+
+6. **progress_fill.tres**
+   - bg_color: Color(0.31, 0.96, 0.42, 1) → 精确#4ff6b绿色
+   - corner_radius: 2→3
+
+### 视觉/玩法效果变化
+- 所有UI元素颜色精确匹配ui_skin_sheet.png设计稿
+- 按钮悬停金色发光效果增强
+- 面板圆角更大，更符合设计稿
+- 进度条绿色更鲜亮
+
+### 测试
+- 自动化战斗测试: 运行中...
+- M2测试套件: 待运行
+
+### 修改的文件
+- assets/ui/styles/btn_normal.tres
+- assets/ui/styles/btn_hover.tres
+- assets/ui/styles/btn_pressed.tres
+- assets/ui/styles/panel.tres
+- assets/ui/styles/progress_bg.tres
+- assets/ui/styles/progress_fill.tres
+
+### 待办
+- [ ] 游戏流程端到端验证
+- [ ] BUG-030音频导入
