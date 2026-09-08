@@ -718,7 +718,13 @@ func _update_damage_display(delta: float) -> void:
 	# Check if player unit just took damage
 	if RTSArenaManager.player_unit and RTSArenaManager.player_unit.last_damage_taken > 0:
 		var player_pos = RTSArenaManager.player_unit.position
-		_show_damage_at(RTSArenaManager.player_unit.last_damage_taken, player_pos, Color(1.0, 0.3, 0.3))
+		var player_dmg = RTSArenaManager.player_unit.last_damage_taken
+		var is_crit = RTSArenaManager.ai_unit and RTSArenaManager.ai_unit.last_attack_critical
+		if is_crit:
+			_show_damage_at(player_dmg, player_pos, Color(1.0, 0.85, 0.2), "暴击!", 28)
+			_trigger_screen_shake(5.0, 0.15)
+		else:
+			_show_damage_at(player_dmg, player_pos, Color(1.0, 0.3, 0.3))
 		RTSArenaManager.player_unit.last_damage_taken = 0
 		# Trigger hit flash on player damage taken
 		_trigger_hit_flash(Color(1.0, 0.2, 0.2, 0.2), 0.12)
@@ -726,13 +732,32 @@ func _update_damage_display(delta: float) -> void:
 	# Check if AI unit just took damage
 	if RTSArenaManager.ai_unit and RTSArenaManager.ai_unit.last_damage_taken > 0:
 		var ai_pos = RTSArenaManager.ai_unit.position
-		_show_damage_at(RTSArenaManager.ai_unit.last_damage_taken, ai_pos, Color(1.0, 0.7, 0.2))
+		var ai_dmg = RTSArenaManager.ai_unit.last_damage_taken
+		var ai_is_crit = RTSArenaManager.player_unit and RTSArenaManager.player_unit.last_attack_critical
+		if ai_is_crit:
+			_show_damage_at(ai_dmg, ai_pos, Color(1.0, 0.85, 0.2), "暴击!", 28)
+		else:
+			_show_damage_at(ai_dmg, ai_pos, Color(1.0, 0.7, 0.2))
 		RTSArenaManager.ai_unit.last_damage_taken = 0
+
+	# Check if player unit just healed
+	if RTSArenaManager.player_unit and RTSArenaManager.player_unit.last_heal_amount > 0:
+		var player_heal_pos = RTSArenaManager.player_unit.position
+		_show_damage_at(RTSArenaManager.player_unit.last_heal_amount, player_heal_pos, Color(0.3, 1.0, 0.4), "+", 24)
+		RTSArenaManager.player_unit.last_heal_amount = 0
+
+	# Check if AI unit just healed
+	if RTSArenaManager.ai_unit and RTSArenaManager.ai_unit.last_heal_amount > 0:
+		var ai_heal_pos = RTSArenaManager.ai_unit.position
+		_show_damage_at(RTSArenaManager.ai_unit.last_heal_amount, ai_heal_pos, Color(0.3, 1.0, 0.4), "+", 24)
+		RTSArenaManager.ai_unit.last_heal_amount = 0
 
 
 ## Show damage floating text at specific position
 ## p_color: red=player damage, orange=AI damage, green=heal, gold=crit
-func _show_damage_at(damage_amount: int, p_position: Vector2, p_color: Color = Color(1.0, 0.3, 0.3)) -> void:
+## p_prefix: text prefix before number (e.g. "暴击!", "+")
+## p_font_size: font size override
+func _show_damage_at(damage_amount: int, p_position: Vector2, p_color: Color = Color(1.0, 0.3, 0.3), p_prefix: String = "-", p_font_size: int = 24) -> void:
 	# Limit max simultaneous labels
 	if _damage_labels.size() >= _damage_max_labels:
 		var oldest = _damage_labels[0]
@@ -742,11 +767,11 @@ func _show_damage_at(damage_amount: int, p_position: Vector2, p_color: Color = C
 	# Create new damage label
 	var label = Label.new()
 	label.name = "DamageText_%d" % Time.get_ticks_msec()
-	label.text = "-%d" % damage_amount
-	label.position = Vector2(p_position.x - 30, p_position.y - 60)
-	label.size = Vector2(60, 30)
+	label.text = "%s%d" % [p_prefix, damage_amount]
+	label.position = Vector2(p_position.x - 40, p_position.y - 60)
+	label.size = Vector2(80, 30)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", 24)
+	label.add_theme_font_size_override("font_size", p_font_size)
 	label.modulate = p_color
 	label.z_index = 100
 	add_child(label)
