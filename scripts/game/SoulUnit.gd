@@ -1,4 +1,4 @@
-extends Node2D
+﻿extends Node2D
 ## SoulUnit - RTS battle unit representing a soul in the arena
 ##
 ## Handles real-time movement, attack, skills, and status effects.
@@ -322,9 +322,30 @@ func _update_movement(delta: float) -> void:
 			elif _is_position_valid(slide_y):
 				position = slide_y
 			else:
-				# Blocked completely, stop moving
-				state = UnitState.IDLE
-				emit_signal("state_changed", state)
+				# Blocked completely, try to navigate around obstacle
+				# Try moving perpendicular to target direction (up or down)
+				var perp_up: Vector2 = position + Vector2(0, -move_amount)
+				var perp_down: Vector2 = position + Vector2(0, move_amount)
+				var perp_left: Vector2 = position + Vector2(-move_amount, 0)
+				var perp_right: Vector2 = position + Vector2(move_amount, 0)
+				
+				# Prefer direction that moves closer to target while avoiding obstacle
+				var best_pos: Vector2 = position
+				var best_dist: float = distance
+				
+				for test_pos in [perp_up, perp_down, perp_left, perp_right]:
+					if _is_position_valid(test_pos):
+						var test_dist: float = test_pos.distance_to(target_position)
+						if test_dist < best_dist:
+							best_dist = test_dist
+							best_pos = test_pos
+				
+				if best_pos != position:
+					position = best_pos
+				else:
+					# Truly stuck, stop moving
+					state = UnitState.IDLE
+					emit_signal("state_changed", state)
 
 
 ## Check if position is valid (not colliding with obstacles or out of bounds)
