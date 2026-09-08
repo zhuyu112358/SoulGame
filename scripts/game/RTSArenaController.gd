@@ -152,6 +152,10 @@ var _skill_particles = []  # Array of {particle, timer, duration}
 var _ambient_particles = []  # Array of {particle, velocity, base_y, phase}
 var _magic_dust = []  # Array of {particle, velocity, phase, base_x, base_y}
 var _vignette_sprite: Sprite2D = null
+var _chromatic_layer: CanvasLayer = null
+var _chromatic_rect: ColorRect = null
+var _chromatic_intensity: float = 0.0
+var _chromatic_decay: float = 0.0
 var _ambient_time: float = 0.0
 
 
@@ -166,6 +170,7 @@ func _ready() -> void:
 	FontLoader.apply_font_to_control(self)
 	_setup_arena_background()
 	_setup_atmosphere_effects()
+	_setup_chromatic_aberration()
 	_connect_signals()
 	_setup_skill_buttons()
 	_setup_macro_commands()
@@ -745,6 +750,7 @@ func _update_damage_display(delta: float) -> void:
 		if is_crit:
 			_show_damage_at(player_dmg, player_pos, Color(1.0, 0.85, 0.2), "暴击!", 28)
 			_trigger_screen_shake(5.0, 0.15)
+			_trigger_chromatic_aberration(10.0, 0.3)
 		else:
 			_show_damage_at(player_dmg, player_pos, Color(1.0, 0.3, 0.3))
 		RTSArenaManager.player_unit.last_damage_taken = 0
@@ -758,6 +764,7 @@ func _update_damage_display(delta: float) -> void:
 		var ai_is_crit = RTSArenaManager.player_unit and RTSArenaManager.player_unit.last_attack_critical
 		if ai_is_crit:
 			_show_damage_at(ai_dmg, ai_pos, Color(1.0, 0.85, 0.2), "暴击!", 28)
+			_trigger_chromatic_aberration(8.0, 0.25)
 		else:
 			_show_damage_at(ai_dmg, ai_pos, Color(1.0, 0.7, 0.2))
 		RTSArenaManager.ai_unit.last_damage_taken = 0
@@ -1262,6 +1269,68 @@ func _update_atmosphere(delta: float) -> void:
 			dust.position.y = 80
 			d_data.base_x = randf_range(0, 1280)
 			dust.position.x = d_data.base_x
+
+
+## Setup chromatic aberration post-processing effect
+## Full-screen ColorRect with shader that offsets RGB channels
+## Triggered by crits/skills, intensity decays over time
+func _setup_chromatic_aberration() -> void:
+	_chromatic_layer = CanvasLayer.new()
+	_chromatic_layer.layer = 100  # Above UI
+	_chromatic_layer.name = "ChromaticAberrationLayer"
+	add_child(_chromatic_layer)
+
+	_chromatic_rect = ColorRect.new()
+	_chromatic_rect.name = "ChromaticAberration"
+	_chromatic_rect.anchors_preset = Control.PRESET_FULL_RECT
+	_chromatic_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_chromatic_rect.color = Color(1, 1, 1, 1)
+
+	# Create chromatic aberration shader
+	var shader = Shader.new()
+	shader.code = """
+shader_type canvas_item;
+
+uniform float intensity : hint_range(0.0, 20.0) = 0.0;
+
+void fragment() {
+	vec2 uv = SCREEN_UV;
+	vec2 offset = vec2(intensity * 0.001, 0.0);
+	// Sample RGB channels with horizontal offset
+	float r = texture(SCREEN_TEXTURE, uv + offset).r;
+	float g = texture(SCREEN_TEXTURE, uv).g;
+	float b = texture(SCREEN_TEXTURE, uv - offset).b;
+	// Keep alpha from original
+	float a = texture(SCREEN_TEXTURE, uv).a;
+	COLOR = vec4(r, g, b, a);
+}
+"""
+	var material = ShaderMaterial.new()
+	material.shader = shader
+	material.set_shader_parameter("intensity", 0.0)
+	_chromatic_rect.material = material
+	_chromatic_layer.add_child(_chromatic_rect)
+	GameLog.info("RTSArenaController: Chromatic aberration post-processing setup", "Arena")
+
+
+## Trigger chromatic aberration effect
+## p_intensity: peak intensity (0-20)
+## p_duration: decay time in seconds
+func _trigger_chromatic_aberration(p_intensity: float = 8.0, p_duration: float = 0.3) -> void:
+	_chromatic_intensity = p_intensity
+	_chromatic_decay = p_intensity / p_duration if p_duration > 0 else p_intensity
+
+
+## Update chromatic aberration decay
+func _update_chromatic_aberration(delta: float) -> void:
+	if _chromatic_intensity > 0.01:
+		_chromatic_intensity = max(0.0, _chromatic_intensity - _chromatic_decay * delta)
+		if _chromatic_rect and _chromatic_rect.material:
+			_chromatic_rect.material.set_shader_parameter("intensity", _chromatic_intensity)
+	elif _chromatic_intensity > 0.0:
+		_chromatic_intensity = 0.0
+		if _chromatic_rect and _chromatic_rect.material:
+			_chromatic_rect.material.set_shader_parameter("intensity", 0.0)
 
 
 ## Try to auto-start battle from GameState configuration
@@ -1882,6 +1951,8 @@ func _process(delta: float) -> void:
 	_update_skill_particles(delta)
 	# Update atmosphere effects (runs even when paused)
 	_update_atmosphere(delta)
+	# Update chromatic aberration decay
+	_update_chromatic_aberration(delta)
 	# Skip battle logic updates when paused (UI still renders)
 	if _is_paused:
 		_update_unit_display()
@@ -2738,6 +2809,7 @@ func _on_heavy_strike_pressed() -> void:
 	RTSArenaManager.player_use_skill("heavy_strike")
 	if RTSArenaManager.player_unit:
 		_spawn_skill_particle("heavy_strike", RTSArenaManager.player_unit.position)
+	_trigger_chromatic_aberration(12.0, 0.35)
 	if AudioManager:
 		AudioManager.play_sfx("skill_rock")
 
@@ -2745,6 +2817,7 @@ func _on_quick_strike_pressed() -> void:
 	RTSArenaManager.player_use_skill("quick_strike")
 	if RTSArenaManager.player_unit:
 		_spawn_skill_particle("quick_strike", RTSArenaManager.player_unit.position)
+	_trigger_chromatic_aberration(8.0, 0.25)
 	if AudioManager:
 		AudioManager.play_sfx("skill_windblade")
 
@@ -2752,6 +2825,7 @@ func _on_heal_pressed() -> void:
 	RTSArenaManager.player_use_skill("heal")
 	if RTSArenaManager.player_unit:
 		_spawn_skill_particle("heal", RTSArenaManager.player_unit.position)
+	_trigger_chromatic_aberration(5.0, 0.2)
 	if AudioManager:
 		AudioManager.play_sfx("skill_heal")
 
@@ -2759,6 +2833,7 @@ func _on_defend_pressed() -> void:
 	RTSArenaManager.player_use_skill("defend")
 	if RTSArenaManager.player_unit:
 		_spawn_skill_particle("defend", RTSArenaManager.player_unit.position)
+	_trigger_chromatic_aberration(6.0, 0.2)
 	if AudioManager:
 		AudioManager.play_sfx("skill_defend")
 

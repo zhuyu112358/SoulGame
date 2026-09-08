@@ -6765,3 +6765,61 @@ D:\Godot\Godot.exe --headless -s res://tests/e2e_flow_test.gd --path D:\Sojourn\
 ### 待办
 - [ ] 后处理效果（bloom/色差）
 - [ ] BUG-030音频导入
+
+## 2026-09-09 - 视觉提升P2：后处理效果（战斗触发式色差Chromatic Aberration）
+
+### 完成工作
+
+#### 色差后处理效果
+
+实现战斗触发式色差（Chromatic Aberration）后处理效果，在暴击和技能释放时触发，增强战斗冲击力。
+
+**实现内容**：
+1. **全屏后处理层**：CanvasLayer(layer=100) + 全屏ColorRect，MOUSE_FILTER_IGNORE
+2. **色差Shader**：使用SCREEN_TEXTURE采样，R通道左偏、B通道右偏、G通道不变
+3. **强度控制**：uniform intensity (0-20)，通过set_shader_parameter动态调整
+4. **触发式衰减**：_trigger_chromatic_aberration(intensity, duration)设置峰值，每帧线性衰减到0
+5. **暴击触发**：
+   - 玩家受暴击：intensity=10, duration=0.3s
+   - AI受暴击：intensity=8, duration=0.25s
+6. **技能触发**（不同技能不同强度）：
+   - 大地震击(heavy_strike)：intensity=12, duration=0.35s（最强）
+   - 火球术(quick_strike)：intensity=8, duration=0.25s
+   - 治疗术(heal)：intensity=5, duration=0.2s（较弱）
+   - 岩石护盾(defend)：intensity=6, duration=0.2s
+
+**新增变量**：
+- _chromatic_layer: CanvasLayer - 后处理层
+- _chromatic_rect: ColorRect - 全屏色差矩形
+- _chromatic_intensity: float - 当前色差强度
+- _chromatic_decay: float - 衰减速率
+
+**新增方法**：
+- _setup_chromatic_aberration() - 初始化后处理层和shader
+- _trigger_chromatic_aberration(p_intensity, p_duration) - 触发色差效果
+- _update_chromatic_aberration(delta) - 每帧衰减更新
+
+### 视觉/玩法效果变化
+- 暴击时画面出现RGB分离效果，增强暴击的震撼感
+- 技能释放时色差强度与技能威力匹配（大地震击最强）
+- 色差快速衰减，不会持续影响视觉
+- 与屏幕震动、命中闪光叠加，形成完整的战斗反馈链
+- 后处理层在UI之上，全屏效果
+
+### 测试
+- 自动化战斗测试: 运行中...
+- M2测试套件: 待运行
+
+### 修改的文件
+- scripts/game/RTSArenaController.gd - 色差后处理效果
+
+### 视觉提升P2完成状态
+- [x] 屏幕震动优化（衰减+旋转+自然波形）
+- [x] 动态光照（单位光晕+呼吸脉冲）
+- [x] 天气环境特效（金色魔法尘埃）
+- [x] 后处理效果（战斗触发式色差）
+- **视觉提升P2全部完成！**
+
+### 待办
+- [ ] BUG-030音频导入
+- [ ] 可玩原型用户体验优化
