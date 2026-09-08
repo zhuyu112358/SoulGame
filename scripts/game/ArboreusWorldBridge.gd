@@ -92,6 +92,9 @@ func create_entity(p_name: String = "entity", p_position: Vector2 = Vector2.ZERO
 		var entity_id = _next_entity_id
 		_next_entity_id += 1
 		_entities[entity_id] = entity
+		# Set entity name if method exists
+		if entity.has_method("set_name"):
+			entity.set_name(p_name)
 		print("[ArboreusWorldBridge] Entity created: id=%d, name=%s" % [entity_id, p_name])
 		return entity_id
 	else:
@@ -100,6 +103,7 @@ func create_entity(p_name: String = "entity", p_position: Vector2 = Vector2.ZERO
 
 
 ## Remove an entity from the world
+## Note: ArboreusWorld.remove_entity() returns void
 func remove_entity(p_entity_id: int) -> bool:
 	if not _arboreus_available or _world == null:
 		return false
@@ -107,7 +111,7 @@ func remove_entity(p_entity_id: int) -> bool:
 		return false
 
 	var entity = _entities[p_entity_id]
-	_world.remove_entity(entity)
+	_world.remove_entity(entity)  # returns void
 	_entities.erase(p_entity_id)
 	print("[ArboreusWorldBridge] Entity removed: id=%d" % p_entity_id)
 	return true
@@ -130,6 +134,57 @@ func get_entity_count() -> int:
 	if _arboreus_available and _world != null:
 		return _world.get_entity_count()
 	return _entities.size()
+
+
+## Set entity name
+func set_entity_name(p_entity_id: int, p_name: String) -> bool:
+	var entity = get_entity(p_entity_id)
+	if entity != null and entity.has_method("set_name"):
+		entity.set_name(p_name)
+		return true
+	return false
+
+
+## Get entity name
+func get_entity_name(p_entity_id: int) -> String:
+	var entity = get_entity(p_entity_id)
+	if entity != null and entity.has_method("get_name"):
+		return entity.get_name()
+	return ""
+
+
+## Check if entity has component
+func entity_has_component(p_entity_id: int, p_component: String) -> bool:
+	var entity = get_entity(p_entity_id)
+	if entity != null and entity.has_method("has_component"):
+		return entity.has_component(p_component)
+	return false
+
+
+## Remove component from entity
+func entity_remove_component(p_entity_id: int, p_component: String) -> bool:
+	var entity = get_entity(p_entity_id)
+	if entity != null and entity.has_method("remove_component"):
+		entity.remove_component(p_component)
+		return true
+	return false
+
+
+## Check if entity has tag
+func entity_has_tag(p_entity_id: int, p_tag: String) -> bool:
+	var entity = get_entity(p_entity_id)
+	if entity != null and entity.has_method("has_tag"):
+		return entity.has_tag(p_tag)
+	return false
+
+
+## Remove tag from entity
+func entity_remove_tag(p_entity_id: int, p_tag: String) -> bool:
+	var entity = get_entity(p_entity_id)
+	if entity != null and entity.has_method("remove_tag"):
+		entity.remove_tag(p_tag)
+		return true
+	return false
 
 
 ## Get world status

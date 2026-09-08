@@ -4903,3 +4903,79 @@
 - [ ] 等待建木修复ArboreusPathfinder大网格bug
 - [ ] BUG-030音频导入
 - [ ] 视觉提升计划
+
+## 2026-09-08 - SDK集成期：ArboreusEntity API探索+ArboreusWorldBridge完善（P2准备）
+
+### 完成工作
+
+#### 1. ArboreusEntity详细API探索
+创建tests/arboreus_entity_api_test.gd探索ArboreusEntity：
+
+**已确认API**:
+- set_name(name: String) / get_name() -> String - 名称管理（已验证可用）
+- has_component(component: String) -> bool - 组件检查
+- emove_component(component: String) - 移除组件
+- has_tag(tag: String) -> bool - 标签检查
+- emove_tag(tag: String) - 移除标签
+- **无内置位置属性** - 实体没有set_position/get_position等方法
+- **无add_component方法** - 只有has_component/remove_component，如何添加组件待明确
+
+**实体属性**:
+- 
+ame (String) - 唯一可见属性
+
+#### 2. ArboreusWorldBridge完善
+**新增方法**:
+- set_entity_name(id, name) / get_entity_name(id) - 实体名称管理
+- entity_has_component(id, component) - 组件检查
+- entity_remove_component(id, component) - 移除组件
+- entity_has_tag(id, tag) - 标签检查
+- entity_remove_tag(id, tag) - 移除标签
+- create_entity中自动设置实体名称
+
+**修复**:
+- emove_entity: 明确ArboreusWorld.remove_entity()返回void（非bool）
+
+**测试结果**:
+- Bridge初始化: ✓
+- start/stop: ✓
+- create_entity (2个): ✓ 名称设置正确
+- set_entity_name: ✓
+- entity_has_component('transform'): false（默认无transform组件）
+- entity_has_tag('player'): false
+- update: ✓
+- get_status: ✓ 返回完整状态
+- remove_entity: ⚠️ 参数类型仍不兼容（Object不被接受）
+
+### [SDK需求] ArboreusEntity/World API待明确（更新）
+1. **remove_entity参数类型**：Object不兼容，之前测试中似乎成功但现在失败，行为不一致。需要明确是int（entity ID）、String（entity name）还是其他类型。
+2. **如何添加组件**：ArboreusEntity只有has_component/remove_component，没有add_component。实体如何获得transform/position等组件？
+3. **实体位置管理**：ArboreusEntity无内置位置属性，如何设置/获取实体位置？是否需要通过组件系统？
+4. **get_grid_map返回null**：是否需要在create config中指定grid配置？
+5. **spatial_entity_count=0**：get_status显示spatial_entity_count为0，即使创建了2个实体。实体如何注册到空间索引？
+
+### 视觉/玩法效果变化
+- ArboreusWorldBridge功能完善，为P2 RTSArenaManager替换做准备
+- 游戏行为无变化（Bridge尚未接入实际游戏逻辑）
+
+### 修改的文件
+- scripts/game/ArboreusWorldBridge.gd - 修改，新增实体名称/组件/标签方法，修复remove_entity
+- tests/arboreus_entity_api_test.gd - 新建，Entity API探索
+- tests/arboreus_world_bridge_test2.gd - 新建，更新后的Bridge测试
+
+### 架构合规进度
+- [x] A*寻路网格层 → ArboreusGridMapBridge
+- [x] SoulAIController → Ember
+- [x] SoulUnit灵魂数据层 → Ember
+- [x] EventBus → ArboreusEventBus
+- [x] ArenaMap网格 → ArboreusGridMapBridge
+- [ ] RTSArenaManager核心逻辑 → ArboreusWorld（Bridge已完善，待集成）
+- [ ] GameState → Arboreus World状态
+
+### 待办
+- [ ] 等待建木明确ArboreusEntity组件系统和位置管理API
+- [ ] P2: 将RTSArenaManager实体管理替换为ArboreusWorldBridge（需SDK API明确后）
+- [ ] P2: GameState集成Arboreus World状态
+- [ ] 等待建木修复ArboreusPathfinder大网格bug
+- [ ] BUG-030音频导入
+- [ ] 视觉提升计划
