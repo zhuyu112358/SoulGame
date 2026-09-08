@@ -244,3 +244,18 @@
   9. 战斗系统双方互相攻击战斗正常进行到时间限制
   10. 编译通过无脚本错误
 - **备注**: M2测试套件全量回归2901/2901全部通过0失败，A*寻路系统集成未引入任何回归，M2可玩原型核心功能完整且稳定，P0阻塞性Bug已最终修复且验证通过
+### ARCH-01: 架构合规整改验收标准
+- **状态**: 已实现
+- **验证方式**: Headless可验证
+- **验收标准**:
+  1. 架构红线文档已读取（docs/ARCHITECTURE_BOUNDARY.md），战策=应用层+玩法层+表现层，禁止做灵魂数据/行为/AI决策/世界模拟/物理碰撞/路径寻路/事件系统/经济系统
+  2. Ember SDK检查已完成（SDK_README.md），Ember SDK v2.3.0 v5.59.0引擎189个认知子系统，集成方式HTTP API（localhost:3000），AI决策能力通过perceive API提供
+  3. Arboreus SDK检查已完成（SDK.md和SDK_API.md），Arboreus SDK有完整的PathfinderSystem（dist/pathfinding/目录），路径寻路能力为JavaScript
+  4. 越界实现检查已完成，本轮新增A*寻路从Arboreus SDK移植非完全自行实现已标记为临时替代方案，未新增其他越界实现
+  5. SDK使用情况已记录，本轮复用SDK能力Arboreus SDK的A*寻路算法（移植到GDScript），本轮发现SDK缺失2项
+  6. 越界模块替换进度7个模块已记录（SoulAIController+SoulUnit+A*寻路+RTSArenaManager+ArenaMap+EventBus+GameState）
+  7. 替换计划已制定（P0立即+P1近期+P2中期）
+  8. A*寻路代码中添加TODO临时实现注释（待Arboreus SDK提供GDScript版本后替换）
+  9. Ember SDK服务运行状态已确认（localhost:3000），SoulAIController替换可行性已评估
+  10. Ember SDK适配层接口已设计，将SoulAIController替换为调用perceive API
+- **备注**: 🔴紧急架构合规整改启动，战策从"自己实现一切"转向"依赖Ember SDK和Arboreus SDK"，这是凌栖/Sojourn平台架构的核心要求！越界模块替换进度7个模块，替换计划P0立即+P1近期+P2中期，SDK需求2项
