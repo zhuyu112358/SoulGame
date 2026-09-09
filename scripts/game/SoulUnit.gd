@@ -177,6 +177,7 @@ func _ready() -> void:
 func _load_design_sprite() -> Texture2D:
 	# Normalize element name (handle Chinese -> English mapping)
 	var normalized_element := element.to_lower()
+	print("[DEBUG-SPRITE] element='", element, "' normalized='", normalized_element, "' player=", is_player_controlled)
 	var element_map := {
 		"火": "fire", "水": "water", "土": "earth", "风": "wind",
 		"雷": "thunder", "光": "light", "暗": "dark", "冰": "ice",
@@ -184,9 +185,11 @@ func _load_design_sprite() -> Texture2D:
 	}
 	if element_map.has(normalized_element):
 		normalized_element = element_map[normalized_element]
+	print("[DEBUG-SPRITE] after map normalized='", normalized_element, "'")
 
 	# Try new element-specific sprite sheet first (8-frame animation sheets)
 	var new_sheet_path := "res://assets/art/new_soul_unit_%s_sprite_sheet.png" % normalized_element
+	print("[DEBUG-SPRITE] new_sheet_path=", new_sheet_path, " exists=", ResourceLoader.exists(new_sheet_path))
 	if ResourceLoader.exists(new_sheet_path):
 		var new_sheet = load(new_sheet_path)
 		if new_sheet != null and new_sheet is Texture2D:
@@ -194,12 +197,14 @@ func _load_design_sprite() -> Texture2D:
 			var atlas = AtlasTexture.new()
 			atlas.atlas = new_sheet
 			atlas.region = Rect2(0, 0, 256, 256)
+			print("[DEBUG-SPRITE] SUCCESS: new element sprite")
 			GameLog.debug("SoulUnit: Loaded new element sprite (element=%s)" % normalized_element, "Unit")
 			return atlas
 
 	# AI units: try AI-specific element sprite sheet first (darker/redder style)
 	if not is_player_controlled:
 		var ai_sheet_path := "res://assets/art/ai_soul_unit_element_sprite_sheet.png"
+		print("[DEBUG-SPRITE] ai_sheet_path=", ai_sheet_path, " exists=", ResourceLoader.exists(ai_sheet_path))
 		if ResourceLoader.exists(ai_sheet_path):
 			var ai_sheet = load(ai_sheet_path)
 			if ai_sheet != null and ai_sheet is Texture2D:
@@ -221,10 +226,12 @@ func _load_design_sprite() -> Texture2D:
 				var atlas = AtlasTexture.new()
 				atlas.atlas = ai_sheet
 				atlas.region = Rect2(0, row * cell_h, cell_w, cell_h)
+				print("[DEBUG-SPRITE] SUCCESS: AI element sprite row=", row)
 				GameLog.debug("SoulUnit: Loaded AI element sprite (element=%s, row=%d)" % [normalized_element, row], "Unit")
 				return atlas
 	# Player units (or AI fallback): try 4-element sprite sheet
 	var element_sheet_path := "res://assets/art/soul_unit_element_sprite_sheet.png"
+	print("[DEBUG-SPRITE] element_sheet_path=", element_sheet_path, " exists=", ResourceLoader.exists(element_sheet_path))
 	if ResourceLoader.exists(element_sheet_path):
 		var sheet = load(element_sheet_path)
 		if sheet != null and sheet is Texture2D:
@@ -253,15 +260,19 @@ func _load_design_sprite() -> Texture2D:
 			var atlas = AtlasTexture.new()
 			atlas.atlas = sheet
 			atlas.region = Rect2(col * cell_w, row * cell_h, cell_w, cell_h)
+			print("[DEBUG-SPRITE] SUCCESS: element sprite row=", row, " col=", col)
 			GameLog.debug("SoulUnit: Loaded element sprite (element=%s, row=%d, col=%d)" % [normalized_element, row, col], "Unit")
 			return atlas
 	# Fallback to original 2-row sprite sheet
 	var sheet_path := "res://assets/art/soul_unit_sprite_sheet.png"
+	print("[DEBUG-SPRITE] fallback sheet_path=", sheet_path, " exists=", ResourceLoader.exists(sheet_path))
 	if not ResourceLoader.exists(sheet_path):
+		print("[DEBUG-SPRITE] FAILED: all sheets not found, returning null")
 		GameLog.warning("SoulUnit: All design sprite sheets not found, using procedural (element=%s)" % element, "Unit")
 		return null
 	var sheet = load(sheet_path)
 	if sheet == null or not (sheet is Texture2D):
+		print("[DEBUG-SPRITE] FAILED: failed to load sheet, returning null")
 		GameLog.warning("SoulUnit: Failed to load design sprite sheet", "Unit")
 		return null
 	# Sprite sheet: 1920x1080, 2 rows x 4 cols, each cell ~480x270
@@ -298,6 +309,7 @@ func _create_visual() -> void:
 	_sprite.centered = true
 	add_child(_sprite)
 	_sprite_base_position = _sprite.position
+	print("[DEBUG-SPRITE] Sprite created! used_procedural=", used_procedural, " texture=", sprite_texture, " size=", sprite_texture.get_size() if sprite_texture else "null", " scale=", _sprite.scale, " global_pos=", _sprite.global_position)
 
 	# Create hit flash overlay (white circle that expands and fades on damage)
 	_hit_flash_sprite = Sprite2D.new()

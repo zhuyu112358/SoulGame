@@ -1243,6 +1243,7 @@ func _play_hover_sound() -> void:
 ## Setup procedural pixel art arena background
 func _setup_arena_background() -> void:
 	var bg_node = get_node_or_null("Background")
+	print("[DEBUG-BG] Background node found: ", bg_node != null)
 	if bg_node == null:
 		return
 
@@ -1258,6 +1259,7 @@ func _setup_arena_background() -> void:
 			arena_type = "crystal"
 		"lava_arena":
 			arena_type = "lava"
+	print("[DEBUG-BG] map_name=", map_name, " arena_type=", arena_type)
 
 	# Try design map concept image first (1920x1080 full scene art)
 	var design_bg_path := ""
@@ -1272,24 +1274,32 @@ func _setup_arena_background() -> void:
 			design_bg_path = "res://assets/art/new_map_golden_desert_concept.png"
 		_:
 			design_bg_path = "res://assets/art/new_map_dark_forest_concept.png"
+	print("[DEBUG-BG] design_bg_path=", design_bg_path)
+	print("[DEBUG-BG] ResourceLoader.exists: ", ResourceLoader.exists(design_bg_path))
 
 	var design_texture: Texture2D = null
 	if ResourceLoader.exists(design_bg_path):
 		design_texture = load(design_bg_path)
+	print("[DEBUG-BG] design_texture loaded: ", design_texture != null)
 
 	if design_texture != null:
 		# Directly set Background node's texture (it's already a TextureRect covering full window)
 		bg_node.texture = design_texture
 		bg_node.stretch_mode = TextureRect.STRETCH_SCALE
 		bg_node.visible = true
+		print("[DEBUG-BG] Background texture set, size=", bg_node.size)
 		# Make ArenaArea ColorRect transparent so background shows through
 		var arena_area = get_node_or_null("ArenaArea")
+		print("[DEBUG-BG] ArenaArea found: ", arena_area != null)
 		if arena_area != null and arena_area is ColorRect:
+			print("[DEBUG-BG] ArenaArea old color: ", arena_area.color)
 			arena_area.color = Color(0, 0, 0, 0)
+			print("[DEBUG-BG] ArenaArea set to transparent")
 		GameLog.info("RTSArenaController: Arena background from design asset (%s)" % arena_type, "Arena")
 		return
 
 	# Fallback: Generate background texture procedurally
+	print("[DEBUG-BG] Using procedural fallback")
 	var generator = ArenaBackgroundGenerator.new()
 	var texture = generator.generate_background(arena_type, hash(map_name))
 	bg_node.texture = texture
