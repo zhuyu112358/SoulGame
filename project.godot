@@ -25,12 +25,12 @@ config/icon="res://icon.svg"
 driver/output_latency=0.05
 
 [autoload]
-
 GameLog="*res://scripts/autoload/Logger.gd"
 EventBus="*res://scripts/autoload/EventBus.gd"
 ConfigManager="*res://scripts/autoload/ConfigManager.gd"
 GameState="*res://scripts/autoload/GameState.gd"
 SceneManager="*res://scripts/autoload/SceneManager.gd"
+SaveSystem="*res://scripts/autoload/SaveSystem.gd"
 SaveSystem="*res://scripts/autoload/SaveSystem.gd"
 NetworkClient="*res://scripts/core/NetworkClient.gd"
 SoulArenaClient="*res://scripts/sdk/SoulArenaClient.gd"

@@ -147,9 +147,6 @@ var _skill_active = false
 var _damage_labels = []  # Array of {label, timer, duration, start_y}
 var _damage_max_labels = 8
 
-## Skill particle effects
-var _skill_particles = []  # Array of {particle, timer, duration}
-
 ## Atmosphere effects
 var _ambient_particles = []  # Array of {particle, velocity, base_y, phase}
 var _magic_dust = []  # Array of {particle, velocity, phase, base_x, base_y}
@@ -158,10 +155,7 @@ var _chromatic_layer: CanvasLayer = null
 var _chromatic_rect: ColorRect = null
 var _chromatic_intensity: float = 0.0
 var _chromatic_decay: float = 0.0
-var _countdown_label: Label = null
-var _countdown_active: bool = false
 var _countdown_value: int = 3
-var _countdown_timer: float = 0.0
 var _ambient_time: float = 0.0
 
 
@@ -173,7 +167,10 @@ func _ready() -> void:
 	_apply_hp_energy_styles()
 	_apply_hud_skin()
 	_load_particle_textures()
-	FontLoader.apply_font_to_control(self)
+	# Font application temporarily disabled - causes static type parse error
+	# for child in get_children():
+	# 	if child is Control:
+	# 		FontLoader.apply_font_to_control(child)
 	_setup_arena_background()
 	_setup_atmosphere_effects()
 	_setup_chromatic_aberration()
@@ -1179,29 +1176,6 @@ func _trigger_skill_particles(p_position: Vector2, p_color: Color = Color(1.0, 0
 	_skill_particle_timer = 0.5
 
 
-## Update skill particle effect
-func _update_skill_particles(delta: float) -> void:
-	if _skill_particles.is_empty():
-		return
-	var to_remove = []
-	for particle_data in _skill_particles:
-		particle_data["life"] -= delta
-		if particle_data["life"] <= 0:
-			particle_data["node"].queue_free()
-			to_remove.append(particle_data)
-		else:
-			var progress = 1.0 - (particle_data["life"] / particle_data["max_life"])
-			particle_data["node"].position += particle_data["velocity"] * delta
-			var current_color = particle_data["node"].color
-			current_color.a = 1.0 - progress
-			particle_data["node"].color = current_color
-			# Shrink particle
-			var scale_factor = 1.0 - progress * 0.5
-			particle_data["node"].scale = Vector2(scale_factor, scale_factor)
-	for particle_data in to_remove:
-		_skill_particles.erase(particle_data)
-
-
 ## Update error message display
 func _update_error_display(delta: float) -> void:
 	if _error_active:
@@ -1445,22 +1419,23 @@ func _setup_chromatic_aberration() -> void:
 	_chromatic_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_chromatic_rect.color = Color(1, 1, 1, 1)
 
-	# Create chromatic aberration shader
+	# Create chromatic aberration shader (Godot 4.7: use hint_screen_texture)
 	var shader = Shader.new()
 	shader.code = """
 shader_type canvas_item;
 
 uniform float intensity : hint_range(0.0, 20.0) = 0.0;
+uniform sampler2D screen_texture : hint_screen_texture, repeat_disable, filter_nearest;
 
 void fragment() {
 	vec2 uv = SCREEN_UV;
 	vec2 offset = vec2(intensity * 0.001, 0.0);
 	// Sample RGB channels with horizontal offset
-	float r = texture(SCREEN_TEXTURE, uv + offset).r;
-	float g = texture(SCREEN_TEXTURE, uv).g;
-	float b = texture(SCREEN_TEXTURE, uv - offset).b;
+	float r = texture(screen_texture, uv + offset).r;
+	float g = texture(screen_texture, uv).g;
+	float b = texture(screen_texture, uv - offset).b;
 	// Keep alpha from original
-	float a = texture(SCREEN_TEXTURE, uv).a;
+	float a = texture(screen_texture, uv).a;
 	COLOR = vec4(r, g, b, a);
 }
 """

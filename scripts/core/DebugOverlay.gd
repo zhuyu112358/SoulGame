@@ -185,7 +185,7 @@ func _update_display() -> void:
 	]
 
 	# Logs
-	var logs := GameLog.get_recent_entries(15)
+	var logs: Array = GameLog.get_recent_entries(15)
 	var log_text := ""
 	for entry in logs:
 		var color := "white"
