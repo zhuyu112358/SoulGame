@@ -198,6 +198,16 @@
 
 **累计资源**：358个，全部成功导入，0个valid=false。
 
+**战斗HUD皮肤组件集成**（18:18生成，已集成，视觉提升P0）：
+1. battle_hud_top_status_bar.png - 战斗HUD顶部状态栏
+2. battle_hud_unit_info_panel.png - 战斗HUD单位信息面板
+3. battle_hud_skill_bar.png - 战斗HUD技能栏
+4. battle_hud_battle_log.png - 战斗HUD战斗日志
+5. battle_hud_minimap.png - 战斗HUD小地图
+6. battle_hud_control_buttons.png - 战斗HUD控制按钮
+
+**累计资源**：364个，全部成功导入，0个valid=false。
+
 ## [视觉提升P0] PNG资源格式批量修复（2026-09-09）
 
 **重大发现**：assets/art目录下198个PNG文件中，197个实际是JPEG格式（文件头FF D8）但扩展名为.png，导致Godot无法导入，运行时大量"Failed loading resource"错误。
