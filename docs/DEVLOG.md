@@ -239,6 +239,22 @@
 
 **累计资源**：383个，全部成功导入，0个valid=false。
 
+**全场景UI组件集成**（19:34生成，已集成）：
+1. about_ui.png - 关于UI
+2. announcements_ui.png - 公告UI
+3. chat_ui.png - 聊天UI
+4. daily_quests_ui.png - 每日任务UI
+5. events_ui.png - 活动UI
+6. feedback_ui.png - 反馈UI
+7. friends_ui.png - 好友UI
+8. help_ui.png - 帮助UI
+9. leaderboard_ui.png - 排行榜UI
+10. legal_ui.png - 法律信息UI
+11. mail_ui.png - 邮件UI
+12. player_profile_ui.png - 玩家资料UI
+
+**累计资源**：395个，全部成功导入，0个valid=false。
+
 ## [Bug修复] ArboreusWorldBridge.remove_entity参数类型修复（2026-09-09）
 
 **问题**：SCRIPT ERROR - ArboreusWorld.remove_entity()参数类型Object不兼容int。
