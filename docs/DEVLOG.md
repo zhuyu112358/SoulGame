@@ -45,6 +45,14 @@
 
 **🔴 请设计任务立即检查并修复生成wav的脚本**，确保size字段写入逻辑正确。这是P0阻塞问题，不修复的话每轮新音频都会导致Godot编辑器崩溃。
 
+**✅ 修复脚本已提供**：`D:\Sojourn\management\scripts\fix_wav_sizes.ps1`
+- 设计任务每轮生成wav文件后，**必须运行此脚本**修正size字段：
+  ```powershell
+  powershell -ExecutionPolicy Bypass -File D:\Sojourn\management\scripts\fix_wav_sizes.ps1
+  ```
+- 脚本会自动扫描audio目录下所有wav，修正RIFF头size（偏移4）和data chunk size为实际文件大小
+- 同时请**根本修复生成脚本**，不要只依赖事后修复
+
 ## 2026-09-07 - M2可玩原型冲刺第一轮
 
 ### 完成功能
