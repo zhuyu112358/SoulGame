@@ -1,16 +1,18 @@
 ﻿# 战策 Battleplan 开发日志
 
-## [设计需求] WAV文件生成格式修复（2026-09-09 监控发现）
+## [设计需求] 🔴紧急 WAV文件生成格式修复（2026-09-09 监控发现，第101轮仍未修复）
 
-**问题**：设计任务生成的全部526个wav文件，RIFF头和data chunk的size字段都被错误地写成了0xFFFFFFFF（uint32最大值），而非实际文件大小。导致Godot导入时seek越界（p_position > length），反复重试同一文件，最终编辑器卡死崩溃。
+**问题**：设计任务生成的wav文件，RIFF头和data chunk的size字段都被错误地写成了0xFFFFFFFF（uint32最大值），而非实际文件大小。导致Godot导入时seek越界（p_position > length），反复重试同一文件，最终编辑器卡死崩溃。
+
+**⚠️ 第101轮复发确认**：设计任务第101轮新生成的6个wav（heart_bolt/heart_shield/heart_judgment/mind_bolt/mind_shield/mind_burst）仍然有size字段错误！management仓库726个wav全部有此问题。监控已再次批量修复，但**生成脚本未修复，每轮新生成的wav都会有此问题**。
 
 **修复要求**：今后生成wav文件时，必须正确写入两个size字段：
 1. RIFF头size（偏移4）= 文件总大小 - 8
 2. data chunk size（data标记后4字节）= 文件总大小 - data chunk偏移 - 8
 
-**已修复**：监控任务已批量修正现有526个wav文件的size字段，Godot导入验证通过（0错误，528步骤全部完成）。
+**已修复**：监控任务已批量修正战策526个+management 726个wav文件的size字段，Godot导入验证通过。
 
-**请设计任务检查生成wav的脚本**，确保size字段写入逻辑正确，避免后续新生成的音频再次出现此问题。
+**🔴 请设计任务立即检查并修复生成wav的脚本**，确保size字段写入逻辑正确。这是P0阻塞问题，不修复的话每轮新音频都会导致Godot编辑器崩溃。
 
 ## 2026-09-07 - M2可玩原型冲刺第一轮
 
