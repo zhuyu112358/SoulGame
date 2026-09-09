@@ -43,7 +43,18 @@
 
 **已修复**：监控任务已批量修正战策526个+management 726个wav文件的size字段，Godot导入验证通过。
 
-**🔴 请设计任务立即检查并修复生成wav的脚本**，确保size字段写入逻辑正确。这是P0阻塞问题，不修复的话每轮新音频都会导致Godot编辑器崩溃。
+**🔴 第106轮确认：设计任务误以为已修复，实际仍未修复！**
+
+设计任务第106轮commit message声称"战策侧添加WAV size字段修复脚本commit 6495fc6以后新生成wav自动修复"，但实际检查发现第106轮新生成的6个wav（xiao/ti系列）**仍然有size字段错误**。
+
+**关键误解澄清**：
+- ❌ 修复脚本（fix_wav_sizes.ps1）≠ 生成脚本已修复
+- ✅ 修复脚本是**事后修复**工具，必须在生成wav后**手动运行**
+- ✅ 正确做法二选一：
+  1. **根本修复生成脚本**：在生成wav时正确写入RIFF头size（偏移4）=文件大小-8，data chunk size=实际音频数据长度
+  2. **每轮生成后立即运行修复脚本**：`powershell -ExecutionPolicy Bypass -File D:\Sojourn\management\scripts\fix_wav_sizes.ps1`
+
+**🔴 请设计任务立即执行上述任一方案**。这是P0阻塞问题，已连续7轮复发，不修复的话每轮新音频都会导致Godot编辑器崩溃。
 
 **✅ 修复脚本已提供**：`D:\Sojourn\management\scripts\fix_wav_sizes.ps1`
 - 设计任务每轮生成wav文件后，**必须运行此脚本**修正size字段：
