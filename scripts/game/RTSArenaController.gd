@@ -1923,7 +1923,7 @@ func _apply_skill_icons() -> void:
 func _setup_macro_commands() -> void:
 	# Create command panel at bottom center
 	_command_panel = Panel.new()
-	_command_panel.position = Vector2(380, 640)
+	_command_panel.position = Vector2(380, 490)
 	_command_panel.size = Vector2(520, 70)
 	_command_panel.name = "MacroCommandPanel"
 	add_child(_command_panel)

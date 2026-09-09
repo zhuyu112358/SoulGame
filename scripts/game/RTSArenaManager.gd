@@ -234,6 +234,8 @@ func start_battle(p_player_soul: Dictionary, p_ai_soul: Dictionary, p_map_name: 
 
 	# AI starts attacking player
 	ai_unit.set_attack_target(player_unit)
+	# Player also auto-attacks AI (auto-battle mode for M2 playable prototype)
+	player_unit.set_attack_target(ai_unit)
 
 	# Initialize AI controllers (coach-style RTS: autonomous decisions)
 	_ai_controller = EmberAIController.new()
