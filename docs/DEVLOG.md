@@ -188,6 +188,16 @@
 
 **累计资源**：352个（344新资源+8 Steam素材），全部成功导入，0个valid=false。
 
+**Steam商店补充素材+游戏logo+成就图标**（17:48生成，已集成）：
+1. game_logo_design_set_v2.png - 游戏logo设计集v2
+2. achievement_icon_set_v2.png - 成就图标集v2
+3. steam_store_promotional_banner_v2.png - Steam商店宣传横幅v2
+4. steam_store_screenshot_soul_home_v2.png - Steam商店截图灵魂之家v2
+5. steam_store_screenshot_settings_v2.png - Steam商店截图设置v2
+6. steam_store_screenshot_battle_result_v2.png - Steam商店截图战斗结算v2
+
+**累计资源**：358个，全部成功导入，0个valid=false。
+
 ## [视觉提升P0] PNG资源格式批量修复（2026-09-09）
 
 **重大发现**：assets/art目录下198个PNG文件中，197个实际是JPEG格式（文件头FF D8）但扩展名为.png，导致Godot无法导入，运行时大量"Failed loading resource"错误。
