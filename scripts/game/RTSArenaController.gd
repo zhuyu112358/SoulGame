@@ -17,6 +17,7 @@ static func _dlog(msg: String) -> void:
 ## Arena background generator (procedural pixel art)
 const ArenaBackgroundGenerator = preload("res://scripts/game/ArenaBackgroundGenerator.gd")
 const FontLoader = preload("res://scripts/core/FontLoader.gd")
+const PixelSpriteGenerator = preload("res://scripts/game/PixelSpriteGenerator.gd")
 
 ## UI node references
 var player_hp_bar = null
@@ -3002,10 +3003,15 @@ func _on_unit_spawned(p_unit: SoulUnit, p_is_player: bool) -> void:
 	# Create visible Sprite2D proxy - SoulUnit is child of autoload RTSArenaManager,
 	# which is NOT in the visible scene tree, so its internal Sprite2D never renders.
 	# We must create a visual proxy here in RTSArenaController (visible scene).
-	var sprite_tex = p_unit._load_design_sprite()
+	# Use procedural pixel sprite (design sprite sheets are showcase cards with dark bg + labels, not game-ready)
+	var generator = PixelSpriteGenerator.new()
+	var personality_val = "neutral"
+	if "personality" in p_unit:
+		personality_val = p_unit.personality
+	var sprite_tex = generator.generate_soul_sprite(p_unit.element, personality_val)
 	var visual = Sprite2D.new()
 	visual.texture = sprite_tex
-	visual.scale = Vector2(0.6, 0.6)
+	visual.scale = Vector2(1.0, 1.0)
 	visual.centered = true
 	visual.position = p_unit.position
 	visual.z_index = 10  # Render above arena obstacles
