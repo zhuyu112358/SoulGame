@@ -219,6 +219,16 @@
 
 **累计资源**：371个，全部成功导入，0个valid=false。
 
+**详细UI设计图集成**（18:49生成，已集成）：
+1. main_menu_detailed_ui.png - 主菜单详细UI设计图
+2. soul_select_detailed_ui.png - 灵魂选择详细UI设计图
+3. settings_detailed_ui.png - 设置详细UI设计图
+4. battle_result_detailed_ui.png - 战斗结算详细UI设计图
+5. soul_home_detailed_ui.png - 灵魂之家详细UI设计图
+6. battle_countdown_ui.png - 战斗倒计时UI设计图
+
+**累计资源**：377个，全部成功导入，0个valid=false。
+
 ## [Bug修复] ArboreusWorldBridge.remove_entity参数类型修复（2026-09-09）
 
 **问题**：SCRIPT ERROR - ArboreusWorld.remove_entity()参数类型Object不兼容int。
