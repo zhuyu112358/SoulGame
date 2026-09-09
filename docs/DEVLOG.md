@@ -176,6 +176,18 @@
 
 **累计新资源**：344个，全部成功导入，0个valid=false。
 
+**Steam商店素材集成**（17:35生成，已集成，Steam EA上架必须项）：
+1. steam_store_banner.png - Steam商店横幅
+2. steam_store_capsule.png - Steam商店胶囊图
+3. steam_store_capsule_v2.png - Steam商店胶囊图v2
+4. steam_store_hero_image_v2.png - Steam商店主图v2
+5. steam_store_screenshot_main_menu_v2.png - Steam商店截图主菜单v2
+6. steam_store_screenshot_soul_select_v2.png - Steam商店截图灵魂选择v2
+7. steam_store_screenshot_battle_v2.png - Steam商店截图战斗v2
+8. steam_store_trailer_storyboard.png - Steam商店预告片分镜
+
+**累计资源**：352个（344新资源+8 Steam素材），全部成功导入，0个valid=false。
+
 ## [视觉提升P0] PNG资源格式批量修复（2026-09-09）
 
 **重大发现**：assets/art目录下198个PNG文件中，197个实际是JPEG格式（文件头FF D8）但扩展名为.png，导致Godot无法导入，运行时大量"Failed loading resource"错误。
