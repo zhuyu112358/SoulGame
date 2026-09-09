@@ -318,6 +318,14 @@
 
 **累计资源**：436个，全部成功导入，0个valid=false。
 
+**社交弹窗UI组件集成**（23:33-23:35生成，已集成）：
+1. gift_popup_ui.png - 礼物弹窗UI
+2. mail_popup_ui.png - 邮件弹窗UI
+3. notification_popup_ui.png - 通知弹窗UI
+4. trade_popup_ui.png - 交易弹窗UI
+
+**累计资源**：440个，全部成功导入，0个valid=false。
+
 ## [Bug修复] ArboreusWorldBridge.remove_entity参数类型修复（2026-09-09）
 
 **问题**：SCRIPT ERROR - ArboreusWorld.remove_entity()参数类型Object不兼容int。
