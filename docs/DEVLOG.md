@@ -167,6 +167,15 @@
 
 **累计新资源**：338个，全部成功导入，0个valid=false。
 
+**第十二批新资源**（17:02生成，已集成）：
+1. new_soul_unit_xiao_sprite_sheet.png - 笑灵魂单位精灵图
+2. new_soul_unit_da_sprite_sheet.png - 大灵魂单位精灵图
+3. new_map_xiao_abyss_tile_sheet.png - 笑深渊地图瓦片图集
+4. new_map_da_temple_tile_sheet.png - 大寺庙地图瓦片图集
+5-6. 对应概念图（2个）
+
+**累计新资源**：344个，全部成功导入，0个valid=false。
+
 ## [视觉提升P0] PNG资源格式批量修复（2026-09-09）
 
 **重大发现**：assets/art目录下198个PNG文件中，197个实际是JPEG格式（文件头FF D8）但扩展名为.png，导致Godot无法导入，运行时大量"Failed loading resource"错误。
