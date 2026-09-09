@@ -255,6 +255,22 @@
 
 **累计资源**：395个，全部成功导入，0个valid=false。
 
+**游戏系统UI组件集成**（22:06-22:07生成，已集成）：
+1. lobby_ui.png - 大厅UI
+2. matchmaking_ui.png - 匹配UI
+3. custom_game_ui.png - 自定义游戏UI
+4. training_ui.png - 训练UI
+5. spectator_ui.png - 观战UI
+6. replays_ui.png - 回放UI
+7. battle_pass_ui.png - 战斗通行证UI
+8. season_pass_ui.png - 赛季通行证UI
+9. daily_checkin_ui.png - 每日签到UI
+10. notification_center_ui.png - 通知中心UI
+11. achievement_unlock_popup_ui.png - 成就解锁弹窗UI
+12. tutorial_guide_popup_ui.png - 教程引导弹窗UI
+
+**累计资源**：407个，全部成功导入，0个valid=false。
+
 ## [Bug修复] ArboreusWorldBridge.remove_entity参数类型修复（2026-09-09）
 
 **问题**：SCRIPT ERROR - ArboreusWorld.remove_entity()参数类型Object不兼容int。
