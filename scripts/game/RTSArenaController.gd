@@ -6,9 +6,9 @@ extends Node2D
 ##
 ## This is game-specific UI for RTS combat, not SDK kernel code.
 
-## Write debug log to file (user://debug_visual.log)
+## Write debug log to file (user://debug_controller.log)
 static func _dlog(msg: String) -> void:
-	var f = FileAccess.open("user://debug_visual.log", FileAccess.WRITE)
+	var f = FileAccess.open("user://debug_controller.log", FileAccess.WRITE)
 	if f:
 		f.seek_end()
 		f.store_line(Time.get_datetime_string_from_system() + " " + msg)
@@ -168,18 +168,26 @@ var _ambient_time: float = 0.0
 
 
 func _ready() -> void:
+	_dlog("[DEBUG-READY] _ready() start")
 	GameLog.info("RTSArenaController: RTS Arena scene ready", "Arena")
 	_base_position = position
+	_dlog("[DEBUG-READY] before _setup_ui_refs")
 	_setup_ui_refs()
+	_dlog("[DEBUG-READY] after _setup_ui_refs, before _apply_ui_theme")
 	_apply_ui_theme()
+	_dlog("[DEBUG-READY] after _apply_ui_theme, before _apply_hp_energy_styles")
 	_apply_hp_energy_styles()
+	_dlog("[DEBUG-READY] after _apply_hp_energy_styles, before _apply_hud_skin")
 	_apply_hud_skin()
+	_dlog("[DEBUG-READY] after _apply_hud_skin, before _load_particle_textures")
 	_load_particle_textures()
+	_dlog("[DEBUG-READY] after _load_particle_textures, before _setup_arena_background")
 	# Font application temporarily disabled - causes static type parse error
 	# for child in get_children():
 	# 	if child is Control:
 	# 		FontLoader.apply_font_to_control(child)
 	_setup_arena_background()
+	_dlog("[DEBUG-READY] after _setup_arena_background")
 	_setup_atmosphere_effects()
 	_setup_chromatic_aberration()
 	_connect_signals()
