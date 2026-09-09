@@ -259,7 +259,7 @@ func execute_decision(p_self, p_enemy) -> void:
 			if p_enemy != null and dist <= p_self.attack_range:
 				p_self.set_attack_target(p_enemy)
 			else:
-				p_self.move_to(p_enemy.position)
+				p_self.move_to(p_enemy.position, false)  # Keep attack_target while closing in
 		Decision.USE_SKILL:
 			_use_best_skill(p_self, p_enemy)
 		Decision.DEFEND:
@@ -274,7 +274,7 @@ func execute_decision(p_self, p_enemy) -> void:
 			p_self.move_to(p_self.position + random_dir * 150.0)
 		Decision.MOVE_TO_TARGET:
 			if decision_target != null:
-				p_self.move_to(decision_target)
+				p_self.move_to(decision_target, false)  # Keep attack_target while moving
 
 
 ## Use the best available skill based on state

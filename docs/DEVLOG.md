@@ -7372,3 +7372,49 @@ ode/life/max_life），而_update_skill_particles()期望新版数据结构（pa
 ### 测试结果
 - M2测试套件：运行中...
 - GUI自动演示：SCRIPT ERROR=0，战斗正常开始
+
+## 2026-09-09 - P0紧急修复：战斗单位不攻击根因修复（3个bug叠加）
+
+### 问题现象
+- 60秒战斗监控显示双方HP一直120/120，没有任何攻击发生
+- 单位在移动（距离38-509波动），但永远不进入攻击状态
+
+### 根因分析（3个bug叠加导致完全无法攻击）
+
+#### Bug 1: SoulUnit.move_to() 清除 attack_target
+- **位置**: scripts/game/SoulUnit.gd 第862行
+- **问题**: move_to()中无条件执行 attack_target = null
+- **影响**: _update_attack发现距离>attack_range时调用move_to()，导致attack_target被清除，单位移动完成后永远不会回到ATTACKING状态
+- **修复**: 添加 p_clear_attack_target: bool = true 参数，_update_attack中调用时传入false保留attack_target
+
+#### Bug 2: EmberSoulAIController.execute_decision 每帧调用move_to清除attack_target
+- **位置**: scripts/game/EmberSoulAIController.gd execute_decision()
+- **问题**: AI控制器每帧都重新决策，MOVE_TO_TARGET和ATTACK(距离外)分支调用move_to()清除attack_target
+- **影响**: 即使单位进入ATTACKING状态，下一帧AI决策又调用move_to清除attack_target
+- **修复**: ATTACK和MOVE_TO_TARGET分支调用move_to时传入false保留attack_target
+
+#### Bug 3: SoulUnit._update_cooldowns() 不递减 attack_cooldown
+- **位置**: scripts/game/SoulUnit.gd 第442-445行
+- **问题**: _update_cooldowns只遍历skill_cooldowns字典，不递减attack_cooldown变量
+- **影响**: 第一次攻击后attack_cooldown被设置为1.0/attack_speed，但永远不会归零，导致只攻击一次就停止
+- **修复**: 在_update_cooldowns开头添加attack_cooldown递减逻辑
+
+### 验证结果
+- **修复前**: 60秒HP=120/120，0次攻击
+- **修复后**: 18秒战斗结束，AI单位HP=0，玩家胜利
+- t=5s: P_HP=107, A_HP=107（首次攻击）
+- t=10s: P_HP=53, A_HP=57（持续攻击）
+- t=15s: P_HP=9, A_HP=13（接近结束）
+- t=20s: A_HP=0，战斗结束
+- M2测试: 2884 Passed, 0 Failed
+- SCRIPT ERROR: 2个（已知Arboreus remove_entity参数类型问题，非本轮引入）
+
+### 修改的文件
+- scripts/game/SoulUnit.gd - move_to添加p_clear_attack_target参数 + _update_cooldowns添加attack_cooldown递减
+- scripts/game/EmberSoulAIController.gd - execute_decision中move_to调用保留attack_target
+- tests/auto_demo.gd - 扩展为60秒战斗监控，定期输出HP/位置/距离
+
+### 待办
+- [ ] ArboreusWorld.remove_entity参数类型兼容性（需引擎团队明确）
+- [ ] UI皮肤图集替换纯色StyleBox（ui_skin_sheet.png）
+- [ ] 自定义像素字体（无.ttf/.otf文件，需设计产出）

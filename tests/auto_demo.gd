@@ -93,9 +93,39 @@ func _initialize():
 			_demo_phase = 4
 
 		elif _demo_phase == 4 and _phase_timer <= 0:
-			# Phase 4: Final status and quit
-			print("\n[DEMO] Phase 4: Final combat status...")
+			# Phase 4: Monitor combat until it ends or 60s timeout
+			print("\n[DEMO] Phase 4: Monitoring combat (up to 60s)...")
+			var combat_watch := 0.0
+			var last_log := 0.0
+			var watch_tick := Time.get_ticks_msec()
+			while combat_watch < 60.0:
+				await process_frame
+				var watch_now := Time.get_ticks_msec()
+				var watch_delta := (watch_now - watch_tick) / 1000.0
+				watch_tick = watch_now
+				combat_watch += watch_delta
+				# Check if battle ended
+				if _rts_manager and _rts_manager.battle_state == 2:  # ENDED
+					print("[DEMO] Battle ended at t=%.1fs!" % combat_watch)
+					break
+				# Log every 5 seconds
+				if combat_watch - last_log >= 5.0:
+					last_log = combat_watch
+					if _rts_manager and _rts_manager.player_unit and _rts_manager.ai_unit:
+						var dist = _rts_manager.player_unit.position.distance_to(_rts_manager.ai_unit.position)
+						print("  [t=%.0fs] P_HP=%d/%d at %s | A_HP=%d/%d at %s | dist=%.0f | bs=%d" % [
+							combat_watch,
+							_rts_manager.player_unit.current_hp, _rts_manager.player_unit.max_hp,
+							str(_rts_manager.player_unit.position),
+							_rts_manager.ai_unit.current_hp, _rts_manager.ai_unit.max_hp,
+							str(_rts_manager.ai_unit.position),
+							dist,
+							_rts_manager.battle_state
+						])
+			# Final status
+			print("\n[DEMO] Final combat status:")
 			if _rts_manager:
+				print("  battle_state: %d (0=IDLE,1=ACTIVE,2=ENDED)" % _rts_manager.battle_state)
 				print("  battle_time: %.1fs" % _rts_manager.battle_time)
 				if _rts_manager.player_unit and _rts_manager.ai_unit:
 					var dist = _rts_manager.player_unit.position.distance_to(_rts_manager.ai_unit.position)

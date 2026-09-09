@@ -440,6 +440,10 @@ func _process(delta: float) -> void:
 
 ## Update skill cooldowns
 func _update_cooldowns(delta: float) -> void:
+	# Decrement basic attack cooldown
+	if attack_cooldown > 0:
+		attack_cooldown = max(0.0, attack_cooldown - delta)
+	# Decrement skill cooldowns
 	for skill_name in skill_cooldowns.keys():
 		if skill_cooldowns[skill_name] > 0:
 			skill_cooldowns[skill_name] = max(0.0, skill_cooldowns[skill_name] - delta)
@@ -817,7 +821,7 @@ func _update_attack(delta: float) -> void:
 	if distance > attack_range:
 		# Only recalculate path if not already moving along one
 		if _path.is_empty() or _path_index >= _path.size() - 1:
-			move_to(attack_target.position)  # Sets state=MOVING
+			move_to(attack_target.position, false)  # Keep attack_target while moving
 		elif state == UnitState.ATTACKING:
 			state = UnitState.MOVING  # Let MOVING state handle path following
 		return
@@ -828,7 +832,9 @@ func _update_attack(delta: float) -> void:
 
 
 ## Move to a position
-func move_to(p_position: Vector2) -> void:
+## p_clear_attack_target: if true, clears attack_target when moving (default)
+## Set to false when moving to attack target so auto-attack resumes after reaching range
+func move_to(p_position: Vector2, p_clear_attack_target: bool = true) -> void:
 	if state == UnitState.DEAD:
 		return
 	GameLog.debug("Unit: %s move_to target=(%.0f,%.0f) from=(%.0f,%.0f) dist=%.1f" % [
@@ -859,7 +865,8 @@ func move_to(p_position: Vector2) -> void:
 		target_position = p_position
 
 	state = UnitState.MOVING
-	attack_target = null
+	if p_clear_attack_target:
+		attack_target = null
 	emit_signal("state_changed", state)
 
 
