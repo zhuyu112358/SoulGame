@@ -308,6 +308,16 @@
 
 **累计资源**：430个，全部成功导入，0个valid=false。
 
+**对话框UI组件集成**（23:19-23:21生成，已集成）：
+1. confirmation_dialog_popup_ui.png - 确认对话框弹窗UI
+2. error_dialog_popup_ui.png - 错误对话框弹窗UI
+3. input_dialog_popup_ui.png - 输入对话框弹窗UI
+4. loading_dialog_popup_ui.png - 加载对话框弹窗UI
+5. selection_dialog_popup_ui.png - 选择对话框弹窗UI
+6. warning_dialog_popup_ui.png - 警告对话框弹窗UI
+
+**累计资源**：436个，全部成功导入，0个valid=false。
+
 ## [Bug修复] ArboreusWorldBridge.remove_entity参数类型修复（2026-09-09）
 
 **问题**：SCRIPT ERROR - ArboreusWorld.remove_entity()参数类型Object不兼容int。
