@@ -292,6 +292,12 @@
 
 **累计资源**：422个，全部成功导入，0个valid=false。
 
+**玩家资料与排行榜UI组件集成**（22:46-22:48生成，已集成）：
+1. player_profile_card_ui.png - 玩家资料卡UI
+2. leaderboard_season_ui.png - 赛季排行榜UI
+
+**累计资源**：424个，全部成功导入，0个valid=false。
+
 ## [Bug修复] ArboreusWorldBridge.remove_entity参数类型修复（2026-09-09）
 
 **问题**：SCRIPT ERROR - ArboreusWorld.remove_entity()参数类型Object不兼容int。
