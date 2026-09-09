@@ -370,6 +370,15 @@
 
 **累计资源**：468个，全部成功导入，0个valid=false。
 
+**活动系统弹窗UI组件集成**（01:04生成，已集成）：
+1. event_center_popup_ui.png - 活动中心弹窗UI
+2. limited_time_event_popup_ui.png - 限时活动弹窗UI
+3. notification_center_popup_ui.png - 通知中心弹窗UI
+4. quest_center_popup_ui.png - 任务中心弹窗UI
+5. season_pass_popup_ui.png - 赛季通行证弹窗UI
+
+**累计资源**：473个，全部成功导入，0个valid=false。
+
 ## [Bug修复] ArboreusWorldBridge.remove_entity参数类型修复（2026-09-09）
 
 **问题**：SCRIPT ERROR - ArboreusWorld.remove_entity()参数类型Object不兼容int。
