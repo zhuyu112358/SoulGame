@@ -4935,16 +4935,16 @@ func _test_soul_select_hover() -> void:
 	_assert(soul_select_content.find("_setup_button_hover(_back_button)") >= 0, "_ready sets up back button hover")
 
 	# Test 6: _create_soul_card calls _setup_button_hover for card
-	_assert(soul_select_content.find("_setup_button_hover(card)") >= 0, "_create_soul_card sets up card hover")
+	_assert(soul_select_content.find("_setup_button_hover(click_button)") >= 0, "_create_soul_card sets up card hover")
 
 	# Test 7: Hover plays ui_hover sound
 	_assert(soul_select_content.find('play_sfx("ui_soul_select_hover")') >= 0, "Hover plays ui_soul_select_hover sound")
 
-	# Test 8: Hover changes button modulate to brighter color (tween animation)
-	_assert(soul_select_content.find('tween_property(p_button, "modulate", Color(1.25, 1.1, 0.75)') >= 0, "Hover changes button modulate to brighter")
+	# Test 8: Hover changes card root modulate to brighter color (tween animation)
+	_assert(soul_select_content.find('tween_property(target, "modulate", Color(1.2, 1.1, 0.8)') >= 0, "Hover changes button modulate to brighter")
 
-	# Test 9: Mouse exit resets button modulate (tween animation)
-	_assert(soul_select_content.find('tween_property(p_button, "modulate", Color(1.0, 1.0, 1.0)') >= 0, "Mouse exit resets button modulate")
+	# Test 9: Mouse exit resets card root modulate (tween animation)
+	_assert(soul_select_content.find('tween_property(target, "modulate", Color(1.0, 1.0, 1.0)') >= 0, "Mouse exit resets button modulate")
 
 	# Test 10: ui_hover sound is registered
 	_assert(AudioManager._sound_paths.has("ui_hover"), "ui_hover registered")
