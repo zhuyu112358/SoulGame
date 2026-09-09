@@ -1,5 +1,38 @@
 ﻿# 战策 Battleplan 开发日志
 
+## [设计需求] P0 - 战斗画面资源集成（2026-09-09 用户明确要求）
+
+**用户反馈**：战斗画面还是方块在纯底色上战斗，设计产出的资源没有用上。
+
+**资源现状**：assets/art/ 下已有522个PNG，包括：
+- 90+张地图瓦片图集（new_map_xxx_tile_sheet.png）
+- 90+个灵魂单位精灵图集（new_soul_unit_xxx_sprite_sheet.png）
+- 4元素基础精灵图集（soul_unit_element_sprite_sheet.png / ai_soul_unit_element_sprite_sheet.png）
+
+**需要完成的集成工作**：
+
+### 1. 战斗场景地图背景集成（P0）
+- 当前：RTSArenaController._setup_arena_background() 用 ArenaBackgroundGenerator 程序生成背景
+- 目标：改用设计产出的地图瓦片图集，用 TileMap 渲染战斗场景地面
+- 参考文件：scripts/game/RTSArenaController.gd 第1244行 _setup_arena_background()
+- 可选地图：先选1-2张质量好的瓦片图（如 lava_cave / crystal_cave / dark_forest）集成，其他后续扩展
+
+### 2. 灵魂单位精灵图扩展支持（P0）
+- 当前：SoulUnit._load_design_sprite() 只支持4元素合集图（soul_unit_element_sprite_sheet.png），不支持新元素单独图
+- 目标：让 SoulUnit 能按元素名加载 new_soul_unit_xxx_sprite_sheet.png（8帧精灵图集：待机4+移动2+攻击1+受击1）
+- 参考文件：scripts/game/SoulUnit.gd 第172行 _load_design_sprite()
+- 注意：新元素精灵图命名规则是 new_soul_unit_{element}_sprite_sheet.png，需要建立元素名到文件名的映射
+
+### 3. 验收标准
+- 战斗场景不再是纯色/程序生成背景，而是设计的瓦片地图
+- 灵魂单位显示设计的精灵图，不是程序生成的像素块
+- M2测试全通过（2884 Passed）
+- Godot headless 场景加载无 SCRIPT ERROR
+
+**优先级**：P0，用户明确要求，下一轮开发优先处理。
+
+---
+
 ## [视觉提升P0] 新设计资源集成（2026-09-09）
 
 **新资源**（设计任务今天产出，已复制到assets/art/并转换为真正PNG格式）：
@@ -108,6 +141,15 @@
 9-16. 对应概念图（8个）
 
 **累计新资源**：324个，全部成功导入，0个valid=false。
+
+**第十批新资源**（16:37生成，已集成）：
+1. new_soul_unit_li_sprite_sheet.png - 离灵魂单位精灵图
+2. new_soul_unit_fen_sprite_sheet.png - 分灵魂单位精灵图
+3. new_map_li_abyss_tile_sheet.png - 离深渊地图瓦片图集
+4. new_map_fen_temple_tile_sheet.png - 分寺庙地图瓦片图集
+5-6. 对应概念图（2个）
+
+**累计新资源**：330个，全部成功导入，0个valid=false。
 
 ## [视觉提升P0] PNG资源格式批量修复（2026-09-09）
 
