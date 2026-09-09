@@ -350,6 +350,16 @@
 
 **累计资源**：456个，全部成功导入，0个valid=false。
 
+**设置弹窗UI组件集成**（00:33-00:34生成，已集成）：
+1. accessibility_settings_popup_ui.png - 辅助功能设置弹窗UI
+2. audio_settings_popup_ui.png - 音频设置弹窗UI
+3. control_settings_popup_ui.png - 控制设置弹窗UI
+4. gameplay_settings_popup_ui.png - 游戏玩法设置弹窗UI
+5. graphics_settings_popup_ui.png - 图形设置弹窗UI
+6. keybindings_popup_ui.png - 按键绑定弹窗UI
+
+**累计资源**：462个，全部成功导入，0个valid=false。
+
 ## [Bug修复] ArboreusWorldBridge.remove_entity参数类型修复（2026-09-09）
 
 **问题**：SCRIPT ERROR - ArboreusWorld.remove_entity()参数类型Object不兼容int。
