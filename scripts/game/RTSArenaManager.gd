@@ -453,6 +453,12 @@ func _process(delta: float) -> void:
 	# Apply terrain damage (lava etc.)
 	_apply_terrain_damage(scaled_delta)
 
+	# Auto-re-engage: if player unit is idle (after player move command) and AI is in range, resume attack
+	if player_unit and ai_unit and player_unit.state == 0 and player_unit.attack_target == null:
+		var dist = player_unit.position.distance_to(ai_unit.position)
+		if dist <= player_unit.attack_range:
+			player_unit.set_attack_target(ai_unit)
+
 	# Check battle time limit
 	if battle_time >= battle_config["max_battle_time"]:
 		_finish_battle_by_time()

@@ -139,7 +139,9 @@ func _load_available_souls() -> void:
 	# If no valid souls found, create default souls for testing
 	if _souls.size() == 0:
 		_souls = [
-			{"id": "soul_fire_01", "name": "炎灵", "element": "fire", "level": 1, "hp": 100, "attack": 15, "defense": 8},
+			{"id": "soul_light_01", "name": "光灵", "element": "light", "level": 1, "hp": 110, "attack": 14, "defense": 9},
+				{"id": "soul_dark_01", "name": "暗灵", "element": "dark", "level": 1, "hp": 100, "attack": 16, "defense": 8},
+				{"id": "soul_fire_01", "name": "炎灵", "element": "fire", "level": 1, "hp": 100, "attack": 15, "defense": 8},
 			{"id": "soul_water_01", "name": "水灵", "element": "water", "level": 1, "hp": 120, "attack": 12, "defense": 10},
 			{"id": "soul_earth_01", "name": "岩灵", "element": "earth", "level": 1, "hp": 150, "attack": 10, "defense": 15},
 			{"id": "soul_wind_01", "name": "风灵", "element": "wind", "level": 1, "hp": 90, "attack": 18, "defense": 6},

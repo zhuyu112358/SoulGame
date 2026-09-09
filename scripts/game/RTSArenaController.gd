@@ -467,7 +467,7 @@ func _on_pause_quit_pressed() -> void:
 		get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
 
 
-## Handle keyboard input (ESC/Space to pause/resume)
+## Handle input: ESC/Space to pause, left-click to move, 1-4 for skills
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_ESCAPE or event.keycode == KEY_SPACE:
@@ -476,6 +476,32 @@ func _unhandled_input(event: InputEvent) -> void:
 					_resume_battle()
 				else:
 					_pause_battle()
+				get_viewport().set_input_as_handled()
+		# Keyboard shortcuts for skills (1-4)
+		if _battle_active and not _is_paused:
+			match event.keycode:
+				KEY_1:
+					_on_heavy_strike_pressed()
+					get_viewport().set_input_as_handled()
+				KEY_2:
+					_on_quick_strike_pressed()
+					get_viewport().set_input_as_handled()
+				KEY_3:
+					_on_heal_pressed()
+					get_viewport().set_input_as_handled()
+				KEY_4:
+					_on_defend_pressed()
+					get_viewport().set_input_as_handled()
+	# Left-click on arena: move player unit to clicked position (RTS control)
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		if _battle_active and not _is_paused and RTSArenaManager.player_unit:
+			var click_pos = get_global_mouse_position()
+			var arena_rect = Rect2(20, 90, 1240, 470)
+			if arena_rect.has_point(click_pos):
+				RTSArenaManager.player_move_to(click_pos)
+				_spawn_move_indicator(click_pos)
+				if AudioManager:
+					AudioManager.play_sfx("ui_button_click", 0.4)
 				get_viewport().set_input_as_handled()
 
 
@@ -1199,6 +1225,21 @@ func _trigger_skill_particles(p_position: Vector2, p_color: Color = Color(1.0, 0
 	_skill_particle_timer = 0.5
 
 
+## Spawn a move indicator ring at clicked position (RTS feedback)
+func _spawn_move_indicator(p_position: Vector2) -> void:
+	var ring = ColorRect.new()
+	ring.name = "MoveIndicator"
+	ring.color = Color(0.4, 0.8, 1.0, 0.7)
+	ring.size = Vector2(24, 24)
+	ring.position = p_position - Vector2(12, 12)
+	ring.z_index = 5
+	add_child(ring)
+	var tween = create_tween()
+	tween.tween_property(ring, "scale", Vector2(1.8, 1.8), 0.4)
+	tween.parallel().tween_property(ring, "color:a", 0.0, 0.4)
+	tween.tween_callback(ring.queue_free)
+
+
 ## Update error message display
 func _update_error_display(delta: float) -> void:
 	if _error_active:
@@ -1337,7 +1378,7 @@ func _setup_atmosphere_effects() -> void:
 	_vignette_sprite.centered = false
 	_vignette_sprite.position = Vector2(0, 80)
 	_vignette_sprite.z_index = 100  # Above arena, below UI
-	_vignette_sprite.modulate = Color(1, 1, 1, 0.35)
+	_vignette_sprite.modulate = Color(1, 1, 1, 0.12)
 	# Generate radial gradient vignette texture (1280x640)
 	var img = Image.create(1280, 640, false, Image.FORMAT_RGBA8)
 	img.fill(Color(0, 0, 0, 0))
@@ -2996,25 +3037,68 @@ func _on_battle_time_updated(p_time: float) -> void:
 		battle_time_label.text = "%02d:%02d" % [minutes, seconds]
 
 
+## Create unit visual: AnimatedSprite2D from design sheet (with chroma-key shader) or procedural sprite with bob
+func _create_unit_visual(p_element: String, p_personality: String) -> CanvasItem:
+	# Try new element sprite sheet first (has animation frames, no alpha - use chroma-key shader)
+	var sheet_path := "res://assets/art/new_soul_unit_%s_sprite_sheet.png" % p_element.to_lower()
+	if ResourceLoader.exists(sheet_path):
+		var sheet = load(sheet_path)
+		if sheet != null and sheet is Texture2D:
+			var animated = AnimatedSprite2D.new()
+			var frames = SpriteFrames.new()
+			frames.add_animation("idle")
+			frames.set_animation_speed("idle", 4.0)
+			# First 4 frames are 256x256 character animations
+			for i in range(4):
+				var atlas = AtlasTexture.new()
+				atlas.atlas = sheet
+				atlas.region = Rect2(i * 256, 0, 256, 256)
+				frames.add_frame("idle", atlas)
+			animated.sprite_frames = frames
+			animated.animation = "idle"
+			animated.play()
+			animated.centered = true
+			animated.scale = Vector2(1.2, 1.2)
+			# Chroma-key shader: discard dark purple background (no alpha in design sheets)
+			var shader = Shader.new()
+			shader.code = """
+shader_type canvas_item;
+uniform float threshold : hint_range(0.0, 1.0) = 0.22;
+void fragment() {
+	vec4 c = texture(TEXTURE, UV);
+	float lum = dot(c.rgb, vec3(0.299, 0.587, 0.114));
+	if (lum < threshold) discard;
+	COLOR = c;
+}
+"""
+			var mat = ShaderMaterial.new()
+			mat.shader = shader
+			animated.material = mat
+			GameLog.debug("RTSArena: Animated sprite from design sheet (element=%s)" % p_element, "Visual")
+			return animated
+	# Fallback: procedural pixel sprite
+	var generator = PixelSpriteGenerator.new()
+	var sprite_tex = generator.generate_soul_sprite(p_element, p_personality)
+	var visual = Sprite2D.new()
+	visual.texture = sprite_tex
+	visual.centered = true
+	visual.scale = Vector2(1.0, 1.0)
+	GameLog.debug("RTSArena: Procedural sprite fallback (element=%s)" % p_element, "Visual")
+	return visual
+
+
 ## Handle unit spawned
 func _on_unit_spawned(p_unit: SoulUnit, p_is_player: bool) -> void:
 	GameLog.info("RTSArenaController: Unit spawned - %s (player: %s)" % [p_unit.soul_name, str(p_is_player)], "Arena")
 
-	# Create visible Sprite2D proxy - SoulUnit is child of autoload RTSArenaManager,
+	# Create visible visual proxy - SoulUnit is child of autoload RTSArenaManager,
 	# which is NOT in the visible scene tree, so its internal Sprite2D never renders.
-	# We must create a visual proxy here in RTSArenaController (visible scene).
-	# Use procedural pixel sprite (design sprite sheets are showcase cards with dark bg + labels, not game-ready)
-	var generator = PixelSpriteGenerator.new()
 	var personality_val = "neutral"
 	if "personality" in p_unit:
 		personality_val = p_unit.personality
-	var sprite_tex = generator.generate_soul_sprite(p_unit.element, personality_val)
-	var visual = Sprite2D.new()
-	visual.texture = sprite_tex
-	visual.scale = Vector2(1.0, 1.0)
-	visual.centered = true
+	var visual = _create_unit_visual(p_unit.element, personality_val)
 	visual.position = p_unit.position
-	visual.z_index = 10  # Render above arena obstacles
+	visual.z_index = 10
 	if p_is_player:
 		_player_visual = visual
 	else:
