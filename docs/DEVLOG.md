@@ -379,6 +379,13 @@
 
 **累计资源**：473个，全部成功导入，0个valid=false。
 
+**玩家与商店弹窗UI组件集成**（01:18生成，已集成）：
+1. player_card_popup_ui.png - 玩家卡片弹窗UI
+2. season_pass_reward_popup_ui.png - 赛季通行证奖励弹窗UI
+3. shop_popup_ui.png - 商店弹窗UI
+
+**累计资源**：476个，全部成功导入，0个valid=false。
+
 ## [Bug修复] ArboreusWorldBridge.remove_entity参数类型修复（2026-09-09）
 
 **问题**：SCRIPT ERROR - ArboreusWorld.remove_entity()参数类型Object不兼容int。
