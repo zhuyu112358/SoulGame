@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=7 format=3]
+[gd_resource type="Theme" load_steps=11 format=3]
 
 [ext_resource type="StyleBoxFlat" path="res://assets/ui/styles/btn_normal.tres" id="1_btn"]
 [ext_resource type="StyleBoxFlat" path="res://assets/ui/styles/btn_hover.tres" id="2_btn"]
@@ -6,6 +6,10 @@
 [ext_resource type="StyleBoxFlat" path="res://assets/ui/styles/panel.tres" id="4_panel"]
 [ext_resource type="StyleBoxFlat" path="res://assets/ui/styles/progress_bg.tres" id="5_bg"]
 [ext_resource type="StyleBoxFlat" path="res://assets/ui/styles/progress_fill.tres" id="6_fill"]
+[ext_resource type="StyleBoxTexture" path="res://assets/ui/styles/btn_normal_skin.tres" id="7_btn_skin"]
+[ext_resource type="StyleBoxTexture" path="res://assets/ui/styles/btn_hover_skin.tres" id="8_btn_skin"]
+[ext_resource type="StyleBoxTexture" path="res://assets/ui/styles/btn_pressed_skin.tres" id="9_btn_skin"]
+[ext_resource type="StyleBoxTexture" path="res://assets/ui/styles/panel_skin.tres" id="10_panel_skin"]
 
 [resource]
 default_font_size = 16
@@ -13,13 +17,13 @@ default_font_size = 16
 Button/colors/font_color = Color(1, 0.84, 0.36, 1)
 Button/colors/font_hover_color = Color(1, 0.92, 0.6, 1)
 Button/colors/font_pressed_color = Color(0.8, 0.6, 0.2, 1)
-Button/styles/normal = ExtResource("1_btn")
-Button/styles/hover = ExtResource("2_btn")
-Button/styles/pressed = ExtResource("3_btn")
+Button/styles/normal = ExtResource("7_btn_skin")
+Button/styles/hover = ExtResource("8_btn_skin")
+Button/styles/pressed = ExtResource("9_btn_skin")
 
 Label/colors/font_color = Color(0.95, 0.9, 0.75, 1)
 
-Panel/styles/panel = ExtResource("4_panel")
+Panel/styles/panel = ExtResource("10_panel_skin")
 
 ProgressBar/styles/background = ExtResource("5_bg")
 ProgressBar/styles/fill = ExtResource("6_fill")

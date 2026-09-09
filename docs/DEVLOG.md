@@ -1,20 +1,18 @@
 ﻿# 战策 Battleplan 开发日志
 
-## [视觉提升P0] UI皮肤图集集成进度（2026-09-09）
+## [视觉提升P0] UI皮肤图集集成完成（2026-09-09）
 
 **已完成**：
-- 创建4个StyleBoxTexture资源：btn_normal_skin.tres、btn_hover_skin.tres、btn_pressed_skin.tres、panel_skin.tres
-- 图集坐标估算：按钮(90,100,200,60)、悬停(300,100,200,60)、按下(90,200,200,60)、面板(650,100,400,300)
-
-**阻塞**：
-- ui_skin_sheet.png的.import文件valid=false，无.ctex生成，Godot运行时加载失败
-- 需要用户用Godot编辑器打开项目等待自动导入，或用`Godot.exe --import`命令导入
-- 主题已临时回退到StyleBoxFlat，待图片导入后切换到StyleBoxTexture
+- 发现ui_skin_sheet.png实际是JPEG格式（文件头FF D8），Godot无法导入
+- 用System.Drawing转换为真正的PNG格式，重新导入成功
+- 创建4个StyleBoxTexture资源：btn_normal_skin、btn_hover_skin、btn_pressed_skin、panel_skin
+- battleplan_theme.tres已启用像素风StyleBoxTexture（按钮+面板）
+- GUI验证：ui_skin_sheet加载0错误，战斗流程正常
 
 **下一步**：
-1. 导入ui_skin_sheet.png后，验证StyleBoxTexture坐标是否准确
-2. 调整patch_margins确保九宫格拉伸正确
-3. 逐步替换进度条、输入框等其他UI元素皮肤
+- 调整StyleBoxTexture的texture_region和patch_margins，确保九宫格拉伸正确
+- 逐步替换进度条、输入框等其他UI元素皮肤
+- 检查其他.png文件是否也有JPEG伪装问题
 
 ## [设计需求] 🔴紧急 WAV文件生成格式修复（2026-09-09 监控发现，第101轮仍未修复）
 
