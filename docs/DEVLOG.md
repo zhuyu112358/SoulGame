@@ -39,6 +39,18 @@
 
 **累计新资源**：21个（三批），全部成功导入，0个valid=false。设计任务每15分钟产出一批新资源。
 
+**第四批新资源**（13:51-13:52生成，已集成）：
+1. new_soul_unit_qi_sprite_sheet.png - 齐灵魂单位精灵图
+2. new_soul_unit_qin_sprite_sheet.png - 秦灵魂单位精灵图
+3. new_map_qi_abyss_tile_sheet.png - 齐深渊地图瓦片图集
+4. new_map_qin_temple_tile_sheet.png - 秦寺庙地图瓦片图集
+5. new_soul_unit_qi_concept.png - 齐灵魂单位概念图
+6. new_soul_unit_qin_concept.png - 秦灵魂单位概念图
+7. new_map_qi_abyss_concept.png - 齐深渊地图概念图
+8. new_map_qin_temple_concept.png - 秦寺庙地图概念图
+
+**累计新资源**：29个（四批），全部成功导入，0个valid=false。
+
 ## [视觉提升P0] PNG资源格式批量修复（2026-09-09）
 
 **重大发现**：assets/art目录下198个PNG文件中，197个实际是JPEG格式（文件头FF D8）但扩展名为.png，导致Godot无法导入，运行时大量"Failed loading resource"错误。
