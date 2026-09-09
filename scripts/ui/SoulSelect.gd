@@ -69,6 +69,8 @@ func _setup_button_hover(p_button: Button) -> void:
 ## Play hover sound and visual feedback (scale + gold glow)
 func _on_button_hover(p_button: Button) -> void:
 	_play_hover_sound()
+	# Apply visual effect to card root, not the transparent button
+	var target = p_button.get_meta("card_root", p_button) as Control
 	if p_button.has_meta("hover_tween"):
 		var old_tween = p_button.get_meta("hover_tween")
 		if old_tween and old_tween.is_valid():
@@ -76,13 +78,14 @@ func _on_button_hover(p_button: Button) -> void:
 	var tween = create_tween()
 	tween.set_ease(Tween.EASE_OUT)
 	tween.set_trans(Tween.TRANS_BACK)
-	tween.tween_property(p_button, "scale", Vector2(1.06, 1.06), 0.15)
-	tween.parallel().tween_property(p_button, "modulate", Color(1.25, 1.1, 0.75), 0.15)
+	tween.tween_property(target, "scale", Vector2(1.04, 1.04), 0.15)
+	tween.parallel().tween_property(target, "modulate", Color(1.2, 1.1, 0.8), 0.15)
 	p_button.set_meta("hover_tween", tween)
 
 
 ## Reset button visual on mouse exit
 func _on_button_exit(p_button: Button) -> void:
+	var target = p_button.get_meta("card_root", p_button) as Control
 	if p_button.has_meta("hover_tween"):
 		var old_tween = p_button.get_meta("hover_tween")
 		if old_tween and old_tween.is_valid():
@@ -90,8 +93,8 @@ func _on_button_exit(p_button: Button) -> void:
 	var tween = create_tween()
 	tween.set_ease(Tween.EASE_OUT)
 	tween.set_trans(Tween.TRANS_SINE)
-	tween.tween_property(p_button, "scale", Vector2(1.0, 1.0), 0.2)
-	tween.parallel().tween_property(p_button, "modulate", Color(1.0, 1.0, 1.0), 0.2)
+	tween.tween_property(target, "scale", Vector2(1.0, 1.0), 0.2)
+	tween.parallel().tween_property(target, "modulate", Color(1.0, 1.0, 1.0), 0.2)
 	p_button.set_meta("hover_tween", tween)
 
 
@@ -160,11 +163,18 @@ func _populate_soul_list() -> void:
 		card_tween.tween_property(card, "modulate:a", 1.0, 0.4).set_ease(Tween.EASE_OUT)
 
 
-func _create_soul_card(soul: Dictionary, index: int) -> Button:
-	var card = Button.new()
-	card.custom_minimum_size = Vector2(0, 100)
-	card.text = ""
-	# Custom style: dark purple with gold border
+func _create_soul_card(soul: Dictionary, index: int) -> Control:
+	# Root control for the card
+	var card_root = Control.new()
+	card_root.custom_minimum_size = Vector2(0, 110)
+
+	# Background panel with custom style
+	var bg_panel = PanelContainer.new()
+	bg_panel.set_anchors_preset(15)
+	bg_panel.offset_left = 0
+	bg_panel.offset_top = 0
+	bg_panel.offset_right = 0
+	bg_panel.offset_bottom = 0
 	var card_style = StyleBoxFlat.new()
 	card_style.bg_color = Color(0.12, 0.08, 0.22, 0.9)
 	card_style.border_color = Color(0.83, 0.66, 0.36)
@@ -176,23 +186,22 @@ func _create_soul_card(soul: Dictionary, index: int) -> Button:
 	card_style.corner_radius_top_right = 8
 	card_style.corner_radius_bottom_left = 8
 	card_style.corner_radius_bottom_right = 8
-	card.add_theme_stylebox_override("normal", card_style)
+	card_style.content_margin_left = 12
+	card_style.content_margin_right = 12
+	card_style.content_margin_top = 10
+	card_style.content_margin_bottom = 10
+	bg_panel.add_theme_stylebox_override("panel", card_style)
+	card_root.add_child(bg_panel)
 
+	# Content layout inside panel
 	var hbox = HBoxContainer.new()
-	hbox.set_anchors_preset(15)
-	hbox.anchor_right = 1.0
-	hbox.anchor_bottom = 1.0
-	hbox.offset_left = 0
-	hbox.offset_top = 0
-	hbox.offset_right = 0
-	hbox.offset_bottom = 0
-	hbox.add_theme_constant_override("separation", 12)
-	card.add_child(hbox)
+	hbox.add_theme_constant_override("separation", 14)
+	bg_panel.add_child(hbox)
 
 	# Element color indicator
 	var element_color = _get_element_color(soul["element"])
 	var color_rect = ColorRect.new()
-	color_rect.custom_minimum_size = Vector2(12, 0)
+	color_rect.custom_minimum_size = Vector2(14, 0)
 	color_rect.color = element_color
 	color_rect.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	hbox.add_child(color_rect)
@@ -201,12 +210,12 @@ func _create_soul_card(soul: Dictionary, index: int) -> Button:
 	var info_vbox = VBoxContainer.new()
 	info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	info_vbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	info_vbox.add_theme_constant_override("separation", 6)
+	info_vbox.add_theme_constant_override("separation", 8)
 	hbox.add_child(info_vbox)
 
 	var name_label = Label.new()
 	name_label.text = "%s  [Lv.%d]" % [soul["name"], soul["level"]]
-	name_label.add_theme_font_size_override("font_size", 20)
+	name_label.add_theme_font_size_override("font_size", 22)
 	name_label.add_theme_color_override("font_color", Color(0.95, 0.9, 0.75))
 	info_vbox.add_child(name_label)
 
@@ -214,7 +223,7 @@ func _create_soul_card(soul: Dictionary, index: int) -> Button:
 	stats_label.text = "元素: %s    HP: %d    攻击: %d    防御: %d" % [
 		soul["element"], soul["hp"], soul["attack"], soul["defense"]
 	]
-	stats_label.add_theme_font_size_override("font_size", 15)
+	stats_label.add_theme_font_size_override("font_size", 16)
 	stats_label.add_theme_color_override("font_color", Color(0.7, 0.8, 0.9))
 	info_vbox.add_child(stats_label)
 
@@ -223,11 +232,31 @@ func _create_soul_card(soul: Dictionary, index: int) -> Button:
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	info_vbox.add_child(spacer)
 
-	# Connect click
-	card.pressed.connect(_on_soul_selected.bind(index))
-	_setup_button_hover(card)
+	# Transparent button overlay for click + hover
+	var click_button = Button.new()
+	click_button.set_anchors_preset(15)
+	click_button.offset_left = 0
+	click_button.offset_top = 0
+	click_button.offset_right = 0
+	click_button.offset_bottom = 0
+	click_button.text = ""
+	# Make button transparent - only for input
+	var transparent_style = StyleBoxEmpty.new()
+	click_button.add_theme_stylebox_override("normal", transparent_style)
+	click_button.add_theme_stylebox_override("hover", transparent_style)
+	click_button.add_theme_stylebox_override("pressed", transparent_style)
+	click_button.add_theme_stylebox_override("focus", transparent_style)
+	click_button.modulate = Color(1, 1, 1, 0.01)
+	card_root.add_child(click_button)
 
-	return card
+	# Connect click
+	click_button.pressed.connect(_on_soul_selected.bind(index))
+	_setup_button_hover(click_button)
+
+	# Store reference to root for hover effects
+	click_button.set_meta("card_root", card_root)
+
+	return card_root
 
 
 func _get_element_color(element: String) -> Color:
@@ -248,17 +277,13 @@ func _on_soul_selected(index: int) -> void:
 	_play_soul_select_sound(soul["element"])
 
 	# Click pulse feedback on the card
-	var card = _soul_list.get_child(index) as Button
+	var card = _soul_list.get_child(index) as Control
 	if card:
-		if card.has_meta("hover_tween"):
-			var old_tween = card.get_meta("hover_tween")
-			if old_tween and old_tween.is_valid():
-				old_tween.kill()
 		var pulse_tween = create_tween()
 		pulse_tween.set_ease(Tween.EASE_OUT)
 		pulse_tween.set_trans(Tween.TRANS_BACK)
-		pulse_tween.tween_property(card, "scale", Vector2(1.12, 1.12), 0.1)
-		pulse_tween.parallel().tween_property(card, "modulate", Color(1.4, 1.2, 0.6), 0.1)
+		pulse_tween.tween_property(card, "scale", Vector2(1.06, 1.06), 0.1)
+		pulse_tween.parallel().tween_property(card, "modulate", Color(1.3, 1.15, 0.7), 0.1)
 		pulse_tween.tween_property(card, "scale", Vector2(1.0, 1.0), 0.15)
 		pulse_tween.parallel().tween_property(card, "modulate", Color(1.0, 1.0, 1.0), 0.15)
 
