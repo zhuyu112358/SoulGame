@@ -44,8 +44,6 @@ const SoulUnit = preload("res://scripts/game/SoulUnit.gd")
 const Minimap = preload("res://scripts/ui/Minimap.gd")
 
 ## Visual unit nodes
-var _player_visual = null
-var _ai_visual = null
 var _player_light = null
 var _ai_light = null
 
@@ -2167,11 +2165,6 @@ func _process(delta: float) -> void:
 		_update_unit_display()
 		return
 	_update_unit_display()
-	# Sync unit visuals to logical positions (replaces unreliable position_changed signal)
-	if _player_visual and is_instance_valid(RTSArenaManager.player_unit):
-		_player_visual.position = RTSArenaManager.player_unit.position - Vector2(32, 32)
-	if _ai_visual and is_instance_valid(RTSArenaManager.ai_unit):
-		_ai_visual.position = RTSArenaManager.ai_unit.position - Vector2(32, 32)
 	# Sync dynamic lights to unit positions with subtle pulse
 	if _player_light and is_instance_valid(RTSArenaManager.player_unit):
 		_player_light.position = RTSArenaManager.player_unit.position
@@ -2999,19 +2992,8 @@ func _on_battle_time_updated(p_time: float) -> void:
 func _on_unit_spawned(p_unit: SoulUnit, p_is_player: bool) -> void:
 	GameLog.info("RTSArenaController: Unit spawned - %s (player: %s)" % [p_unit.soul_name, str(p_is_player)], "Arena")
 
-	# Create visual representation
-	var visual = ColorRect.new()
-	visual.size = Vector2(64, 64)
-	visual.position = p_unit.position - Vector2(32, 32)
-	visual.z_index = 10  # Render above arena obstacles
-	if p_is_player:
-		visual.color = Color(0.2, 0.6, 1.0)  # Blue for player
-		_player_visual = visual
-	else:
-		visual.color = Color(1.0, 0.3, 0.3)  # Red for AI
-		_ai_visual = visual
-	# Visual position synced in _process (position_changed signal unreliable in Godot 4.7)
-	add_child(visual)
+	# SoulUnit creates its own sprite visual in init_from_soul() / _create_visual()
+	# No separate ColorRect placeholder needed - it was covering the design sprite
 
 	# Create dynamic point light for unit glow
 	var light = PointLight2D.new()
