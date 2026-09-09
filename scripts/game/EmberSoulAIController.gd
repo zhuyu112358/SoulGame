@@ -254,6 +254,11 @@ func execute_decision(p_self, p_enemy) -> void:
 	GameLog.debug("Ember AI: %s decision=%s dist=%.1f" % [
 		p_self.soul_name, _decision_name(current_decision), dist
 	], "Arena")
+	# Priority override: if enemy is in attack range, attack immediately regardless of current decision
+	# This prevents units from wandering while in range due to stale decision (1.5s decision interval)
+	if p_enemy != null and is_instance_valid(p_enemy) and dist <= p_self.attack_range:
+		p_self.set_attack_target(p_enemy)
+		return
 	match current_decision:
 		Decision.ATTACK:
 			if p_enemy != null and dist <= p_self.attack_range:

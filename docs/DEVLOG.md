@@ -7418,3 +7418,35 @@ ode/life/max_life），而_update_skill_particles()期望新版数据结构（pa
 - [ ] ArboreusWorld.remove_entity参数类型兼容性（需引擎团队明确）
 - [ ] UI皮肤图集替换纯色StyleBox（ui_skin_sheet.png）
 - [ ] 自定义像素字体（无.ttf/.otf文件，需设计产出）
+
+## 2026-09-09 - P0修复续：AI决策延迟导致单位在攻击范围内不攻击
+
+### 问题现象
+- 上一轮修复后，部分运行中单位仍不攻击（60秒HP=120/120）
+- 单位在移动，距离有时小于attack_range（44-66），但不攻击
+
+### 根因分析
+- AI决策间隔1.5秒（decision_interval），但execute_decision每帧都执行
+- 当单位移动到攻击范围内时，当前决策仍是MOVE_TO_TARGET（要等1.5秒才更新）
+- execute_decision每帧执行MOVE_TO_TARGET分支，调用move_to设置state=MOVING
+- 单位永远不会进入ATTACKING状态，因为决策更新太慢
+
+### 修复
+- 在EmberSoulAIController.execute_decision()开头添加优先级覆盖
+- 如果敌人在攻击范围内，立即执行set_attack_target，忽略当前决策
+- 修复编译错误：SoulUnit没有class_name，不能用SoulUnit.UnitState.DEAD引用
+
+### 验证结果
+- 修复前：60秒0次攻击（部分运行）
+- 修复后：5秒内战斗结束，双方持续攻击直到一方被击败
+- M2测试: 2884 Passed, 0 Failed
+- SCRIPT ERROR: 2个（已知Arboreus remove_entity参数类型问题）
+
+### 修改的文件
+- scripts/game/EmberSoulAIController.gd - execute_decision添加攻击范围优先级覆盖
+
+### 攻击系统完整修复链（4个bug叠加）
+1. SoulUnit.move_to()清除attack_target → 添加p_clear_attack_target参数
+2. EmberSoulAIController移动时清除attack_target → 保留attack_target
+3. _update_cooldowns不递减attack_cooldown → 添加递减逻辑
+4. AI决策延迟导致在范围内不攻击 → execute_decision优先级覆盖
