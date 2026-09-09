@@ -6858,8 +6858,8 @@ func _test_battle_speed() -> void:
 	# Test 8: Speed button can be created
 	controller._setup_speed_button()
 	_assert(controller._speed_button != null, "Speed button created")
-	_assert(controller._speed_button.text == "1x", "Speed button text is 1x")
-	_assert(controller._speed_button.size == Vector2(60, 35), "Speed button size is 60x35")
+	_assert(controller._speed_button.text == "⚡ 1x", "Speed button text is ⚡ 1x")
+	_assert(controller._speed_button.size == Vector2(70, 35), "Speed button size is 70x35")
 
 
 ## ============================================

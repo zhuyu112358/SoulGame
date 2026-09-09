@@ -7263,3 +7263,42 @@ D:\Godot\Godot.exe --headless -s res://tests/e2e_flow_test.gd --path D:\Sojourn\
 ### 待办
 - [ ] BUG-030音频导入
 - [ ] 更多用户体验优化
+
+---
+
+## 2026-09-09 - P0紧急修复：对战场景没有创建灵魂单位
+
+### 问题描述
+用户反馈游戏都没开始。调试面板显示 Souls: 0，战斗时间 00:00，场景已切换到 rts_arena.tscn 但竞技场里没有任何单位。
+
+### 根本原因
+**RTSArenaController.gd 脚本编译失败**，导致整个竞技场场景的逻辑都没有运行。
+
+具体问题：
+1. **重复变量声明**：_skill_particles 在第74行和第151行被声明了两次
+2. **重复函数声明**：_update_skill_particles() 在第1080行和第1177行被定义了两次（且使用不同的数据结构）
+3. Godot 4.7 遇到重复声明会报 Parse Error，导致整个脚本无法加载
+
+### 修复内容
+1. **删除重复变量声明**：移除第151行的 ar _skill_particles = []
+2. **删除重复函数声明**：移除第1177行的旧版 _update_skill_particles()（使用字典访问的旧版本），保留第1080行的新版本（使用对象属性访问，与 _spawn_skill_particle 的数据结构匹配）
+3. **修复 FontLoader 调用**：RTSArenaController 是 Node2D 不是 Control，FontLoader.apply_font_to_control(self) 会报错。改为遍历子节点，只对 Control 类型应用字体
+4. **修复 DebugOverlay.gd 类型推断错误**：ar logs := GameLog.get_recent_entries(15) 无法推断类型，改为 ar logs: Array = ...
+5. **修复色差 shader**：Godot 4.7 中 SCREEN_TEXTURE 已被移除，改为 uniform sampler2D screen_texture : hint_screen_texture
+6. **更新 M2 测试**：速度按钮测试从旧样式（"1x", 60x35）更新为新样式（"⚡ 1x", 70x35）
+
+### 验证
+- E2E 端到端测试：场景切换后倒计时正常运行（3-2-1-GO!），倒计时结束后双方单位成功创建，战斗正常开始
+- 自动化战斗测试：双方单位移动正常，AI 决策正常
+- M2 测试套件：2882 Passed, 0 Failed（修复速度按钮测试后）
+
+### 修改的文件
+- scripts/game/RTSArenaController.gd - 删除重复声明、修复 FontLoader 调用、修复色差 shader
+- scripts/core/DebugOverlay.gd - 修复类型推断错误
+- 	ests/M2IntegrationTest.gd - 更新速度按钮测试断言
+- 	ests/e2e_battle_debug_test.gd - 新建，端到端战斗流程调试测试
+
+### 待办
+- [ ] BUG-030 音频导入（需用户用 Godot 编辑器打开项目等待自动导入）
+- [ ] 实际运行游戏验证完整流程（主菜单→选灵魂→开始对战）
+- [ ] 更多用户体验优化
