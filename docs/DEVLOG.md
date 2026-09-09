@@ -271,6 +271,27 @@
 
 **累计资源**：407个，全部成功导入，0个valid=false。
 
+**社交系统UI组件集成**（22:17-22:19生成，已集成）：
+1. guild_system_ui.png - 公会系统UI
+2. auction_house_ui.png - 拍卖行UI
+3. trade_system_ui.png - 交易系统UI
+4. party_invite_popup_ui.png - 组队邀请弹窗UI
+5. friend_request_popup_ui.png - 好友请求弹窗UI
+6. in_game_mail_ui.png - 游戏内邮件UI
+
+**设置与系统UI组件集成**（22:38-22:47生成，已集成）：
+1. audio_settings_ui.png - 音频设置UI
+2. custom_keybinding_settings_ui.png - 自定义按键设置UI
+3. graphics_settings_ui.png - 图形设置UI
+4. in_game_voice_chat_ui.png - 游戏内语音聊天UI
+5. daily_reward_claim_ui.png - 每日奖励领取UI
+6. level_up_popup_ui.png - 升级弹窗UI
+7. season_end_rewards_ui.png - 赛季结束奖励UI
+8. match_replay_control_ui.png - 比赛回放控制UI
+9. spectator_danmaku_chat_ui.png - 观战弹幕聊天UI
+
+**累计资源**：422个，全部成功导入，0个valid=false。
+
 ## [Bug修复] ArboreusWorldBridge.remove_entity参数类型修复（2026-09-09）
 
 **问题**：SCRIPT ERROR - ArboreusWorld.remove_entity()参数类型Object不兼容int。
