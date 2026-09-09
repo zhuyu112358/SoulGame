@@ -219,6 +219,13 @@
 
 **累计资源**：371个，全部成功导入，0个valid=false。
 
+## [Bug修复] ArboreusWorldBridge.remove_entity参数类型修复（2026-09-09）
+
+**问题**：SCRIPT ERROR - ArboreusWorld.remove_entity()参数类型Object不兼容int。
+**根因**：ArboreusWorldBridge.remove_entity()从_entities字典获取entity对象（Object），然后传给_world.remove_entity()，但SDK方法期望int类型的entity_id。
+**修复**：直接传入p_entity_id（int），不再获取entity对象。
+**影响**：消除2个已知SCRIPT ERROR（战斗结束时移除player和ai实体）。
+
 ## [视觉提升P0] PNG资源格式批量修复（2026-09-09）
 
 **重大发现**：assets/art目录下198个PNG文件中，197个实际是JPEG格式（文件头FF D8）但扩展名为.png，导致Godot无法导入，运行时大量"Failed loading resource"错误。

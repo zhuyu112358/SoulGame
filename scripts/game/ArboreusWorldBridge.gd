@@ -103,15 +103,14 @@ func create_entity(p_name: String = "entity", p_position: Vector2 = Vector2.ZERO
 
 
 ## Remove an entity from the world
-## Note: ArboreusWorld.remove_entity() returns void
+## Note: ArboreusWorld.remove_entity() expects int entity_id, returns void
 func remove_entity(p_entity_id: int) -> bool:
 	if not _arboreus_available or _world == null:
 		return false
 	if not _entities.has(p_entity_id):
 		return false
 
-	var entity = _entities[p_entity_id]
-	_world.remove_entity(entity)  # returns void
+	_world.remove_entity(p_entity_id)  # expects int entity_id, returns void
 	_entities.erase(p_entity_id)
 	print("[ArboreusWorldBridge] Entity removed: id=%d" % p_entity_id)
 	return true
