@@ -3038,7 +3038,7 @@ func _on_battle_time_updated(p_time: float) -> void:
 
 
 ## Create unit visual: AnimatedSprite2D from design sheet (with chroma-key shader) or procedural sprite with bob
-func _create_unit_visual(p_element: String, p_personality: String) -> CanvasItem:
+func _create_unit_visual(p_element: String, p_personality: Dictionary = {}) -> CanvasItem:
 	# Try new element sprite sheet first (has animation frames, no alpha - use chroma-key shader)
 	var sheet_path := "res://assets/art/new_soul_unit_%s_sprite_sheet.png" % p_element.to_lower()
 	if ResourceLoader.exists(sheet_path):
@@ -3093,8 +3093,8 @@ func _on_unit_spawned(p_unit: SoulUnit, p_is_player: bool) -> void:
 
 	# Create visible visual proxy - SoulUnit is child of autoload RTSArenaManager,
 	# which is NOT in the visible scene tree, so its internal Sprite2D never renders.
-	var personality_val = "neutral"
-	if "personality" in p_unit:
+	var personality_val: Dictionary = {}
+	if "personality" in p_unit and p_unit.personality is Dictionary:
 		personality_val = p_unit.personality
 	var visual = _create_unit_visual(p_unit.element, personality_val)
 	visual.position = p_unit.position
@@ -3123,7 +3123,7 @@ func _on_unit_spawned(p_unit: SoulUnit, p_is_player: bool) -> void:
 
 	# Connect unit signals for particle effects
 	p_unit.hp_changed.connect(_on_unit_hp_changed.bind(p_unit))
-	p_unit.unit_died.connect(_on_unit_died.bind(p_unit))
+	p_unit.unit_died.connect(_on_unit_died)
 
 
 ## Create radial gradient texture for point light
