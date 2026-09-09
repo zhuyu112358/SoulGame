@@ -1,5 +1,20 @@
 ﻿# 战策 Battleplan 开发日志
 
+## [视觉提升P0] 新设计资源集成（2026-09-09）
+
+**新资源**（设计任务今天产出，已复制到assets/art/并转换为真正PNG格式）：
+1. new_map_mou_abyss_tile_sheet.png - 某深渊地图瓦片图集
+2. new_map_yong_temple_tile_sheet.png - 雍和宫地图瓦片图集
+3. new_soul_unit_mou_sprite_sheet.png - 某灵魂单位精灵图集
+4. new_soul_unit_yong_sprite_sheet.png - 雍灵魂单位精灵图集
+5. new_map_mou_abyss_concept.png - 某深渊地图概念图
+
+**导入状态**：5个资源全部成功导入，0个valid=false。
+
+**注意**：设计任务生成的PNG文件仍然是JPEG伪装格式（文件头FF D8），已批量转换。请设计任务根本修复生成脚本，不要用JPEG格式保存为.png扩展名。
+
+**待集成**：新灵魂单位精灵图和地图瓦片图集需要评估是否替换现有资源，或作为新内容添加。
+
 ## [视觉提升P0] PNG资源格式批量修复（2026-09-09）
 
 **重大发现**：assets/art目录下198个PNG文件中，197个实际是JPEG格式（文件头FF D8）但扩展名为.png，导致Godot无法导入，运行时大量"Failed loading resource"错误。
