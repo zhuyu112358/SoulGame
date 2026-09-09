@@ -7302,3 +7302,39 @@ D:\Godot\Godot.exe --headless -s res://tests/e2e_flow_test.gd --path D:\Sojourn\
 - [ ] BUG-030 音频导入（需用户用 Godot 编辑器打开项目等待自动导入）
 - [ ] 实际运行游戏验证完整流程（主菜单→选灵魂→开始对战）
 - [ ] 更多用户体验优化
+
+---
+
+## 2026-09-09 - P0 bug完整验证：主菜单→灵魂选择→对战全流程通过
+
+### 验证内容
+创建完整端到端测试 	ests/e2e_full_flow_test.gd，模拟真实用户操作流程：
+1. **主菜单**：调用 MainMenu._on_start_pressed() 切换到灵魂选择场景
+2. **灵魂选择**：调用 SoulSelect._on_soul_selected(0) 选择第一个灵魂（炎灵），内部自动调用 _start_battle(soul)
+3. **场景切换**：SceneManager 切换到 rts_arena.tscn
+4. **战斗启动**：RTSArenaController._ready() → _try_auto_start_battle() → 倒计时（3-2-1-GO!）→ _start_battle_after_countdown() → RTSArenaManager.start_battle()
+5. **单位创建**：玩家单位（炎灵）和AI单位成功创建并加入场景
+6. **战斗进行**：双方单位移动靠近，AI决策正常，寻路正常（SDKPathfinder）
+
+### 测试结果
+- **Battle started: true**
+- **Final battle_state: 1 (ACTIVE)**
+- **Player unit exists: true**（炎灵，位置(208,304)，HP 120/120）
+- **AI unit exists: true**（位置(757,331)，HP 120/120）
+- **Battle time: 2.4s**
+- **[PASS] Full E2E flow verified: Main Menu -> Soul Select -> Battle!**
+
+### 根因确认
+P0 bug"对战场景没有创建灵魂单位"的根本原因是 **RTSArenaController.gd 脚本编译失败**：
+- _skill_particles 变量重复声明（第74行和第151行）
+- _update_skill_particles() 函数重复定义（第1080行和第1177行）
+- Godot 4.7 遇到重复声明报 Parse Error，整个脚本无法加载
+- 修复已在 commit b764404 中应用
+
+### 修改的文件
+- 	ests/e2e_full_flow_test.gd - 新建，完整端到端流程测试
+
+### 待办
+- [ ] BUG-030 音频导入（需用户用 Godot 编辑器打开项目等待自动导入）
+- [ ] 实际GUI运行游戏验证（headless测试已通过，建议用户实际运行确认视觉效果）
+- [ ] 更多用户体验优化
