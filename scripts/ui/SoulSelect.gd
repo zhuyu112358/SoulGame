@@ -113,13 +113,27 @@ func _play_select_music() -> void:
 func _load_available_souls() -> void:
 	# Load souls from PlatformSDK or create default souls
 	_souls = []
+	# Scene names that should never be treated as soul names (mock mode artifacts)
+	var invalid_names := ["main_menu", "rts_arena", "soul_select", "home", "battle", "menu"]
 	if PlatformSDK:
 		var soul_list = PlatformSDK.list_souls()
 		if soul_list.size() > 0:
 			for soul in soul_list:
+				var soul_name: String = soul.get("name", "")
+				# Filter out invalid souls created by mock mode accidents
+				if soul_name == "" or invalid_names.has(soul_name.to_lower()):
+					GameLog.warning("SoulSelect: Skipping invalid soul '%s'" % soul_name, "SoulSelect")
+					continue
+				# Ensure battle stats exist (PlatformSDK summary may not include them)
+				if not soul.has("hp"):
+					soul["hp"] = 100 + soul.get("level", 1) * 10
+				if not soul.has("attack"):
+					soul["attack"] = 12 + soul.get("level", 1) * 2
+				if not soul.has("defense"):
+					soul["defense"] = 8 + soul.get("level", 1)
 				_souls.append(soul)
 
-	# If no souls found, create default souls for testing
+	# If no valid souls found, create default souls for testing
 	if _souls.size() == 0:
 		_souls = [
 			{"id": "soul_fire_01", "name": "炎灵", "element": "fire", "level": 1, "hp": 100, "attack": 15, "defense": 8},
@@ -148,7 +162,7 @@ func _populate_soul_list() -> void:
 
 func _create_soul_card(soul: Dictionary, index: int) -> Button:
 	var card = Button.new()
-	card.custom_minimum_size = Vector2(0, 70)
+	card.custom_minimum_size = Vector2(0, 100)
 	card.text = ""
 	# Custom style: dark purple with gold border
 	var card_style = StyleBoxFlat.new()
@@ -168,34 +182,46 @@ func _create_soul_card(soul: Dictionary, index: int) -> Button:
 	hbox.set_anchors_preset(15)
 	hbox.anchor_right = 1.0
 	hbox.anchor_bottom = 1.0
+	hbox.offset_left = 0
+	hbox.offset_top = 0
+	hbox.offset_right = 0
+	hbox.offset_bottom = 0
+	hbox.add_theme_constant_override("separation", 12)
 	card.add_child(hbox)
 
 	# Element color indicator
 	var element_color = _get_element_color(soul["element"])
 	var color_rect = ColorRect.new()
-	color_rect.custom_minimum_size = Vector2(10, 0)
+	color_rect.custom_minimum_size = Vector2(12, 0)
 	color_rect.color = element_color
-	color_rect.set_anchors_preset(15)
-	color_rect.anchor_bottom = 1.0
+	color_rect.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	hbox.add_child(color_rect)
 
 	# Soul info
 	var info_vbox = VBoxContainer.new()
 	info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	info_vbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	info_vbox.add_theme_constant_override("separation", 6)
 	hbox.add_child(info_vbox)
 
 	var name_label = Label.new()
 	name_label.text = "%s  [Lv.%d]" % [soul["name"], soul["level"]]
-	name_label.add_theme_font_size_override("font_size", 18)
+	name_label.add_theme_font_size_override("font_size", 20)
+	name_label.add_theme_color_override("font_color", Color(0.95, 0.9, 0.75))
 	info_vbox.add_child(name_label)
 
 	var stats_label = Label.new()
-	stats_label.text = "元素: %s  HP: %d  攻击: %d  防御: %d" % [
+	stats_label.text = "元素: %s    HP: %d    攻击: %d    防御: %d" % [
 		soul["element"], soul["hp"], soul["attack"], soul["defense"]
 	]
-	stats_label.add_theme_font_size_override("font_size", 14)
+	stats_label.add_theme_font_size_override("font_size", 15)
 	stats_label.add_theme_color_override("font_color", Color(0.7, 0.8, 0.9))
 	info_vbox.add_child(stats_label)
+
+	# Spacer to vertically center content
+	var spacer = Control.new()
+	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	info_vbox.add_child(spacer)
 
 	# Connect click
 	card.pressed.connect(_on_soul_selected.bind(index))
