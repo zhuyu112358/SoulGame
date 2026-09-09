@@ -63,6 +63,8 @@ HomeAPI="*res://platform/home/HomeAPI.gd"
 
 settings/fps/force_fps=0
 settings/print_to_console=true
+settings/print_to_file=true
+settings/file_path="user://debug_visual.log"
 
 [display]
 
