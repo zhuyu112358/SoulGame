@@ -84,6 +84,18 @@
 
 **累计新资源**：300个，全部成功导入，0个valid=false。
 
+**第七批新资源**（15:19-15:20生成，已集成）：
+1. new_soul_unit_ce_sprite_sheet.png - 策灵魂单位精灵图
+2. new_soul_unit_dian_sprite_sheet.png - 电灵魂单位精灵图
+3. new_map_ce_abyss_tile_sheet.png - 策深渊地图瓦片图集
+4. new_map_dian_temple_tile_sheet.png - 电寺庙地图瓦片图集
+5. new_soul_unit_ce_concept.png - 策灵魂单位概念图
+6. new_soul_unit_dian_concept.png - 电灵魂单位概念图
+7. new_map_ce_abyss_concept.png - 策深渊地图概念图
+8. new_map_dian_temple_concept.png - 电寺庙地图概念图
+
+**累计新资源**：308个，全部成功导入，0个valid=false。
+
 ## [视觉提升P0] PNG资源格式批量修复（2026-09-09）
 
 **重大发现**：assets/art目录下198个PNG文件中，197个实际是JPEG格式（文件头FF D8）但扩展名为.png，导致Godot无法导入，运行时大量"Failed loading resource"错误。
