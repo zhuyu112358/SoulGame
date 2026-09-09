@@ -8,7 +8,7 @@ extends Node2D
 
 ## Write debug log to file (user://debug_controller.log)
 static func _dlog(msg: String) -> void:
-	var f = FileAccess.open("user://debug_controller.log", FileAccess.WRITE)
+	var f = FileAccess.open("user://debug_controller.log", FileAccess.READ_WRITE)
 	if f:
 		f.seek_end()
 		f.store_line(Time.get_datetime_string_from_system() + " " + msg)
