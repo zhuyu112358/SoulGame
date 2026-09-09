@@ -159,6 +159,14 @@
 
 **累计新资源**：334个，全部成功导入，0个valid=false。
 
+**第十一批补充资源**（16:50生成，已集成）：
+1. new_soul_unit_jian_sprite_sheet.png - 剑灵魂单位精灵图
+2. new_soul_unit_zeng_sprite_sheet.png - 增灵魂单位精灵图
+3. new_map_jian_abyss_tile_sheet.png - 剑深渊地图瓦片图集
+4. new_map_zeng_temple_tile_sheet.png - 增寺庙地图瓦片图集
+
+**累计新资源**：338个，全部成功导入，0个valid=false。
+
 ## [视觉提升P0] PNG资源格式批量修复（2026-09-09）
 
 **重大发现**：assets/art目录下198个PNG文件中，197个实际是JPEG格式（文件头FF D8）但扩展名为.png，导致Godot无法导入，运行时大量"Failed loading resource"错误。
