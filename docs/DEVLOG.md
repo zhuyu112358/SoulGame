@@ -336,6 +336,20 @@
 
 **累计资源**：446个，全部成功导入，0个valid=false。
 
+**设置与账户弹窗UI组件集成**（00:18生成，已集成）：
+1. account_management_popup_ui.png - 账户管理弹窗UI
+2. announcement_popup_ui.png - 公告弹窗UI
+3. customer_support_popup_ui.png - 客服支持弹窗UI
+4. daily_checkin_popup_ui.png - 每日签到弹窗UI
+5. feedback_popup_ui.png - 反馈弹窗UI
+6. language_settings_popup_ui.png - 语言设置弹窗UI
+7. privacy_settings_popup_ui.png - 隐私设置弹窗UI
+8. redeem_code_popup_ui.png - 兑换码弹窗UI
+9. report_player_popup_ui.png - 举报玩家弹窗UI
+10. season_results_popup_ui.png - 赛季结算弹窗UI
+
+**累计资源**：456个，全部成功导入，0个valid=false。
+
 ## [Bug修复] ArboreusWorldBridge.remove_entity参数类型修复（2026-09-09）
 
 **问题**：SCRIPT ERROR - ArboreusWorld.remove_entity()参数类型Object不兼容int。
