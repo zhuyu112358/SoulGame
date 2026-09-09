@@ -1278,33 +1278,27 @@ func _setup_arena_background() -> void:
 		design_texture = load(design_bg_path)
 
 	if design_texture != null:
-		# Use design concept image as background
-		var texture_rect = TextureRect.new()
-		texture_rect.texture = design_texture
-		texture_rect.position = Vector2(0, 80)  # Below top bar
-		texture_rect.size = Vector2(1280, 640)
-		texture_rect.stretch_mode = TextureRect.STRETCH_SCALE
-		texture_rect.name = "ArenaBackground"
-		add_child(texture_rect)
-		bg_node.visible = false
+		# Directly set Background node's texture (it's already a TextureRect covering full window)
+		bg_node.texture = design_texture
+		bg_node.stretch_mode = TextureRect.STRETCH_SCALE
+		bg_node.visible = true
+		# Make ArenaArea ColorRect transparent so background shows through
+		var arena_area = get_node_or_null("ArenaArea")
+		if arena_area != null and arena_area is ColorRect:
+			arena_area.color = Color(0, 0, 0, 0)
 		GameLog.info("RTSArenaController: Arena background from design asset (%s)" % arena_type, "Arena")
 		return
 
 	# Fallback: Generate background texture procedurally
 	var generator = ArenaBackgroundGenerator.new()
 	var texture = generator.generate_background(arena_type, hash(map_name))
-
-	# Replace ColorRect with TextureRect
-	var texture_rect = TextureRect.new()
-	texture_rect.texture = texture
-	texture_rect.position = Vector2(0, 80)  # Below top bar
-	texture_rect.size = Vector2(1280, 640)
-	texture_rect.name = "ArenaBackground"
-	add_child(texture_rect)
-
-	# Hide original ColorRect
-	bg_node.visible = false
-
+	bg_node.texture = texture
+	bg_node.stretch_mode = TextureRect.STRETCH_SCALE
+	bg_node.visible = true
+	# Make ArenaArea transparent
+	var arena_area = get_node_or_null("ArenaArea")
+	if arena_area != null and arena_area is ColorRect:
+		arena_area.color = Color(0, 0, 0, 0)
 	GameLog.info("RTSArenaController: Arena background generated (%s)" % arena_type, "Arena")
 
 

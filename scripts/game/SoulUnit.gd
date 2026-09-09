@@ -160,7 +160,11 @@ signal skill_used(skill_name, target)
 func _ready() -> void:
 	GameLog.info("SoulUnit: %s initialized (HP:%d, ATK:%d)" % [soul_name, max_hp, attack_damage], "Arena")
 	_setup_skill_cooldowns()
-	_create_visual()
+	# Visual creation moved to init_from_soul() to ensure element/is_player are set first
+	# If visual not yet created (e.g. unit added without init_from_soul), create now
+	if _sprite == null:
+		GameLog.warning("SoulUnit: _ready() creating visual without init_from_soul (element=%s, player=%s)" % [element, is_player_controlled], "Unit")
+		_create_visual()
 
 
 ## Create visual representation (pixel sprite + name label + HP bar)
@@ -272,15 +276,25 @@ func _load_design_sprite() -> Texture2D:
 
 
 func _create_visual() -> void:
+	# Prevent duplicate visual creation
+	if _sprite != null:
+		GameLog.debug("SoulUnit: Visual already exists, skipping", "Unit")
+		return
+
 	# Try to use design asset sprite sheet first, fallback to procedural generator
 	var sprite_texture = _load_design_sprite()
+	var used_procedural := false
 	if sprite_texture == null:
 		var generator = PixelSpriteGenerator.new()
 		sprite_texture = generator.generate_soul_sprite(element, personality)
+		used_procedural = true
+		GameLog.warning("SoulUnit: %s using PROCEDURAL sprite (element=%s, player=%s) - design sprite load failed" % [soul_name, element, is_player_controlled], "Unit")
+	else:
+		GameLog.info("SoulUnit: %s using DESIGN sprite (element=%s, player=%s)" % [soul_name, element, is_player_controlled], "Unit")
 
 	_sprite = Sprite2D.new()
 	_sprite.texture = sprite_texture
-	_sprite.scale = Vector2(0.4, 0.4)  # Design sprites are larger (480x540), scale down
+	_sprite.scale = Vector2(0.6, 0.6)  # Larger scale for better visibility
 	_sprite.centered = true
 	add_child(_sprite)
 	_sprite_base_position = _sprite.position
@@ -399,6 +413,8 @@ func init_from_soul(p_soul_id: String, p_soul_name: String, p_element: String, p
 	GameLog.info("SoulUnit: %s initialized from soul data (Lvl %d, HP:%d, Ember:%s)" % [
 		soul_name, level, max_hp, _ember_bridge.is_ember_available()
 	], "Arena")
+	# Create visual AFTER element/is_player are set
+	_create_visual()
 
 
 ## Update HP bar visual
