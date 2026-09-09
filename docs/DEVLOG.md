@@ -1,5 +1,21 @@
 ﻿# 战策 Battleplan 开发日志
 
+## [视觉提升P0] UI皮肤图集集成进度（2026-09-09）
+
+**已完成**：
+- 创建4个StyleBoxTexture资源：btn_normal_skin.tres、btn_hover_skin.tres、btn_pressed_skin.tres、panel_skin.tres
+- 图集坐标估算：按钮(90,100,200,60)、悬停(300,100,200,60)、按下(90,200,200,60)、面板(650,100,400,300)
+
+**阻塞**：
+- ui_skin_sheet.png的.import文件valid=false，无.ctex生成，Godot运行时加载失败
+- 需要用户用Godot编辑器打开项目等待自动导入，或用`Godot.exe --import`命令导入
+- 主题已临时回退到StyleBoxFlat，待图片导入后切换到StyleBoxTexture
+
+**下一步**：
+1. 导入ui_skin_sheet.png后，验证StyleBoxTexture坐标是否准确
+2. 调整patch_margins确保九宫格拉伸正确
+3. 逐步替换进度条、输入框等其他UI元素皮肤
+
 ## [设计需求] 🔴紧急 WAV文件生成格式修复（2026-09-09 监控发现，第101轮仍未修复）
 
 **问题**：设计任务生成的wav文件，RIFF头和data chunk的size字段都被错误地写成了0xFFFFFFFF（uint32最大值），而非实际文件大小。导致Godot导入时seek越界（p_position > length），反复重试同一文件，最终编辑器卡死崩溃。

@@ -1,0 +1,15 @@
+[gd_resource type="StyleBoxTexture" load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/art/ui_skin_sheet.png" id="1_skin"]
+
+[resource]
+texture = ExtResource("1_skin")
+texture_region = Rect2(650, 100, 400, 300)
+patch_margin_left = 24.0
+patch_margin_top = 24.0
+patch_margin_right = 24.0
+patch_margin_bottom = 24.0
+content_margin_left = 16.0
+content_margin_top = 16.0
+content_margin_right = 16.0
+content_margin_bottom = 16.0
