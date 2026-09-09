@@ -7338,3 +7338,37 @@ P0 bug"对战场景没有创建灵魂单位"的根本原因是 **RTSArenaControl
 - [ ] BUG-030 音频导入（需用户用 Godot 编辑器打开项目等待自动导入）
 - [ ] 实际GUI运行游戏验证（headless测试已通过，建议用户实际运行确认视觉效果）
 - [ ] 更多用户体验优化
+
+---
+
+## 2026-09-09 - P0 bug GUI实际运行验证 + 技能粒子SCRIPT ERROR修复
+
+### GUI实际运行验证
+使用自动演示脚本（tests/auto_demo.gd）在GUI模式下运行完整游戏流程：
+1. 主菜单 → 点击开始游戏 → 灵魂选择场景
+2. 选择第一个灵魂（炎灵）→ 自动开始战斗
+3. 场景切换到rts_arena.tscn → 倒计时 → 战斗开始
+
+**验证结果**：
+- Unit spawned - 炎灵 (player: true) ✅
+- Unit spawned - 敌方灵魂 (player: false) ✅
+- Battle started, battle_state=1 (ACTIVE) ✅
+- 双方单位正常移动（Player at (715,368), AI at (211,307), Distance=507.9）✅
+- **SCRIPT ERROR count: 0** ✅
+
+### 额外修复：技能粒子SCRIPT ERROR
+发现_trigger_skill_particles()函数使用旧版数据结构（
+ode/life/max_life），而_update_skill_particles()期望新版数据结构（particle/	imer/duration/elocity/start_pos），导致每帧报SCRIPT ERROR。
+
+**修复内容**：
+1. _update_skill_particles(): 将对象属性访问（p_data.timer）改为Dictionary访问（p_data["timer"]）
+2. _trigger_skill_particles(): 将旧版数据结构{"node":..., "life":..., "max_life":...}改为新版{"particle":..., "timer":..., "duration":..., "velocity":..., "start_pos":...}
+
+### 修改的文件
+- scripts/game/RTSArenaController.gd - 修复技能粒子数据结构不一致
+- 	ests/auto_demo.gd - 新建，GUI自动演示脚本
+- docs/DEVLOG.md - 更新
+
+### 测试结果
+- M2测试套件：运行中...
+- GUI自动演示：SCRIPT ERROR=0，战斗正常开始

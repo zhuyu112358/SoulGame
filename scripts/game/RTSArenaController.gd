@@ -1083,17 +1083,17 @@ func _spawn_skill_particle(p_skill: String, p_position: Vector2) -> void:
 func _update_skill_particles(delta: float) -> void:
 	var to_remove = []
 	for p_data in _skill_particles:
-		p_data.timer -= delta
-		if p_data.timer <= 0:
-			if p_data.particle:
-				p_data.particle.queue_free()
+		p_data["timer"] -= delta
+		if p_data["timer"] <= 0:
+			if p_data["particle"]:
+				p_data["particle"].queue_free()
 			to_remove.append(p_data)
 		else:
-			if p_data.particle:
-				var progress = 1.0 - (p_data.timer / p_data.duration)
-				p_data.particle.position = p_data.start_pos + p_data.velocity * progress
-				p_data.particle.modulate.a = 1.0 - progress
-				p_data.particle.scale = Vector2(0.3 + progress * 0.5, 0.3 + progress * 0.5)
+			if p_data["particle"]:
+				var progress = 1.0 - (p_data["timer"] / p_data["duration"])
+				p_data["particle"].position = p_data["start_pos"] + p_data["velocity"] * progress
+				p_data["particle"].modulate.a = 1.0 - progress
+				p_data["particle"].scale = Vector2(0.3 + progress * 0.5, 0.3 + progress * 0.5)
 	for p_data in to_remove:
 		_skill_particles.erase(p_data)
 
@@ -1172,7 +1172,13 @@ func _trigger_skill_particles(p_position: Vector2, p_color: Color = Color(1.0, 0
 		var angle = (i / 8.0) * TAU
 		var speed = randf_range(80.0, 150.0)
 		var velocity = Vector2(cos(angle), sin(angle)) * speed
-		_skill_particles.append({"node": particle, "velocity": velocity, "life": 0.5, "max_life": 0.5})
+		_skill_particles.append({
+			"particle": particle,
+			"timer": 0.5,
+			"duration": 0.5,
+			"velocity": velocity,
+			"start_pos": p_position
+		})
 	_skill_particle_timer = 0.5
 
 
