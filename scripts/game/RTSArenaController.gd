@@ -1259,7 +1259,38 @@ func _setup_arena_background() -> void:
 		"lava_arena":
 			arena_type = "lava"
 
-	# Generate background texture
+	# Try design map concept image first (1920x1080 full scene art)
+	var design_bg_path := ""
+	match arena_type:
+		"lava":
+			design_bg_path = "res://assets/art/new_map_lava_cave_concept.png"
+		"crystal":
+			design_bg_path = "res://assets/art/new_map_crystal_cave_concept.png"
+		"stone":
+			design_bg_path = "res://assets/art/new_map_ancient_ruins_concept.png"
+		"sand":
+			design_bg_path = "res://assets/art/new_map_golden_desert_concept.png"
+		_:
+			design_bg_path = "res://assets/art/new_map_dark_forest_concept.png"
+
+	var design_texture: Texture2D = null
+	if ResourceLoader.exists(design_bg_path):
+		design_texture = load(design_bg_path)
+
+	if design_texture != null:
+		# Use design concept image as background
+		var texture_rect = TextureRect.new()
+		texture_rect.texture = design_texture
+		texture_rect.position = Vector2(0, 80)  # Below top bar
+		texture_rect.size = Vector2(1280, 640)
+		texture_rect.stretch_mode = TextureRect.STRETCH_SCALE
+		texture_rect.name = "ArenaBackground"
+		add_child(texture_rect)
+		bg_node.visible = false
+		GameLog.info("RTSArenaController: Arena background from design asset (%s)" % arena_type, "Arena")
+		return
+
+	# Fallback: Generate background texture procedurally
 	var generator = ArenaBackgroundGenerator.new()
 	var texture = generator.generate_background(arena_type, hash(map_name))
 

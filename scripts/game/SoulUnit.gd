@@ -168,8 +168,31 @@ func _ready() -> void:
 ## Prefers element-specific sprite sheet (player or AI variant), falls back to 2-row sheet
 ## Player sheet: 3 rows x 4 cols, cell 480x270 (fire/water/earth+wind)
 ## AI sheet: 4 rows x 6 cols, cell 320x270 (fire/water/earth/wind, col 0-2 idle frames)
+## New element sheets: new_soul_unit_{element}_sprite_sheet.png (8 frames: idle4+move2+attack1+hit1)
 ## Returns AtlasTexture for idle frame, or null if load fails
 func _load_design_sprite() -> Texture2D:
+	# Normalize element name (handle Chinese -> English mapping)
+	var normalized_element := element.to_lower()
+	var element_map := {
+		"火": "fire", "水": "water", "土": "earth", "风": "wind",
+		"雷": "thunder", "光": "light", "暗": "dark", "冰": "ice",
+		"neutral": "water",  # Default player element
+	}
+	if element_map.has(normalized_element):
+		normalized_element = element_map[normalized_element]
+
+	# Try new element-specific sprite sheet first (8-frame animation sheets)
+	var new_sheet_path := "res://assets/art/new_soul_unit_%s_sprite_sheet.png" % normalized_element
+	if ResourceLoader.exists(new_sheet_path):
+		var new_sheet = load(new_sheet_path)
+		if new_sheet != null and new_sheet is Texture2D:
+			# New sheets: 2048x256, 8 frames x 256x256, first frame is idle
+			var atlas = AtlasTexture.new()
+			atlas.atlas = new_sheet
+			atlas.region = Rect2(0, 0, 256, 256)
+			GameLog.debug("SoulUnit: Loaded new element sprite (element=%s)" % normalized_element, "Unit")
+			return atlas
+
 	# AI units: try AI-specific element sprite sheet first (darker/redder style)
 	if not is_player_controlled:
 		var ai_sheet_path := "res://assets/art/ai_soul_unit_element_sprite_sheet.png"
@@ -180,7 +203,7 @@ func _load_design_sprite() -> Texture2D:
 				var cell_w: int = 320
 				var cell_h: int = 270
 				var row: int = 0
-				match element:
+				match normalized_element:
 					"fire":
 						row = 0
 					"water":
@@ -194,7 +217,7 @@ func _load_design_sprite() -> Texture2D:
 				var atlas = AtlasTexture.new()
 				atlas.atlas = ai_sheet
 				atlas.region = Rect2(0, row * cell_h, cell_w, cell_h)
-				GameLog.debug("SoulUnit: Loaded AI element sprite (element=%s, row=%d)" % [element, row], "Unit")
+				GameLog.debug("SoulUnit: Loaded AI element sprite (element=%s, row=%d)" % [normalized_element, row], "Unit")
 				return atlas
 	# Player units (or AI fallback): try 4-element sprite sheet
 	var element_sheet_path := "res://assets/art/soul_unit_element_sprite_sheet.png"
@@ -206,7 +229,7 @@ func _load_design_sprite() -> Texture2D:
 			var cell_h: int = 270
 			var row: int = 0
 			var col: int = 0
-			match element:
+			match normalized_element:
 				"fire":
 					row = 0
 					col = 0
@@ -226,20 +249,20 @@ func _load_design_sprite() -> Texture2D:
 			var atlas = AtlasTexture.new()
 			atlas.atlas = sheet
 			atlas.region = Rect2(col * cell_w, row * cell_h, cell_w, cell_h)
-			GameLog.debug("SoulUnit: Loaded element sprite (element=%s, row=%d, col=%d)" % [element, row, col], "Unit")
+			GameLog.debug("SoulUnit: Loaded element sprite (element=%s, row=%d, col=%d)" % [normalized_element, row, col], "Unit")
 			return atlas
 	# Fallback to original 2-row sprite sheet
 	var sheet_path := "res://assets/art/soul_unit_sprite_sheet.png"
 	if not ResourceLoader.exists(sheet_path):
-		GameLog.debug("SoulUnit: Design sprite sheet not found, using procedural", "Unit")
+		GameLog.warning("SoulUnit: All design sprite sheets not found, using procedural (element=%s)" % element, "Unit")
 		return null
 	var sheet = load(sheet_path)
 	if sheet == null or not (sheet is Texture2D):
 		GameLog.warning("SoulUnit: Failed to load design sprite sheet", "Unit")
 		return null
-	# Sprite sheet: 1920x1080, 2 rows x 4 cols, each cell ~480x540
+	# Sprite sheet: 1920x1080, 2 rows x 4 cols, each cell ~480x270
 	var cell_w: int = 480
-	var cell_h: int = 540
+	var cell_h: int = 270
 	var row: int = 0 if is_player_controlled else 1
 	var atlas = AtlasTexture.new()
 	atlas.atlas = sheet
