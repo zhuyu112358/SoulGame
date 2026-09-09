@@ -326,6 +326,16 @@
 
 **累计资源**：440个，全部成功导入，0个valid=false。
 
+**系统弹窗UI组件集成**（23:48-23:50生成，已集成）：
+1. achievement_popup_ui.png - 成就弹窗UI
+2. auction_house_popup_ui.png - 拍卖行弹窗UI
+3. battle_pass_popup_ui.png - 战斗通行证弹窗UI
+4. guild_popup_ui.png - 公会弹窗UI
+5. leaderboard_popup_ui.png - 排行榜弹窗UI
+6. statistics_popup_ui.png - 统计弹窗UI
+
+**累计资源**：446个，全部成功导入，0个valid=false。
+
 ## [Bug修复] ArboreusWorldBridge.remove_entity参数类型修复（2026-09-09）
 
 **问题**：SCRIPT ERROR - ArboreusWorld.remove_entity()参数类型Object不兼容int。
