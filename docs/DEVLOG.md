@@ -360,6 +360,16 @@
 
 **累计资源**：462个，全部成功导入，0个valid=false。
 
+**游戏系统弹窗UI组件集成**（00:49生成，已集成）：
+1. custom_game_popup_ui.png - 自定义游戏弹窗UI
+2. matchmaking_popup_ui.png - 匹配弹窗UI
+3. replay_system_popup_ui.png - 回放系统弹窗UI
+4. room_lobby_popup_ui.png - 房间大厅弹窗UI
+5. spectator_mode_popup_ui.png - 观战模式弹窗UI
+6. training_mode_popup_ui.png - 训练模式弹窗UI
+
+**累计资源**：468个，全部成功导入，0个valid=false。
+
 ## [Bug修复] ArboreusWorldBridge.remove_entity参数类型修复（2026-09-09）
 
 **问题**：SCRIPT ERROR - ArboreusWorld.remove_entity()参数类型Object不兼容int。
