@@ -44,6 +44,8 @@ const SoulUnit = preload("res://scripts/game/SoulUnit.gd")
 const Minimap = preload("res://scripts/ui/Minimap.gd")
 
 ## Visual unit nodes
+var _player_visual = null  # Sprite2D proxy (SoulUnit is child of autoload, not in visible scene)
+var _ai_visual = null
 var _player_light = null
 var _ai_light = null
 
@@ -2165,6 +2167,11 @@ func _process(delta: float) -> void:
 		_update_unit_display()
 		return
 	_update_unit_display()
+	# Sync unit visual proxies to logical positions (SoulUnit is child of autoload, not in visible scene)
+	if _player_visual and is_instance_valid(RTSArenaManager.player_unit):
+		_player_visual.position = RTSArenaManager.player_unit.position
+	if _ai_visual and is_instance_valid(RTSArenaManager.ai_unit):
+		_ai_visual.position = RTSArenaManager.ai_unit.position
 	# Sync dynamic lights to unit positions with subtle pulse
 	if _player_light and is_instance_valid(RTSArenaManager.player_unit):
 		_player_light.position = RTSArenaManager.player_unit.position
@@ -2992,8 +2999,21 @@ func _on_battle_time_updated(p_time: float) -> void:
 func _on_unit_spawned(p_unit: SoulUnit, p_is_player: bool) -> void:
 	GameLog.info("RTSArenaController: Unit spawned - %s (player: %s)" % [p_unit.soul_name, str(p_is_player)], "Arena")
 
-	# SoulUnit creates its own sprite visual in init_from_soul() / _create_visual()
-	# No separate ColorRect placeholder needed - it was covering the design sprite
+	# Create visible Sprite2D proxy - SoulUnit is child of autoload RTSArenaManager,
+	# which is NOT in the visible scene tree, so its internal Sprite2D never renders.
+	# We must create a visual proxy here in RTSArenaController (visible scene).
+	var sprite_tex = p_unit._load_design_sprite()
+	var visual = Sprite2D.new()
+	visual.texture = sprite_tex
+	visual.scale = Vector2(0.6, 0.6)
+	visual.centered = true
+	visual.position = p_unit.position
+	visual.z_index = 10  # Render above arena obstacles
+	if p_is_player:
+		_player_visual = visual
+	else:
+		_ai_visual = visual
+	add_child(visual)
 
 	# Create dynamic point light for unit glow
 	var light = PointLight2D.new()
