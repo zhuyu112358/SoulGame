@@ -229,6 +229,16 @@
 
 **累计资源**：377个，全部成功导入，0个valid=false。
 
+**UI样式组件集成**（19:10-19:11生成，已集成）：
+1. battle_effects_ui_styles.png - 战斗效果UI样式
+2. damage_number_ui_styles.png - 伤害数字UI样式
+3. skill_cooldown_ui_styles.png - 技能冷却UI样式
+4. unit_selection_ui_styles.png - 单位选择UI样式
+5. post_processing_ui_styles.png - 后处理UI样式
+6. weather_effects_ui_styles.png - 天气效果UI样式
+
+**累计资源**：383个，全部成功导入，0个valid=false。
+
 ## [Bug修复] ArboreusWorldBridge.remove_entity参数类型修复（2026-09-09）
 
 **问题**：SCRIPT ERROR - ArboreusWorld.remove_entity()参数类型Object不兼容int。
