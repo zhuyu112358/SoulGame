@@ -1,5 +1,22 @@
 ﻿# 战策 Battleplan 开发日志
 
+## [视觉提升P0] PNG资源格式批量修复（2026-09-09）
+
+**重大发现**：assets/art目录下198个PNG文件中，197个实际是JPEG格式（文件头FF D8）但扩展名为.png，导致Godot无法导入，运行时大量"Failed loading resource"错误。
+
+**修复过程**：
+1. 扫描所有PNG文件，检测JPEG伪装（文件头FF D8）
+2. 用System.Drawing批量转换197个文件为真正的PNG格式
+3. 删除所有旧.import文件，用Godot --import重新导入
+4. 验证：198个.import文件全部生成，199个.ctex文件，0个valid=false
+
+**验证结果**：
+- GUI运行：Failed loading resource从几十条降到**0**
+- 战斗流程正常，battle_state 1→3
+- 所有背景图、精灵图、技能图标、UI皮肤现在都能正确加载
+
+**设计需求**：请设计任务检查生成PNG的脚本，确保输出真正的PNG格式，不要用JPEG格式保存为.png扩展名。
+
 ## [视觉提升P0] UI皮肤图集集成完成（2026-09-09）
 
 **已完成**：
