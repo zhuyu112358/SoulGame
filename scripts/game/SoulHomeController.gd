@@ -2,28 +2,36 @@ extends Node2D
 
 ## SoulGrowthData preload (class_name may not be registered in all contexts)
 const SoulGrowthData = preload("res://scripts/game/SoulGrowthData.gd")
+const FurnitureSystem = preload("res://scripts/game/FurnitureSystem.gd")
 
 ## SoulHomeController - Controller for the Soul Home scene
 ##
 ## Manages the soul home environment, soul display, room switching,
-## and basic interactions. This is the M1 foundation - full interaction
-## systems will be built on top of this.
+## and basic interactions. M2.8 upgrade: 8 rooms + furniture customization.
 ##
-## Rooms (M1 implements Main Room only):
-## - main: Daily interaction, communication, customization
-## - training: Skill training (M2)
-## - study: Knowledge transfer, cognitive training (M2)
-## - garden: Emotional interaction, mini-games (M2)
+## Rooms (M2.8 - 8 areas):
+## - main: Main hall, daily interaction
+## - bedroom: Rest and sleep
+## - living: Relaxation and social
+## - kitchen: Cooking and eating
+## - study: Learning and cognitive training
+## - training: Combat training
+## - garden: Emotional interaction and nature
+## - bathroom: Cleaning and relaxation
 
 ## Current room
 var current_room: String = "main"
 
-## Available rooms
+## Available rooms (M2.8 - 8 areas, GDD v2.0 Chapter 8)
 var rooms: Dictionary = {
-	"main": {"name": "Main Room", "unlocked": true, "m1": true},
-	"training": {"name": "Training Room", "unlocked": false, "m1": false},
-	"study": {"name": "Study", "unlocked": false, "m1": false},
-	"garden": {"name": "Garden", "unlocked": false, "m1": false}
+	"main": {"name": "主厅", "unlocked": true, "icon_index": 0, "description": "灵魂之家的中心，日常互动和交流"},
+	"bedroom": {"name": "卧室", "unlocked": true, "icon_index": 1, "description": "休息和睡眠的私密空间"},
+	"living": {"name": "客厅", "unlocked": true, "icon_index": 2, "description": "放松和社交的舒适空间"},
+	"kitchen": {"name": "厨房", "unlocked": true, "icon_index": 3, "description": "烹饪和享用灵魂食物"},
+	"study": {"name": "书房", "unlocked": true, "icon_index": 4, "description": "学习和认知训练的场所"},
+	"training": {"name": "训练场", "unlocked": true, "icon_index": 5, "description": "战斗技能训练场地"},
+	"garden": {"name": "花园", "unlocked": true, "icon_index": 6, "description": "情感互动和自然疗愈"},
+	"bathroom": {"name": "浴室", "unlocked": true, "icon_index": 7, "description": "清洁和放松的空间"}
 }
 
 ## Soul growth data reference
@@ -54,11 +62,15 @@ var home_state: Dictionary = {
 	"total_time": 0.0
 }
 
+## Furniture system (M2.8 - furniture customization)
+var _furniture_system = null
+
 
 func _ready() -> void:
 	GameLog.info("SoulHome: Scene initialized", "SoulHome")
 	_setup_soul_display()
 	_setup_button_hovers()
+	_init_furniture_system()
 	_enter_home()
 	_play_home_ambience()
 
@@ -134,6 +146,88 @@ func _play_home_ambience() -> void:
 		# Play soul home interaction ambience (design task round 25)
 		AudioManager.play_sfx("soul_home_ambience")
 		GameLog.info("SoulHome: Playing home BGM", "SoulHome")
+
+
+## --- Furniture System (M2.8) ---
+
+## Initialize furniture system
+func _init_furniture_system() -> void:
+	_furniture_system = FurnitureSystem.new()
+	_furniture_system.name = "FurnitureSystem"
+	add_child(_furniture_system)
+	_furniture_system.furniture_placed.connect(_on_furniture_placed)
+	_furniture_system.furniture_removed.connect(_on_furniture_removed)
+	GameLog.info("SoulHome: Furniture system initialized", "SoulHome")
+
+
+## Place furniture in current room
+func place_furniture(furniture_id: String, position: Vector2) -> bool:
+	if _furniture_system == null:
+		return false
+	var result = _furniture_system.place_furniture(furniture_id, current_room, position)
+	if result:
+		_spawn_furniture_sprite(furniture_id, position)
+	return result
+
+
+## Remove furniture from current room
+func remove_furniture(furniture_id: String) -> bool:
+	if _furniture_system == null:
+		return false
+	return _furniture_system.remove_furniture(furniture_id, current_room)
+
+
+## Get placed furniture in current room
+func get_placed_furniture() -> Array:
+	if _furniture_system == null:
+		return []
+	return _furniture_system.get_placed_furniture(current_room)
+
+
+## Get furniture system
+func get_furniture_system() -> Node:
+	return _furniture_system
+
+
+## Spawn furniture sprite in the scene
+func _spawn_furniture_sprite(furniture_id: String, position: Vector2) -> void:
+	var furniture = _furniture_system.get_furniture(furniture_id) if _furniture_system else {}
+	if furniture.is_empty():
+		return
+	# Try to load furniture sprite
+	var sprite_path = "res://assets/art/furniture/furniture_%s.png" % furniture_id
+	var texture = load(sprite_path)
+	if texture == null:
+		# Fallback: use colored rectangle
+		var rect := ColorRect.new()
+		rect.size = Vector2(64, 64)
+		rect.color = Color(0.6, 0.5, 0.3, 0.8)
+		rect.position = position - Vector2(32, 32)
+		rect.name = "Furniture_%s" % furniture_id
+		add_child(rect)
+	else:
+		var sprite := Sprite2D.new()
+		sprite.texture = texture
+		sprite.position = position
+		sprite.name = "Furniture_%s" % furniture_id
+		sprite.scale = Vector2(0.5, 0.5)
+		add_child(sprite)
+
+
+## Handle furniture placed
+func _on_furniture_placed(furniture_id: String, room: String, position: Vector2) -> void:
+	var furniture = _furniture_system.get_furniture(furniture_id) if _furniture_system else {}
+	var furniture_name = furniture.get("name", furniture_id)
+	GameLog.info("SoulHome: Placed %s in %s" % [furniture_name, room], "SoulHome")
+
+
+## Handle furniture removed
+func _on_furniture_removed(furniture_id: String, room: String) -> void:
+	GameLog.info("SoulHome: Removed %s from %s" % [furniture_id, room], "SoulHome")
+	# Remove furniture sprite from scene
+	var furniture_node = get_node_or_null("Furniture_%s" % furniture_id)
+	if furniture_node:
+		furniture_node.queue_free()
 
 
 func _process(delta: float) -> void:
