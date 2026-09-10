@@ -25,6 +25,9 @@ const PixelSpriteGenerator = preload("res://scripts/game/PixelSpriteGenerator.gd
 ## Ember soul data bridge (SDK integration - architecture compliant)
 const EmberSoulDataBridge = preload("res://scripts/game/EmberSoulDataBridge.gd")
 
+## Soul personality system (M2.6 personality types)
+const SoulPersonalitySystem = preload("res://scripts/game/SoulPersonalitySystem.gd")
+
 ## Unit state constants
 enum UnitState {
 	IDLE,
@@ -50,6 +53,10 @@ var personality: Dictionary = {
 	"loyalty": 50,         # 忠诚 vs 独立 - higher = more likely to follow player commands
 	"intelligence": 50     # 智力 - higher = better tactical decisions
 }
+
+## Personality type (from SoulPersonalitySystem, affects AI behavior/expressions/dialogue)
+var personality_type: int = 3  # Default: CALM
+var personality_name: String = "冷静"
 
 ## Emotional state (influences decision-making and skill effectiveness)
 ## Design doc: emotion affects skill effects (anger: +20% attack, fear: +20% defense)
@@ -180,6 +187,39 @@ func _ready() -> void:
 		GameLog.warning("SoulUnit: _ready() creating visual without init_from_soul (element=%s, player=%s)" % [element, is_player_controlled], "Unit")
 		_create_visual()
 
+
+## Initialize personality type based on element
+## Uses SoulPersonalitySystem to set default personality and adjust trait values
+func _init_personality_type(p_element: String) -> void:
+	# Get default personality for element
+	var personality_system = SoulPersonalitySystem.new()
+	personality_type = personality_system.get_default_personality_for_element(p_element)
+	personality_name = personality_system.get_personality_name(personality_type)
+
+	# Adjust personality trait values based on personality type
+	var ai_modifiers = personality_system.get_ai_modifiers(personality_type)
+
+	# Map AI modifiers to personality trait values (0-100 scale)
+	if ai_modifiers.has("aggression"):
+		personality["aggression"] = int(clampf(50.0 * ai_modifiers["aggression"], 10.0, 90.0))
+	if ai_modifiers.has("fear"):
+		personality["courage"] = int(clampf(100.0 - 50.0 * ai_modifiers["fear"], 10.0, 90.0))
+	if ai_modifiers.has("item_usage") or ai_modifiers.has("exploration"):
+		var curiosity_mod = ai_modifiers.get("item_usage", 1.0)
+		if ai_modifiers.has("exploration"):
+			curiosity_mod = (curiosity_mod + ai_modifiers["exploration"]) / 2.0
+		personality["curiosity"] = int(clampf(50.0 * curiosity_mod, 10.0, 90.0))
+	if ai_modifiers.has("command_compliance"):
+		personality["loyalty"] = int(clampf(50.0 * ai_modifiers["command_compliance"], 10.0, 90.0))
+	if ai_modifiers.has("decision_quality") or ai_modifiers.has("focus"):
+		var int_mod = ai_modifiers.get("decision_quality", 1.0)
+		if ai_modifiers.has("focus"):
+			int_mod = (int_mod + ai_modifiers["focus"]) / 2.0
+		personality["intelligence"] = int(clampf(50.0 * int_mod, 10.0, 90.0))
+
+	GameLog.info("SoulUnit: %s personality set to %s (aggression:%d, courage:%d, curiosity:%d)" % [
+		soul_name, personality_name, personality["aggression"], personality["courage"], personality["curiosity"]
+	], "Personality")
 
 ## Create visual representation (pixel sprite + name label + HP bar)
 ## Load soul unit sprite from design asset sheet
@@ -448,6 +488,9 @@ func init_from_soul(p_soul_id: String, p_soul_name: String, p_element: String, p
 	# Sync personality/emotion dictionaries to bridge (so existing code works unchanged)
 	personality = _ember_bridge.personality
 	emotion = _ember_bridge.emotion
+
+	# Initialize personality type based on element (from SoulPersonalitySystem)
+	_init_personality_type(p_element)
 
 	_setup_skill_cooldowns()
 	GameLog.info("SoulUnit: %s initialized from soul data (Lvl %d, HP:%d, Ember:%s)" % [

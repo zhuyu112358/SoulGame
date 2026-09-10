@@ -1,5 +1,47 @@
 ﻿# 战策 Battleplan 开发日志
 
+## [M2.6] 灵魂角色系统 - 个性系统（2026-09-11）
+
+**GDD v2.0第6章**：灵魂角色系统 - 个性系统。
+
+**新建文件**：
+- `scripts/game/SoulPersonalitySystem.gd` - 灵魂个性系统
+  - 10种个性类型：勇敢/谨慎/激进/冷静/友善/孤傲/好奇/固执/开朗/严肃
+  - 每种个性有：名称/描述/AI修饰符/表情偏好/对话风格/颜色
+  - AI修饰符：aggression/fear/cooperation/command_compliance/item_usage/trap_avoidance/decision_quality/ally_help/independence/exploration/persistence/morale_boost/focus
+  - 表情偏好：每种个性有不同的表情出现概率
+  - 对话风格：direct/careful/aggressive/calm/friendly/cold/curious/stubborn/cheerful/serious
+  - 元素默认个性映射：火=激进/水=冷静/土=固执/风=好奇/雷=勇敢/冰=孤傲/暗=严肃/光=友善
+  - 随机个性生成
+  - 个性应用到AI控制器
+  - 个性对话前缀获取
+
+**修改文件**：
+- `scripts/game/SoulUnit.gd`
+  - 添加personality_type字段（默认CALM=3）
+  - 添加personality_name字段
+  - 添加SoulPersonalitySystem preload
+  - 添加_init_personality_type(p_element)函数：根据元素设置默认个性，映射AI修饰符到personality字典（aggression/courage/curiosity/loyalty/intelligence）
+  - 在init_from_soul中调用_init_personality_type
+
+**个性类型一览**：
+| 个性 | 元素 | 特点 | AI修饰 |
+|------|------|------|--------|
+| 勇敢 | 雷 | 冲在最前线 | 攻击+30%, 恐惧-50% |
+| 谨慎 | - | 善于防守躲避 | 攻击-30%, 陷阱躲避+50% |
+| 激进 | 火 | 不顾一切进攻 | 攻击+60%, 指令遵从-30% |
+| 冷静 | 水 | 最优决策 | 决策质量+30%, 陷阱躲避+30% |
+| 友善 | 光 | 乐于帮助队友 | 协作+60%, 帮助队友+50% |
+| 孤傲 | 冰 | 独来独往 | 协作-60%, 独立+50% |
+| 好奇 | 风 | 喜欢探索尝试 | 道具使用+60%, 探索+50% |
+| 固执 | 土 | 坚持自己想法 | 指令遵从-50%, 坚持+50% |
+| 开朗 | - | 鼓舞士气 | 协作+30%, 士气提升+50% |
+| 严肃 | 暗 | 认真不苟言笑 | 专注+40%, 指令遵从+20% |
+
+**测试结果**：M2测试 2668 Passed, 0 Failed（全绿，无回归）
+
+---
+
 ## [M2.11] 对战模式 - 随机对战匹配系统（2026-09-11）
 
 **GDD v2.0第11章**：对战模式 - 随机对战匹配。
