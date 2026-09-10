@@ -50,7 +50,7 @@ func _ready() -> void:
 	_setup_button_hover(_next_button)
 
 	# Check if tutorial is active
-	if GameState and GameState.has("tutorial"):
+	if GameState and GameState.has("tutorial", "is_tutorial"):
 		_is_tutorial_active = GameState.get_value("tutorial", "is_tutorial", false)
 		_current_level = GameState.get_value("tutorial", "active_level", -1)
 

@@ -138,14 +138,14 @@ func _connect_signals() -> void:
 
 func _load_selected_souls() -> void:
 	# Load souls selected in soul_select scene via GameState
-	if GameState.has("battle_config"):
-		var config: Dictionary = GameState.get("battle_config")
+	if GameState.has("game", "battle_config"):
+		var config: Dictionary = GameState.get_value("game", "battle_config")
 		if config.has("player_souls"):
 			_selected_souls = config["player_souls"]
 			_update_team_display()
-	elif GameState.has("selected_soul"):
+	elif GameState.has("game", "selected_soul"):
 		# Legacy: single soul from old flow
-		var soul: Dictionary = GameState.get("selected_soul")
+		var soul: Dictionary = GameState.get_value("game", "selected_soul")
 		_selected_souls = [soul]
 		_update_team_display()
 

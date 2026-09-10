@@ -106,7 +106,7 @@ func _find_opponent() -> void:
 
 	# Random opponent level (based on player progress)
 	var player_level = 1
-	if GameState and GameState.has("player"):
+	if GameState and GameState.has("player", "level"):
 		player_level = GameState.get_value("player", "level", 1)
 	var opponent_level = clampi(player_level + randi_range(-1, 2), 1, 20)
 

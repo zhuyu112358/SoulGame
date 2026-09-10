@@ -1,5 +1,44 @@
 ﻿# 战策 Battleplan 开发日志
 
+## [M2.14] Polish测试 - GameState API修复与E2E测试（2026-09-11）
+
+**GDD v2.0第14章**：Polish测试 - 最终测试。
+
+**E2E测试发现**：运行e2e_full_flow_test.gd发现BattleConfig.gd加载失败：
+- `Parse Error: Too few arguments for "has()" call. Expected at least 2 but received 1.`
+- 原因：GameState.has()方法需要2个参数(ns, key)，但代码中只传了1个
+
+**GameState API说明**：
+- `has(ns: String, key: String) -> bool` - 检查命名空间中的键是否存在
+- `get_value(ns: String, key: String, default_value = null)` - 获取值
+- `set_value(ns: String, key: String, value)` - 设置值
+- 命名空间：game, soul, world, ui, session（可动态创建）
+
+**修复的文件**：
+
+| 文件 | 行号 | 修复前 | 修复后 |
+|------|------|--------|--------|
+| BattleConfig.gd | 141 | `GameState.has("battle_config")` | `GameState.has("game", "battle_config")` |
+| BattleConfig.gd | 142 | `GameState.get("battle_config")` | `GameState.get_value("game", "battle_config")` |
+| BattleConfig.gd | 146 | `GameState.has("selected_soul")` | `GameState.has("game", "selected_soul")` |
+| BattleConfig.gd | 148 | `GameState.get("selected_soul")` | `GameState.get_value("game", "selected_soul")` |
+| TutorialOverlay.gd | 53 | `GameState.has("tutorial")` | `GameState.has("tutorial", "is_tutorial")` |
+| MatchmakingSystem.gd | 109 | `GameState.has("player")` | `GameState.has("player", "level")` |
+
+**E2E测试后续发现**：
+- BattleConfig Parse Error已修复，脚本可以正常加载
+- 但存在UI节点引用问题：`Node not found: "CenterContainer/VBoxContainer/BackButton"`
+- _start_button和_back_button为null，导致信号连接失败
+- 原因：BattleConfig场景文件(.tscn)的UI结构与代码期望不匹配
+- 影响：e2e测试无法完成完整流程，但核心战斗逻辑不受影响
+- 优先级：P2（UI集成问题，M2.9 UI系统已通过单元测试验证）
+
+**测试结果**：
+- M2测试：**2955 Passed, 0 Failed**（全绿，无回归，无SCRIPT ERROR）
+- E2E测试：BattleConfig加载成功，但UI节点引用问题待修复
+
+---
+
 ## [M2.14] Polish测试 - 性能优化（2026-09-11）
 
 **GDD v2.0第14章**：Polish测试 - 性能优化。
