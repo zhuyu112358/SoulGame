@@ -1,5 +1,52 @@
 ﻿# 战策 Battleplan 开发日志
 
+## [M2.13] 成就与元游戏 - 收藏系统（2026-09-11）
+
+**GDD v2.0第13章**：成就与元游戏 - 收藏系统。
+
+**新建文件**：
+- `scripts/game/CollectionSystem.gd` - 收藏系统
+  - 收藏分类：道具/概念图/灵魂/陷阱/地图/表情
+  - 17种道具收藏数据（含名称/描述/稀有度）
+  - 14张概念图收藏数据（含名称/描述/分类）
+  - 12种陷阱收藏数据（含名称/描述）
+  - collect_item/unlock_concept_art/discover_trap方法
+  - get_collected_items/get_all_items/get_collected_concept_art/get_all_concept_art/get_discovered_traps/get_all_traps方法
+  - get_collection_progress分类进度 + get_total_progress总进度
+  - get_rarity_color/get_rarity_name（5种稀有度：普通/优秀/稀有/史诗/传说）
+  - 持久化存档：user://collection.cfg
+  - 信号系统：item_collected/concept_art_unlocked/trap_discovered/collection_updated
+
+- `scripts/ui/CollectionUI.gd` - 收藏界面控制器
+  - 标签页切换：道具/概念图/陷阱
+  - 每个分类的收藏网格（5列布局）
+  - 总收藏进度显示（进度条+百分比）
+  - 分类进度显示（x/y）
+  - 已收集显示详情（名称/稀有度/描述/遇到次数）
+  - 未收集显示"???"
+  - 稀有度颜色编码
+  - 返回按钮+悬停效果
+
+- `scenes/collection.tscn` - 收藏界面场景
+  - 深紫底色+金色标题
+  - 顶部总进度栏（标签+进度条）
+  - 中间TabContainer三标签页
+  - 每个标签页含进度标签+滚动区域+网格
+  - 底部返回按钮
+
+**道具稀有度**：
+| 稀有度 | 颜色 | 数量 |
+|--------|------|------|
+| 普通 | 灰色 | 2 |
+| 优秀 | 绿色 | 5 |
+| 稀有 | 蓝色 | 6 |
+| 史诗 | 紫色 | 3 |
+| 传说 | 金色 | 1 |
+
+**测试结果**：M2测试 2668 Passed, 0 Failed（全绿，无回归）
+
+---
+
 ## [M2.11] 对战模式 - 好友系统框架（2026-09-11）
 
 **GDD v2.0第11章**：对战模式 - 好友系统框架。

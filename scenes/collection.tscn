@@ -1,0 +1,176 @@
+[gd_scene load_steps=2 format=3 uid="uid://battleplan_collection"]
+
+[ext_resource type="Script" path="res://scripts/ui/CollectionUI.gd" id="1_collection"]
+
+[node name="Collection" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_collection")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.1, 0.08, 0.18, 1)
+
+[node name="TopBar" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 70.0
+grow_horizontal = 2
+
+[node name="TitleLabel" type="Label" parent="TopBar"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 10.0
+offset_right = 200.0
+offset_bottom = 40.0
+text = "收藏"
+theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(0.85, 0.65, 0.3, 1)
+
+[node name="TotalProgressLabel" type="Label" parent="TopBar"]
+layout_mode = 0
+offset_left = 400.0
+offset_top = 15.0
+offset_right = 800.0
+offset_bottom = 35.0
+text = "总收藏进度: 0/0 (0%)"
+theme_override_font_sizes/font_size = 16
+horizontal_alignment = 1
+
+[node name="TotalProgressBar" type="ProgressBar" parent="TopBar"]
+layout_mode = 0
+offset_left = 400.0
+offset_top = 40.0
+offset_right = 800.0
+offset_bottom = 58.0
+value = 0.0
+
+[node name="Main" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 80.0
+offset_bottom = -70.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TabContainer" type="TabContainer" parent="Main"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 14
+
+[node name="Items" type="Control" parent="Main/TabContainer"]
+
+[node name="ProgressLabel" type="Label" parent="Main/TabContainer/Items"]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 5.0
+offset_right = 300.0
+offset_bottom = 25.0
+text = "道具: 0/17"
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.85, 0.65, 0.3, 1)
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Main/TabContainer/Items"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 35.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ItemGrid" type="GridContainer" parent="Main/TabContainer/Items/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+columns = 5
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 10
+
+[node name="ConceptArt" type="Control" parent="Main/TabContainer"]
+
+[node name="ProgressLabel" type="Label" parent="Main/TabContainer/ConceptArt"]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 5.0
+offset_right = 300.0
+offset_bottom = 25.0
+text = "概念图: 0/14"
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.85, 0.65, 0.3, 1)
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Main/TabContainer/ConceptArt"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 35.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ArtGrid" type="GridContainer" parent="Main/TabContainer/ConceptArt/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+columns = 5
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 10
+
+[node name="Traps" type="Control" parent="Main/TabContainer"]
+
+[node name="ProgressLabel" type="Label" parent="Main/TabContainer/Traps"]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 5.0
+offset_right = 300.0
+offset_bottom = 25.0
+text = "陷阱: 0/12"
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.85, 0.65, 0.3, 1)
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Main/TabContainer/Traps"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 35.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TrapGrid" type="GridContainer" parent="Main/TabContainer/Traps/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+columns = 5
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 10
+
+[node name="BottomBar" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -60.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="BackButton" type="Button" parent="BottomBar"]
+layout_mode = 0
+offset_left = 1100.0
+offset_top = 12.0
+offset_right = 1240.0
+offset_bottom = 48.0
+text = "返回"
+theme_override_font_sizes/font_size = 14
