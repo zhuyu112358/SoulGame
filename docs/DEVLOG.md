@@ -1,5 +1,22 @@
 ﻿# 战策 Battleplan 开发日志
 
+## [M2.14] Polish测试 - AudioManager has_sound方法添加（2026-09-11）
+
+**GDD v2.0第14章**：Polish测试 - Bug修复。
+
+**修复内容**：
+- 在AudioManager.gd中添加`has_sound(p_sound_name: String) -> bool`方法
+- 检查_sound_paths字典中是否存在指定音效
+- 测试之前因AudioManager缺少has_sound方法而跳过29个测试
+
+**影响**：
+- M2测试从2884增加到2913（+29测试），全部通过
+- has_sound相关SCRIPT ERROR从4个降到0个
+
+**测试结果**：M2测试 2913 Passed, 0 Failed（全绿，+29测试）
+
+---
+
 ## [M2.14] Polish测试 - RTSArenaController Parse Error修复（2026-09-11）
 
 **GDD v2.0第14章**：Polish测试 - Bug修复。

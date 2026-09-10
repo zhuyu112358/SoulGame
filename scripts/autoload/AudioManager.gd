@@ -451,6 +451,11 @@ func get_available_sounds() -> Array:
 	return _sound_paths.keys()
 
 
+## Check if a sound exists
+func has_sound(p_sound_name: String) -> bool:
+	return _sound_paths.has(p_sound_name)
+
+
 ## Get audio manager info
 func get_info() -> Dictionary:
 	return {
