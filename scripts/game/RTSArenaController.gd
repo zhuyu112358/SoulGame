@@ -2005,6 +2005,22 @@ func _apply_skill_icons() -> void:
 		button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		button.text = ""  # Clear text, icon only
 		button.expand_icon = true
+		# Set tooltip with skill name and energy cost (GDD v2.0: player skill release)
+		var skill_names := {
+			"heavy_strike": "重击",
+			"quick_strike": "快击",
+			"heal": "治疗",
+			"defend": "防御"
+		}
+		var skill_costs := {
+			"heavy_strike": 15,
+			"quick_strike": 8,
+			"heal": 20,
+			"defend": 12
+		}
+		var s_name = skill_names.get(skill_name, skill_name)
+		var s_cost = skill_costs.get(skill_name, 0)
+		button.tooltip_text = "%s (能量: %d)" % [s_name, s_cost]
 		GameLog.debug("RTSArena: Applied icon for %s (idx=%d)" % [skill_name, idx], "UI")
 
 
@@ -3284,36 +3300,77 @@ func _add_log(p_message: String) -> void:
 
 ## Skill button handlers
 func _on_heavy_strike_pressed() -> void:
-	RTSArenaManager.player_use_skill("heavy_strike")
-	if RTSArenaManager.player_unit:
-		_spawn_skill_particle("heavy_strike", RTSArenaManager.player_unit.position)
-	_trigger_chromatic_aberration(12.0, 0.35)
-	if AudioManager:
-		AudioManager.play_sfx("skill_rock")
+	var success = RTSArenaManager.player_use_skill("heavy_strike")
+	if success:
+		if RTSArenaManager.player_unit:
+			_spawn_skill_particle("heavy_strike", RTSArenaManager.player_unit.position)
+		_trigger_chromatic_aberration(12.0, 0.35)
+		if AudioManager:
+			AudioManager.play_sfx("skill_rock")
+	else:
+		_show_skill_error("重击")
 
 func _on_quick_strike_pressed() -> void:
-	RTSArenaManager.player_use_skill("quick_strike")
-	if RTSArenaManager.player_unit:
-		_spawn_skill_particle("quick_strike", RTSArenaManager.player_unit.position)
-	_trigger_chromatic_aberration(8.0, 0.25)
-	if AudioManager:
-		AudioManager.play_sfx("skill_windblade")
+	var success = RTSArenaManager.player_use_skill("quick_strike")
+	if success:
+		if RTSArenaManager.player_unit:
+			_spawn_skill_particle("quick_strike", RTSArenaManager.player_unit.position)
+		_trigger_chromatic_aberration(8.0, 0.25)
+		if AudioManager:
+			AudioManager.play_sfx("skill_windblade")
+	else:
+		_show_skill_error("快击")
 
 func _on_heal_pressed() -> void:
-	RTSArenaManager.player_use_skill("heal")
-	if RTSArenaManager.player_unit:
-		_spawn_skill_particle("heal", RTSArenaManager.player_unit.position)
-	_trigger_chromatic_aberration(5.0, 0.2)
-	if AudioManager:
-		AudioManager.play_sfx("skill_heal")
+	var success = RTSArenaManager.player_use_skill("heal")
+	if success:
+		if RTSArenaManager.player_unit:
+			_spawn_skill_particle("heal", RTSArenaManager.player_unit.position)
+		_trigger_chromatic_aberration(5.0, 0.2)
+		if AudioManager:
+			AudioManager.play_sfx("skill_heal")
+	else:
+		_show_skill_error("治疗")
 
 func _on_defend_pressed() -> void:
-	RTSArenaManager.player_use_skill("defend")
-	if RTSArenaManager.player_unit:
-		_spawn_skill_particle("defend", RTSArenaManager.player_unit.position)
-	_trigger_chromatic_aberration(6.0, 0.2)
+	var success = RTSArenaManager.player_use_skill("defend")
+	if success:
+		if RTSArenaManager.player_unit:
+			_spawn_skill_particle("defend", RTSArenaManager.player_unit.position)
+		_trigger_chromatic_aberration(6.0, 0.2)
+		if AudioManager:
+			AudioManager.play_sfx("skill_defend")
+	else:
+		_show_skill_error("防御")
+
+
+## Show skill release error (on cooldown or not enough energy)
+func _show_skill_error(skill_name: String) -> void:
+	if RTSArenaManager.player_unit == null:
+		return
+	var cooldown = RTSArenaManager.player_unit.skill_cooldowns.get(skill_name.to_lower(), 0)
+	var energy = RTSArenaManager.player_unit.current_energy
+	var reason = ""
+	if cooldown > 0:
+		reason = "冷却中 (%.1fs)" % cooldown
+	elif energy < 10:
+		reason = "能量不足"
+	else:
+		reason = "无法释放"
+	# Show error message in battle log
+	if battle_log:
+		battle_log.text += "\n[技能] %s %s" % [skill_name, reason]
+	# Play error sound
 	if AudioManager:
-		AudioManager.play_sfx("skill_defend")
+		AudioManager.play_sfx("error")
+	# Flash skill button red
+	var skill_key = skill_name.to_lower()
+	if skill_buttons.has(skill_key) and skill_buttons[skill_key]:
+		var btn = skill_buttons[skill_key]
+		btn.modulate = Color(1.5, 0.5, 0.5)
+		await get_tree().create_timer(0.2).timeout
+		if is_instance_valid(btn):
+			btn.modulate = Color(1, 1, 1)
 
 
 ## Initialize tactical command system (GDD v2.0 Chapter 2.1.1)
