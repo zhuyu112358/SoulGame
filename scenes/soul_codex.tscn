@@ -1,0 +1,150 @@
+[gd_scene load_steps=2 format=3 uid="uid://soul_codex_scene"]
+
+[ext_resource type="Script" path="res://scripts/ui/SoulCodexUI.gd" id="1_codex"]
+
+[node name="SoulCodexUI" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_codex")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.08, 0.06, 0.12, 1)
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 30
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 30
+
+[node name="VBox" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="Header" type="VBoxContainer" parent="MarginContainer/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TitleLabel" type="Label" parent="MarginContainer/VBox/Header"]
+layout_mode = 2
+text = "灵魂图鉴"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 32
+theme_override_colors/font_color = Color(0.85, 0.7, 0.35, 1)
+
+[node name="ProgressLabel" type="Label" parent="MarginContainer/VBox/Header"]
+layout_mode = 2
+text = "图鉴进度: 1/8 (12%)"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 1)
+
+[node name="ProgressBar" type="ProgressBar" parent="MarginContainer/VBox/Header"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 12)
+value = 12.0
+
+[node name="Body" type="HBoxContainer" parent="MarginContainer/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 20
+
+[node name="SoulList" type="Panel" parent="MarginContainer/VBox/Body"]
+layout_mode = 2
+custom_minimum_size = Vector2(280, 0)
+size_flags_vertical = 3
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBox/Body/SoulList"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
+
+[node name="VBox" type="VBoxContainer" parent="MarginContainer/VBox/Body/SoulList/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="DetailPanel" type="Panel" parent="MarginContainer/VBox/Body"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="VBox" type="VBoxContainer" parent="MarginContainer/VBox/Body/DetailPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 15.0
+offset_right = -20.0
+offset_bottom = -15.0
+theme_override_constants/separation = 10
+
+[node name="NameLabel" type="Label" parent="MarginContainer/VBox/Body/DetailPanel/VBox"]
+layout_mode = 2
+text = "灵魂名称"
+theme_override_font_sizes/font_size = 24
+
+[node name="RarityLabel" type="Label" parent="MarginContainer/VBox/Body/DetailPanel/VBox"]
+layout_mode = 2
+text = "稀有度: 普通"
+theme_override_font_sizes/font_size = 14
+
+[node name="ElementLabel" type="Label" parent="MarginContainer/VBox/Body/DetailPanel/VBox"]
+layout_mode = 2
+text = "元素: 火"
+theme_override_font_sizes/font_size = 14
+
+[node name="PersonalityLabel" type="Label" parent="MarginContainer/VBox/Body/DetailPanel/VBox"]
+layout_mode = 2
+text = "个性: 激进"
+theme_override_font_sizes/font_size = 14
+
+[node name="DescriptionLabel" type="Label" parent="MarginContainer/VBox/Body/DetailPanel/VBox"]
+layout_mode = 2
+text = "灵魂描述..."
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 13
+
+[node name="StatsLabel" type="Label" parent="MarginContainer/VBox/Body/DetailPanel/VBox"]
+layout_mode = 2
+text = "基础属性: ..."
+theme_override_font_sizes/font_size = 13
+
+[node name="SkillsLabel" type="Label" parent="MarginContainer/VBox/Body/DetailPanel/VBox"]
+layout_mode = 2
+text = "技能: ..."
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 13
+
+[node name="LoreLabel" type="Label" parent="MarginContainer/VBox/Body/DetailPanel/VBox"]
+layout_mode = 2
+text = "背景故事: ..."
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 1)
+
+[node name="Footer" type="HBoxContainer" parent="MarginContainer/VBox"]
+layout_mode = 2
+alignment = 1
+
+[node name="BackButton" type="Button" parent="MarginContainer/VBox/Footer"]
+layout_mode = 2
+custom_minimum_size = Vector2(160, 44)
+text = "返回主菜单"
