@@ -50,6 +50,7 @@ const AchievementSystem = preload("res://scripts/game/AchievementSystem.gd")
 const TrapSystem = preload("res://scripts/game/TrapSystem.gd")
 const SoulUpgradeSystem = preload("res://scripts/game/SoulUpgradeSystem.gd")
 const IntelligenceUpgradeSystem = preload("res://scripts/game/IntelligenceUpgradeSystem.gd")
+const TrainingBattleSystem = preload("res://scripts/game/TrainingBattleSystem.gd")
 
 ## Visual unit nodes
 var _player_visual = null  # Sprite2D proxy (SoulUnit is child of autoload, not in visible scene)
@@ -2620,6 +2621,8 @@ func _on_battle_finished(p_result: String, p_winner_id: String, p_loser_id: Stri
 	_award_soul_experience(player_won, battle_time)
 	# Award cognitive experience (intelligence upgrade)
 	_award_cognitive_experience(player_won, battle_time)
+	# Record training battle statistics (M2.11 Battle Modes)
+	_record_training_battle(player_won, battle_time)
 	# Trigger victory particles if player won
 	if p_result == "player_win" and RTSArenaManager.player_unit:
 		_spawn_victory_particles(RTSArenaManager.player_unit.position)
@@ -2687,6 +2690,27 @@ func _on_battle_finished(p_result: String, p_winner_id: String, p_loser_id: Stri
 	_show_result_modal(p_result, result_text, result_color, exp_gained, stats, battle_stats)
 
 	GameLog.info("RTSArenaController: Battle finished - %s, EXP: +%d" % [p_result, exp_gained], "Arena")
+
+
+## Record training battle statistics (M2.11 Battle Modes)
+func _record_training_battle(p_won: bool, p_battle_time: float) -> void:
+	var training_system = TrainingBattleSystem.new()
+	training_system.load_stats()
+
+	# Get difficulty from battle config (default: normal)
+	var difficulty = "normal"
+	if GameState and GameState.has("battle") and GameState.get_value("battle", "difficulty", ""):
+		difficulty = GameState.get_value("battle", "difficulty", "normal")
+
+	# Get soul info
+	var player_soul = {}
+	var ai_soul = {}
+	if GameState and GameState.has("battle"):
+		player_soul = GameState.get_value("battle", "player_soul", {})
+		ai_soul = GameState.get_value("battle", "ai_soul", {})
+
+	training_system.record_battle_result(p_won, difficulty, p_battle_time, player_soul, ai_soul)
+	training_system.queue_free()
 
 
 ## Play full-screen battle end effect (victory flash / defeat darken)
