@@ -1,5 +1,24 @@
 ﻿# 战策 Battleplan 开发日志
 
+## [M2.14] Polish测试 - 伤害飘字单标签兼容接口（2026-09-11）
+
+**GDD v2.0第14章**：Polish测试 - Bug修复。
+
+**修复内容**：
+- RTSArenaController已有多标签伤害飘字系统（_damage_labels数组），但测试期望单标签接口
+- 添加单标签兼容属性：_damage_label(Label)/_damage_timer(float)/_damage_active(bool)
+- 修改_setup_damage_label()同时创建单标签_damage_label
+- 修改_update_damage_display(delta)同时处理单标签timer递减和隐藏
+- 添加_show_damage(amount)兼容方法，设置_damage_active/_damage_timer/_damage_label.text/visible
+
+**影响**：
+- M2测试从2913增加到2930（+17测试），全部通过
+- 伤害飘字相关SCRIPT ERROR全部消除
+
+**测试结果**：M2测试 2930 Passed, 0 Failed（全绿，+17测试）
+
+---
+
 ## [M2.14] Polish测试 - AudioManager has_sound方法添加（2026-09-11）
 
 **GDD v2.0第14章**：Polish测试 - Bug修复。

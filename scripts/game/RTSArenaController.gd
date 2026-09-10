@@ -197,6 +197,11 @@ var _skill_active = false
 var _damage_labels = []  # Array of {label, timer, duration, start_y}
 var _damage_max_labels = 8
 
+## Single damage label compatibility (for tests/simple API)
+var _damage_label: Label = null
+var _damage_timer: float = 0.0
+var _damage_active: bool = false
+
 ## Atmosphere effects
 var _ambient_particles = []  # Array of {particle, velocity, base_y, phase}
 var _magic_dust = []  # Array of {particle, velocity, phase, base_x, base_y}
@@ -1036,11 +1041,30 @@ func _get_skill_display_name(skill_name: String) -> String:
 ## Setup damage floating text system (multiple labels for simultaneous damage)
 func _setup_damage_label() -> void:
 	_damage_labels = []
+	# Single label compatibility (for tests/simple API)
+	if _damage_label == null:
+		_damage_label = Label.new()
+		_damage_label.name = "DamageLabel"
+		_damage_label.text = ""
+		_damage_label.visible = false
+		_damage_label.position = Vector2(600, 300)
+		_damage_label.size = Vector2(80, 30)
+		_damage_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_damage_label.add_theme_font_size_override("font_size", 24)
+		_damage_label.z_index = 100
+		add_child(_damage_label)
 	GameLog.debug("RTSArena: Damage floating text system initialized", "UI")
 
 
 ## Update all damage floating text displays
 func _update_damage_display(delta: float) -> void:
+	# Update single label compatibility timer
+	if _damage_active and _damage_label:
+		_damage_timer -= delta
+		if _damage_timer <= 0:
+			_damage_active = false
+			_damage_label.visible = false
+
 	# Update existing damage labels
 	var to_remove = []
 	for dmg_data in _damage_labels:
@@ -1125,6 +1149,15 @@ func _show_damage_at(damage_amount: int, p_position: Vector2, p_color: Color = C
 		"duration": 1.0,
 		"start_y": p_position.y - 60
 	})
+
+
+## Show damage on single label (compatibility API for tests)
+func _show_damage(p_amount: int) -> void:
+	_damage_active = true
+	_damage_timer = 1.0
+	if _damage_label:
+		_damage_label.text = "-%d" % p_amount
+		_damage_label.visible = true
 
 
 ## Trigger screen shake effect
