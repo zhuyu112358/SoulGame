@@ -3,6 +3,7 @@ extends Node2D
 ## SoulGrowthData preload (class_name may not be registered in all contexts)
 const SoulGrowthData = preload("res://scripts/game/SoulGrowthData.gd")
 const FurnitureSystem = preload("res://scripts/game/FurnitureSystem.gd")
+const TrainingSystem = preload("res://scripts/game/TrainingSystem.gd")
 
 ## SoulHomeController - Controller for the Soul Home scene
 ##
@@ -65,12 +66,16 @@ var home_state: Dictionary = {
 ## Furniture system (M2.8 - furniture customization)
 var _furniture_system = null
 
+## Training system (M2.8 - training ground)
+var _training_system = null
+
 
 func _ready() -> void:
 	GameLog.info("SoulHome: Scene initialized", "SoulHome")
 	_setup_soul_display()
 	_setup_button_hovers()
 	_init_furniture_system()
+	_init_training_system()
 	_enter_home()
 	_play_home_ambience()
 
@@ -230,11 +235,100 @@ func _on_furniture_removed(furniture_id: String, room: String) -> void:
 		furniture_node.queue_free()
 
 
+## --- Training System (M2.8) ---
+
+## Initialize training system
+func _init_training_system() -> void:
+	_training_system = TrainingSystem.new()
+	_training_system.name = "TrainingSystem"
+	add_child(_training_system)
+	_training_system.training_started.connect(_on_training_started)
+	_training_system.training_completed.connect(_on_training_completed)
+	GameLog.info("SoulHome: Training system initialized", "SoulHome")
+
+
+## Start a training session
+func start_training(training_type: String) -> bool:
+	if _training_system == null:
+		return false
+	if current_room != "training":
+		GameLog.warning("SoulHome: Must be in training room to train", "SoulHome")
+		return false
+	return _training_system.start_training(training_type)
+
+
+## Cancel current training
+func cancel_training() -> void:
+	if _training_system:
+		_training_system.cancel_training()
+
+
+## Get current training type
+func get_current_training() -> String:
+	if _training_system == null:
+		return ""
+	return _training_system.get_current_training()
+
+
+## Get training progress (0.0 - 1.0)
+func get_training_progress() -> float:
+	if _training_system == null:
+		return 0.0
+	return _training_system.get_training_progress()
+
+
+## Get time remaining for current training
+func get_training_time_remaining() -> float:
+	if _training_system == null:
+		return 0.0
+	return _training_system.get_time_remaining()
+
+
+## Is training active
+func is_training_active() -> bool:
+	if _training_system == null:
+		return false
+	return _training_system.is_training_active()
+
+
+## Get training system
+func get_training_system() -> Node:
+	return _training_system
+
+
+## Handle training started
+func _on_training_started(training_type: String) -> void:
+	var training = _training_system.get_training_type(training_type) if _training_system else {}
+	var training_name = training.get("name", training_type)
+	GameLog.info("SoulHome: Started %s" % training_name, "SoulHome")
+	if AudioManager:
+		AudioManager.play_sfx("training_start")
+
+
+## Handle training completed
+func _on_training_completed(training_type: String, rewards: Dictionary) -> void:
+	var training = _training_system.get_training_type(training_type) if _training_system else {}
+	var training_name = training.get("name", training_type)
+	var exp = rewards.get("exp", 0)
+	GameLog.info("SoulHome: Completed %s (+%d exp)" % [training_name, exp], "SoulHome")
+	# Show training completion notification
+	if AudioManager:
+		AudioManager.play_sfx("training_complete")
+	# Apply stat bonuses to soul growth if available
+	if soul_growth:
+		var stat_boost = rewards.get("stat_boost", {})
+		for stat in stat_boost.keys():
+			GameLog.info("SoulHome: +%.2f %s from training" % [stat_boost[stat], stat], "SoulHome")
+
+
 func _process(delta: float) -> void:
 	if _interaction_cooldown > 0:
 		_interaction_cooldown -= delta
 	if _room_switch_cooldown > 0:
 		_room_switch_cooldown -= delta
+	# Update training system cooldowns
+	if _training_system:
+		_training_system.update_cooldowns(delta)
 
 	# Track home time
 	if home_state["entered"]:
