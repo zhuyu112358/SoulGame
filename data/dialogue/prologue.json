@@ -1,0 +1,117 @@
+{
+  "id": "prologue",
+  "title": "序章：灵界的呼唤",
+  "speaker_default": "旁白",
+  "dialogues": [
+    {
+      "id": "p001",
+      "speaker": "旁白",
+      "speaker_element": "light",
+      "text": "在人类世界之外，存在着一个由灵质构成的维度——灵界。",
+      "type": "narration"
+    },
+    {
+      "id": "p002",
+      "speaker": "旁白",
+      "speaker_element": "light",
+      "text": "灵界是灵魂存在和生活的世界。这里有城市、村庄、自然景观，还有灵魂们热爱的竞技活动。",
+      "type": "narration"
+    },
+    {
+      "id": "p003",
+      "speaker": "旁白",
+      "speaker_element": "light",
+      "text": "在灵界，灵魂们拥有自己的意识、情感和个性。他们学习、成长、交友，就像人类世界一样。",
+      "type": "narration"
+    },
+    {
+      "id": "p004",
+      "speaker": "神秘声音",
+      "speaker_element": "dark",
+      "text": "你听到了吗？那是灵界的呼唤……",
+      "type": "dialogue"
+    },
+    {
+      "id": "p005",
+      "speaker": "神秘声音",
+      "speaker_element": "dark",
+      "text": "你的灵魂被选中了。从今天起，你将成为一名灵魂指挥官。",
+      "type": "dialogue"
+    },
+    {
+      "id": "p006",
+      "speaker": "玩家",
+      "speaker_element": "light",
+      "text": "灵魂指挥官？那是什么？",
+      "type": "dialogue"
+    },
+    {
+      "id": "p007",
+      "speaker": "神秘声音",
+      "speaker_element": "dark",
+      "text": "灵魂指挥官是与灵魂缔结契约、带领他们在竞技场中战斗的存在。",
+      "type": "dialogue"
+    },
+    {
+      "id": "p008",
+      "speaker": "神秘声音",
+      "speaker_element": "dark",
+      "text": "你不需要直接操控他们——灵魂们拥有自己的意志，会自主战斗。你只需要给予战术指令，引导他们走向胜利。",
+      "type": "dialogue"
+    },
+    {
+      "id": "p009",
+      "speaker": "玩家",
+      "speaker_element": "light",
+      "text": "听起来……很有趣。我该怎么做？",
+      "type": "dialogue"
+    },
+    {
+      "id": "p010",
+      "speaker": "神秘声音",
+      "speaker_element": "dark",
+      "text": "首先，你需要遇见你的第一个灵魂伙伴。然后，学习如何在竞技场中战斗。",
+      "type": "dialogue"
+    },
+    {
+      "id": "p011",
+      "speaker": "神秘声音",
+      "speaker_element": "dark",
+      "text": "灵界有八种元素的灵魂：火、水、土、风、雷、冰、暗、光。每一种都有独特的性格和能力。",
+      "type": "dialogue"
+    },
+    {
+      "id": "p012",
+      "speaker": "神秘声音",
+      "speaker_element": "dark",
+      "text": "你将与他们建立深厚的羁绊，看着他们成长、进化，变得越来越聪明。",
+      "type": "dialogue"
+    },
+    {
+      "id": "p013",
+      "speaker": "旁白",
+      "speaker_element": "light",
+      "text": "一道光芒闪过，你发现自己站在了一个陌生而美丽的世界中。",
+      "type": "narration"
+    },
+    {
+      "id": "p014",
+      "speaker": "旁白",
+      "speaker_element": "light",
+      "text": "这里是灵界的尘世——大多数灵魂生活的地方。远处，你看到了一座温馨的小屋，那将是你和灵魂伙伴的家。",
+      "type": "narration"
+    },
+    {
+      "id": "p015",
+      "speaker": "神秘声音",
+      "speaker_element": "dark",
+      "text": "欢迎来到灵界，指挥官。你的冒险，现在开始。",
+      "type": "dialogue"
+    }
+  ],
+  "options": [],
+  "events": [
+    {"trigger": "end", "action": "unlock_chapter", "value": "chapter1"},
+    {"trigger": "end", "action": "show_main_menu"}
+  ]
+}

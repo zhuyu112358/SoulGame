@@ -1,0 +1,160 @@
+{
+  "id": "chapter1",
+  "title": "第一章：初遇灵魂",
+  "speaker_default": "旁白",
+  "dialogues": [
+    {
+      "id": "c1_001",
+      "speaker": "旁白",
+      "speaker_element": "light",
+      "text": "你走进了那座温馨的小屋。屋内陈设简单但温暖，墙上挂着金色的装饰，壁炉里跳动着柔和的火焰。",
+      "type": "narration"
+    },
+    {
+      "id": "c1_002",
+      "speaker": "旁白",
+      "speaker_element": "light",
+      "text": "突然，一个小小的身影从角落里探出头来。那是一个灵魂——身体散发着柔和的光芒。",
+      "type": "narration"
+    },
+    {
+      "id": "c1_003",
+      "speaker": "火灵·小焰",
+      "speaker_element": "fire",
+      "text": "你、你是谁？为什么会在这里？",
+      "type": "dialogue"
+    },
+    {
+      "id": "c1_004",
+      "speaker": "玩家",
+      "speaker_element": "light",
+      "text": "我是被召唤来的灵魂指挥官。你是？",
+      "type": "dialogue"
+    },
+    {
+      "id": "c1_005",
+      "speaker": "火灵·小焰",
+      "speaker_element": "fire",
+      "text": "灵魂指挥官？！真的吗？我叫小焰，是火元素的灵魂！",
+      "type": "dialogue"
+    },
+    {
+      "id": "c1_006",
+      "speaker": "火灵·小焰",
+      "speaker_element": "fire",
+      "text": "我一直在等待我的指挥官！我梦想着能在竞技场中战斗，成为最强的灵魂！",
+      "type": "dialogue"
+    },
+    {
+      "id": "c1_007",
+      "speaker": "玩家",
+      "speaker_element": "light",
+      "text": "竞技场？那是什么地方？",
+      "type": "dialogue"
+    },
+    {
+      "id": "c1_008",
+      "speaker": "火灵·小焰",
+      "speaker_element": "fire",
+      "text": "竞技场是灵魂们进行对战的特殊维度！在那里，灵魂们展示自己的力量和智慧。",
+      "type": "dialogue"
+    },
+    {
+      "id": "c1_009",
+      "speaker": "火灵·小焰",
+      "speaker_element": "fire",
+      "text": "每场战斗有4个灵魂对4个灵魂，持续3-5分钟。指挥官给予战术指令，灵魂们自主战斗！",
+      "type": "dialogue"
+    },
+    {
+      "id": "c1_010",
+      "speaker": "玩家",
+      "speaker_element": "light",
+      "text": "听起来很有意思。小焰，你愿意和我缔结契约吗？",
+      "type": "dialogue"
+    },
+    {
+      "id": "c1_011",
+      "speaker": "火灵·小焰",
+      "speaker_element": "fire",
+      "text": "当然愿意！从今天起，我就是你的灵魂伙伴了！我们一起加油！",
+      "type": "dialogue"
+    },
+    {
+      "id": "c1_012",
+      "speaker": "旁白",
+      "speaker_element": "light",
+      "text": "一道金色的光芒连接了你和小焰。灵魂契约成立了。",
+      "type": "narration"
+    },
+    {
+      "id": "c1_013",
+      "speaker": "火灵·小焰",
+      "speaker_element": "fire",
+      "text": "指挥官，让我给你介绍一下战斗的基本知识吧！",
+      "type": "dialogue"
+    },
+    {
+      "id": "c1_014",
+      "speaker": "火灵·小焰",
+      "speaker_element": "fire",
+      "text": "在战斗中，我会自主移动和攻击。你可以使用6种战术指令来引导我：进攻、防守、集火、分散、跟随、撤退。",
+      "type": "dialogue"
+    },
+    {
+      "id": "c1_015",
+      "speaker": "火灵·小焰",
+      "speaker_element": "fire",
+      "text": "你还可以帮我释放技能！每个灵魂有4个技能，需要消耗能量。",
+      "type": "dialogue"
+    },
+    {
+      "id": "c1_016",
+      "speaker": "火灵·小焰",
+      "speaker_element": "fire",
+      "text": "战场上还有道具和陷阱。道具可以增强我们，陷阱要小心躲避！",
+      "type": "dialogue"
+    },
+    {
+      "id": "c1_017",
+      "speaker": "玩家",
+      "speaker_element": "light",
+      "text": "我明白了。那我们什么时候开始第一场战斗？",
+      "type": "dialogue"
+    },
+    {
+      "id": "c1_018",
+      "speaker": "火灵·小焰",
+      "speaker_element": "fire",
+      "text": "随时可以！不过我建议你先去教学模式学习一下基本操作。",
+      "type": "dialogue"
+    },
+    {
+      "id": "c1_019",
+      "speaker": "火灵·小焰",
+      "speaker_element": "fire",
+      "text": "教学模式有6个关卡，从基础操作到综合实战，全部学完你就是合格的指挥官了！",
+      "type": "dialogue"
+    },
+    {
+      "id": "c1_020",
+      "speaker": "旁白",
+      "speaker_element": "light",
+      "text": "就这样，你和小焰的冒险开始了。未来，你还会遇到更多灵魂伙伴，一起在竞技场中创造传奇。",
+      "type": "narration"
+    },
+    {
+      "id": "c1_021",
+      "speaker": "火灵·小焰",
+      "speaker_element": "fire",
+      "text": "指挥官，让我们一起加油吧！目标是——竞技场冠军！",
+      "type": "dialogue"
+    }
+  ],
+  "options": [],
+  "events": [
+    {"trigger": "end", "action": "unlock_soul", "value": "fire"},
+    {"trigger": "end", "action": "unlock_chapter", "value": "chapter2"},
+    {"trigger": "end", "action": "show_main_menu"}
+  ]
+}

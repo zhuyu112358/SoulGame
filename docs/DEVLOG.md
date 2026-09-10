@@ -1,5 +1,46 @@
 ﻿# 战策 Battleplan 开发日志
 
+## [M2.10] 教学与剧情 - 序章+第一章剧情（2026-09-10）
+
+**GDD v2.0第15章**：教学和剧情模式 - 序章+第一章剧情。
+
+**新建文件**：
+- `scripts/game/StorySystem.gd` - 剧情系统
+  - 章节管理：序章/第一章/第二章（3章定义，含名称/描述/解锁状态/完成状态）
+  - 剧情流程：start_chapter/next_dialogue/_complete_chapter
+  - 对话集成：加载JSON对话文件，集成DialogueSystem
+  - 进度保存：保存到user://story_progress.cfg（当前章节/已完成章节）
+  - 章节解锁：完成当前章节自动解锁下一章
+  - 信号系统：chapter_started/chapter_completed/dialogue_started/dialogue_completed/story_progress_changed
+  - UI支持：get_chapter_list()返回章节列表（含解锁/完成状态）
+  - 支持重置进度
+
+- `data/dialogue/prologue.json` - 序章对话数据（15段对话）
+  - 世界观介绍：灵界（Aether Realm）的设定
+  - 玩家身份：被召唤的灵魂指挥官
+  - 核心玩法：灵魂自主战斗+玩家战术指令
+  - 8元素灵魂介绍
+  - 引导进入灵界
+
+- `data/dialogue/chapter1.json` - 第一章对话数据（21段对话）
+  - 初遇火灵·小焰
+  - 灵魂契约缔结
+  - 战斗基础知识教学（6种战术指令/4个技能/道具陷阱）
+  - 教学模式引导
+  - 冒险开始
+
+**剧情角色**：
+| 角色 | 元素 | 说明 |
+|------|------|------|
+| 旁白 | 光 | 世界观叙述 |
+| 神秘声音 | 暗 | 召唤玩家的存在 |
+| 玩家 | 光 | 灵魂指挥官 |
+| 火灵·小焰 | 火 | 玩家第一个灵魂伙伴 |
+
+**测试结果**：M2测试 2668 Passed, 0 Failed（全绿，无回归）
+
+---
+
 ## [M2.10] 教学与剧情 - 教学步骤显示UI（2026-09-10）
 
 **GDD v2.0第15章**：教学和剧情模式 - 教学步骤显示UI。
