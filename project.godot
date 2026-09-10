@@ -58,6 +58,7 @@ MonetizationManager="*res://scripts/monetization/MonetizationManager.gd"
 PlatformSDK="*res://platform/sdk/PlatformSDK.gd"
 WorldLoader="*res://platform/world/WorldLoader.gd"
 HomeAPI="*res://platform/home/HomeAPI.gd"
+SteamManager="*res://scripts/autoload/SteamManager.gd"
 
 [debug]
 

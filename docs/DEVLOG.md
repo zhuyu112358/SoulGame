@@ -1,5 +1,34 @@
 ﻿# 战策 Battleplan 开发日志
 
+## [M2.14] Steam EA上架准备 - SteamManager框架（2026-09-11）
+
+**GDD v2.0第14章**：Steam EA上架准备。
+
+**创建内容**：
+- 新建`scripts/autoload/SteamManager.gd`（Steamworks SDK集成包装器）
+- 注册为autoload singleton（project.godot）
+- 使用条件编译设计（STEAMWORKS_ENABLED），无Steam SDK时提供本地fallback
+
+**功能模块**：
+1. **Steam初始化/关闭** - initialize()/is_initialized()/is_steam_running()
+2. **成就系统** - unlock_achievement()/is_achievement_unlocked()/set_achievement_progress()/get_achievement_progress()/clear_achievement()/get_unlocked_achievements()
+3. **统计数据** - set_stat()/get_stat()/increment_stat()/store_stats()
+4. **云存档** - save_to_cloud()/load_from_cloud()/cloud_file_exists()/delete_cloud_file()/set_cloud_enabled()
+5. **好友系统** - get_friend_count()/get_friend_list()/get_friend_name()/get_friend_persona_state()/invite_friend_to_game()
+6. **覆盖层** - activate_overlay()/activate_overlay_to_user()/activate_overlay_to_store()/is_overlay_enabled()
+7. **应用信息** - get_app_id()/is_app_installed()/get_app_install_dir()
+8. **DLC** - is_dlc_installed()/install_dlc()
+9. **本地持久化** - 成就/统计/好友数据保存到user://steam_manager_data.cfg
+10. **信号系统** - steam_initialized/achievement_unlocked/achievement_progress/cloud_save_completed/cloud_load_completed/overlay_activated/friend_joined_game
+
+**修复的问题**：
+- install_dlc函数只有注释没有代码，添加pass
+- class_name SteamManager与autoload名称冲突，移除class_name声明
+
+**测试结果**：M2测试 2930 Passed, 0 Failed（全绿，无回归）
+
+---
+
 ## [M2.14] Polish测试 - 伤害飘字单标签兼容接口（2026-09-11）
 
 **GDD v2.0第14章**：Polish测试 - Bug修复。
