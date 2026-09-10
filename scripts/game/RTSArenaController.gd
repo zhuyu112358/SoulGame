@@ -131,6 +131,9 @@ var _talent_active = false
 ## Status effect display
 var _player_status_label = null
 var _ai_status_label = null
+var _player_status_icons = null
+var _ai_status_icons = null
+var _status_icon_sheet = null
 
 ## Error/success message display
 var _error_label = null
@@ -579,23 +582,44 @@ func _on_speed_button_pressed() -> void:
 
 ## Setup status effect labels for player and AI
 func _setup_status_labels() -> void:
+	# Player status icons container (next to player panel)
+	_player_status_icons = HBoxContainer.new()
+	_player_status_icons.name = "PlayerStatusIcons"
+	_player_status_icons.position = Vector2(10, 50)
+	_player_status_icons.size = Vector2(200, 30)
+	_player_status_icons.add_theme_constant_override("separation", 4)
+	add_child(_player_status_icons)
+
 	# Player status label (next to player panel)
 	_player_status_label = Label.new()
 	_player_status_label.name = "PlayerStatusLabel"
 	_player_status_label.text = ""
-	_player_status_label.position = Vector2(10, 55)
-	_player_status_label.add_theme_font_size_override("font_size", 11)
+	_player_status_label.position = Vector2(10, 80)
+	_player_status_label.add_theme_font_size_override("font_size", 10)
 	_player_status_label.modulate = Color(0.4, 0.9, 0.6)
 	add_child(_player_status_label)
+
+	# AI status icons container (next to AI panel)
+	_ai_status_icons = HBoxContainer.new()
+	_ai_status_icons.name = "AIStatusIcons"
+	_ai_status_icons.position = Vector2(1070, 50)
+	_ai_status_icons.size = Vector2(200, 30)
+	_ai_status_icons.add_theme_constant_override("separation", 4)
+	add_child(_ai_status_icons)
 
 	# AI status label (next to AI panel)
 	_ai_status_label = Label.new()
 	_ai_status_label.name = "AIStatusLabel"
 	_ai_status_label.text = ""
-	_ai_status_label.position = Vector2(1050, 55)
-	_ai_status_label.add_theme_font_size_override("font_size", 11)
+	_ai_status_label.position = Vector2(1070, 80)
+	_ai_status_label.add_theme_font_size_override("font_size", 10)
 	_ai_status_label.modulate = Color(0.9, 0.4, 0.4)
 	add_child(_ai_status_label)
+
+	# Load status icon sheet (3 rows x 4 cols, 1024x1024, 12 icons)
+	var sheet_path := "res://assets/art/status_icon_sheet_v1.png"
+	if ResourceLoader.exists(sheet_path):
+		_status_icon_sheet = load(sheet_path)
 
 
 ## Update status effect display for both units
@@ -611,6 +635,8 @@ func _update_status_display() -> void:
 			_player_status_label.text = text
 		else:
 			_player_status_label.text = ""
+		# Update status icons
+		_update_status_icon_container(_player_status_icons, effects)
 
 	if RTSArenaManager.ai_unit and _ai_status_label:
 		var effects = RTSArenaManager.ai_unit.status_effects
@@ -623,6 +649,53 @@ func _update_status_display() -> void:
 			_ai_status_label.text = text
 		else:
 			_ai_status_label.text = ""
+		# Update status icons
+		_update_status_icon_container(_ai_status_icons, effects)
+
+
+## Update status icon container with current effects
+func _update_status_icon_container(container: HBoxContainer, effects: Dictionary) -> void:
+	if container == null:
+		return
+	# Clear existing icons
+	for child in container.get_children():
+		child.queue_free()
+	if not _status_icon_sheet:
+		return
+	# Status effect name -> icon index (3 rows x 4 cols)
+	var status_icon_map := {
+		"attack_up": 0,
+		"defense_up": 1,
+		"speed_up": 2,
+		"heal": 3,
+		"shield": 4,
+		"invisible": 5,
+		"regen": 6,
+		"focus": 7,
+		"poison": 8,
+		"frozen": 9,
+		"burn": 10,
+		"stun": 11,
+		"defense_up": 1  # Alias for defense_up
+	}
+	var cell_w: int = 256  # 1024 / 4
+	var cell_h: int = 341  # 1024 / 3
+	for effect_name in effects.keys():
+		var icon_idx = status_icon_map.get(effect_name, -1)
+		if icon_idx < 0:
+			continue
+		var row: int = icon_idx / 4
+		var col: int = icon_idx % 4
+		var atlas = AtlasTexture.new()
+		atlas.atlas = _status_icon_sheet
+		atlas.region = Rect2(col * cell_w, row * cell_h, cell_w, cell_h)
+		var icon_rect = TextureRect.new()
+		icon_rect.custom_minimum_size = Vector2(24, 24)
+		icon_rect.texture = atlas
+		icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon_rect.tooltip_text = _get_status_display_name(effect_name)
+		container.add_child(icon_rect)
 
 
 ## Get display name for status effect
