@@ -1,5 +1,34 @@
 ﻿# 战策 Battleplan 开发日志
 
+## [M2.12] 音效音乐 - BGM淡入淡出增强（2026-09-11）
+
+**GDD v2.0第12章**：音效音乐 - BGM系统增强。
+
+**修改文件**：
+- `scripts/autoload/AudioManager.gd`
+  - 增强play_bgm方法：添加p_fade_in参数，支持BGM淡入播放
+  - 增强stop_bgm方法：添加p_fade_out参数，支持BGM淡出停止
+  - 新增crossfade_bgm方法：BGM交叉淡入淡出（同时淡出旧BGM+淡入新BGM）
+  - 所有淡入淡出使用Tween实现平滑过渡
+  - 默认切换BGM时自动淡出旧BGM（0.3秒）
+
+**BGM系统现状确认**：
+- 11个BGM文件已集成：battle/battle_calm/battle_tension/explore/explore_mystery/home_main/main_menu/menu/soul_home_day/soul_home_night/victory_celebration
+- AudioManager已有完整BGM播放/停止/音量控制
+- 场景BGM已集成：主菜单(main_menu)/灵魂选择(menu)/战斗(battle)/胜利(victory_celebration)/灵魂之家(soul_home_day)
+- 音频设置已集成：设置界面有主音量/BGM音量/音效音量滑块，实时生效并持久化
+
+**新增BGM API**：
+| 方法 | 说明 |
+|------|------|
+| play_bgm(name, volume, fade_in) | 播放BGM，支持淡入 |
+| stop_bgm(fade_out) | 停止BGM，支持淡出 |
+| crossfade_bgm(name, duration, volume) | 交叉淡入淡出切换BGM |
+
+**测试结果**：M2测试 2668 Passed, 0 Failed（全绿，无回归）
+
+---
+
 ## [M2.13] 成就与元游戏 - 灵魂图鉴系统（2026-09-11）
 
 **GDD v2.0第13章**：成就与元游戏 - 灵魂图鉴。

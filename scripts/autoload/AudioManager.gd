@@ -330,12 +330,13 @@ func play_battle(p_sound_name: String) -> void:
 
 ## Play BGM by name (loops, stops current BGM)
 ## Example: play_bgm("battle") or play_bgm("menu")
-func play_bgm(p_bgm_name: String, p_volume: float = -1.0) -> void:
+## p_fade_in: fade in duration in seconds (0 = instant)
+func play_bgm(p_bgm_name: String, p_volume: float = -1.0, p_fade_in: float = 0.0) -> void:
 	if _current_bgm_name == p_bgm_name and _current_bgm and _current_bgm.playing:
 		return  # Already playing
 
-	# Stop current BGM
-	stop_bgm()
+	# Stop current BGM (with fade out if fading)
+	stop_bgm(0.3)
 
 	var stream = _get_stream("bgm_%s" % p_bgm_name)
 	if stream == null:
@@ -345,7 +346,11 @@ func play_bgm(p_bgm_name: String, p_volume: float = -1.0) -> void:
 	_current_bgm = AudioStreamPlayer.new()
 	_current_bgm.bus = BUS_MASTER
 	var vol = p_volume if p_volume >= 0 else bgm_volume
-	_current_bgm.volume_db = linear_to_db(vol * master_volume)
+	# Start at zero volume if fading in
+	if p_fade_in > 0.0:
+		_current_bgm.volume_db = linear_to_db(0.001)
+	else:
+		_current_bgm.volume_db = linear_to_db(vol * master_volume)
 	_current_bgm.stream = stream
 	# Enable looping if supported
 	if stream is AudioStreamWAV:
@@ -355,16 +360,66 @@ func play_bgm(p_bgm_name: String, p_volume: float = -1.0) -> void:
 	_current_bgm.play()
 	_current_bgm_name = p_bgm_name
 
-	GameLog.info("AudioManager: Playing BGM '%s'" % p_bgm_name, "Audio")
+	# Fade in if requested
+	if p_fade_in > 0.0:
+		var tween = create_tween()
+		tween.tween_property(_current_bgm, "volume_db", linear_to_db(vol * master_volume), p_fade_in)
+
+	GameLog.info("AudioManager: Playing BGM '%s' (fade_in=%.1fs)" % [p_bgm_name, p_fade_in], "Audio")
 
 
 ## Stop current BGM
-func stop_bgm() -> void:
+## p_fade_out: fade out duration in seconds (0 = instant)
+func stop_bgm(p_fade_out: float = 0.0) -> void:
 	if _current_bgm and is_instance_valid(_current_bgm):
-		_current_bgm.stop()
-		_current_bgm.queue_free()
+		if p_fade_out > 0.0 and _current_bgm.playing:
+			# Fade out then stop
+			var bgm_to_stop = _current_bgm
+			var tween = create_tween()
+			tween.tween_property(bgm_to_stop, "volume_db", linear_to_db(0.001), p_fade_out)
+			tween.tween_callback(bgm_to_stop.stop)
+			tween.tween_callback(bgm_to_stop.queue_free)
+		else:
+			_current_bgm.stop()
+			_current_bgm.queue_free()
 		_current_bgm = null
 	_current_bgm_name = ""
+
+
+## Crossfade to new BGM (fade out current, fade in new)
+## p_duration: crossfade duration in seconds
+func crossfade_bgm(p_bgm_name: String, p_duration: float = 1.0, p_volume: float = -1.0) -> void:
+	if _current_bgm_name == p_bgm_name and _current_bgm and _current_bgm.playing:
+		return
+
+	var stream = _get_stream("bgm_%s" % p_bgm_name)
+	if stream == null:
+		# No new BGM, just fade out current
+		stop_bgm(p_duration)
+		return
+
+	# Fade out current BGM
+	if _current_bgm and is_instance_valid(_current_bgm):
+		var old_bgm = _current_bgm
+		var tween_out = create_tween()
+		tween_out.tween_property(old_bgm, "volume_db", linear_to_db(0.001), p_duration)
+		tween_out.tween_callback(old_bgm.stop)
+		tween_out.tween_callback(old_bgm.queue_free)
+
+	# Create and fade in new BGM
+	var vol = p_volume if p_volume >= 0 else bgm_volume
+	_current_bgm = AudioStreamPlayer.new()
+	_current_bgm.bus = BUS_MASTER
+	_current_bgm.volume_db = linear_to_db(0.001)
+	_current_bgm.stream = stream
+	add_child(_current_bgm)
+	_current_bgm.play()
+	_current_bgm_name = p_bgm_name
+
+	var tween_in = create_tween()
+	tween_in.tween_property(_current_bgm, "volume_db", linear_to_db(vol * master_volume), p_duration)
+
+	GameLog.info("AudioManager: Crossfade to BGM '%s' (duration=%.1fs)" % [p_bgm_name, p_duration], "Audio")
 
 
 ## Set master volume (0.0 - 1.0)
