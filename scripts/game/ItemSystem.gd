@@ -54,10 +54,10 @@ const ITEMS := {
 	},
 	"shield_potion": {
 		"name": "护盾药水",
-		"description": "获得吸收50点伤害的护盾，持续15秒",
+		"description": "获得吸收30%最大生命值的护盾，持续15秒",
 		"type": "consumable",
 		"effect": "shield",
-		"value": 50.0,
+		"value": 0.30,
 		"duration": 15.0,
 		"icon_index": 5,
 		"rarity": "uncommon"
@@ -383,6 +383,11 @@ func _apply_item_effect(item_id: String, unit) -> void:
 		"shield":
 			var duration = item.get("duration", 15.0)
 			unit.add_status_effect("shield", duration)
+			# Set shield value to percentage of max HP (M2.14 balance)
+			unit.shield_value = int(unit.max_hp * value)
+			GameLog.info("ItemSystem: %s gains shield %d (%.0f%% of HP)" % [
+				unit.soul_name, unit.shield_value, value * 100
+			], "Item")
 		"invisible":
 			var duration = item.get("duration", 8.0)
 			unit.add_status_effect("invisible", duration)

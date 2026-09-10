@@ -104,6 +104,9 @@ var skill_cooldowns: Dictionary = {}
 ## Status effects (effect_name -> remaining seconds)
 var status_effects: Dictionary = {}
 
+## Shield value (absorbs damage before HP) - M2.14 balance
+var shield_value: int = 0
+
 ## Critical hit system
 var crit_rate: float = 0.1  # 10% base critical hit chance
 var crit_multiplier: float = 1.5  # 150% damage on critical hit
@@ -1326,6 +1329,21 @@ func take_damage(p_damage: int, p_attacker: Node2D = null) -> void:
 	var actual_damage: int = p_damage
 	if status_effects.has("defense_up"):
 		actual_damage = int(p_damage * 0.5)
+
+	# Apply shield absorption (M2.14 balance)
+	if shield_value > 0:
+		if actual_damage <= shield_value:
+			shield_value -= actual_damage
+			GameLog.debug("SoulUnit: %s shield absorbs %d damage (shield: %d)" % [soul_name, actual_damage, shield_value], "Arena")
+			actual_damage = 0
+		else:
+			var absorbed = shield_value
+			actual_damage -= shield_value
+			shield_value = 0
+			GameLog.debug("SoulUnit: %s shield absorbs %d damage, remaining %d damage" % [soul_name, absorbed, actual_damage], "Arena")
+		# Remove shield effect if depleted
+		if shield_value <= 0 and status_effects.has("shield"):
+			status_effects.erase("shield")
 
 	last_damage_taken = actual_damage
 	current_hp -= actual_damage
