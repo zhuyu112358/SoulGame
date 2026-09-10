@@ -1,0 +1,168 @@
+[gd_scene load_steps=2 format=3 uid="uid://battleplan_friends"]
+
+[ext_resource type="Script" path="res://scripts/ui/FriendUI.gd" id="1_friends"]
+
+[node name="Friends" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_friends")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.1, 0.08, 0.18, 1)
+
+[node name="TopBar" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 60.0
+grow_horizontal = 2
+
+[node name="TitleLabel" type="Label" parent="TopBar"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 15.0
+offset_right = 200.0
+offset_bottom = 45.0
+text = "好友"
+theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(0.85, 0.65, 0.3, 1)
+
+[node name="FriendCountLabel" type="Label" parent="TopBar"]
+layout_mode = 0
+offset_left = 500.0
+offset_top = 18.0
+offset_right = 700.0
+offset_bottom = 42.0
+text = "好友: 0/100"
+theme_override_font_sizes/font_size = 16
+horizontal_alignment = 1
+
+[node name="OnlineCountLabel" type="Label" parent="TopBar"]
+layout_mode = 0
+offset_left = 750.0
+offset_top = 18.0
+offset_right = 950.0
+offset_bottom = 42.0
+text = "在线: 0"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.3, 0.9, 0.4, 1)
+horizontal_alignment = 1
+
+[node name="Main" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 70.0
+offset_bottom = -80.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+
+[node name="FriendListPanel" type="Panel" parent="Main"]
+custom_minimum_size = Vector2(500, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ListTitle" type="Label" parent="Main/FriendListPanel"]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 490.0
+offset_bottom = 35.0
+text = "好友列表"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.85, 0.65, 0.3, 1)
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Main/FriendListPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 5.0
+offset_top = 45.0
+offset_right = -5.0
+offset_bottom = -5.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="FriendContainer" type="VBoxContainer" parent="Main/FriendListPanel/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 5
+
+[node name="RequestListPanel" type="Panel" parent="Main"]
+custom_minimum_size = Vector2(400, 0)
+layout_mode = 2
+
+[node name="RequestTitle" type="Label" parent="Main/RequestListPanel"]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 390.0
+offset_bottom = 35.0
+text = "好友请求"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.85, 0.65, 0.3, 1)
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Main/RequestListPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 5.0
+offset_top = 45.0
+offset_right = -5.0
+offset_bottom = -5.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="RequestContainer" type="VBoxContainer" parent="Main/RequestListPanel/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 5
+
+[node name="BottomBar" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -70.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="AddFriendButton" type="Button" parent="BottomBar"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 15.0
+offset_right = 160.0
+offset_bottom = 55.0
+text = "添加好友"
+theme_override_font_sizes/font_size = 14
+
+[node name="RefreshButton" type="Button" parent="BottomBar"]
+layout_mode = 0
+offset_left = 180.0
+offset_top = 15.0
+offset_right = 300.0
+offset_bottom = 55.0
+text = "刷新"
+theme_override_font_sizes/font_size = 14
+
+[node name="BackButton" type="Button" parent="BottomBar"]
+layout_mode = 0
+offset_left = 1100.0
+offset_top = 15.0
+offset_right = 1240.0
+offset_bottom = 55.0
+text = "返回"
+theme_override_font_sizes/font_size = 14
