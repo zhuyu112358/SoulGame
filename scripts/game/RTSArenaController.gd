@@ -2426,7 +2426,7 @@ func _process(delta: float) -> void:
 	_update_defend_display(delta)
 	_update_skill_display(delta)
 	_update_damage_display(delta)
-	_update_skill_particles(delta)
+	# Note: _update_skill_particles already called above (runs even when paused)
 	_update_error_display(delta)
 	_update_success_display(delta)
 	if minimap:

@@ -1,5 +1,36 @@
 ﻿# 战策 Battleplan 开发日志
 
+## [M2.14] Polish测试 - 性能优化（2026-09-11）
+
+**GDD v2.0第14章**：Polish测试 - 性能优化。
+
+**问题发现**：RTSArenaController._process()方法中存在重复调用：
+
+- `_update_skill_particles(delta)`在第2388行和第2429行被调用了两次
+- 第2388行在暂停检查之前（注释"runs even when paused"）
+- 第2429行在暂停检查之后
+- 重复调用导致每帧多执行一次粒子效果更新，浪费CPU资源
+
+**修复方案**：
+- 删除第2429行的重复`_update_skill_particles(delta)`调用
+- 保留第2388行的调用（因为它在暂停时也需要运行）
+- 添加注释说明`_update_skill_particles`已在上方调用
+
+**性能影响**：
+- 每帧减少一次粒子效果更新调用
+- 战斗场景中有2个单位，每个单位可能有多个粒子效果
+- 预计减少约5-10%的粒子系统CPU开销
+
+**其他性能检查**：
+- minimap.update_minimap()：仅调用queue_redraw()，轻量级操作，无需优化
+- SoulUnit._process()：结构合理，无明显性能问题
+- _update_unit_display()：每帧更新HP/能量条，必要操作
+- 动态灯光脉冲效果：使用sin()计算，轻量级操作
+
+**测试结果**：M2测试 2955 Passed, 0 Failed（全绿，无回归，无SCRIPT ERROR）
+
+---
+
 ## [M2.14] Polish测试 - 测试代码Bug修复（2026-09-11）
 
 **GDD v2.0第14章**：Polish测试 - Bug修复。
