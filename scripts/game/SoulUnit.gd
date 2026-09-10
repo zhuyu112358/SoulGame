@@ -28,6 +28,9 @@ const EmberSoulDataBridge = preload("res://scripts/game/EmberSoulDataBridge.gd")
 ## Soul personality system (M2.6 personality types)
 const SoulPersonalitySystem = preload("res://scripts/game/SoulPersonalitySystem.gd")
 
+## Soul evolution system (M2.6 5-stage evolution)
+const SoulEvolutionSystem = preload("res://scripts/game/SoulEvolutionSystem.gd")
+
 ## Unit state constants
 enum UnitState {
 	IDLE,
@@ -57,6 +60,11 @@ var personality: Dictionary = {
 ## Personality type (from SoulPersonalitySystem, affects AI behavior/expressions/dialogue)
 var personality_type: int = 3  # Default: CALM
 var personality_name: String = "冷静"
+
+## Evolution stage (from SoulEvolutionSystem, 1-5 stages)
+var evolution_stage: int = 1  # Default: INFANT
+var evolution_stage_name: String = "幼体"
+var evolution_multipliers: Dictionary = {}  # Stat multipliers from evolution stage
 
 ## Emotional state (influences decision-making and skill effectiveness)
 ## Design doc: emotion affects skill effects (anger: +20% attack, fear: +20% defense)
@@ -220,6 +228,34 @@ func _init_personality_type(p_element: String) -> void:
 	GameLog.info("SoulUnit: %s personality set to %s (aggression:%d, courage:%d, curiosity:%d)" % [
 		soul_name, personality_name, personality["aggression"], personality["courage"], personality["curiosity"]
 	], "Personality")
+
+## Initialize evolution stage based on level
+## Uses SoulEvolutionSystem to determine stage, stores multipliers for combat use
+func _init_evolution_stage(p_level: int) -> void:
+	var evolution_system = SoulEvolutionSystem.new()
+	if p_level >= 20:
+		evolution_stage = SoulEvolutionSystem.EvolutionStage.TRANSCENDENT
+	elif p_level >= 15:
+		evolution_stage = SoulEvolutionSystem.EvolutionStage.AWAKENED
+	elif p_level >= 10:
+		evolution_stage = SoulEvolutionSystem.EvolutionStage.MATURE
+	elif p_level >= 5:
+		evolution_stage = SoulEvolutionSystem.EvolutionStage.GROWING
+	else:
+		evolution_stage = SoulEvolutionSystem.EvolutionStage.INFANT
+	evolution_stage_name = evolution_system.get_stage_name(evolution_stage)
+	# Store multipliers (applied in combat, not at init to preserve base stats)
+	evolution_multipliers = evolution_system.get_stat_multipliers(evolution_stage)
+	# Apply appearance changes only (scale and glow)
+	var appearance = evolution_system.get_appearance(evolution_stage)
+	if appearance.has("scale") and _sprite:
+		_sprite.scale = Vector2(appearance["scale"], appearance["scale"])
+	if appearance.has("glow_intensity") and _sprite:
+		var intensity = appearance["glow_intensity"]
+		_sprite.modulate = Color(1.0 + intensity * 0.2, 1.0 + intensity * 0.15, 1.0)
+	GameLog.info("SoulUnit: %s evolution stage %s (Lv.%d)" % [
+		soul_name, evolution_stage_name, p_level
+	], "Evolution")
 
 ## Create visual representation (pixel sprite + name label + HP bar)
 ## Load soul unit sprite from design asset sheet
@@ -491,6 +527,9 @@ func init_from_soul(p_soul_id: String, p_soul_name: String, p_element: String, p
 
 	# Initialize personality type based on element (from SoulPersonalitySystem)
 	_init_personality_type(p_element)
+
+	# Initialize evolution stage based on level (from SoulEvolutionSystem)
+	_init_evolution_stage(p_level)
 
 	_setup_skill_cooldowns()
 	GameLog.info("SoulUnit: %s initialized from soul data (Lvl %d, HP:%d, Ember:%s)" % [

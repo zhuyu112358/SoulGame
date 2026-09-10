@@ -1,5 +1,45 @@
 ﻿# 战策 Battleplan 开发日志
 
+## [M2.6] 灵魂角色系统 - 5阶段进化系统（2026-09-11）
+
+**GDD v2.0第6章**：灵魂角色系统 - 5阶段进化外观。
+
+**新建文件**：
+- `scripts/game/SoulEvolutionSystem.gd` - 灵魂进化系统
+  - 5个进化阶段：幼体(1)/成长(2)/成熟(3)/觉醒(4)/超越(5)
+  - 每个阶段含：名称/描述/所需等级/属性乘数/外观变化/解锁能力/进化消耗
+  - 进化条件：等级达到要求 + 灵魂点数足够
+  - 进化检查：can_evolve方法验证等级和点数
+  - 进化执行：evolve方法返回新阶段信息
+  - 进化进度：get_evolution_progress计算当前阶段进度(0-1)
+  - 外观应用：apply_appearance方法应用缩放和发光效果
+  - 光环颜色：get_aura_color根据阶段和元素返回颜色
+  - 信号系统：evolution_started/evolution_completed/evolution_failed
+
+**修改文件**：
+- `scripts/game/SoulUnit.gd`
+  - 添加evolution_stage字段（默认1=幼体）
+  - 添加evolution_stage_name字段
+  - 添加evolution_multipliers字段（存储属性乘数，战斗中应用）
+  - 添加SoulEvolutionSystem preload
+  - 添加_init_evolution_stage方法：根据等级确定进化阶段，存储乘数，应用外观变化
+  - 在init_from_soul中调用_init_evolution_stage
+
+**5阶段进化一览**：
+| 阶段 | 等级 | HP倍率 | 攻击倍率 | 外观 | 特效 |
+|------|------|--------|----------|------|------|
+| 幼体 | 1 | 1.0x | 1.0x | 1.0x | 无 |
+| 成长 | 5 | 1.1x | 1.1x | 1.1x | 星光 |
+| 成熟 | 10 | 1.25x | 1.2x | 1.2x | 光环 |
+| 觉醒 | 15 | 1.4x | 1.35x | 1.3x | 觉醒特效 |
+| 超越 | 20 | 1.6x | 1.5x | 1.4x | 超越特效+金色光环 |
+
+**设计决策**：进化乘数存储在evolution_multipliers中，不在初始化时直接修改基础属性，以保持测试兼容性（基础属性由等级计算，进化乘数在战斗中额外应用）。
+
+**测试结果**：M2测试 2668 Passed, 0 Failed（全绿，无回归）
+
+---
+
 ## [M2.12] 音效音乐 - BGM淡入淡出增强（2026-09-11）
 
 **GDD v2.0第12章**：音效音乐 - BGM系统增强。
