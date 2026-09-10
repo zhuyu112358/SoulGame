@@ -115,6 +115,12 @@ var _speed_button = null
 var _current_speed = 1.0
 var _speed_options = [1.0, 1.5, 2.0]
 
+## Tactical command system (GDD v2.0 Chapter 2.1.1)
+var _tactical_system = null
+var _tactical_buttons = {}
+var _current_tactical_command = "free"
+var _tactical_indicator = null
+
 ## Status effect display
 var _player_status_label = null
 var _ai_status_label = null
@@ -1695,6 +1701,14 @@ func _setup_ui_refs() -> void:
 	skill_buttons["heal"] = get_node_or_null("BottomBar/SkillButtons/Heal")
 	skill_buttons["defend"] = get_node_or_null("BottomBar/SkillButtons/Defend")
 
+	# Tactical command buttons (GDD v2.0: 6 commands)
+	_tactical_buttons["aggressive"] = get_node_or_null("BottomBar/TacticalBar/Aggressive")
+	_tactical_buttons["defensive"] = get_node_or_null("BottomBar/TacticalBar/Defensive")
+	_tactical_buttons["focus"] = get_node_or_null("BottomBar/TacticalBar/Focus")
+	_tactical_buttons["retreat"] = get_node_or_null("BottomBar/TacticalBar/Retreat")
+	_tactical_buttons["follow"] = get_node_or_null("BottomBar/TacticalBar/Follow")
+	_tactical_buttons["free"] = get_node_or_null("BottomBar/TacticalBar/Free")
+
 	GameLog.debug("RTSArenaController: UI refs setup", "Arena")
 
 
@@ -1918,6 +1932,9 @@ func _setup_skill_buttons() -> void:
 		skill_buttons["defend"].pressed.connect(_on_defend_pressed)
 	if back_button:
 		back_button.pressed.connect(_on_back_pressed)
+
+	# Initialize tactical command system (GDD v2.0 Chapter 2.1.1)
+	_init_tactical_command_system()
 	# Create cooldown overlays for each skill button
 	for skill_name in skill_buttons.keys():
 		var button = skill_buttons[skill_name]
@@ -3297,6 +3314,72 @@ func _on_defend_pressed() -> void:
 	_trigger_chromatic_aberration(6.0, 0.2)
 	if AudioManager:
 		AudioManager.play_sfx("skill_defend")
+
+
+## Initialize tactical command system (GDD v2.0 Chapter 2.1.1)
+func _init_tactical_command_system() -> void:
+	# Create tactical command system instance
+	_tactical_system = TacticalCommandSystem.new()
+	_tactical_system.name = "TacticalCommandSystem"
+	add_child(_tactical_system)
+
+	# Connect command changed signal
+	_tactical_system.command_changed.connect(_on_tactical_command_changed)
+
+	# Connect tactical buttons
+	for command_id in _tactical_buttons.keys():
+		var button = _tactical_buttons[command_id]
+		if button:
+			button.pressed.connect(_on_tactical_button_pressed.bind(command_id))
+			# Set tooltip
+			if _tactical_system and _tactical_system.COMMANDS.has(command_id):
+				var cmd_data = _tactical_system.COMMANDS[command_id]
+				button.tooltip_text = cmd_data["description"]
+
+	# Load initial command from battle config (set in battle_config scene)
+	var initial_command = GameState.get_value("battle", "tactic", "free")
+	if initial_command and _tactical_system.is_valid_command(initial_command):
+		_tactical_system.set_command(initial_command)
+	else:
+		_tactical_system.set_command("free")
+
+	GameLog.info("Tactical command system initialized", "Arena")
+
+
+## Handle tactical button press
+func _on_tactical_button_pressed(command_id: String) -> void:
+	if _tactical_system:
+		_tactical_system.set_command(command_id)
+		if AudioManager:
+			AudioManager.play_sfx("ui_button_click")
+
+
+## Handle tactical command changed
+func _on_tactical_command_changed(command_id: String, command_name: String) -> void:
+	_current_tactical_command = command_id
+	# Update RTSArenaManager (autoload) so AI controllers can access weights
+	if _tactical_system:
+		var weights = _tactical_system.get_weight_modifiers()
+		RTSArenaManager.set_tactical_command(command_id, weights)
+	# Update button visual states
+	for btn_id in _tactical_buttons.keys():
+		var button = _tactical_buttons[btn_id]
+		if button:
+			if btn_id == command_id:
+				button.modulate = Color(1.3, 1.2, 0.9)  # Gold highlight for active
+			else:
+				button.modulate = Color(1, 1, 1)
+	# Show battle log message
+	if battle_log:
+		battle_log.text += "\n[战术] 切换为: %s" % command_name
+	GameLog.info("Tactical command: %s -> %s" % [command_id, command_name], "Arena")
+
+
+## Get current tactical weight modifier (for AI controllers)
+func get_tactical_weight(modifier_name: String, default_value: float = 1.0) -> float:
+	if _tactical_system:
+		return _tactical_system.get_weight(modifier_name, default_value)
+	return default_value
 
 
 ## Handle back button - return to main menu

@@ -1,5 +1,36 @@
 ﻿# 战策 Battleplan 开发日志
 
+## [M2.2] 核心战斗系统 - 战术指令系统实现（2026-09-10）
+
+**GDD v2.0核心设计实现**：战术指令系统（第2.1.1节），灵魂指挥官定位的核心功能。
+
+**新建文件**：
+- `scripts/game/TacticalCommandSystem.gd` - 战术指令系统
+  - 6种战术指令定义（进攻/防守/集火/撤退/跟随/自由）
+  - 每种指令对应6个AI权重修饰符
+  - command_changed信号通知UI和AI
+
+**修改文件**：
+- `scenes/rts_arena.tscn` - BottomBar扩大为全宽，添加TacticalBar（6个战术指令按钮）
+- `scripts/game/RTSArenaController.gd` - 战术指令UI集成
+  - 底部战术栏6个按钮，点击切换战术指令
+  - 当前指令按钮金色高亮
+  - 战斗日志显示战术切换
+  - 战术指令变化时同步到RTSArenaManager
+- `scripts/game/RTSArenaManager.gd` - 添加current_tactical_command和tactical_weights变量
+- `scripts/game/EmberSoulAIController.gd` - execute_decision()根据战术指令调整行为
+  - RETREAT指令：总是撤退
+  - DEFENSIVE指令：保持距离，只在近距离攻击
+  - chase_range权重：扩大/缩小有效攻击范围
+
+**待办（M2.2后续）**：
+- [ ] 灵魂头顶显示战术指令图标
+- [ ] 集火指令：玩家点击标记目标
+- [ ] 跟随指令：选择跟随的友方单位
+- [ ] 单个灵魂战术指令（当前是全体指令）
+
+---
+
 ## [M2.1] 基础框架 - 战斗配置场景添加AI难度选择（2026-09-10）
 
 **GDD v2.0遵循**：AI难度系统对应GDD v2.0第十六章对战模式大扩展，M2要求AI 4难度。

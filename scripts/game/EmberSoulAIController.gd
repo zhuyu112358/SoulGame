@@ -254,14 +254,42 @@ func execute_decision(p_self, p_enemy) -> void:
 	GameLog.debug("Ember AI: %s decision=%s dist=%.1f" % [
 		p_self.soul_name, _decision_name(current_decision), dist
 	], "Arena")
-	# Priority override: if enemy is in attack range, attack immediately regardless of current decision
-	# This prevents units from wandering while in range due to stale decision (1.5s decision interval)
-	if p_enemy != null and is_instance_valid(p_enemy) and dist <= p_self.attack_range:
-		p_self.set_attack_target(p_enemy)
+
+	# Get tactical command weights from RTSArenaManager (GDD v2.0 Chapter 2.1.1)
+	var tactical_cmd: String = RTSArenaManager.current_tactical_command
+	var attack_weight: float = RTSArenaManager.get_tactical_weight("attack_priority", 1.0)
+	var chase_weight: float = RTSArenaManager.get_tactical_weight("chase_range", 1.0)
+	var evade_weight: float = RTSArenaManager.get_tactical_weight("evade_priority", 1.0)
+	var keep_dist_weight: float = RTSArenaManager.get_tactical_weight("keep_distance", 1.0)
+
+	# RETREAT command: always retreat regardless of other factors
+	if tactical_cmd == "retreat" and p_enemy != null:
+		var retreat_dir: Vector2 = (p_self.position - p_enemy.position).normalized()
+		p_self.move_to(p_self.position + retreat_dir * 200.0)
 		return
+
+	# Calculate effective attack range based on chase weight
+	var effective_range: float = p_self.attack_range * chase_weight
+
+	# Priority override: if enemy is in effective attack range, attack immediately
+	# This prevents units from wandering while in range due to stale decision (1.5s decision interval)
+	if p_enemy != null and is_instance_valid(p_enemy) and dist <= effective_range:
+		# DEFENSIVE command: keep distance, only attack if very close
+		if tactical_cmd == "defensive" and dist < p_self.attack_range * 0.7:
+			p_self.set_attack_target(p_enemy)
+		elif tactical_cmd != "defensive":
+			p_self.set_attack_target(p_enemy)
+		return
+
+	# DEFENSIVE command: keep distance from enemy
+	if tactical_cmd == "defensive" and p_enemy != null and dist < p_self.attack_range * keep_dist_weight:
+		var away_dir: Vector2 = (p_self.position - p_enemy.position).normalized()
+		p_self.move_to(p_self.position + away_dir * 100.0, false)
+		return
+
 	match current_decision:
 		Decision.ATTACK:
-			if p_enemy != null and dist <= p_self.attack_range:
+			if p_enemy != null and dist <= effective_range:
 				p_self.set_attack_target(p_enemy)
 			else:
 				p_self.move_to(p_enemy.position, false)  # Keep attack_target while closing in

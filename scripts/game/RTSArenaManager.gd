@@ -60,6 +60,18 @@ var _ai_controller: EmberAIController = null
 ## Player unit AI controller (for auto-battle mode)
 var _player_ai_controller: EmberAIController = null
 
+## Tactical command system (GDD v2.0 Chapter 2.1.1)
+## Current tactical command influences AI behavior weights
+var current_tactical_command: String = "free"
+var tactical_weights: Dictionary = {
+	"attack_priority": 1.0,
+	"chase_range": 1.0,
+	"evade_priority": 1.0,
+	"keep_distance": 1.0,
+	"skill_aggressiveness": 1.0,
+	"risk_tolerance": 1.0
+}
+
 ## Arena environment (weather + terrain effects)
 var _environment: ArenaEnvironment = null
 
@@ -712,6 +724,18 @@ func forfeit_battle() -> void:
 	if battle_state == BattleState.ACTIVE:
 		_finish_battle(ai_unit.soul_id, "defeat")
 		_add_log("Player forfeited the battle")
+
+
+## Set tactical command and update AI weights (GDD v2.0 Chapter 2.1.1)
+func set_tactical_command(command_id: String, weights: Dictionary) -> void:
+	current_tactical_command = command_id
+	tactical_weights = weights
+	GameLog.info("Tactical command set: %s" % command_id, "ArenaManager")
+
+
+## Get current tactical weight modifier
+func get_tactical_weight(modifier_name: String, default_value: float = 1.0) -> float:
+	return tactical_weights.get(modifier_name, default_value)
 
 
 ## Clean up battle

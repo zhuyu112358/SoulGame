@@ -90,38 +90,75 @@ bbcode_enabled = true
 scroll_following = true
 
 [node name="BottomBar" type="Panel" parent="."]
-offset_left = 700.0
+offset_left = 0.0
 offset_top = 570.0
-offset_right = 1260.0
+offset_right = 1280.0
 offset_bottom = 680.0
 
 [node name="SkillButtons" type="HBoxContainer" parent="BottomBar"]
 offset_left = 15.0
 offset_top = 12.0
-offset_right = 445.0
+offset_right = 300.0
 offset_bottom = 76.0
-theme_override_constants/separation = 10
+theme_override_constants/separation = 8
 alignment = 1
 
 [node name="HeavyStrike" type="Button" parent="BottomBar/SkillButtons"]
-custom_minimum_size = Vector2(64, 64)
+custom_minimum_size = Vector2(60, 60)
 text = ""
 
 [node name="QuickStrike" type="Button" parent="BottomBar/SkillButtons"]
-custom_minimum_size = Vector2(64, 64)
+custom_minimum_size = Vector2(60, 60)
 text = ""
 
 [node name="Heal" type="Button" parent="BottomBar/SkillButtons"]
-custom_minimum_size = Vector2(64, 64)
+custom_minimum_size = Vector2(60, 60)
 text = ""
 
 [node name="Defend" type="Button" parent="BottomBar/SkillButtons"]
-custom_minimum_size = Vector2(64, 64)
+custom_minimum_size = Vector2(60, 60)
 text = ""
 
+[node name="TacticalBar" type="HBoxContainer" parent="BottomBar"]
+offset_left = 320.0
+offset_top = 12.0
+offset_right = 960.0
+offset_bottom = 76.0
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="TacticalLabel" type="Label" parent="BottomBar/TacticalBar"]
+custom_minimum_size = Vector2(60, 60)
+text = "战术"
+vertical_alignment = 1
+
+[node name="Aggressive" type="Button" parent="BottomBar/TacticalBar"]
+custom_minimum_size = Vector2(80, 60)
+text = "进攻"
+
+[node name="Defensive" type="Button" parent="BottomBar/TacticalBar"]
+custom_minimum_size = Vector2(80, 60)
+text = "防守"
+
+[node name="Focus" type="Button" parent="BottomBar/TacticalBar"]
+custom_minimum_size = Vector2(80, 60)
+text = "集火"
+
+[node name="Retreat" type="Button" parent="BottomBar/TacticalBar"]
+custom_minimum_size = Vector2(80, 60)
+text = "撤退"
+
+[node name="Follow" type="Button" parent="BottomBar/TacticalBar"]
+custom_minimum_size = Vector2(80, 60)
+text = "跟随"
+
+[node name="Free" type="Button" parent="BottomBar/TacticalBar"]
+custom_minimum_size = Vector2(80, 60)
+text = "自由"
+
 [node name="BackButton" type="Button" parent="BottomBar"]
-offset_left = 460.0
+offset_left = 1160.0
 offset_top = 25.0
-offset_right = 550.0
+offset_right = 1260.0
 offset_bottom = 65.0
 text = "返回"
