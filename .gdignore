@@ -1,0 +1,7 @@
+# Ignore CG video files (too large for Godot import, used externally)
+assets/cg_video/
+assets/cg_frames/
+
+# Ignore GDExtension temp files
+addons/ember/bin/~*.dll
+addons/arboreus/bin/~*.dll
