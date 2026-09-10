@@ -46,6 +46,7 @@ const Minimap = preload("res://scripts/ui/Minimap.gd")
 const TalentSystem = preload("res://scripts/game/TalentSystem.gd")
 const ItemSystem = preload("res://scripts/game/ItemSystem.gd")
 const AchievementSystem = preload("res://scripts/game/AchievementSystem.gd")
+const TrapSystem = preload("res://scripts/game/TrapSystem.gd")
 
 ## Visual unit nodes
 var _player_visual = null  # Sprite2D proxy (SoulUnit is child of autoload, not in visible scene)
@@ -137,6 +138,10 @@ var _item_container = null  # Node2D container for item sprites
 ## Achievement system (GDD v2.0 Chapter 13)
 var _achievement_system = null
 var _achievement_popup = null  # Achievement unlock notification
+
+## Trap system (GDD v2.0 Chapter 7)
+var _trap_system = null
+var _trap_container = null  # Node2D container for trap sprites
 
 ## Status effect display
 var _player_status_label = null
@@ -1773,6 +1778,8 @@ func _start_battle_after_countdown() -> void:
 	_countdown_active = false
 	# Initialize item system
 	_init_item_system()
+	# Initialize trap system
+	_init_trap_system()
 	# Start achievement tracking
 	_start_achievement_tracking()
 
@@ -2361,6 +2368,8 @@ func _process(delta: float) -> void:
 	_update_talent_check(delta)
 	if _item_system and _battle_active:
 		_item_system.update(delta, RTSArenaManager.player_unit, RTSArenaManager.ai_unit)
+	if _trap_system and _battle_active:
+		_trap_system.update(delta, RTSArenaManager.player_unit, RTSArenaManager.ai_unit)
 	_update_crit_display(delta)
 	_update_dodge_display(delta)
 	_update_heal_display(delta)
@@ -3389,6 +3398,56 @@ func _spawn_victory_particles(p_position: Vector2) -> void:
 		})
 
 
+## Spawn trap trigger effect particles
+func _spawn_trap_effect(p_position: Vector2, trap_id: String) -> void:
+	# Determine effect color based on trap type
+	var effect_color = Color(1.0, 0.3, 0.3)  # Default red
+	match trap_id:
+		"fire_trap":
+			effect_color = Color(1.0, 0.5, 0.1)  # Orange
+		"frost_trap":
+			effect_color = Color(0.3, 0.7, 1.0)  # Blue
+		"thunder_trap":
+			effect_color = Color(0.9, 0.9, 0.3)  # Yellow
+		"poison_trap":
+			effect_color = Color(0.3, 0.8, 0.3)  # Green
+		"explosion_trap":
+			effect_color = Color(1.0, 0.6, 0.1)  # Orange-red
+		"shadow_trap":
+			effect_color = Color(0.5, 0.2, 0.7)  # Purple
+		"holy_trap":
+			effect_color = Color(1.0, 0.95, 0.6)  # Light yellow
+	# Spawn burst particles
+	for i in range(16):
+		var angle = randf() * TAU
+		var particle = Sprite2D.new()
+		particle.name = "TrapParticle_%d" % Time.get_ticks_msec()
+		particle.centered = true
+		particle.position = p_position
+		particle.modulate = effect_color
+		particle.scale = Vector2(0.2, 0.2)
+		particle.z_index = 50
+		# Procedural circle texture
+		var img = Image.create(12, 12, false, Image.FORMAT_RGBA8)
+		img.fill(Color(0, 0, 0, 0))
+		for x in range(12):
+			for y in range(12):
+				var dx = x - 6
+				var dy = y - 6
+				var dist = sqrt(dx * dx + dy * dy)
+				if dist < 5:
+					img.set_pixel(x, y, Color(1, 1, 1, 1.0 - dist / 5.0))
+		particle.texture = ImageTexture.create_from_image(img)
+		add_child(particle)
+		_skill_particles.append({
+			"particle": particle,
+			"timer": 0.8,
+			"duration": 0.8,
+			"velocity": Vector2(cos(angle), sin(angle)) * randf_range(40, 100),
+			"start_pos": p_position
+		})
+
+
 ## Handle log added
 func _on_log_added(p_message: String) -> void:
 	_add_log(p_message)
@@ -3595,6 +3654,47 @@ func _on_item_picked_up(item_id: String, unit) -> void:
 	# Track achievement stat
 	if _achievement_system:
 		_achievement_system.record_item_picked()
+
+
+## Initialize trap system (GDD v2.0 Chapter 7)
+func _init_trap_system() -> void:
+	if _trap_system != null:
+		_trap_system.stop_trap_system()
+		_trap_system.queue_free()
+	_trap_system = TrapSystem.new()
+	_trap_system.name = "TrapSystem"
+	add_child(_trap_system)
+	# Create trap container for sprites
+	if _trap_container != null:
+		_trap_container.queue_free()
+	_trap_container = Node2D.new()
+	_trap_container.name = "TrapContainer"
+	add_child(_trap_container)
+	# Set battlefield bounds
+	_trap_system.set_battlefield_bounds(Vector2(250, 200), Vector2(1030, 450))
+	_trap_system.set_spawn_interval(20.0)
+	_trap_system.set_trap_parent(_trap_container)
+	_trap_system.trap_triggered.connect(_on_trap_triggered)
+	_trap_system.trap_spawned.connect(_on_trap_spawned)
+	_trap_system.start_trap_system()
+	GameLog.info("Trap system initialized", "Arena")
+
+
+## Handle trap spawned
+func _on_trap_spawned(trap_id: String, position: Vector2) -> void:
+	pass  # Trap sprites are managed by TrapSystem internally
+
+
+## Handle trap triggered
+func _on_trap_triggered(trap_id: String, unit, damage: float) -> void:
+	var trap = _trap_system.get_trap(trap_id) if _trap_system else {}
+	var trap_name = trap.get("name", trap_id)
+	var unit_name = unit.soul_name if unit else "Unknown"
+	_add_log("⚠ %s 触发了 %s (%.0f伤害)" % [unit_name, trap_name, damage])
+	if AudioManager:
+		AudioManager.play_sfx("battle_trap_trigger")
+	# Spawn trap effect particles
+	_spawn_trap_effect(unit.global_position if unit else Vector2.ZERO, trap_id)
 
 
 ## Initialize achievement system (GDD v2.0 Chapter 13)
