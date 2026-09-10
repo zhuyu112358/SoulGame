@@ -3522,13 +3522,12 @@ func _create_talent_panel() -> void:
 		content.add_theme_constant_override("separation", 8)
 		card.add_child(content)
 
-		# Icon placeholder
-		var icon = Label.new()
+		# Icon (TextureRect using talent icon sheet)
+		var icon = TextureRect.new()
 		icon.name = "TalentIcon"
-		icon.text = "◆"
-		icon.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		icon.add_theme_font_size_override("font_size", 32)
-		icon.add_theme_color_override("font_color", Color(0.9, 0.75, 0.4))
+		icon.custom_minimum_size = Vector2(64, 64)
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		content.add_child(icon)
 
 		# Talent name
@@ -3607,13 +3606,32 @@ func _on_talent_options_generated(options: Array) -> void:
 	_talent_active = true
 	# Pause battle while selecting
 	get_tree().paused = true
+	# Load talent icon sheet (4 rows x 5 cols, 1024x1024)
+	var sheet_path := "res://assets/art/talent_icon_sheet_v1.png"
+	var sheet = null
+	if ResourceLoader.exists(sheet_path):
+		sheet = load(sheet_path)
 	# Update card content
 	for i in range(min(options.size(), _talent_buttons.size())):
 		var talent_id = options[i]
 		var talent = _talent_system.get_talent(talent_id)
 		var card = _talent_buttons[i]
+		var icon_rect = card.get_node("CardContent/TalentIcon")
 		var name_label = card.get_node("CardContent/TalentName")
 		var desc_label = card.get_node("CardContent/TalentDesc")
+		# Set talent icon from sheet
+		if icon_rect and sheet:
+			var icon_idx = talent.get("icon_index", 0)
+			var row: int = icon_idx / 5
+			var col: int = icon_idx % 5
+			var cell_w: int = 204  # 1024 / 5
+			var cell_h: int = 256  # 1024 / 4
+			var atlas = AtlasTexture.new()
+			atlas.atlas = sheet
+			atlas.region = Rect2(col * cell_w, row * cell_h, cell_w, cell_h)
+			icon_rect.texture = atlas
+		elif icon_rect:
+			icon_rect.texture = null
 		if name_label:
 			name_label.text = talent.get("name", talent_id)
 		if desc_label:
