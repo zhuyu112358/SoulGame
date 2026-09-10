@@ -32,11 +32,26 @@ enum BattleState {
 ## Current battle state
 var battle_state: int = BattleState.IDLE
 
-## Player unit
+## Player unit (compatibility: refers to first unit in player_units)
 var player_unit: SoulUnit = null
 
-## AI opponent unit
+## AI opponent unit (compatibility: refers to first unit in ai_units)
 var ai_unit: SoulUnit = null
+
+## GAP-001: Team battle support (4v4)
+## Array of player team units (up to 4)
+var player_units: Array = []
+## Array of AI team units (up to 4)
+var ai_units: Array = []
+## Team size (GDD v2.0: 4 souls per team)
+const TEAM_SIZE: int = 4
+## Arboreus entity IDs for team units
+var _player_entity_ids: Array = []
+var _ai_entity_ids: Array = []
+## AI controllers for each AI unit
+var _ai_controllers: Array = []
+## Player AI controllers for each player unit (auto-battle mode)
+var _player_ai_controllers: Array = []
 
 ## Battle configuration
 var battle_config: Dictionary = {
@@ -288,6 +303,263 @@ func start_battle(p_player_soul: Dictionary, p_ai_soul: Dictionary, p_map_name: 
 	return true
 
 
+## GAP-001: Start a 4v4 team battle
+## p_player_team: Array of soul dictionaries (up to 4)
+## p_ai_team: Array of soul dictionaries (up to 4)
+## p_map_name: Arena map name
+## p_ai_difficulty: AI difficulty level (1-4)
+func start_team_battle(p_player_team: Array, p_ai_team: Array, p_map_name: String = "default_arena", p_ai_difficulty: int = 1) -> bool:
+	if battle_state == BattleState.ACTIVE:
+		GameLog.warning("RTSArenaManager: Battle already active", "Arena")
+		return false
+
+	# Validate team sizes
+	if p_player_team.is_empty() or p_ai_team.is_empty():
+		GameLog.warning("RTSArenaManager: Team cannot be empty", "Arena")
+		return false
+
+	var player_count: int = min(p_player_team.size(), TEAM_SIZE)
+	var ai_count: int = min(p_ai_team.size(), TEAM_SIZE)
+
+	GameLog.info("RTSArenaManager: Starting %dv%d team battle on map %s (AI difficulty: %d)" % [player_count, ai_count, p_map_name, p_ai_difficulty], "Arena")
+
+	# Reset state
+	battle_state = BattleState.ACTIVE
+	battle_time = 0.0
+	winner_id = ""
+	battle_result = "pending"
+	battle_log.clear()
+	player_units.clear()
+	ai_units.clear()
+	_player_entity_ids.clear()
+	_ai_entity_ids.clear()
+	_ai_controllers.clear()
+	_player_ai_controllers.clear()
+
+	# Load arena map
+	if ArenaMap and ArenaMap.has_method("load_map"):
+		ArenaMap.load_map(p_map_name)
+		battle_config["player_spawn"] = ArenaMap.player_spawn
+		battle_config["ai_spawn"] = ArenaMap.ai_spawn
+
+	# Initialize arena environment
+	_environment = ArenaEnvironment.new()
+	_environment.setup_for_map(p_map_name)
+	battle_config["weather"] = _environment.get_weather_name()
+
+	# Initialize pathfinding
+	if _grid_map_script == null:
+		_grid_map_script = load("res://scripts/game/ArboreusGridMapBridge.gd")
+	if _pathfinder_script == null:
+		_pathfinder_script = load("res://scripts/game/SDKPathfinder.gd")
+	_grid_map = _grid_map_script.new(32.0, 40, 19, 0.0, 0.0, true)
+	_pathfinder = _pathfinder_script.new(32.0, 40, 19, 0.0, 0.0, true)
+	_sync_obstacles_to_grid()
+	_sync_obstacles_to_sdk_pathfinder()
+
+	# Initialize Arboreus World simulation
+	_arboreus_world = ArboreusWorldBridge.new({
+		"name": "rts_arena",
+		"width": battle_config["arena_width"],
+		"height": battle_config["arena_height"],
+		"cell_size": 32
+	})
+	_arboreus_world.start()
+
+	# Spawn player team units (vertical formation)
+	var player_base_pos: Vector2 = battle_config["player_spawn"]
+	for i in range(player_count):
+		var soul_data: Dictionary = p_player_team[i]
+		var unit: SoulUnit = SoulUnit.new()
+		unit.init_from_soul(
+			soul_data.get("id", "player_%d" % i),
+			soul_data.get("name", "Player %d" % (i + 1)),
+			soul_data.get("element", "neutral"),
+			soul_data.get("level", 1),
+			true
+		)
+		# Vertical formation: units spaced 80px apart
+		var offset_y: float = (i - (player_count - 1) / 2.0) * 80.0
+		unit.position = player_base_pos + Vector2(0, offset_y)
+		unit.set_pathfinding(_pathfinder, _grid_map)
+		unit.unit_died.connect(_on_team_unit_died)
+		add_child(unit)
+		player_units.append(unit)
+		emit_signal("unit_spawned", unit, true)
+
+		# Create Arboreus entity
+		if _arboreus_world and _arboreus_world.is_arboreus_available():
+			var entity_id: int = _arboreus_world.create_entity(unit.soul_name, unit.position)
+			_arboreus_world.register_entity_to_movement(entity_id, unit.position)
+			_arboreus_world.entity_add_component(entity_id, "transform", {"position": unit.position, "team": "player"})
+			_arboreus_world.entity_add_component(entity_id, "combat_stats", {
+				"hp": unit.current_hp, "max_hp": unit.max_hp, "attack": unit.attack_damage,
+				"attack_range": unit.attack_range, "move_speed": unit.move_speed,
+				"level": unit.level, "element": unit.element
+			})
+			_player_entity_ids.append(entity_id)
+
+		# Apply soul personality
+		_apply_soul_personality(unit, soul_data)
+
+		# Create player AI controller (auto-battle mode)
+		var player_ai: EmberAIController = EmberAIController.new()
+		_player_ai_controllers.append(player_ai)
+
+	# Set compatibility reference to first player unit
+	if not player_units.is_empty():
+		player_unit = player_units[0]
+
+	# Spawn AI team units (vertical formation)
+	var ai_base_pos: Vector2 = battle_config["ai_spawn"]
+	for i in range(ai_count):
+		var soul_data: Dictionary = p_ai_team[i]
+		var unit: SoulUnit = SoulUnit.new()
+		unit.init_from_soul(
+			soul_data.get("id", "ai_%d" % i),
+			soul_data.get("name", "AI %d" % (i + 1)),
+			soul_data.get("element", "neutral"),
+			soul_data.get("level", 1),
+			false
+		)
+		var offset_y: float = (i - (ai_count - 1) / 2.0) * 80.0
+		unit.position = ai_base_pos + Vector2(0, offset_y)
+		unit.set_pathfinding(_pathfinder, _grid_map)
+		unit.unit_died.connect(_on_team_unit_died)
+		add_child(unit)
+		ai_units.append(unit)
+		emit_signal("unit_spawned", unit, false)
+
+		# Apply AI difficulty
+		_apply_ai_difficulty(unit, p_ai_difficulty)
+
+		# Create Arboreus entity
+		if _arboreus_world and _arboreus_world.is_arboreus_available():
+			var entity_id: int = _arboreus_world.create_entity(unit.soul_name, unit.position)
+			_arboreus_world.register_entity_to_movement(entity_id, unit.position)
+			_arboreus_world.entity_add_component(entity_id, "transform", {"position": unit.position, "team": "ai"})
+			_arboreus_world.entity_add_component(entity_id, "combat_stats", {
+				"hp": unit.current_hp, "max_hp": unit.max_hp, "attack": unit.attack_damage,
+				"attack_range": unit.attack_range, "move_speed": unit.move_speed,
+				"level": unit.level, "element": unit.element
+			})
+			_ai_entity_ids.append(entity_id)
+
+		# Apply soul personality
+		_apply_soul_personality(unit, soul_data)
+
+		# Create AI controller
+		var ai_controller: EmberAIController = EmberAIController.new()
+		_ai_controllers.append(ai_controller)
+
+	# Set compatibility reference to first AI unit
+	if not ai_units.is_empty():
+		ai_unit = ai_units[0]
+
+	# Set initial attack targets (each unit targets nearest enemy)
+	_setup_team_attack_targets()
+
+	# Initialize compatibility AI controllers (for existing code)
+	if not _ai_controllers.is_empty():
+		_ai_controller = _ai_controllers[0]
+	if not _player_ai_controllers.is_empty():
+		_player_ai_controller = _player_ai_controllers[0]
+
+	_add_log("Team battle started! %dv%d" % [player_count, ai_count])
+	var player_names: Array = []
+	for u in player_units:
+		player_names.append(u.soul_name)
+	_add_log("Player team: " + ", ".join(player_names))
+	var ai_names: Array = []
+	for u in ai_units:
+		ai_names.append(u.soul_name)
+	_add_log("AI team: " + ", ".join(ai_names))
+
+	# Play battle start audio
+	AudioManager.play_sfx("ui_battle_start")
+	AudioManager.play_bgm("battle")
+
+	# Build team info arrays
+	var player_team_info: Array = []
+	for u in player_units:
+		player_team_info.append(u.get_info())
+	var ai_team_info: Array = []
+	for u in ai_units:
+		ai_team_info.append(u.get_info())
+
+	emit_signal("battle_started", {
+		"player_team": player_team_info,
+		"ai_team": ai_team_info,
+		"config": battle_config,
+		"team_battle": true
+	})
+
+	return true
+
+
+## Setup attack targets for team battle (each unit targets nearest enemy)
+func _setup_team_attack_targets() -> void:
+	for p_unit in player_units:
+		if p_unit and p_unit.state != SoulUnit.UnitState.DEAD:
+			var nearest: SoulUnit = _find_nearest_enemy(p_unit, ai_units)
+			if nearest:
+				p_unit.set_attack_target(nearest)
+	for a_unit in ai_units:
+		if a_unit and a_unit.state != SoulUnit.UnitState.DEAD:
+			var nearest: SoulUnit = _find_nearest_enemy(a_unit, player_units)
+			if nearest:
+				a_unit.set_attack_target(nearest)
+
+
+## Find nearest alive enemy unit
+func _find_nearest_enemy(p_unit: SoulUnit, p_enemies: Array) -> SoulUnit:
+	var nearest: SoulUnit = null
+	var min_dist: float = INF
+	for enemy in p_enemies:
+		if enemy and enemy.state != SoulUnit.UnitState.DEAD:
+			var dist: float = p_unit.position.distance_to(enemy.position)
+			if dist < min_dist:
+				min_dist = dist
+				nearest = enemy
+	return nearest
+
+
+## Get count of alive units in team
+func get_alive_count(p_team: Array) -> int:
+	var count: int = 0
+	for unit in p_team:
+		if unit and unit.state != SoulUnit.UnitState.DEAD:
+			count += 1
+	return count
+
+
+## Get total HP of team
+func get_team_total_hp(p_team: Array) -> int:
+	var total: int = 0
+	for unit in p_team:
+		if unit and unit.state != SoulUnit.UnitState.DEAD:
+			total += unit.current_hp
+	return total
+
+
+## Handle team unit death
+func _on_team_unit_died(p_unit: SoulUnit) -> void:
+	GameLog.info("RTSArenaManager: %s has been defeated!" % p_unit.soul_name, "Arena")
+	_add_log("%s has been defeated!" % p_unit.soul_name)
+
+	# Check if player team wiped
+	var player_alive: int = get_alive_count(player_units)
+	var ai_alive: int = get_alive_count(ai_units)
+
+	if player_alive == 0:
+		_finish_battle(ai_units[0].soul_id if not ai_units.is_empty() else "ai", "defeat")
+	elif ai_alive == 0:
+		_finish_battle(player_units[0].soul_id if not player_units.is_empty() else "player", "victory")
+	else:
+		# Re-target remaining units
+		_setup_team_attack_targets()
+
+
 ## Sync ArenaMap obstacles to A* grid
 func _sync_obstacles_to_grid() -> void:
 	if _grid_map == null or ArenaMap == null:
@@ -459,6 +731,14 @@ func _process(delta: float) -> void:
 	if _player_ai_controller:
 		_player_ai_controller.update(scaled_delta)
 
+	# GAP-001: Update all team AI controllers
+	for ctrl in _ai_controllers:
+		if ctrl:
+			ctrl.update(scaled_delta)
+	for ctrl in _player_ai_controllers:
+		if ctrl:
+			ctrl.update(scaled_delta)
+
 	# AI decision making (coach-style RTS: autonomous decisions)
 	_ai_decision_timer += scaled_delta
 	if _ai_decision_timer >= _ai_decision_interval:
@@ -473,10 +753,15 @@ func _process(delta: float) -> void:
 			player_unit.position.distance_to(ai_unit.position) if (player_unit and ai_unit) else -1
 		], "Arena")
 		_update_ai()
+		# GAP-001: Update all team AI decisions
+		_update_team_ai()
 
 	# Auto-battle mode: player unit also controlled by AI
 	if battle_mode == "auto" and _player_ai_controller:
 		_update_player_ai()
+	# GAP-001: Update all team player AI decisions
+	if battle_mode == "auto":
+		_update_team_player_ai()
 
 	# Update emotions based on battle state
 	_update_emotions()
@@ -535,6 +820,41 @@ func _update_player_ai() -> void:
 	_player_ai_controller.execute_decision(player_unit, ai_unit)
 
 
+## GAP-001: Update all AI team units decisions
+func _update_team_ai() -> void:
+	if ai_units.is_empty() or player_units.is_empty():
+		return
+	for i in range(ai_units.size()):
+		var ai_u: SoulUnit = ai_units[i]
+		if ai_u == null or ai_u.state == SoulUnit.UnitState.DEAD:
+			continue
+		if i >= _ai_controllers.size() or _ai_controllers[i] == null:
+			continue
+		# Find nearest alive player unit as target
+		var target: SoulUnit = _find_nearest_enemy(ai_u, player_units)
+		if target == null:
+			continue
+		var decision = _ai_controllers[i].make_decision(ai_u, target)
+		_ai_controllers[i].execute_decision(ai_u, target)
+
+
+## GAP-001: Update all player team units AI decisions (auto-battle mode)
+func _update_team_player_ai() -> void:
+	if player_units.is_empty() or ai_units.is_empty():
+		return
+	for i in range(player_units.size()):
+		var p_unit: SoulUnit = player_units[i]
+		if p_unit == null or p_unit.state == SoulUnit.UnitState.DEAD:
+			continue
+		if i >= _player_ai_controllers.size() or _player_ai_controllers[i] == null:
+			continue
+		var target: SoulUnit = _find_nearest_enemy(p_unit, ai_units)
+		if target == null:
+			continue
+		var decision = _player_ai_controllers[i].make_decision(p_unit, target)
+		_player_ai_controllers[i].execute_decision(p_unit, target)
+
+
 ## Update emotional states based on battle events
 func _update_emotions() -> void:
 	if ai_unit == null or player_unit == null:
@@ -563,10 +883,20 @@ func _finish_battle_by_time() -> void:
 	GameLog.info("RTSArenaManager: Battle time limit reached", "Arena")
 	_add_log("Time limit reached!")
 
-	if player_unit.current_hp > ai_unit.current_hp:
-		_finish_battle(player_unit.soul_id, "victory")
-	elif ai_unit.current_hp > player_unit.current_hp:
-		_finish_battle(ai_unit.soul_id, "defeat")
+	# GAP-001: Compare team total HP for team battles
+	var player_total_hp: int = get_team_total_hp(player_units)
+	var ai_total_hp: int = get_team_total_hp(ai_units)
+
+	# Fallback to single unit comparison if teams are empty
+	if player_units.is_empty() and player_unit:
+		player_total_hp = player_unit.current_hp
+	if ai_units.is_empty() and ai_unit:
+		ai_total_hp = ai_unit.current_hp
+
+	if player_total_hp > ai_total_hp:
+		_finish_battle(player_units[0].soul_id if not player_units.is_empty() else (player_unit.soul_id if player_unit else "player"), "victory")
+	elif ai_total_hp > player_total_hp:
+		_finish_battle(ai_units[0].soul_id if not ai_units.is_empty() else (ai_unit.soul_id if ai_unit else "ai"), "defeat")
 	else:
 		_finish_battle("", "draw")
 
@@ -770,12 +1100,27 @@ func get_tactical_weight(modifier_name: String, default_value: float = 1.0) -> f
 
 ## Clean up battle
 func cleanup_battle() -> void:
-	if player_unit != null and is_instance_valid(player_unit):
-		player_unit.queue_free()
-		player_unit = null
-	if ai_unit != null and is_instance_valid(ai_unit):
-		ai_unit.queue_free()
-		ai_unit = null
+	# Clean up player units
+	for unit in player_units:
+		if unit != null and is_instance_valid(unit):
+			unit.queue_free()
+	player_units.clear()
+	# Clean up AI units
+	for unit in ai_units:
+		if unit != null and is_instance_valid(unit):
+			unit.queue_free()
+	ai_units.clear()
+	# Clear compatibility references
+	player_unit = null
+	ai_unit = null
+	# Clear entity IDs
+	_player_entity_ids.clear()
+	_ai_entity_ids.clear()
+	# Clear AI controllers
+	_ai_controllers.clear()
+	_player_ai_controllers.clear()
+	_ai_controller = null
+	_player_ai_controller = null
 	battle_state = BattleState.IDLE
 	battle_time = 0.0
 	_environment = null
@@ -849,7 +1194,7 @@ func _add_log(p_message: String) -> void:
 
 ## Get battle info
 func get_battle_info() -> Dictionary:
-	return {
+	var info: Dictionary = {
 		"state": battle_state,
 		"time": battle_time,
 		"result": battle_result,
@@ -859,6 +1204,21 @@ func get_battle_info() -> Dictionary:
 		"log_count": battle_log.size(),
 		"weather": _environment.get_weather_name() if _environment != null else "Clear"
 	}
+	# GAP-001: Add team info
+	if not player_units.is_empty():
+		var p_team: Array = []
+		for u in player_units:
+			p_team.append(u.get_info())
+		info["player_team"] = p_team
+		info["player_alive"] = get_alive_count(player_units)
+	if not ai_units.is_empty():
+		var a_team: Array = []
+		for u in ai_units:
+			a_team.append(u.get_info())
+		info["ai_team"] = a_team
+		info["ai_alive"] = get_alive_count(ai_units)
+		info["team_battle"] = true
+	return info
 
 
 ## Get recent battle log

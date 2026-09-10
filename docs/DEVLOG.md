@@ -1,5 +1,58 @@
 ﻿# 战策 Battleplan 开发日志
 
+## [GAP修复] GAP-001 1v1→4v4团队对战（2026-09-11）
+
+**用户明确指令**：不接受当前1v1状态作为M2发布版本，战斗必须支持每方4个灵魂的团队对战。
+
+### GAP-001 P1：战斗1v1→4v4团队对战 ✅（RTSArenaManager层完成）
+
+**问题**：RTSArenaManager.gd只有单数player_unit和ai_unit，每场只生成1v1。BattleConfig写了_max_team_size=4但未使用。游戏本质是1v1格斗而非4v4 RTS。
+
+**修复方案**：渐进式改造RTSArenaManager，添加团队对战支持，保持向后兼容：
+
+1. **新增变量**：
+   - `player_units`/`ai_units`：团队单位数组（最多4个）
+   - `TEAM_SIZE = 4`：团队规模常量（GDD v2.0标准）
+   - `_player_entity_ids`/`_ai_entity_ids`：Arboreus实体ID数组
+   - `_ai_controllers`/`_player_ai_controllers`：每个单位独立AI控制器
+
+2. **新增方法**：
+   - `start_team_battle(p_player_team, p_ai_team, p_map_name, p_ai_difficulty)`：启动4v4团队对战，垂直编队（间距80px），每个单位独立AI/血量/技能/状态
+   - `_setup_team_attack_targets()`：每个单位自动攻击最近敌人
+   - `_find_nearest_enemy(p_unit, p_enemies)`：查找最近存活敌人
+   - `get_alive_count(p_team)`：团队存活单位数
+   - `get_team_total_hp(p_team)`：团队总HP
+   - `_on_team_unit_died(p_unit)`：单位死亡处理，检查团队是否全灭，全灭则结束战斗
+   - `_update_team_ai()`：所有AI单位独立决策
+   - `_update_team_player_ai()`：所有玩家单位AI决策（auto模式）
+
+3. **修改方法**：
+   - `_process()`：添加团队AI控制器更新和团队AI决策调用
+   - `cleanup_battle()`：清理所有团队单位
+   - `_finish_battle_by_time()`：比较团队总HP判定胜负
+   - `get_battle_info()`：添加player_team/ai_team/alive_count/team_battle信息
+
+4. **向后兼容**：
+   - `player_unit`/`ai_unit`保留为兼容引用，指向团队第一个单位
+   - `start_battle()`方法保持不变，1v1模式继续可用
+   - 所有现有测试通过（2955 Passed, 0 Failed）
+
+**语法错误排查记录**：
+- 类型化数组`Array[SoulUnit]`在Godot 4.7.2中报Parse Error，改为普通`Array`
+- 多行字符串格式化`"..." % [\n  ...\n], "Arena"`报Expected closing "]"，改为单行
+- 数组推导式`[u.soul_name for u in player_units]`在`%`操作符后报优先级错误，改为循环收集+字符串拼接
+- 数组推导式`[u.get_info() for u in player_units]`在Dictionary字面量中报Parse Error，改为循环构建数组
+
+**测试结果**：2955 Passed, 0 Failed，无SCRIPT ERROR
+
+**后续工作**（下一轮）：
+- 改造RTSArenaController支持4v4显示（多个单位的HP条/技能栏/战术指令UI）
+- BattleConfig实际使用_max_team_size=4
+- 玩家对单个灵魂下达战术指令的UI（点击选择+指令）
+- 4v4平衡性调整
+
+---
+
 ## [GAP修复] GAP-002主菜单接入 + GAP-003版本标签（2026-09-11）
 
 **用户明确指令**：不接受当前1v1+4按钮状态作为M2发布版本，三个GAP必须在发布前修复。
