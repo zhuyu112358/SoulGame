@@ -18,6 +18,9 @@ const EmberAIController = preload("res://scripts/game/EmberSoulAIController.gd")
 ## ArenaEnvironment preload (weather + terrain effects)
 const ArenaEnvironment = preload("res://scripts/game/ArenaEnvironment.gd")
 
+## AIDifficultySystem preload (AI difficulty levels)
+const AIDifficultySystem = preload("res://scripts/game/AIDifficultySystem.gd")
+
 ## Battle state constants
 enum BattleState {
 	IDLE,
@@ -124,13 +127,13 @@ func _ready() -> void:
 
 
 ## Start a new RTS battle
-func start_battle(p_player_soul: Dictionary, p_ai_soul: Dictionary, p_map_name: String = "default_arena") -> bool:
+func start_battle(p_player_soul: Dictionary, p_ai_soul: Dictionary, p_map_name: String = "default_arena", p_ai_difficulty: int = 1) -> bool:
 	if battle_state == BattleState.ACTIVE:
 		GameLog.warning("RTSArenaManager: Battle already active", "Arena")
 		return false
 
-	GameLog.info("RTSArenaManager: Starting RTS battle between %s and %s on map %s" % [
-		p_player_soul.get("name", "Player"), p_ai_soul.get("name", "AI"), p_map_name
+	GameLog.info("RTSArenaManager: Starting RTS battle between %s and %s on map %s (AI difficulty: %d)" % [
+		p_player_soul.get("name", "Player"), p_ai_soul.get("name", "AI"), p_map_name, p_ai_difficulty
 	], "Arena")
 
 	# Reset state
@@ -225,6 +228,9 @@ func start_battle(p_player_soul: Dictionary, p_ai_soul: Dictionary, p_map_name: 
 	ai_unit.unit_died.connect(_on_unit_died)
 	add_child(ai_unit)
 	emit_signal("unit_spawned", ai_unit, false)
+
+	# Apply AI difficulty modifiers (M2.11 Battle Modes)
+	_apply_ai_difficulty(ai_unit, p_ai_difficulty)
 
 	# Create corresponding Arboreus entity (world simulation layer)
 	if _arboreus_world and _arboreus_world.is_arboreus_available():
@@ -329,7 +335,31 @@ func _sync_obstacles_to_sdk_pathfinder() -> void:
 		GameLog.debug("RTSArenaManager: Synced %d obstacles to SDKPathfinder" % obstacles.size(), "Arena")
 
 
-## Apply soul personality to unit (design doc: 个性即战术)
+## Apply AI difficulty modifiers to AI unit (M2.11 Battle Modes)
+func _apply_ai_difficulty(p_unit, p_difficulty: int) -> void:
+	var difficulty_system = AIDifficultySystem.new()
+	var modifiers = difficulty_system.get_stat_modifiers(p_difficulty)
+
+	# Apply stat modifiers
+	if modifiers.has("hp_multiplier"):
+		p_unit.max_hp = int(p_unit.max_hp * modifiers["hp_multiplier"])
+		p_unit.current_hp = p_unit.max_hp
+	if modifiers.has("attack_multiplier"):
+		p_unit.attack_damage = int(p_unit.attack_damage * modifiers["attack_multiplier"])
+	if modifiers.has("speed_multiplier"):
+		p_unit.move_speed = int(p_unit.move_speed * modifiers["speed_multiplier"])
+	if modifiers.has("crit_rate_multiplier"):
+		p_unit.crit_rate = clampf(p_unit.crit_rate * modifiers["crit_rate_multiplier"], 0.0, 1.0)
+	if modifiers.has("crit_damage_multiplier"):
+		p_unit.crit_multiplier = p_unit.crit_multiplier * modifiers["crit_damage_multiplier"]
+
+	GameLog.info("RTSArenaManager: AI difficulty applied - %s (HP:%d ATK:%d SPD:%d)" % [
+		difficulty_system.get_difficulty_name(p_difficulty),
+		p_unit.max_hp, p_unit.attack_damage, p_unit.move_speed
+	], "Arena")
+	difficulty_system.queue_free()
+
+
 func _apply_soul_personality(p_unit, p_soul_data: Dictionary) -> void:
 	if p_soul_data.has("personality"):
 		var personality_val = p_soul_data["personality"]

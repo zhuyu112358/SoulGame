@@ -1,5 +1,37 @@
 ﻿# 战策 Battleplan 开发日志
 
+## [M2.11] 对战模式 - AI难度系统（2026-09-10）
+
+**GDD v2.0第11章**：对战模式 - AI难度系统。
+
+**新建文件**：
+- `scripts/game/AIDifficultySystem.gd` - AI难度系统
+  - 4个难度级别：简单/普通/困难/噩梦
+  - 每个难度有stat_modifiers（HP/攻击/速度/暴击率/暴击伤害倍率）
+  - 每个难度有ai_parameters（决策间隔/反应速度/学习率/指令遵从/攻击性/谨慎性/技能使用率/道具使用率/陷阱躲避率）
+  - 每个难度有reward_multiplier和exp_multiplier
+  - 提供get_stat_modifiers/get_ai_parameters/get_difficulty_name等方法
+  - 支持apply_stat_modifiers应用属性修饰符
+  - 支持get_difficulty_list获取UI用的难度列表
+
+**修改文件**：
+- `scripts/game/RTSArenaManager.gd` - 集成AI难度系统
+  - start_battle方法添加p_ai_difficulty参数（默认1=普通）
+  - 添加_apply_ai_difficulty方法，在AI单位创建后应用难度修饰符
+  - 添加AIDifficultySystem preload
+
+**AI难度配置**：
+| 难度 | HP倍率 | 攻击倍率 | 速度倍率 | 决策间隔 | 奖励倍率 | 经验倍率 |
+|------|--------|----------|----------|----------|----------|----------|
+| 简单 | 0.8x | 0.7x | 0.8x | 2.5s | 0.5x | 0.5x |
+| 普通 | 1.0x | 1.0x | 1.0x | 1.5s | 1.0x | 1.0x |
+| 困难 | 1.2x | 1.2x | 1.1x | 1.0s | 1.5x | 1.5x |
+| 噩梦 | 1.5x | 1.5x | 1.3x | 0.5s | 2.0x | 2.0x |
+
+**测试结果**：M2测试 2668 Passed, 0 Failed（全绿，无回归）
+
+---
+
 ## [M2.9] UI系统 - 设置界面（2026-09-10）
 
 **GDD v2.0第9章**：UI系统 - 设置界面。
