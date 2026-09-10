@@ -47,6 +47,7 @@ const TalentSystem = preload("res://scripts/game/TalentSystem.gd")
 const ItemSystem = preload("res://scripts/game/ItemSystem.gd")
 const AchievementSystem = preload("res://scripts/game/AchievementSystem.gd")
 const TrapSystem = preload("res://scripts/game/TrapSystem.gd")
+const SoulUpgradeSystem = preload("res://scripts/game/SoulUpgradeSystem.gd")
 
 ## Visual unit nodes
 var _player_visual = null  # Sprite2D proxy (SoulUnit is child of autoload, not in visible scene)
@@ -143,6 +144,9 @@ var _achievement_popup = null  # Achievement unlock notification
 var _trap_system = null
 var _trap_container = null  # Node2D container for trap sprites
 
+## Soul upgrade system (GDD v2.0 Chapter 5 - Permanent cross-battle)
+var _soul_upgrade_system = null
+
 ## Status effect display
 var _player_status_label = null
 var _ai_status_label = null
@@ -205,6 +209,8 @@ func _ready() -> void:
 	_base_position = position
 	# Initialize achievement system (loads saved data)
 	_init_achievement_system()
+	# Initialize soul upgrade system (loads saved permanent upgrades)
+	_init_soul_upgrade_system()
 	_dlog("[DEBUG-READY] before _setup_ui_refs")
 	_setup_ui_refs()
 	_dlog("[DEBUG-READY] after _setup_ui_refs, before _apply_ui_theme")
@@ -1780,6 +1786,8 @@ func _start_battle_after_countdown() -> void:
 	_init_item_system()
 	# Initialize trap system
 	_init_trap_system()
+	# Apply permanent soul upgrades to player unit
+	_apply_soul_upgrades_to_player()
 	# Start achievement tracking
 	_start_achievement_tracking()
 
@@ -2598,6 +2606,9 @@ func _on_battle_finished(p_result: String, p_winner_id: String, p_loser_id: Stri
 	# End achievement tracking
 	var player_won = (p_result == "player_win")
 	_end_achievement_tracking(player_won)
+	# Award soul experience
+	var battle_time = RTSArenaManager.battle_time if RTSArenaManager else 0.0
+	_award_soul_experience(player_won, battle_time)
 	# Trigger victory particles if player won
 	if p_result == "player_win" and RTSArenaManager.player_unit:
 		_spawn_victory_particles(RTSArenaManager.player_unit.position)
@@ -3695,6 +3706,58 @@ func _on_trap_triggered(trap_id: String, unit, damage: float) -> void:
 		AudioManager.play_sfx("battle_trap_trigger")
 	# Spawn trap effect particles
 	_spawn_trap_effect(unit.global_position if unit else Vector2.ZERO, trap_id)
+
+
+## Initialize soul upgrade system (GDD v2.0 Chapter 5 - Permanent)
+func _init_soul_upgrade_system() -> void:
+	if _soul_upgrade_system != null:
+		return
+	_soul_upgrade_system = SoulUpgradeSystem.new()
+	_soul_upgrade_system.name = "SoulUpgradeSystem"
+	add_child(_soul_upgrade_system)
+	_soul_upgrade_system.upgrade_applied.connect(_on_soul_upgrade_applied)
+	_soul_upgrade_system.soul_leveled_up.connect(_on_soul_leveled_up)
+	GameLog.info("Soul upgrade system initialized (level %d, %d points)" % [
+		_soul_upgrade_system.get_soul_level(),
+		_soul_upgrade_system.get_upgrade_points()
+	], "Arena")
+
+
+## Apply permanent soul upgrades to player unit at battle start
+func _apply_soul_upgrades_to_player() -> void:
+	if _soul_upgrade_system == null:
+		return
+	if RTSArenaManager.player_unit:
+		_soul_upgrade_system.apply_upgrades_to_unit(RTSArenaManager.player_unit)
+		GameLog.info("Soul upgrades applied to player unit", "Arena")
+
+
+## Award soul experience after battle
+func _award_soul_experience(victory: bool, battle_duration: float) -> void:
+	if _soul_upgrade_system == null:
+		return
+	# Base experience: 50 for win, 20 for loss
+	var exp = 50 if victory else 20
+	# Time bonus: faster battles give more exp
+	if victory and battle_duration > 0:
+		var time_bonus = int(max(0, 120 - battle_duration) * 0.5)
+		exp += time_bonus
+	_soul_upgrade_system.add_experience(exp)
+	_add_log("灵魂经验 +%d (等级 %d)" % [exp, _soul_upgrade_system.get_soul_level()])
+
+
+## Handle soul upgrade applied
+func _on_soul_upgrade_applied(dimension: String, new_level: int) -> void:
+	var dim = _soul_upgrade_system.get_dimension(dimension) if _soul_upgrade_system else {}
+	var dim_name = dim.get("name", dimension)
+	_add_log("灵魂升级: %s Lv.%d" % [dim_name, new_level])
+
+
+## Handle soul level up
+func _on_soul_leveled_up(new_level: int) -> void:
+	_add_log("🌟 灵魂等级提升! Lv.%d (获得1升级点)" % new_level)
+	if AudioManager:
+		AudioManager.play_sfx("ui_level_up")
 
 
 ## Initialize achievement system (GDD v2.0 Chapter 13)
