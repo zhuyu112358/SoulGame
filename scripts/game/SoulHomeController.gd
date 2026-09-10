@@ -4,6 +4,7 @@ extends Node2D
 const SoulGrowthData = preload("res://scripts/game/SoulGrowthData.gd")
 const FurnitureSystem = preload("res://scripts/game/FurnitureSystem.gd")
 const TrainingSystem = preload("res://scripts/game/TrainingSystem.gd")
+const SoulDailyBehaviorAI = preload("res://scripts/game/SoulDailyBehaviorAI.gd")
 
 ## SoulHomeController - Controller for the Soul Home scene
 ##
@@ -69,6 +70,9 @@ var _furniture_system = null
 ## Training system (M2.8 - training ground)
 var _training_system = null
 
+## Daily behavior AI (M2.8 - soul autonomous behavior)
+var _daily_behavior_ai = null
+
 
 func _ready() -> void:
 	GameLog.info("SoulHome: Scene initialized", "SoulHome")
@@ -76,6 +80,7 @@ func _ready() -> void:
 	_setup_button_hovers()
 	_init_furniture_system()
 	_init_training_system()
+	_init_daily_behavior_ai()
 	_enter_home()
 	_play_home_ambience()
 
@@ -321,6 +326,93 @@ func _on_training_completed(training_type: String, rewards: Dictionary) -> void:
 			GameLog.info("SoulHome: +%.2f %s from training" % [stat_boost[stat], stat], "SoulHome")
 
 
+## --- Daily Behavior AI (M2.8) ---
+
+## Initialize daily behavior AI
+func _init_daily_behavior_ai() -> void:
+	_daily_behavior_ai = SoulDailyBehaviorAI.new()
+	_daily_behavior_ai.name = "DailyBehaviorAI"
+	add_child(_daily_behavior_ai)
+	_daily_behavior_ai.behavior_changed.connect(_on_behavior_changed)
+	_daily_behavior_ai.behavior_completed.connect(_on_behavior_completed)
+	_daily_behavior_ai.set_room(current_room)
+	GameLog.info("SoulHome: Daily behavior AI initialized", "SoulHome")
+
+
+## Get current soul behavior
+func get_soul_behavior() -> String:
+	if _daily_behavior_ai == null:
+		return "idle"
+	return _daily_behavior_ai.get_current_behavior_name()
+
+
+## Get soul needs
+func get_soul_needs() -> Dictionary:
+	if _daily_behavior_ai == null:
+		return {}
+	return _daily_behavior_ai.get_needs()
+
+
+## Force soul to do a specific behavior
+func force_soul_behavior(behavior_name: String) -> bool:
+	if _daily_behavior_ai == null:
+		return false
+	# Map behavior name to enum
+	var behavior_map = {
+		"idle": 0,
+		"sleeping": 1,
+		"eating": 2,
+		"reading": 3,
+		"training": 4,
+		"playing": 5,
+		"meditating": 6,
+		"walking": 7,
+		"interacting": 8
+	}
+	if not behavior_map.has(behavior_name):
+		return false
+	return _daily_behavior_ai.force_behavior(behavior_map[behavior_name])
+
+
+## Handle behavior changed
+func _on_behavior_changed(old_behavior: int, new_behavior: int) -> void:
+	var behavior_names = ["发呆", "睡觉", "进食", "阅读", "训练", "玩耍", "冥想", "漫步", "互动"]
+	var new_name = behavior_names[new_behavior] if new_behavior < behavior_names.size() else "未知"
+	GameLog.debug("SoulHome: Soul is now %s" % new_name, "SoulHome")
+	# Update soul display animation based on behavior
+	_update_soul_behavior_display(new_behavior)
+
+
+## Handle behavior completed
+func _on_behavior_completed(behavior: int, rewards: Dictionary) -> void:
+	var behavior_names = ["发呆", "睡觉", "进食", "阅读", "训练", "玩耍", "冥想", "漫步", "互动"]
+	var behavior_name = behavior_names[behavior] if behavior < behavior_names.size() else "未知"
+	var exp = rewards.get("exp", 0)
+	if exp > 0:
+		GameLog.info("SoulHome: Soul finished %s (+%d exp)" % [behavior_name, exp], "SoulHome")
+
+
+## Update soul display based on behavior
+func _update_soul_behavior_display(behavior: int) -> void:
+	if soul_display == null:
+		return
+	# Animate soul based on behavior
+	var tween = create_tween()
+	match behavior:
+		1:  # SLEEPING
+			tween.tween_property(soul_display, "modulate", Color(0.7, 0.7, 1.0), 0.5)
+			tween.parallel().tween_property(soul_display, "scale", Vector2(0.9, 0.9), 0.5)
+		4:  # TRAINING
+			tween.tween_property(soul_display, "modulate", Color(1.2, 0.8, 0.8), 0.3)
+			tween.parallel().tween_property(soul_display, "scale", Vector2(1.1, 1.1), 0.3)
+		5:  # PLAYING
+			tween.tween_property(soul_display, "modulate", Color(1.0, 1.1, 1.0), 0.3)
+			tween.parallel().tween_property(soul_display, "scale", Vector2(1.05, 1.05), 0.3)
+		_:  # IDLE and others
+			tween.tween_property(soul_display, "modulate", Color(1.0, 1.0, 1.0), 0.5)
+			tween.parallel().tween_property(soul_display, "scale", Vector2(1.0, 1.0), 0.5)
+
+
 func _process(delta: float) -> void:
 	if _interaction_cooldown > 0:
 		_interaction_cooldown -= delta
@@ -405,6 +497,9 @@ func switch_room(room_name: String) -> bool:
 	var old_room = current_room
 	current_room = room_name
 	_room_switch_cooldown = 0.3
+	# Update daily behavior AI room
+	if _daily_behavior_ai:
+		_daily_behavior_ai.set_room(room_name)
 
 	GameLog.info("SoulHome: Switched from %s to %s" % [old_room, room_name], "SoulHome")
 	EventBus.emit("soul_home_room_changed", {"from": old_room, "to": room_name})
