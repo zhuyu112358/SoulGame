@@ -1,0 +1,64 @@
+{
+  "id": "opening_cg",
+  "type": "opening",
+  "title": "战策 Battleplan - 开场CG",
+  "auto_play": true,
+  "slide_duration": 5.0,
+  "slides": [
+    {
+      "image": "res://assets/art/concepts/concept_world_aether.png",
+      "title": "灵界 Aether Realm",
+      "text": "在人类世界之外，存在着一个由灵质构成的维度——灵界。这里是灵魂存在和生活的世界。"
+    },
+    {
+      "image": "res://assets/art/concepts/concept_soul_life.png",
+      "title": "灵魂的家园",
+      "text": "灵界有城市、村庄、自然景观，灵魂们在这里学习、成长、交友，过着丰富多彩的生活。"
+    },
+    {
+      "image": "res://assets/art/concepts/concept_arena.png",
+      "title": "竞技场 The Arena",
+      "text": "在灵界，最受欢迎的竞技活动是竞技场对战。灵魂们进入特殊维度，展示自己的力量和智慧。"
+    },
+    {
+      "image": "res://assets/art/concepts/concept_soul_commander.png",
+      "title": "灵魂指挥官",
+      "text": "你被选中了。从今天起，你将成为一名灵魂指挥官，与灵魂缔结契约，带领他们走向胜利。"
+    },
+    {
+      "image": "res://assets/art/concepts/concept_elements.png",
+      "title": "八元素灵魂",
+      "text": "火、水、土、风、雷、冰、暗、光——八种元素的灵魂，每一种都有独特的性格和能力。"
+    },
+    {
+      "image": "res://assets/art/concepts/concept_battle.png",
+      "title": "灵魂自主战斗",
+      "text": "灵魂们拥有自己的意志，会自主战斗。你不需要直接操控他们，只需要给予战术指令。"
+    },
+    {
+      "image": "res://assets/art/concepts/command_tactical.png",
+      "title": "战术指令",
+      "text": "进攻、防守、集火、分散、跟随、撤退——六种战术指令，引导你的灵魂伙伴赢得胜利。"
+    },
+    {
+      "image": "res://assets/art/concepts/concept_soul_growth.png",
+      "title": "成长与羁绊",
+      "text": "与灵魂建立深厚的羁绊，看着他们成长、进化，变得越来越聪明。养的不是数值，是真正的智能体。"
+    },
+    {
+      "image": "res://assets/art/concepts/concept_soul_home.png",
+      "title": "灵魂之家",
+      "text": "战斗之外，还有温馨的灵魂之家。与灵魂伙伴一起生活、训练、探索这个奇妙的世界。"
+    },
+    {
+      "image": "res://assets/art/concepts/concept_journey_begins.png",
+      "title": "冒险开始",
+      "text": "欢迎来到灵界，指挥官。你的冒险，现在开始。"
+    }
+  ],
+  "events": [
+    {"trigger": "start", "action": "play_bgm", "value": "opening_theme"},
+    {"trigger": "end", "action": "stop_bgm"},
+    {"trigger": "end", "action": "show_main_menu"}
+  ]
+}

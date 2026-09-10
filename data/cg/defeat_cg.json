@@ -1,0 +1,23 @@
+{
+  "id": "defeat_cg",
+  "type": "defeat",
+  "title": "失败 Defeat",
+  "auto_play": true,
+  "slide_duration": 3.0,
+  "slides": [
+    {
+      "image": "res://assets/art/concepts/concept_defeat.png",
+      "title": "失败……",
+      "text": "这场战斗失利了。但不要灰心，失败是成长的一部分。"
+    },
+    {
+      "image": "res://assets/art/concepts/concept_encouragement.png",
+      "title": "再接再厉",
+      "text": "灵魂伙伴们期待着下一场战斗。调整战术，再次挑战吧！"
+    }
+  ],
+  "events": [
+    {"trigger": "start", "action": "play_sfx", "value": "battle_ui_defeat"},
+    {"trigger": "end", "action": "show_battle_result"}
+  ]
+}

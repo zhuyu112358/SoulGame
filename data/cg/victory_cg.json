@@ -1,0 +1,23 @@
+{
+  "id": "victory_cg",
+  "type": "victory",
+  "title": "胜利 Victory",
+  "auto_play": true,
+  "slide_duration": 3.0,
+  "slides": [
+    {
+      "image": "res://assets/art/concepts/concept_victory.png",
+      "title": "胜利！",
+      "text": "你的灵魂伙伴赢得了这场战斗！"
+    },
+    {
+      "image": "res://assets/art/concepts/concept_celebration.png",
+      "title": "庆祝",
+      "text": "灵魂们在庆祝胜利，羁绊更加深厚了。"
+    }
+  ],
+  "events": [
+    {"trigger": "start", "action": "play_sfx", "value": "battle_ui_victory"},
+    {"trigger": "end", "action": "show_battle_result"}
+  ]
+}
