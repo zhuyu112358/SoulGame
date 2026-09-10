@@ -349,9 +349,9 @@ func _test_soul_unit() -> void:
 	_assert(unit.level == 5, "Unit level correct")
 	_assert(unit.is_player_controlled == true, "Unit player flag correct")
 
-	# Test 2: Stats scaled by level
-	_assert(unit.max_hp == 100 + 5 * 20, "HP scaled by level (200)")
-	_assert(unit.attack_damage == 10 + 5 * 3, "Attack scaled by level (25)")
+	# Test 2: Stats scaled by level (with fire element modifiers: HP*0.9, ATK*1.2)
+	_assert(unit.max_hp == int((100 + 5 * 20) * 0.9), "HP scaled by level with fire modifier (180)")
+	_assert(unit.attack_damage == int((10 + 5 * 3) * 1.2), "Attack scaled by level with fire modifier (30)")
 	_assert(unit.current_hp == unit.max_hp, "Full HP at init")
 	_assert(unit.current_energy == unit.max_energy, "Full energy at init")
 

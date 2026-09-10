@@ -65,6 +65,7 @@ var personality_name: String = "冷静"
 var evolution_stage: int = 1  # Default: INFANT
 var evolution_stage_name: String = "幼体"
 var evolution_multipliers: Dictionary = {}  # Stat multipliers from evolution stage
+var element_modifiers: Dictionary = {}  # Stat multipliers from element type (M2.14 balance)
 
 ## Emotional state (influences decision-making and skill effectiveness)
 ## Design doc: emotion affects skill effects (anger: +20% attack, fear: +20% defense)
@@ -518,6 +519,9 @@ func init_from_soul(p_soul_id: String, p_soul_name: String, p_element: String, p
 	attack_range = 100.0 + level * 2
 	move_speed = 150.0 + level * 5
 
+	# Apply element-specific stat modifiers (M2.14 balance)
+	_apply_element_stats(p_element)
+
 	# Initialize Ember SDK soul data bridge (architecture compliant)
 	_ember_bridge = EmberSoulDataBridge.new()
 	_ember_bridge.init_from_soul_data(p_soul_id, p_soul_name, p_level, p_element, personality)
@@ -537,6 +541,84 @@ func init_from_soul(p_soul_id: String, p_soul_name: String, p_element: String, p
 	], "Arena")
 	# Create visual AFTER element/is_player are set
 	_create_visual()
+
+
+## Apply element-specific stat modifiers for balance (M2.14)
+## Each element has distinct combat role:
+##   fire: high attack, high crit, low HP (assassin)
+##   water: balanced, high healing, high HP (support)
+##   earth: very high HP/defense, low speed (tank)
+##   wind: high speed/evasion, low HP (skirmisher)
+##   thunder: extreme attack/crit damage, very low HP (glass cannon)
+##   ice: crowd control, balanced stats (controller)
+##   dark: lifesteal, high attack, low HP (drainer)
+##   light: shield/healing, high HP (protector)
+func _apply_element_stats(p_element: String) -> void:
+	# Base multipliers (all start at 1.0)
+	var hp_mult := 1.0
+	var atk_mult := 1.0
+	var speed_mult := 1.0
+	var range_mult := 1.0
+	var crit_rate_add := 0.0
+	var crit_mult_add := 0.0
+
+	match p_element:
+		"fire":
+			hp_mult = 0.90
+			atk_mult = 1.20
+			crit_rate_add = 0.05
+			crit_mult_add = 0.10
+		"water":
+			hp_mult = 1.15
+			atk_mult = 0.90
+			# Healing bonus handled in skill system
+		"earth":
+			hp_mult = 1.25
+			atk_mult = 0.85
+			speed_mult = 0.90
+		"wind":
+			hp_mult = 0.90
+			atk_mult = 0.95
+			speed_mult = 1.20
+			# Evasion handled in damage calculation
+		"thunder":
+			hp_mult = 0.85
+			atk_mult = 1.25
+			speed_mult = 1.10
+			crit_mult_add = 0.20
+		"ice":
+			hp_mult = 1.10
+			atk_mult = 1.05
+			# Slow effect handled in skill system
+		"dark":
+			hp_mult = 0.90
+			atk_mult = 1.15
+			# Lifesteal handled in damage calculation
+		"light":
+			hp_mult = 1.20
+			atk_mult = 0.95
+			# Shield bonus handled in skill system
+		_:
+			# Default: no modifier
+			pass
+
+	# Apply multipliers
+	max_hp = int(max_hp * hp_mult)
+	current_hp = max_hp
+	attack_damage = int(attack_damage * atk_mult)
+	move_speed = move_speed * speed_mult
+	attack_range = attack_range * range_mult
+	crit_rate = crit_rate + crit_rate_add
+	crit_multiplier = crit_multiplier + crit_mult_add
+
+	# Store element modifiers for reference
+	element_modifiers = {
+		"hp_mult": hp_mult,
+		"atk_mult": atk_mult,
+		"speed_mult": speed_mult,
+		"crit_rate_add": crit_rate_add,
+		"crit_mult_add": crit_mult_add
+	}
 
 
 ## Update HP bar visual
