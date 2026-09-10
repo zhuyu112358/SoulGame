@@ -44,6 +44,7 @@ var minimap = null
 const SoulUnit = preload("res://scripts/game/SoulUnit.gd")
 const Minimap = preload("res://scripts/ui/Minimap.gd")
 const TalentSystem = preload("res://scripts/game/TalentSystem.gd")
+const ItemSystem = preload("res://scripts/game/ItemSystem.gd")
 
 ## Visual unit nodes
 var _player_visual = null  # Sprite2D proxy (SoulUnit is child of autoload, not in visible scene)
@@ -127,6 +128,10 @@ var _talent_system = null
 var _talent_panel = null
 var _talent_buttons = []
 var _talent_active = false
+
+## Battle item system (GDD v2.0 Chapter 7)
+var _item_system = null
+var _item_container = null  # Node2D container for item sprites
 
 ## Status effect display
 var _player_status_label = null
@@ -1759,6 +1764,8 @@ func _start_battle_after_countdown() -> void:
 		_countdown_label = null
 	_pending_battle_config = null
 	_countdown_active = false
+	# Initialize item system
+	_init_item_system()
 
 
 ## Setup UI node references
@@ -2343,6 +2350,8 @@ func _process(delta: float) -> void:
 	_update_weather_display()
 	_update_status_display()
 	_update_talent_check(delta)
+	if _item_system and _battle_active:
+		_item_system.update(delta, RTSArenaManager.player_unit, RTSArenaManager.ai_unit)
 	_update_crit_display(delta)
 	_update_dodge_display(delta)
 	_update_heal_display(delta)
@@ -3530,6 +3539,47 @@ func _init_talent_system() -> void:
 	_talent_system.talent_options_generated.connect(_on_talent_options_generated)
 	_talent_system.talent_selected.connect(_on_talent_selected)
 	GameLog.info("Talent system initialized", "Arena")
+
+
+## Initialize battle item system (GDD v2.0 Chapter 7)
+func _init_item_system() -> void:
+	if _item_system != null:
+		_item_system.stop_item_system()
+		_item_system.queue_free()
+	_item_system = ItemSystem.new()
+	_item_system.name = "ItemSystem"
+	add_child(_item_system)
+	# Create item container for sprites
+	if _item_container != null:
+		_item_container.queue_free()
+	_item_container = Node2D.new()
+	_item_container.name = "ItemContainer"
+	add_child(_item_container)
+	# Set battlefield bounds
+	_item_system.set_battlefield_bounds(Vector2(200, 150), Vector2(1080, 500))
+	_item_system.set_spawn_interval(15.0)
+	_item_system.set_item_parent(_item_container)
+	_item_system.item_picked_up.connect(_on_item_picked_up)
+	_item_system.item_spawned.connect(_on_item_spawned)
+	_item_system.start_item_system()
+	GameLog.info("Item system initialized", "Arena")
+
+
+## Handle item spawned - add sprite to scene
+func _on_item_spawned(item_id: String, position: Vector2) -> void:
+	# Item sprite is created by ItemSystem, need to reparent to our container
+	# Find the newly created item sprite and add to container
+	pass  # Sprites are managed by ItemSystem internally
+
+
+## Handle item picked up
+func _on_item_picked_up(item_id: String, unit) -> void:
+	var item = _item_system.get_item(item_id) if _item_system else {}
+	var item_name = item.get("name", item_id)
+	var unit_name = unit.soul_name if unit else "Unknown"
+	_add_log("%s 拾取了 %s" % [unit_name, item_name])
+	if AudioManager:
+		AudioManager.play_sfx("ui_item_pickup")
 
 
 ## Create talent selection panel UI
