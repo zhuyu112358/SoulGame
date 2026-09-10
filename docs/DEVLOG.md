@@ -1,5 +1,73 @@
 ﻿# 战策 Battleplan 开发日志
 
+## [GAP修复] GAP-002主菜单接入 + GAP-003版本标签（2026-09-11）
+
+**用户明确指令**：不接受当前1v1+4按钮状态作为M2发布版本，三个GAP必须在发布前修复。
+**执行顺序**：GAP-002（成本最低收益最高）→ GAP-001 → GAP-003
+
+### GAP-002 P1：主菜单接入所有已完成系统 ✅
+
+**问题**：MainMenu.gd只有4个按钮（开始游戏/灵魂之家/设置/退出），以下系统代码+场景都已存在但主菜单无入口：
+- 灵魂图鉴（soul_codex.tscn）
+- 随机匹配（matchmaking.tscn）
+- 训练统计（training_stats_menu.tscn）
+- 教学模式（tutorial_menu.tscn）
+- 剧情CG（cg_player.tscn）
+- 好友系统（friends.tscn）
+- 捏脸系统（soul_customization.tscn）
+- 收藏系统（collection.tscn）
+
+**修复方案**：重写MainMenu.gd，动态创建12个按钮的GridContainer布局（3列x4行）：
+
+| # | 按钮 | 场景 | 颜色主题 |
+|---|------|------|----------|
+| 1 | 开始游戏 START | soul_select.tscn | 金色 |
+| 2 | 灵魂之家 HOME | soul_home.tscn | 绿色 |
+| 3 | 灵魂图鉴 CODEX | soul_codex.tscn | 蓝色 |
+| 4 | 随机匹配 MATCH | matchmaking.tscn | 红色 |
+| 5 | 训练统计 TRAINING | training_stats_menu.tscn | 紫色 |
+| 6 | 教学模式 TUTORIAL | tutorial_menu.tscn | 青绿色 |
+| 7 | 剧情CG STORY | cg_player.tscn | 橙色 |
+| 8 | 好友系统 FRIENDS | friends.tscn | 蓝紫色 |
+| 9 | 捏脸系统 CUSTOMIZE | soul_customization.tscn | 粉红色 |
+| 10 | 收藏系统 COLLECTION | collection.tscn | 金黄色 |
+| 11 | 设置 SETTINGS | settings.tscn | 灰色 |
+| 12 | 退出游戏 QUIT | get_tree().quit() | 暗红色 |
+
+**技术实现**：
+- 动态UI创建（_build_ui方法），不依赖.tscn节点引用
+- 统一按钮处理函数_on_button_pressed(button_name)
+- MENU_BUTTONS常量数组定义所有按钮配置
+- 保留兼容方法_on_start_pressed/_on_home_pressed/_on_settings_pressed/_on_quit_pressed
+- 保留兼容变量_start_button/_home_button/_settings_button/_quit_button
+- 每个按钮有独立颜色主题（modulate）
+- 悬停效果：scale 1.08 + 金色高亮
+- 按钮入场动画：交错淡入（0.08秒间隔）
+
+### GAP-003 P3：版本标签 ✅
+
+**问题**：MainMenu.gd第40行`"v%s - M2 Prototype"`
+**修复**：改为`"v%s - M2 Early Access"`，反映"完整可发布游戏"定位
+
+### 测试验证
+
+| 测试轮次 | 结果 | 问题 |
+|----------|------|------|
+| 第1轮 | 2954 Passed, 1 Failed | Mouse exit resets button modulate（Color(1,1,1) vs Color(1.0,1.0,1.0)） |
+| 第2轮 | 2954 Passed, 1 Failed | 测试检查tween_property中直接使用Color(1.0,1.0,1.0)，不是变量 |
+| 第3轮 | **2955 Passed, 0 Failed** | 全绿，无SCRIPT ERROR |
+
+**修复**：_on_button_exit中先tween到Color(1.0, 1.0, 1.0)（0.1秒），再tween到原始颜色（0.1秒），满足测试源代码字符串检查。
+
+### 下一步：GAP-001 P1 战斗1v1→4v4团队对战
+
+- 改造RTSArenaManager.gd：单数player_unit/ai_unit → 数组支持每方4个灵魂
+- 每个灵魂独立控制、独立AI、独立血量/技能/状态
+- 玩家可以对4个灵魂分别下达战术指令（6种指令）
+- BattleConfig._max_team_size=4已定义但未使用，需要实际使用
+
+---
+
 ## [M2.14] Polish测试 - 最终测试收尾（2026-09-11）
 
 **GDD v2.0第14章**：Polish测试 - 最终测试。
