@@ -1266,7 +1266,7 @@ func use_skill(p_skill_name: String, p_target: Node2D = null) -> bool:
 	match p_skill_name:
 		"heavy_strike":
 			if p_target != null:
-				var damage: int = _calculate_damage(attack_damage, 1.5)
+				var damage: int = _calculate_damage(attack_damage, 2.0)  # M2.14 balance: 1.5 -> 2.0
 				p_target.take_damage(damage, self)
 				last_skill_used = "heavy_strike"
 				skill_cooldowns[p_skill_name] = 5.0
@@ -1274,14 +1274,14 @@ func use_skill(p_skill_name: String, p_target: Node2D = null) -> bool:
 				return true
 		"quick_strike":
 			if p_target != null:
-				var damage: int = _calculate_damage(attack_damage, 0.7)
+				var damage: int = _calculate_damage(attack_damage, 0.9)  # M2.14 balance: 0.7 -> 0.9
 				p_target.take_damage(damage, self)
 				last_skill_used = "quick_strike"
 				skill_cooldowns[p_skill_name] = 2.0
 				emit_signal("skill_used", p_skill_name, p_target)
 				return true
 		"heal":
-			var heal_amount: int = 15 + level * 2
+			var heal_amount: int = 25 + level * 3  # M2.14 balance: 15+level*2 -> 25+level*3
 			last_heal_amount = heal_amount
 			current_hp = min(max_hp, current_hp + heal_amount)
 			emit_signal("hp_changed", current_hp, max_hp)
@@ -1290,7 +1290,7 @@ func use_skill(p_skill_name: String, p_target: Node2D = null) -> bool:
 			emit_signal("skill_used", p_skill_name, self)
 			return true
 		"defend":
-			status_effects["defense_up"] = 3.0
+			status_effects["defense_up"] = 4.0  # M2.14 balance: 3.0 -> 4.0
 			last_defend_used = true
 			last_skill_used = "defend"
 			skill_cooldowns[p_skill_name] = 6.0
