@@ -1,0 +1,126 @@
+[gd_scene load_steps=2 format=3 uid="uid://training_stats_scene"]
+
+[ext_resource type="Script" path="res://scripts/ui/TrainingStatsMenu.gd" id="1_stats"]
+
+[node name="TrainingStatsMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_stats")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.1, 0.08, 0.16, 1)
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/margin_left = 60
+theme_override_constants/margin_top = 40
+theme_override_constants/margin_right = 60
+theme_override_constants/margin_bottom = 40
+
+[node name="VBox" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="TitleLabel" type="Label" parent="MarginContainer/VBox"]
+layout_mode = 2
+text = "训练统计"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 32
+theme_override_colors/font_color = Color(0.85, 0.7, 0.35, 1)
+
+[node name="RankSection" type="VBoxContainer" parent="MarginContainer/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="RankLabel" type="Label" parent="MarginContainer/VBox/RankSection"]
+layout_mode = 2
+text = "段位: 新手"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 22
+
+[node name="RankDescLabel" type="Label" parent="MarginContainer/VBox/RankSection"]
+layout_mode = 2
+text = "胜率: 0.0% · 场次: 0"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 1)
+
+[node name="OverallSection" type="VBoxContainer" parent="MarginContainer/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="OverallTitle" type="Label" parent="MarginContainer/VBox/OverallSection"]
+layout_mode = 2
+text = "总体统计"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.85, 0.7, 0.35, 1)
+
+[node name="OverallGrid" type="GridContainer" parent="MarginContainer/VBox/OverallSection"]
+layout_mode = 2
+columns = 4
+theme_override_constants/h_separation = 20
+theme_override_constants/v_separation = 10
+
+[node name="DifficultySection" type="VBoxContainer" parent="MarginContainer/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="DifficultyTitle" type="Label" parent="MarginContainer/VBox/DifficultySection"]
+layout_mode = 2
+text = "分难度统计"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.85, 0.7, 0.35, 1)
+
+[node name="DifficultyGrid" type="GridContainer" parent="MarginContainer/VBox/DifficultySection"]
+layout_mode = 2
+columns = 4
+theme_override_constants/h_separation = 30
+theme_override_constants/v_separation = 5
+
+[node name="HistorySection" type="VBoxContainer" parent="MarginContainer/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="HistoryTitle" type="Label" parent="MarginContainer/VBox/HistorySection"]
+layout_mode = 2
+text = "最近战斗"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.85, 0.7, 0.35, 1)
+
+[node name="HistoryScroll" type="ScrollContainer" parent="MarginContainer/VBox/HistorySection"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="HistoryContainer" type="VBoxContainer" parent="MarginContainer/VBox/HistorySection/HistoryScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 5
+
+[node name="ButtonRow" type="HBoxContainer" parent="MarginContainer/VBox"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 20
+
+[node name="ResetButton" type="Button" parent="MarginContainer/VBox/ButtonRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(140, 40)
+text = "重置统计"
+
+[node name="BackButton" type="Button" parent="MarginContainer/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(200, 44)
+size_flags_horizontal = 4
+text = "返回主菜单"
+theme_override_font_sizes/font_size = 16
