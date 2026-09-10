@@ -43,6 +43,7 @@ var minimap = null
 ## SoulUnit preload
 const SoulUnit = preload("res://scripts/game/SoulUnit.gd")
 const Minimap = preload("res://scripts/ui/Minimap.gd")
+const TalentSystem = preload("res://scripts/game/TalentSystem.gd")
 
 ## Visual unit nodes
 var _player_visual = null  # Sprite2D proxy (SoulUnit is child of autoload, not in visible scene)
@@ -120,6 +121,12 @@ var _tactical_system = null
 var _tactical_buttons = {}
 var _current_tactical_command = "free"
 var _tactical_indicator = null
+
+## In-battle talent upgrade system (GDD v2.0 Chapter 5)
+var _talent_system = null
+var _talent_panel = null
+var _talent_buttons = []
+var _talent_active = false
 
 ## Status effect display
 var _player_status_label = null
@@ -1935,6 +1942,8 @@ func _setup_skill_buttons() -> void:
 
 	# Initialize tactical command system (GDD v2.0 Chapter 2.1.1)
 	_init_tactical_command_system()
+	# Initialize talent upgrade system (GDD v2.0 Chapter 5)
+	_init_talent_system()
 	# Create cooldown overlays for each skill button
 	for skill_name in skill_buttons.keys():
 		var button = skill_buttons[skill_name]
@@ -2260,6 +2269,7 @@ func _process(delta: float) -> void:
 	_update_command_cooldown(delta)
 	_update_weather_display()
 	_update_status_display()
+	_update_talent_check(delta)
 	_update_crit_display(delta)
 	_update_dodge_display(delta)
 	_update_heal_display(delta)
@@ -3437,6 +3447,276 @@ func get_tactical_weight(modifier_name: String, default_value: float = 1.0) -> f
 	if _tactical_system:
 		return _tactical_system.get_weight(modifier_name, default_value)
 	return default_value
+
+
+## Initialize talent upgrade system (GDD v2.0 Chapter 5)
+func _init_talent_system() -> void:
+	_talent_system = TalentSystem.new()
+	_talent_system.name = "TalentSystem"
+	add_child(_talent_system)
+	_talent_system.talent_options_generated.connect(_on_talent_options_generated)
+	_talent_system.talent_selected.connect(_on_talent_selected)
+	GameLog.info("Talent system initialized", "Arena")
+
+
+## Create talent selection panel UI
+func _create_talent_panel() -> void:
+	if _talent_panel:
+		return
+	# Dark overlay
+	var overlay = ColorRect.new()
+	overlay.name = "TalentOverlay"
+	overlay.color = Color(0.05, 0.03, 0.1, 0.85)
+	overlay.anchor_right = 1.0
+	overlay.anchor_bottom = 1.0
+	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(overlay)
+	_talent_panel = overlay
+
+	# Main panel
+	var panel = Panel.new()
+	panel.name = "TalentPanel"
+	panel.size = Vector2(700, 300)
+	panel.position = Vector2(290, 190)
+	panel.add_theme_stylebox_override("panel", _create_panel_style())
+	overlay.add_child(panel)
+
+	# Title
+	var title = Label.new()
+	title.name = "TalentTitle"
+	title.text = "灵魂升级 - 选择天赋"
+	title.position = Vector2(0, 15)
+	title.size = Vector2(700, 30)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 20)
+	title.add_theme_color_override("font_color", Color(0.85, 0.7, 0.4))
+	panel.add_child(title)
+
+	# Talent cards container
+	var cards = HBoxContainer.new()
+	cards.name = "TalentCards"
+	cards.position = Vector2(25, 60)
+	cards.size = Vector2(650, 200)
+	cards.add_theme_constant_override("separation", 20)
+	cards.alignment = BoxContainer.ALIGNMENT_CENTER
+	panel.add_child(cards)
+
+	# Create 3 talent card buttons
+	_talent_buttons.clear()
+	for i in range(3):
+		var card = Button.new()
+		card.name = "TalentCard%d" % i
+		card.custom_minimum_size = Vector2(200, 180)
+		card.add_theme_stylebox_override("normal", _create_card_style())
+		card.add_theme_stylebox_override("hover", _create_card_hover_style())
+		card.add_theme_stylebox_override("pressed", _create_card_pressed_style())
+		card.pressed.connect(_on_talent_card_pressed.bind(i))
+		cards.add_child(card)
+		_talent_buttons.append(card)
+
+		# Card content (VBox)
+		var content = VBoxContainer.new()
+		content.name = "CardContent"
+		content.size = Vector2(180, 160)
+		content.position = Vector2(10, 10)
+		content.add_theme_constant_override("separation", 8)
+		card.add_child(content)
+
+		# Icon placeholder
+		var icon = Label.new()
+		icon.name = "TalentIcon"
+		icon.text = "◆"
+		icon.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		icon.add_theme_font_size_override("font_size", 32)
+		icon.add_theme_color_override("font_color", Color(0.9, 0.75, 0.4))
+		content.add_child(icon)
+
+		# Talent name
+		var name_label = Label.new()
+		name_label.name = "TalentName"
+		name_label.text = ""
+		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		name_label.add_theme_font_size_override("font_size", 16)
+		name_label.add_theme_color_override("font_color", Color(1.0, 0.95, 0.8))
+		content.add_child(name_label)
+
+		# Talent description
+		var desc_label = Label.new()
+		desc_label.name = "TalentDesc"
+		desc_label.text = ""
+		desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		desc_label.add_theme_font_size_override("font_size", 11)
+		desc_label.add_theme_color_override("font_color", Color(0.7, 0.65, 0.6))
+		desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		content.add_child(desc_label)
+
+	_talent_panel.visible = false
+
+
+## Create panel style (deep purple with gold border)
+func _create_panel_style() -> StyleBoxFlat:
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.12, 0.08, 0.2, 0.95)
+	style.border_color = Color(0.8, 0.65, 0.3)
+	style.border_width_left = 2
+	style.border_width_right = 2
+	style.border_width_top = 2
+	style.border_width_bottom = 2
+	style.corner_radius_top_left = 8
+	style.corner_radius_top_right = 8
+	style.corner_radius_bottom_left = 8
+	style.corner_radius_bottom_right = 8
+	return style
+
+
+## Create talent card style
+func _create_card_style() -> StyleBoxFlat:
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.15, 0.1, 0.25, 0.9)
+	style.border_color = Color(0.5, 0.4, 0.25)
+	style.border_width_left = 1
+	style.border_width_right = 1
+	style.border_width_top = 1
+	style.border_width_bottom = 1
+	style.corner_radius_top_left = 6
+	style.corner_radius_top_right = 6
+	style.corner_radius_bottom_left = 6
+	style.corner_radius_bottom_right = 6
+	return style
+
+
+func _create_card_hover_style() -> StyleBoxFlat:
+	var style = _create_card_style()
+	style.bg_color = Color(0.2, 0.15, 0.3, 0.95)
+	style.border_color = Color(0.9, 0.75, 0.4)
+	return style
+
+
+func _create_card_pressed_style() -> StyleBoxFlat:
+	var style = _create_card_style()
+	style.bg_color = Color(0.25, 0.2, 0.35, 1.0)
+	style.border_color = Color(1.0, 0.85, 0.5)
+	return style
+
+
+## Handle talent options generated
+func _on_talent_options_generated(options: Array) -> void:
+	if not _talent_panel:
+		_create_talent_panel()
+	_talent_panel.visible = true
+	_talent_active = true
+	# Pause battle while selecting
+	get_tree().paused = true
+	# Update card content
+	for i in range(min(options.size(), _talent_buttons.size())):
+		var talent_id = options[i]
+		var talent = _talent_system.get_talent(talent_id)
+		var card = _talent_buttons[i]
+		var name_label = card.get_node("CardContent/TalentName")
+		var desc_label = card.get_node("CardContent/TalentDesc")
+		if name_label:
+			name_label.text = talent.get("name", talent_id)
+		if desc_label:
+			desc_label.text = talent.get("description", "")
+	GameLog.info("Talent options shown: %s" % str(options), "Arena")
+
+
+## Handle talent card pressed
+func _on_talent_card_pressed(index: int) -> void:
+	if not _talent_system or not _talent_system.is_selection_pending():
+		return
+	var options = _talent_system.get_pending_options()
+	if index >= options.size():
+		return
+	var talent_id = options[index]
+	_talent_system.select_player_talent(talent_id)
+
+
+## Handle talent selected
+func _on_talent_selected(talent_id: String, talent_name: String) -> void:
+	_talent_active = false
+	if _talent_panel:
+		_talent_panel.visible = false
+	# Resume battle
+	get_tree().paused = false
+	# Apply talent effects to player unit
+	_apply_talent_effects(talent_id)
+	# Show battle log
+	if battle_log:
+		battle_log.text += "\n[天赋] 获得: %s" % talent_name
+	if AudioManager:
+		AudioManager.play_sfx("ui_confirm")
+	GameLog.info("Talent selected: %s (%s)" % [talent_id, talent_name], "Arena")
+
+
+## Apply talent effects to player unit
+func _apply_talent_effects(talent_id: String) -> void:
+	if not RTSArenaManager.player_unit:
+		return
+	var talent = _talent_system.get_talent(talent_id)
+	var effect = talent.get("effect", {})
+	var unit = RTSArenaManager.player_unit
+	# Apply multiplier effects
+	if effect.has("attack_damage_mult"):
+		unit.attack_damage = int(unit.attack_damage * effect["attack_damage_mult"])
+	if effect.has("max_hp_mult"):
+		var old_max = unit.max_hp
+		unit.max_hp = int(unit.max_hp * effect["max_hp_mult"])
+		unit.current_hp += (unit.max_hp - old_max)
+	if effect.has("move_speed_mult"):
+		unit.move_speed = int(unit.move_speed * effect["move_speed_mult"])
+	if effect.has("attack_speed_mult"):
+		unit.attack_speed *= effect["attack_speed_mult"]
+	if effect.has("attack_range_mult"):
+		unit.attack_range = int(unit.attack_range * effect["attack_range_mult"])
+	if effect.has("crit_rate_add"):
+		unit.crit_rate += effect["crit_rate_add"]
+	# Store flag effects in unit for damage calculation
+	if not unit.has_meta("talent_effects"):
+		unit.set_meta("talent_effects", {})
+	var existing = unit.get_meta("talent_effects")
+	for key in effect.keys():
+		existing[key] = effect[key]
+	unit.set_meta("talent_effects", existing)
+
+
+## Check for talent upgrade timing (called from _process)
+func _update_talent_check(delta: float) -> void:
+	if not _talent_system or not RTSArenaManager:
+		return
+	if RTSArenaManager.battle_state != RTSArenaManager.BattleState.ACTIVE:
+		return
+	if _talent_active:
+		return
+	var battle_time = RTSArenaManager.battle_time
+	# Player upgrade
+	if _talent_system.check_player_upgrade(battle_time):
+		_talent_system.generate_player_options()
+	# AI upgrade (auto)
+	if _talent_system.check_ai_upgrade(battle_time):
+		_talent_system.generate_ai_options()
+		# Apply AI talent effects
+		var ai_talents = _talent_system._ai_talents
+		if ai_talents.size() > 0 and RTSArenaManager.ai_unit:
+			var last_talent = ai_talents[ai_talents.size() - 1]
+			_apply_ai_talent_effects(last_talent)
+
+
+## Apply AI talent effects
+func _apply_ai_talent_effects(talent_id: String) -> void:
+	if not RTSArenaManager.ai_unit:
+		return
+	var talent = _talent_system.get_talent(talent_id)
+	var effect = talent.get("effect", {})
+	var unit = RTSArenaManager.ai_unit
+	if effect.has("attack_damage_mult"):
+		unit.attack_damage = int(unit.attack_damage * effect["attack_damage_mult"])
+	if effect.has("max_hp_mult"):
+		var old_max = unit.max_hp
+		unit.max_hp = int(unit.max_hp * effect["max_hp_mult"])
+		unit.current_hp += (unit.max_hp - old_max)
+	if effect.has("move_speed_mult"):
+		unit.move_speed = int(unit.move_speed * effect["move_speed_mult"])
 
 
 ## Handle back button - return to main menu
