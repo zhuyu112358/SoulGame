@@ -214,6 +214,149 @@ var _countdown_value: int = 3
 var _ambient_time: float = 0.0
 
 
+## Clean up all dynamically created resources to prevent memory leaks
+func _exit_tree() -> void:
+	_dlog("[DEBUG-EXIT] _exit_tree() start - cleaning up resources")
+
+	# Clean up damage labels
+	for dmg_data in _damage_labels:
+		if dmg_data and dmg_data.label and is_instance_valid(dmg_data.label):
+			dmg_data.label.queue_free()
+	_damage_labels.clear()
+	if _damage_label and is_instance_valid(_damage_label):
+		_damage_label.queue_free()
+		_damage_label = null
+
+	# Clean up skill particles
+	for p_data in _skill_particles:
+		if p_data and p_data.has("particle") and p_data["particle"] and is_instance_valid(p_data["particle"]):
+			p_data["particle"].queue_free()
+	_skill_particles.clear()
+
+	# Clean up ambient particles
+	for ap in _ambient_particles:
+		if ap and ap.has("particle") and ap["particle"] and is_instance_valid(ap["particle"]):
+			ap["particle"].queue_free()
+	_ambient_particles.clear()
+
+	# Clean up magic dust
+	for md in _magic_dust:
+		if md and md.has("particle") and md["particle"] and is_instance_valid(md["particle"]):
+			md["particle"].queue_free()
+	_magic_dust.clear()
+
+	# Clean up visual units
+	if _player_visual and is_instance_valid(_player_visual):
+		_player_visual.queue_free()
+		_player_visual = null
+	if _ai_visual and is_instance_valid(_ai_visual):
+		_ai_visual.queue_free()
+		_ai_visual = null
+	if _player_light and is_instance_valid(_player_light):
+		_player_light.queue_free()
+		_player_light = null
+	if _ai_light and is_instance_valid(_ai_light):
+		_ai_light.queue_free()
+		_ai_light = null
+
+	# Clean up systems (they are children, will be freed with parent, but explicit is safer)
+	if _item_system and is_instance_valid(_item_system):
+		_item_system.queue_free()
+		_item_system = null
+	if _trap_system and is_instance_valid(_trap_system):
+		_trap_system.queue_free()
+		_trap_system = null
+	if _talent_system and is_instance_valid(_talent_system):
+		_talent_system.queue_free()
+		_talent_system = null
+	if _achievement_system and is_instance_valid(_achievement_system):
+		_achievement_system.queue_free()
+		_achievement_system = null
+	if _tactical_system and is_instance_valid(_tactical_system):
+		_tactical_system.queue_free()
+		_tactical_system = null
+
+	# Clean up containers
+	if _item_container and is_instance_valid(_item_container):
+		_item_container.queue_free()
+		_item_container = null
+	if _trap_container and is_instance_valid(_trap_container):
+		_trap_container.queue_free()
+		_trap_container = null
+
+	# Clean up UI panels
+	if _command_panel and is_instance_valid(_command_panel):
+		_command_panel.queue_free()
+		_command_panel = null
+	if _pause_overlay and is_instance_valid(_pause_overlay):
+		_pause_overlay.queue_free()
+		_pause_overlay = null
+	if _talent_panel and is_instance_valid(_talent_panel):
+		_talent_panel.queue_free()
+		_talent_panel = null
+	if _achievement_popup and is_instance_valid(_achievement_popup):
+		_achievement_popup.queue_free()
+		_achievement_popup = null
+	if _countdown_label and is_instance_valid(_countdown_label):
+		_countdown_label.queue_free()
+		_countdown_label = null
+	if _hit_flash and is_instance_valid(_hit_flash):
+		_hit_flash.queue_free()
+		_hit_flash = null
+	if _vignette_sprite and is_instance_valid(_vignette_sprite):
+		_vignette_sprite.queue_free()
+		_vignette_sprite = null
+	if _chromatic_layer and is_instance_valid(_chromatic_layer):
+		_chromatic_layer.queue_free()
+		_chromatic_layer = null
+	if _chromatic_rect and is_instance_valid(_chromatic_rect):
+		_chromatic_rect.queue_free()
+		_chromatic_rect = null
+
+	# Clean up status labels
+	if _player_status_label and is_instance_valid(_player_status_label):
+		_player_status_label.queue_free()
+	if _ai_status_label and is_instance_valid(_ai_status_label):
+		_ai_status_label.queue_free()
+	if _player_status_icons and is_instance_valid(_player_status_icons):
+		_player_status_icons.queue_free()
+	if _ai_status_icons and is_instance_valid(_ai_status_icons):
+		_ai_status_icons.queue_free()
+
+	# Clean up combat feedback labels
+	for label in [_error_label, _success_label, _crit_label, _dodge_label, _heal_label, _defend_label, _skill_label, _weather_label]:
+		if label and is_instance_valid(label):
+			label.queue_free()
+
+	# Clean up button dictionaries
+	_command_buttons.clear()
+	skill_buttons.clear()
+	_skill_cooldown_overlays.clear()
+	_skill_cooldown_labels.clear()
+	_tactical_buttons.clear()
+	_talent_buttons.clear()
+
+	# Clean up cached textures
+	_particle_textures.clear()
+	_particle_textures_loaded = false
+
+	# Reset state
+	_battle_active = false
+	_is_paused = false
+	_countdown_active = false
+	_talent_active = false
+	_error_active = false
+	_success_active = false
+	_crit_active = false
+	_dodge_active = false
+	_heal_active = false
+	_defend_active = false
+	_skill_active = false
+
+	_dlog("[DEBUG-EXIT] _exit_tree() complete - all resources cleaned")
+	GameLog.info("RTSArenaController: Scene exit, resources cleaned", "Arena")
+
+
 func _ready() -> void:
 	_dlog("[DEBUG-READY] _ready() start")
 	GameLog.info("RTSArenaController: RTS Arena scene ready", "Arena")

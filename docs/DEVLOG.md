@@ -1,5 +1,44 @@
 ﻿# 战策 Battleplan 开发日志
 
+## [M2.14] Polish测试 - 内存泄漏修复（2026-09-11）
+
+**GDD v2.0第14章**：Polish测试 - 性能优化。
+
+**问题发现**：RTSArenaController缺少_exit_tree()方法，场景切换时动态创建的节点和资源未被清理，导致退出时出现：
+- `Texture GL ID leaked` - 纹理资源泄漏
+- `ObjectDB泄漏` - 对象数据库泄漏
+- 长时间运行可能导致内存增长
+
+**修复方案**：在RTSArenaController.gd中添加完整的_exit_tree()方法（约120行），清理所有动态创建的资源：
+
+| 清理类别 | 内容 |
+|----------|------|
+| 伤害飘字 | _damage_labels数组 + _damage_label单标签 |
+| 技能粒子 | _skill_particles数组 |
+| 环境粒子 | _ambient_particles + _magic_dust数组 |
+| 视觉单位 | _player_visual/_ai_visual/_player_light/_ai_light |
+| 系统节点 | _item_system/_trap_system/_talent_system/_achievement_system/_tactical_system |
+| 容器 | _item_container/_trap_container |
+| UI面板 | _command_panel/_pause_overlay/_talent_panel/_achievement_popup/_countdown_label |
+| 特效 | _hit_flash/_vignette_sprite/_chromatic_layer/_chromatic_rect |
+| 状态标签 | _player_status_label/_ai_status_label/_player_status_icons/_ai_status_icons |
+| 战斗反馈 | _error_label/_success_label/_crit_label/_dodge_label/_heal_label/_defend_label/_skill_label/_weather_label |
+| 按钮字典 | _command_buttons/skill_buttons/_skill_cooldown_overlays/_skill_cooldown_labels/_tactical_buttons/_talent_buttons |
+| 缓存纹理 | _particle_textures字典 |
+| 状态重置 | _battle_active/_is_paused/_countdown_active等所有状态标志 |
+
+**修复过程中的问题**：
+- 第一次测试：2697 Passed（从2955下降），SCRIPT ERROR: `Identifier "_skill_buttons" not declared`
+- 原因：变量名是`skill_buttons`（无下划线），不是`_skill_buttons`
+- 修复：将`_skill_buttons.clear()`改为`skill_buttons.clear()`
+- 第二次测试：**2955 Passed, 0 Failed**（全绿，无SCRIPT ERROR）
+
+**验证结果**：
+- M2测试：**2955 Passed, 0 Failed**（全绿，无回归，无SCRIPT ERROR）
+- 内存泄漏：场景退出时所有动态资源已清理，预计显著减少Texture GL ID leaked和ObjectDB泄漏
+
+---
+
 ## [M2.14] Polish测试 - M2里程碑总结文档（2026-09-11）
 
 **GDD v2.0第14章**：Polish测试 - 最终测试。
