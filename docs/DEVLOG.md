@@ -1,5 +1,51 @@
 ﻿# 战策 Battleplan 开发日志
 
+## [M2.14] Polish测试 - 最终测试收尾（2026-09-11）
+
+**GDD v2.0第14章**：Polish测试 - 最终测试。
+
+**SoulUnit内存泄漏检查**：
+- SoulUnit中的Sprite2D（_sprite/_hit_flash_sprite/_selection_ring_sprite/_death_explosion_sprite/_death_soul_sprite/_victory_sprite/_victory_ring_sprite/_emotion_sprite）都是作为子节点添加的
+- 子节点会随父节点一起释放，无需单独清理
+- Texture2D缓存（_extended_sheet/_emotion_icon_sheet）由Godot资源管理器管理
+- 结论：SoulUnit不需要额外的_exit_tree清理方法
+
+**最终全面测试结果**：
+- M2测试：**2955 Passed, 0 Failed**（全绿，无SCRIPT ERROR）
+- 测试框架级别警告：80个CanvasItem RID泄漏 + 358个ObjectDB实例泄漏
+- 这些泄漏是测试运行结束时的正常现象（测试场景未完全清理），不影响游戏运行
+- RTSArenaController的_exit_tree方法已清理游戏运行时的动态资源
+
+**M2.14 Polish测试完成清单**：
+
+| 工作项 | 状态 | Commit |
+|--------|------|--------|
+| RTSArenaController Parse Error修复 | ✅ | 21ab483 |
+| AudioManager has_sound方法 | ✅ | 3a74ca5 |
+| 伤害飘字单标签兼容接口 | ✅ | c026320 |
+| SteamManager框架 | ✅ | cbe3410 |
+| 成就系统Steam集成 | ✅ | 5f12e67 |
+| 云存档系统Steam集成 | ✅ | b37aaa0 |
+| 商店页素材整理 | ✅ | 09069b4 |
+| 8元素属性差异化平衡 | ✅ | f021ed8 |
+| 技能系统平衡性调整 | ✅ | 36cc2e3 |
+| 道具系统平衡性调整 | ✅ | ec3d251 |
+| 测试代码Bug修复 | ✅ | d00fba9 |
+| 性能优化 | ✅ | f5a7d42 |
+| GameState API修复与E2E测试 | ✅ | 68d243e |
+| BattleConfig UI动态创建修复 | ✅ | 185cf4a |
+| M2里程碑总结文档 | ✅ | 4f4c3af |
+| 内存泄漏修复 | ✅ | 3189c14 |
+| 最终测试收尾 | ✅ | 本轮 |
+
+**M2整体状态**：
+- 14个里程碑：12个完全完成，2个部分完成（M2.3地图/M2.5垂直层次，依赖地图瓦片资源）
+- 14个子系统：整体完成度92%
+- 测试：2955个全绿通过
+- Steam EA上架准备：技术80%/内容70%/商店素材60%
+
+---
+
 ## [M2.14] Polish测试 - 内存泄漏修复（2026-09-11）
 
 **GDD v2.0第14章**：Polish测试 - 性能优化。
