@@ -14,6 +14,24 @@ const FontLoader = preload("res://scripts/core/FontLoader.gd")
 var _souls: Array = []
 var _selected_index: int = -1
 
+## Portrait atlas texture (8 element portraits, 2 rows x 4 cols)
+var _portrait_atlas: Texture2D = null
+const PORTRAIT_ATLAS_PATH := "res://assets/art/character_portrait_sheet_v1.png"
+const PORTRAIT_COLS := 4
+const PORTRAIT_ROWS := 2
+
+## Element to portrait index mapping
+const ELEMENT_PORTRAIT_INDEX := {
+	"fire": 0,
+	"water": 1,
+	"earth": 2,
+	"wind": 3,
+	"thunder": 4,
+	"ice": 5,
+	"dark": 6,
+	"light": 7
+}
+
 
 func _ready() -> void:
 	GameLog.info("SoulSelect initialized", "SoulSelect")
@@ -21,11 +39,39 @@ func _ready() -> void:
 	FontLoader.apply_font_to_control(self)
 	_back_button.pressed.connect(_on_back_pressed)
 	_setup_button_hover(_back_button)
+	_load_portrait_atlas()
 	_load_available_souls()
 	_populate_soul_list()
 	_play_select_music()
 	# Animate title and back button
 	_animate_entrance()
+
+
+## Load portrait atlas texture
+func _load_portrait_atlas() -> void:
+	if ResourceLoader.exists(PORTRAIT_ATLAS_PATH):
+		_portrait_atlas = load(PORTRAIT_ATLAS_PATH)
+		GameLog.info("SoulSelect: Portrait atlas loaded", "SoulSelect")
+	else:
+		GameLog.warning("SoulSelect: Portrait atlas not found at %s" % PORTRAIT_ATLAS_PATH, "SoulSelect")
+
+
+## Get portrait texture for a specific element (AtlasTexture)
+func _get_portrait_texture(element: String) -> Texture2D:
+	if _portrait_atlas == null:
+		return null
+	var index = ELEMENT_PORTRAIT_INDEX.get(element, -1)
+	if index < 0:
+		return null
+	var atlas = AtlasTexture.new()
+	atlas.atlas = _portrait_atlas
+	var atlas_size = _portrait_atlas.get_size()
+	var cell_w = atlas_size.x / PORTRAIT_COLS
+	var cell_h = atlas_size.y / PORTRAIT_ROWS
+	var col = index % PORTRAIT_COLS
+	var row = index / PORTRAIT_COLS
+	atlas.region = Rect2(col * cell_w, row * cell_h, cell_w, cell_h)
+	return atlas
 
 
 ## Animate entrance (title fade in + scale, back button fade in)
@@ -168,7 +214,7 @@ func _populate_soul_list() -> void:
 func _create_soul_card(soul: Dictionary, index: int) -> Control:
 	# Root control for the card
 	var card_root = Control.new()
-	card_root.custom_minimum_size = Vector2(0, 110)
+	card_root.custom_minimum_size = Vector2(0, 120)
 
 	# Background panel with custom style
 	var bg_panel = PanelContainer.new()
@@ -207,6 +253,39 @@ func _create_soul_card(soul: Dictionary, index: int) -> Control:
 	color_rect.color = element_color
 	color_rect.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	hbox.add_child(color_rect)
+
+	# Soul portrait (M2.6 - character portrait display)
+	var portrait_texture = _get_portrait_texture(soul["element"])
+	if portrait_texture:
+		var portrait_rect = TextureRect.new()
+		portrait_rect.custom_minimum_size = Vector2(80, 80)
+		portrait_rect.texture = portrait_texture
+		portrait_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		portrait_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		# Add subtle glow border around portrait
+		var portrait_border = PanelContainer.new()
+		portrait_border.custom_minimum_size = Vector2(84, 84)
+		var border_style = StyleBoxFlat.new()
+		border_style.bg_color = Color(0.05, 0.03, 0.1, 0.8)
+		border_style.border_color = element_color
+		border_style.border_width_left = 2
+		border_style.border_width_right = 2
+		border_style.border_width_top = 2
+		border_style.border_width_bottom = 2
+		border_style.corner_radius_top_left = 6
+		border_style.corner_radius_top_right = 6
+		border_style.corner_radius_bottom_left = 6
+		border_style.corner_radius_bottom_right = 6
+		portrait_border.add_theme_stylebox_override("panel", border_style)
+		portrait_border.add_child(portrait_rect)
+		hbox.add_child(portrait_border)
+	else:
+		# Fallback: colored circle if no portrait
+		var fallback_portrait = ColorRect.new()
+		fallback_portrait.custom_minimum_size = Vector2(80, 80)
+		fallback_portrait.color = element_color
+		fallback_portrait.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		hbox.add_child(fallback_portrait)
 
 	# Soul info
 	var info_vbox = VBoxContainer.new()
