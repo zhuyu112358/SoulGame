@@ -18,6 +18,7 @@ static func _dlog(msg: String) -> void:
 const ArenaBackgroundGenerator = preload("res://scripts/game/ArenaBackgroundGenerator.gd")
 const FontLoader = preload("res://scripts/core/FontLoader.gd")
 const PixelSpriteGenerator = preload("res://scripts/game/PixelSpriteGenerator.gd")
+const TacticalCommandSystem = preload("res://scripts/game/TacticalCommandSystem.gd")
 
 ## UI node references
 var player_hp_bar = null
