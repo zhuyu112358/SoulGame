@@ -45,6 +45,7 @@ const SoulUnit = preload("res://scripts/game/SoulUnit.gd")
 const Minimap = preload("res://scripts/ui/Minimap.gd")
 const TalentSystem = preload("res://scripts/game/TalentSystem.gd")
 const ItemSystem = preload("res://scripts/game/ItemSystem.gd")
+const AchievementSystem = preload("res://scripts/game/AchievementSystem.gd")
 
 ## Visual unit nodes
 var _player_visual = null  # Sprite2D proxy (SoulUnit is child of autoload, not in visible scene)
@@ -133,6 +134,10 @@ var _talent_active = false
 var _item_system = null
 var _item_container = null  # Node2D container for item sprites
 
+## Achievement system (GDD v2.0 Chapter 13)
+var _achievement_system = null
+var _achievement_popup = null  # Achievement unlock notification
+
 ## Status effect display
 var _player_status_label = null
 var _ai_status_label = null
@@ -193,6 +198,8 @@ func _ready() -> void:
 	_dlog("[DEBUG-READY] _ready() start")
 	GameLog.info("RTSArenaController: RTS Arena scene ready", "Arena")
 	_base_position = position
+	# Initialize achievement system (loads saved data)
+	_init_achievement_system()
 	_dlog("[DEBUG-READY] before _setup_ui_refs")
 	_setup_ui_refs()
 	_dlog("[DEBUG-READY] after _setup_ui_refs, before _apply_ui_theme")
@@ -1766,6 +1773,8 @@ func _start_battle_after_countdown() -> void:
 	_countdown_active = false
 	# Initialize item system
 	_init_item_system()
+	# Start achievement tracking
+	_start_achievement_tracking()
 
 
 ## Setup UI node references
@@ -2577,6 +2586,9 @@ func _update_countdown(delta: float) -> void:
 ## Handle battle finished
 func _on_battle_finished(p_result: String, p_winner_id: String, p_loser_id: String) -> void:
 	_battle_active = false
+	# End achievement tracking
+	var player_won = (p_result == "player_win")
+	_end_achievement_tracking(player_won)
 	# Trigger victory particles if player won
 	if p_result == "player_win" and RTSArenaManager.player_unit:
 		_spawn_victory_particles(RTSArenaManager.player_unit.position)
@@ -3580,6 +3592,136 @@ func _on_item_picked_up(item_id: String, unit) -> void:
 	_add_log("%s 拾取了 %s" % [unit_name, item_name])
 	if AudioManager:
 		AudioManager.play_sfx("ui_item_pickup")
+	# Track achievement stat
+	if _achievement_system:
+		_achievement_system.record_item_picked()
+
+
+## Initialize achievement system (GDD v2.0 Chapter 13)
+func _init_achievement_system() -> void:
+	if _achievement_system != null:
+		return
+	_achievement_system = AchievementSystem.new()
+	_achievement_system.name = "AchievementSystem"
+	add_child(_achievement_system)
+	_achievement_system.achievement_unlocked.connect(_on_achievement_unlocked)
+	GameLog.info("Achievement system initialized", "Arena")
+
+
+## Handle achievement unlocked - show notification popup
+func _on_achievement_unlocked(achievement_id: String, achievement_data: Dictionary) -> void:
+	var ach_name = achievement_data.get("name", achievement_id)
+	_add_log("🏆 成就解锁: %s" % ach_name)
+	if AudioManager:
+		AudioManager.play_sfx("ui_achievement")
+	# Show achievement popup
+	_show_achievement_popup(achievement_id, achievement_data)
+
+
+## Show achievement unlock notification popup
+func _show_achievement_popup(achievement_id: String, achievement_data: Dictionary) -> void:
+	if _achievement_popup != null:
+		_achievement_popup.queue_free()
+	# Create popup panel
+	var popup = Panel.new()
+	popup.name = "AchievementPopup"
+	popup.size = Vector2(320, 80)
+	popup.position = Vector2(480, 20)
+	popup.modulate = Color(1.0, 1.0, 1.0, 0.0)
+	add_child(popup)
+	_achievement_popup = popup
+	# Apply dark purple + gold style
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.12, 0.08, 0.2, 0.95)
+	style.border_color = Color(0.8, 0.6, 0.2, 1.0)
+	style.border_width_left = 2
+	style.border_width_right = 2
+	style.border_width_top = 2
+	style.border_width_bottom = 2
+	style.corner_radius_top_left = 6
+	style.corner_radius_top_right = 6
+	style.corner_radius_bottom_left = 6
+	style.corner_radius_bottom_right = 6
+	popup.add_theme_stylebox_override("panel", style)
+	# Achievement icon
+	var icon_rect = TextureRect.new()
+	icon_rect.position = Vector2(10, 10)
+	icon_rect.size = Vector2(60, 60)
+	if _achievement_system:
+		icon_rect.texture = _achievement_system.get_achievement_icon(achievement_id)
+	popup.add_child(icon_rect)
+	# Achievement title
+	var title = Label.new()
+	title.text = "成就解锁!"
+	title.position = Vector2(80, 10)
+	title.add_theme_font_size_override("font_size", 12)
+	title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+	popup.add_child(title)
+	# Achievement name
+	var name_label = Label.new()
+	name_label.text = achievement_data.get("name", "")
+	name_label.position = Vector2(80, 30)
+	name_label.add_theme_font_size_override("font_size", 14)
+	name_label.add_theme_color_override("font_color", Color(1.0, 0.95, 0.8))
+	popup.add_child(name_label)
+	# Achievement description
+	var desc = Label.new()
+	desc.text = achievement_data.get("description", "")
+	desc.position = Vector2(80, 50)
+	desc.size = Vector2(230, 25)
+	desc.add_theme_font_size_override("font_size", 9)
+	desc.add_theme_color_override("font_color", Color(0.7, 0.65, 0.6))
+	popup.add_child(desc)
+	# Animate popup in
+	var tween = create_tween()
+	tween.tween_property(popup, "modulate:a", 1.0, 0.3)
+	tween.tween_interval(3.0)
+	tween.tween_property(popup, "modulate:a", 0.0, 0.5)
+	tween.tween_callback(popup.queue_free)
+
+
+## Start battle achievement tracking
+func _start_achievement_tracking() -> void:
+	if _achievement_system:
+		_achievement_system.start_battle_tracking()
+
+
+## End battle achievement tracking
+func _end_achievement_tracking(victory: bool) -> void:
+	if _achievement_system:
+		var map_name = GameState.get_value("battle", "map", "aether_temple")
+		var battle_time = RTSArenaManager.battle_time if RTSArenaManager else 0.0
+		_achievement_system.end_battle_tracking(victory, map_name, battle_time)
+
+
+## Track damage dealt for achievements
+func _track_damage_dealt(amount: float) -> void:
+	if _achievement_system:
+		_achievement_system.record_damage_dealt(amount)
+
+
+## Track damage taken for achievements
+func _track_damage_taken(amount: float) -> void:
+	if _achievement_system:
+		_achievement_system.record_damage_taken(amount)
+
+
+## Track skill used for achievements
+func _track_skill_used() -> void:
+	if _achievement_system:
+		_achievement_system.record_skill_used()
+
+
+## Track crit dealt for achievements
+func _track_crit_dealt() -> void:
+	if _achievement_system:
+		_achievement_system.record_crit_dealt()
+
+
+## Track talent selected for achievements
+func _track_talent_selected() -> void:
+	if _achievement_system:
+		_achievement_system.record_talent_selected()
 
 
 ## Create talent selection panel UI
@@ -3788,6 +3930,8 @@ func _on_talent_selected(talent_id: String, talent_name: String) -> void:
 	if AudioManager:
 		AudioManager.play_sfx("ui_confirm")
 	GameLog.info("Talent selected: %s (%s)" % [talent_id, talent_name], "Arena")
+	# Track achievement stat
+	_track_talent_selected()
 
 
 ## Apply talent effects to player unit
