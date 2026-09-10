@@ -151,6 +151,12 @@ var _victory_anim_duration: float = 2.0
 var _victory_sprite: Sprite2D = null
 var _victory_ring_sprite: Sprite2D = null
 
+## Emotion display (shows above unit head, changes with emotion state)
+var _emotion_sprite: Sprite2D = null
+var _emotion_icon_sheet: Texture2D = null
+var _current_emotion_type: String = ""
+var _emotion_fade_timer: float = 0.0
+
 ## HP bar smooth transition
 var _target_hp_ratio: float = 1.0
 var _current_hp_ratio: float = 1.0
@@ -380,6 +386,19 @@ func _create_visual() -> void:
 	name_label.modulate = Color(1, 1, 1, 0.9)
 	add_child(name_label)
 
+	# Create emotion display sprite (shows above unit head)
+	var emotion_sheet_path := "res://assets/art/emotion_icon_sheet_v1.png"
+	if ResourceLoader.exists(emotion_sheet_path):
+		_emotion_icon_sheet = load(emotion_sheet_path)
+		_emotion_sprite = Sprite2D.new()
+		_emotion_sprite.name = "EmotionIcon"
+		_emotion_sprite.centered = true
+		_emotion_sprite.position = Vector2(0, -80)
+		_emotion_sprite.scale = Vector2(0.15, 0.15)
+		_emotion_sprite.modulate = Color(1.0, 1.0, 1.0, 0.0)
+		_emotion_sprite.z_index = 15
+		add_child(_emotion_sprite)
+
 	# Create HP bar background
 	var hp_bg = ColorRect.new()
 	hp_bg.size = Vector2(50, 5)
@@ -486,6 +505,7 @@ func _process(delta: float) -> void:
 	_update_hp_bar_smooth(delta)
 	_update_animation(delta)
 	_update_selection_ring(delta)
+	_update_emotion_display(delta)
 
 	match state:
 		UnitState.IDLE:
@@ -598,6 +618,68 @@ func _update_selection_ring(delta: float) -> void:
 	# Hide ring when dead
 	if state == UnitState.DEAD:
 		_selection_ring_sprite.visible = false
+
+
+## Update emotion display icon above unit head
+## Emotion icon sheet: 4 rows x 6 cols, 1024x1024, 24 expressions
+## Row 0 (basic): happy/sad/angry/fear/surprise/disgust
+## Row 1 (battle): confident/frustrated/excited/nervous/focused/tired
+## Row 2 (social): friendly/shy/proud/jealous/admiring/grateful
+## Row 3 (special): confused/determined/victory/curious/sleepy/mischievous
+func _update_emotion_display(delta: float) -> void:
+	if _emotion_sprite == null or _emotion_icon_sheet == null:
+		return
+	# Get current emotion type
+	var emotion_type = emotion.get("type", "neutral")
+	var intensity = emotion.get("intensity", 0.0)
+	# Emotion type -> icon index mapping (4 rows x 6 cols)
+	var emotion_icon_map := {
+		"happy": 0, "joy": 0, "excited": 2,
+		"sad": 1, "grief": 1, "frustrated": 7,
+		"angry": 2, "rage": 2,
+		"fear": 3, "afraid": 3, "nervous": 9,
+		"surprise": 4, "surprised": 4,
+		"disgust": 5,
+		"confident": 6, "pride": 14, "proud": 14,
+		"tired": 11, "exhausted": 11,
+		"focused": 10, "concentrated": 10,
+		"friendly": 12, "kind": 12,
+		"shy": 13, "embarrassed": 13,
+		"jealous": 15, "envy": 15,
+		"admiring": 16, "love": 16,
+		"grateful": 17, "thankful": 17,
+		"confused": 18, "puzzled": 18,
+		"determined": 19, "resolute": 19,
+		"victory": 20, "triumph": 20,
+		"curious": 21, "interested": 21,
+		"sleepy": 22, "drowsy": 22,
+		"mischievous": 23, "playful": 23,
+		"neutral": -1, "calm": -1, "none": -1
+	}
+	var icon_idx = emotion_icon_map.get(emotion_type, -1)
+	# Show emotion icon if valid and intensity > 0.1
+	if icon_idx >= 0 and intensity > 0.1:
+		# Update icon if emotion changed
+		if emotion_type != _current_emotion_type:
+			_current_emotion_type = emotion_type
+			var row: int = icon_idx / 6
+			var col: int = icon_idx % 6
+			var cell_w: int = 170  # 1024 / 6
+			var cell_h: int = 256  # 1024 / 4
+			var atlas = AtlasTexture.new()
+			atlas.atlas = _emotion_icon_sheet
+			atlas.region = Rect2(col * cell_w, row * cell_h, cell_w, cell_h)
+			_emotion_sprite.texture = atlas
+		# Fade in
+		_emotion_sprite.modulate.a = min(1.0, _emotion_sprite.modulate.a + delta * 3.0)
+		# Bobbing animation
+		var bob = sin(Time.get_ticks_msec() / 300.0) * 3.0
+		_emotion_sprite.position = Vector2(0, -80 + bob)
+	else:
+		# Fade out
+		_emotion_sprite.modulate.a = max(0.0, _emotion_sprite.modulate.a - delta * 2.0)
+		if _emotion_sprite.modulate.a <= 0.01:
+			_current_emotion_type = ""
 
 
 ## Trigger attack pulse animation
