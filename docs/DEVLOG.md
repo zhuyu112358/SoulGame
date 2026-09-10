@@ -1,5 +1,25 @@
 ﻿# 战策 Battleplan 开发日志
 
+## [M2.14] Steam EA上架准备 - 成就系统Steam集成（2026-09-11）
+
+**GDD v2.0第14章**：Steam EA上架准备 - 成就对接。
+
+**集成内容**：
+- 修改AchievementSystem.gd的`_unlock_achievement()`方法，成就解锁时同步调用SteamManager.unlock_achievement()
+- 添加`_sync_achievement_to_steam(achievement_id)`方法，安全检查SteamManager可用性
+- 添加`_is_steam_manager_available()`方法，检查/root/SteamManager节点是否存在
+- 修改`end_battle_tracking()`方法，战斗结束时同步统计数据到SteamManager
+- 添加`_sync_stats_to_steam()`方法，同步8项关键统计（battles_played/won/lost/total_damage_dealt/total_skills_used/total_crits_dealt/perfect_victories/fast_victories）
+
+**设计原则**：
+- 使用`get_node_or_null("/root/SteamManager")`安全检查，SteamManager不可用时静默跳过
+- 不影响现有成就系统的本地存档和功能
+- 统计数据同步在_save_data()之后执行，确保本地数据优先
+
+**测试结果**：M2测试 2930 Passed, 0 Failed（全绿，无回归）
+
+---
+
 ## [M2.14] Steam EA上架准备 - SteamManager框架（2026-09-11）
 
 **GDD v2.0第14章**：Steam EA上架准备。

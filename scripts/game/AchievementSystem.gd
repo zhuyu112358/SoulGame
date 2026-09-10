@@ -274,8 +274,27 @@ func end_battle_tracking(victory: bool, map_name: String = "", battle_duration: 
 	# Save data
 	_save_data()
 
+	# Sync stats to Steam Manager
+	_sync_stats_to_steam()
+
 	# Emit stats updated
 	stats_updated.emit(_stats)
+
+
+## Sync player stats to Steam Manager
+func _sync_stats_to_steam() -> void:
+	if not _is_steam_manager_available():
+		return
+	# Sync key stats to Steam
+	SteamManager.set_stat("battles_played", int(_stats.get("battles_played", 0)))
+	SteamManager.set_stat("battles_won", int(_stats.get("battles_won", 0)))
+	SteamManager.set_stat("battles_lost", int(_stats.get("battles_lost", 0)))
+	SteamManager.set_stat("total_damage_dealt", int(_stats.get("total_damage_dealt", 0)))
+	SteamManager.set_stat("total_skills_used", int(_stats.get("total_skills_used", 0)))
+	SteamManager.set_stat("total_crits_dealt", int(_stats.get("total_crits_dealt", 0)))
+	SteamManager.set_stat("perfect_victories", int(_stats.get("perfect_victories", 0)))
+	SteamManager.set_stat("fast_victories", int(_stats.get("fast_victories", 0)))
+	SteamManager.store_stats()
 
 
 ## Record damage dealt
@@ -389,6 +408,19 @@ func _unlock_achievement(achievement_id: String) -> void:
 	}
 	achievement_unlocked.emit(achievement_id, achievement)
 	GameLog.info("Achievement unlocked: %s" % achievement["name"], "Achievement")
+	# Sync to Steam Manager if available
+	_sync_achievement_to_steam(achievement_id)
+
+
+## Sync achievement unlock to Steam Manager
+func _sync_achievement_to_steam(achievement_id: String) -> void:
+	if Engine.has_singleton("SteamManager") or _is_steam_manager_available():
+		SteamManager.unlock_achievement(achievement_id)
+
+
+## Check if Steam Manager singleton is available
+func _is_steam_manager_available() -> bool:
+	return get_node_or_null("/root/SteamManager") != null
 
 
 ## Check if achievement is unlocked
