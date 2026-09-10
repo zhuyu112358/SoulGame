@@ -7,17 +7,28 @@ extends Control
 @onready var _map_container: HBoxContainer = $CenterContainer/VBoxContainer/MapSection/MapContainer
 @onready var _tactic_container: GridContainer = $CenterContainer/VBoxContainer/TacticSection/TacticContainer
 @onready var _team_container: HBoxContainer = $CenterContainer/VBoxContainer/TeamSection/TeamContainer
+@onready var _difficulty_container: HBoxContainer = $CenterContainer/VBoxContainer/DifficultySection/DifficultyContainer
 @onready var _start_button: Button = $CenterContainer/VBoxContainer/StartButton
 @onready var _back_button: Button = $CenterContainer/VBoxContainer/BackButton
 @onready var _map_label: Label = $CenterContainer/VBoxContainer/MapSection/MapLabel
 @onready var _tactic_label: Label = $CenterContainer/VBoxContainer/TacticSection/TacticLabel
 @onready var _team_label: Label = $CenterContainer/VBoxContainer/TeamSection/TeamLabel
+@onready var _difficulty_label: Label = $CenterContainer/VBoxContainer/DifficultySection/DifficultyLabel
 
 # Configuration state
 var _selected_map: String = "aether_temple"
 var _selected_tactic: String = "free"
+var _selected_difficulty: String = "normal"
 var _selected_souls: Array = []  # Array of soul dictionaries
 var _max_team_size: int = 4
+
+# AI difficulty levels (GDD v2.0: 4 difficulties)
+const DIFFICULTIES: Dictionary = {
+	"easy": {"name": "简单", "name_en": "EASY", "desc": "AI基础行为，适合新手", "color": Color(0.4, 0.8, 0.4), "ai_level": 0.5, "hp_mult": 0.8, "atk_mult": 0.8},
+	"normal": {"name": "普通", "name_en": "NORMAL", "desc": "AI标准行为，平衡挑战", "color": Color(0.4, 0.6, 0.9), "ai_level": 1.0, "hp_mult": 1.0, "atk_mult": 1.0},
+	"hard": {"name": "困难", "name_en": "HARD", "desc": "AI高级行为，学习记忆启用", "color": Color(0.9, 0.6, 0.3), "ai_level": 1.3, "hp_mult": 1.2, "atk_mult": 1.2},
+	"nightmare": {"name": "噩梦", "name_en": "NIGHTMARE", "desc": "AI完全体，协作+情绪+环境交互", "color": Color(0.9, 0.3, 0.3), "ai_level": 1.6, "hp_mult": 1.5, "atk_mult": 1.5}
+}
 
 # Map definitions (GDD v2.0: 3-5 maps, M2 starts with 2)
 const MAPS: Dictionary = {
@@ -51,6 +62,7 @@ func _ready() -> void:
 	_setup_theme()
 	_build_map_selection()
 	_build_tactic_selection()
+	_build_difficulty_selection()
 	_build_team_display()
 	_connect_signals()
 	_load_selected_souls()
@@ -90,6 +102,21 @@ func _build_tactic_selection() -> void:
 		_tactic_container.add_child(btn)
 		# Highlight selected
 		if tactic_id == _selected_tactic:
+			_highlight_button(btn, true)
+
+func _build_difficulty_selection() -> void:
+	# Create AI difficulty selection buttons (GDD v2.0: 4 difficulties)
+	for diff_id in DIFFICULTIES.keys():
+		var diff_data: Dictionary = DIFFICULTIES[diff_id]
+		var btn: Button = Button.new()
+		btn.custom_minimum_size = Vector2(130, 55)
+		btn.text = diff_data["name"] + "\n" + diff_data["name_en"]
+		btn.tooltip_text = diff_data["desc"]
+		btn.name = "DiffBtn_" + diff_id
+		btn.pressed.connect(_on_difficulty_selected.bind(diff_id))
+		_difficulty_container.add_child(btn)
+		# Highlight selected
+		if diff_id == _selected_difficulty:
 			_highlight_button(btn, true)
 
 func _build_team_display() -> void:
@@ -154,8 +181,21 @@ func _on_tactic_selected(tactic_id: String) -> void:
 		if child is Button:
 			_highlight_button(child, child.name == "TacticBtn_" + tactic_id)
 
+func _on_difficulty_selected(diff_id: String) -> void:
+	_selected_difficulty = diff_id
+	# Update highlights
+	for child in _difficulty_container.get_children():
+		if child is Button:
+			_highlight_button(child, child.name == "DiffBtn_" + diff_id)
+
 func _on_start_battle() -> void:
-	# Create AI opponent soul (random element, similar level)
+	# Get difficulty settings
+	var diff_data: Dictionary = DIFFICULTIES[_selected_difficulty]
+	var hp_mult: float = diff_data["hp_mult"]
+	var atk_mult: float = diff_data["atk_mult"]
+	var ai_level: float = diff_data["ai_level"]
+
+	# Create AI opponent soul (random element, similar level, difficulty-scaled stats)
 	var ai_elements = ["fire", "water", "earth", "wind", "light", "dark"]
 	var ai_element = ai_elements[randi() % ai_elements.size()]
 	var player_level: int = 1
@@ -166,10 +206,12 @@ func _on_start_battle() -> void:
 		"name": "敌方灵魂",
 		"element": ai_element,
 		"level": player_level,
-		"hp": 100 + player_level * 10,
-		"attack": 12 + player_level * 2,
-		"defense": 8 + player_level,
-		"is_player": false
+		"hp": int((100 + player_level * 10) * hp_mult),
+		"attack": int((12 + player_level * 2) * atk_mult),
+		"defense": int((8 + player_level) * hp_mult),
+		"is_player": false,
+		"difficulty": _selected_difficulty,
+		"ai_level": ai_level
 	}
 
 	# Save battle config to GameState in RTSArenaController expected format
@@ -181,15 +223,18 @@ func _on_start_battle() -> void:
 	GameState.set_value("battle", "ai_soul", ai_soul)
 	GameState.set_value("battle", "map_name", MAPS[_selected_map]["name"])
 	GameState.set_value("battle", "tactic", _selected_tactic)
+	GameState.set_value("battle", "difficulty", _selected_difficulty)
 	GameState.set_value("battle", "player_souls", _selected_souls)
 
 	# Also store for battle config scene reference
 	var config: Dictionary = {
 		"map": _selected_map,
 		"tactic": _selected_tactic,
+		"difficulty": _selected_difficulty,
 		"player_souls": _selected_souls,
 		"map_name": MAPS[_selected_map]["name"],
-		"tactic_name": TACTICS[_selected_tactic]["name"]
+		"tactic_name": TACTICS[_selected_tactic]["name"],
+		"difficulty_name": diff_data["name"]
 	}
 	GameState.set("battle_config", config)
 

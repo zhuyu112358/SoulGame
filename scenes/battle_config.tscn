@@ -90,6 +90,21 @@ theme_override_constants/h_separation = 15
 theme_override_constants/v_separation = 10
 alignment = 1
 
+[node name="DifficultySection" type="VBoxContainer" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="DifficultyLabel" type="Label" parent="CenterContainer/VBoxContainer/DifficultySection"]
+layout_mode = 2
+text = "对手难度"
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.85, 0.75, 0.45, 1)
+
+[node name="DifficultyContainer" type="HBoxContainer" parent="CenterContainer/VBoxContainer/DifficultySection"]
+layout_mode = 2
+theme_override_constants/separation = 15
+alignment = 1
+
 [node name="TeamSection" type="VBoxContainer" parent="CenterContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_constants/separation = 10
