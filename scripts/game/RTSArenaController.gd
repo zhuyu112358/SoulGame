@@ -48,6 +48,7 @@ const ItemSystem = preload("res://scripts/game/ItemSystem.gd")
 const AchievementSystem = preload("res://scripts/game/AchievementSystem.gd")
 const TrapSystem = preload("res://scripts/game/TrapSystem.gd")
 const SoulUpgradeSystem = preload("res://scripts/game/SoulUpgradeSystem.gd")
+const IntelligenceUpgradeSystem = preload("res://scripts/game/IntelligenceUpgradeSystem.gd")
 
 ## Visual unit nodes
 var _player_visual = null  # Sprite2D proxy (SoulUnit is child of autoload, not in visible scene)
@@ -147,6 +148,9 @@ var _trap_container = null  # Node2D container for trap sprites
 ## Soul upgrade system (GDD v2.0 Chapter 5 - Permanent cross-battle)
 var _soul_upgrade_system = null
 
+## Intelligence upgrade system (GDD v2.0 Chapter 5 - Ember core differentiator)
+var _intelligence_upgrade_system = null
+
 ## Status effect display
 var _player_status_label = null
 var _ai_status_label = null
@@ -211,6 +215,8 @@ func _ready() -> void:
 	_init_achievement_system()
 	# Initialize soul upgrade system (loads saved permanent upgrades)
 	_init_soul_upgrade_system()
+	# Initialize intelligence upgrade system (Ember core differentiator)
+	_init_intelligence_upgrade_system()
 	_dlog("[DEBUG-READY] before _setup_ui_refs")
 	_setup_ui_refs()
 	_dlog("[DEBUG-READY] after _setup_ui_refs, before _apply_ui_theme")
@@ -1788,6 +1794,8 @@ func _start_battle_after_countdown() -> void:
 	_init_trap_system()
 	# Apply permanent soul upgrades to player unit
 	_apply_soul_upgrades_to_player()
+	# Apply cognitive upgrades to player AI controller
+	_apply_cognitive_upgrades_to_ai()
 	# Start achievement tracking
 	_start_achievement_tracking()
 
@@ -2609,6 +2617,8 @@ func _on_battle_finished(p_result: String, p_winner_id: String, p_loser_id: Stri
 	# Award soul experience
 	var battle_time = RTSArenaManager.battle_time if RTSArenaManager else 0.0
 	_award_soul_experience(player_won, battle_time)
+	# Award cognitive experience (intelligence upgrade)
+	_award_cognitive_experience(player_won, battle_time)
 	# Trigger victory particles if player won
 	if p_result == "player_win" and RTSArenaManager.player_unit:
 		_spawn_victory_particles(RTSArenaManager.player_unit.position)
@@ -3756,6 +3766,68 @@ func _on_soul_upgrade_applied(dimension: String, new_level: int) -> void:
 ## Handle soul level up
 func _on_soul_leveled_up(new_level: int) -> void:
 	_add_log("🌟 灵魂等级提升! Lv.%d (获得1升级点)" % new_level)
+	if AudioManager:
+		AudioManager.play_sfx("ui_level_up")
+
+
+## Initialize intelligence upgrade system (GDD v2.0 Chapter 5 - Ember core)
+func _init_intelligence_upgrade_system() -> void:
+	if _intelligence_upgrade_system != null:
+		return
+	_intelligence_upgrade_system = IntelligenceUpgradeSystem.new()
+	_intelligence_upgrade_system.name = "IntelligenceUpgradeSystem"
+	add_child(_intelligence_upgrade_system)
+	_intelligence_upgrade_system.cognitive_upgraded.connect(_on_cognitive_upgraded)
+	_intelligence_upgrade_system.stage_changed.connect(_on_cognitive_stage_changed)
+	_intelligence_upgrade_system.cognitive_leveled_up.connect(_on_cognitive_leveled_up)
+	GameLog.info("Intelligence system initialized (stage: %s, level: %d, points: %d)" % [
+		_intelligence_upgrade_system.get_cognitive_stage_name(),
+		_intelligence_upgrade_system.get_cognitive_level_overall(),
+		_intelligence_upgrade_system.get_intelligence_points()
+	], "Arena")
+
+
+## Apply cognitive upgrades to player AI controller at battle start
+func _apply_cognitive_upgrades_to_ai() -> void:
+	if _intelligence_upgrade_system == null:
+		return
+	# Apply to player unit's AI controller
+	if RTSArenaManager.player_unit and RTSArenaManager.player_unit.ai_controller:
+		_intelligence_upgrade_system.apply_to_ai_controller(RTSArenaManager.player_unit.ai_controller)
+		GameLog.info("Cognitive upgrades applied to player AI", "Arena")
+
+
+## Award cognitive experience after battle
+func _award_cognitive_experience(victory: bool, battle_duration: float) -> void:
+	if _intelligence_upgrade_system == null:
+		return
+	# Base cognitive experience: 30 for win, 15 for loss
+	var exp = 30 if victory else 15
+	# Performance bonus: longer battles give more cognitive experience (learning)
+	if battle_duration > 0:
+		var time_bonus = int(min(battle_duration, 180) * 0.1)
+		exp += time_bonus
+	_intelligence_upgrade_system.add_cognitive_experience(exp)
+	_add_log("认知经验 +%d (阶段: %s)" % [exp, _intelligence_upgrade_system.get_cognitive_stage_name()])
+
+
+## Handle cognitive dimension upgraded
+func _on_cognitive_upgraded(dimension: String, new_level: int) -> void:
+	var dim = _intelligence_upgrade_system.get_dimension(dimension) if _intelligence_upgrade_system else {}
+	var dim_name = dim.get("name", dimension)
+	_add_log("🧠 认知升级: %s Lv.%d" % [dim_name, new_level])
+
+
+## Handle cognitive stage changed
+func _on_cognitive_stage_changed(new_stage: int, new_stage_name: String) -> void:
+	_add_log("✨ 认知阶段提升: %s!" % new_stage_name)
+	if AudioManager:
+		AudioManager.play_sfx("ui_evolution")
+
+
+## Handle cognitive level up
+func _on_cognitive_leveled_up(new_level: int) -> void:
+	_add_log("🧠 认知等级提升! Lv.%d (获得1智能点)" % new_level)
 	if AudioManager:
 		AudioManager.play_sfx("ui_level_up")
 

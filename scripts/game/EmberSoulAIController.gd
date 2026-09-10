@@ -35,6 +35,21 @@ var decision_target: Variant = null
 var decision_cooldown: float = 0.0
 var decision_interval: float = 1.5
 
+## Cognitive modifiers from IntelligenceUpgradeSystem (Ember core differentiator)
+var cognitive_modifiers: Dictionary = {
+	"decision_interval": 1.5,
+	"decision_confidence_threshold": 0.5,
+	"learning_rate": 0.1,
+	"command_compliance": 0.7,
+	"reaction_speed": 1.0,
+	"adaptability": 0.3,
+	"creativity": 0.2,
+	"crisis_handling": 0.3
+}
+
+## Command compliance chance (influenced by language cognitive dimension)
+var command_compliance: float = 0.7
+
 ## Ember SDK instances
 var _cognitive: Object = null
 var _perception: Object = null
@@ -84,6 +99,11 @@ func _initialize_ember_sdk() -> void:
 	_ember_initialized = (_cognitive != null and _perception != null)
 	var status_text = "available" if _ember_initialized else "NOT available"
 	GameLog.info("EmberSoulAIController: Ember SDK %s" % status_text, "Arena")
+
+
+## Set decision interval (influenced by reasoning cognitive dimension)
+func set_decision_interval(interval: float) -> void:
+	decision_interval = max(0.5, interval)
 
 
 ## Make a decision using Ember CognitiveEngine
