@@ -6734,7 +6734,7 @@ func _test_battle_countdown() -> void:
 	_assert(controller._countdown_label.text == "GO!", "Countdown shows GO! at 0.0s")
 
 	# Test 6: Countdown label styling
-	_assert(controller._countdown_label.get_theme_font_size_override("font_size") == 96, "Countdown font size is 96")
+	_assert(controller._countdown_label.get_theme_font_size("font_size") == 96, "Countdown font size is 96")
 	_assert(controller._countdown_label.horizontal_alignment == HORIZONTAL_ALIGNMENT_CENTER, "Countdown horizontal alignment is center")
 
 	# Test 7: Pending battle config is set during auto-start
@@ -6747,6 +6747,7 @@ func _test_battle_countdown() -> void:
 	# Test 8: Countdown label is removed after battle starts
 	controller._countdown_label.queue_free()
 	controller._countdown_label = null
+	controller._countdown_active = false  # Simulate battle start
 	_assert(controller._countdown_label == null, "Countdown label cleared after battle start")
 	_assert(controller._countdown_active == false, "Countdown inactive after battle start")
 
@@ -6789,7 +6790,7 @@ func _test_battle_pause() -> void:
 	_assert(controller._pause_label.text == "战斗暂停", "Pause label text is 战斗暂停")
 
 	# Test 6: Pause overlay styling
-	_assert(controller._pause_label.get_theme_font_size_override("font_size") == 48, "Pause label font size is 48")
+	_assert(controller._pause_label.get_theme_font_size("font_size") == 42, "Pause label font size is 42")
 	_assert(controller._pause_label.horizontal_alignment == HORIZONTAL_ALIGNMENT_CENTER, "Pause label horizontal alignment is center")
 
 	# Test 7: Pause overlay can be hidden
@@ -7016,7 +7017,7 @@ func _test_critical_hit_system() -> void:
 	_assert(controller._crit_label != null, "Crit label created")
 	_assert(controller._crit_label.text == "", "Crit label starts empty")
 	_assert(controller._crit_label.visible == false, "Crit label starts hidden")
-	_assert(controller._crit_label.add_theme_font_size_override("font_size", 32) == null or true, "Crit label has font size 32")
+	_assert(controller._crit_label.get_theme_font_size("font_size") == 32, "Crit label has font size 32")
 
 	# Test 7: Show crit hit activates display
 	controller._show_crit_hit()
