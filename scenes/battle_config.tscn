@@ -1,0 +1,121 @@
+[gd_scene load_steps=3 format=3 uid="uid://battle_config_scene"]
+
+[ext_resource type="Script" path="res://scripts/ui/BattleConfig.gd" id="1_battleconfig"]
+[ext_resource type="Texture2D" path="res://assets/art/main_menu_bg.png" id="2_bg"]
+
+[node name="BattleConfig" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_battleconfig")
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="DimOverlay" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.1, 0.08, 0.15, 0.7)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(900, 650)
+theme_override_constants/separation = 20
+
+[node name="Title" type="Label" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+text = "战斗配置"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 36
+
+[node name="Subtitle" type="Label" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+text = "BATTLE CONFIGURATION"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.8, 0.7, 0.5, 1)
+
+[node name="MapSection" type="VBoxContainer" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="MapLabel" type="Label" parent="CenterContainer/VBoxContainer/MapSection"]
+layout_mode = 2
+text = "选择地图"
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.85, 0.75, 0.45, 1)
+
+[node name="MapContainer" type="HBoxContainer" parent="CenterContainer/VBoxContainer/MapSection"]
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="TacticSection" type="VBoxContainer" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TacticLabel" type="Label" parent="CenterContainer/VBoxContainer/TacticSection"]
+layout_mode = 2
+text = "战术指令预设"
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.85, 0.75, 0.45, 1)
+
+[node name="TacticContainer" type="GridContainer" parent="CenterContainer/VBoxContainer/TacticSection"]
+layout_mode = 2
+columns = 3
+theme_override_constants/h_separation = 15
+theme_override_constants/v_separation = 10
+alignment = 1
+
+[node name="TeamSection" type="VBoxContainer" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TeamLabel" type="Label" parent="CenterContainer/VBoxContainer/TeamSection"]
+layout_mode = 2
+text = "出战灵魂"
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.85, 0.75, 0.45, 1)
+
+[node name="TeamContainer" type="HBoxContainer" parent="CenterContainer/VBoxContainer/TeamSection"]
+layout_mode = 2
+theme_override_constants/separation = 15
+alignment = 1
+
+[node name="ButtonRow" type="HBoxContainer" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 30
+alignment = 1
+
+[node name="BackButton" type="Button" parent="CenterContainer/VBoxContainer/ButtonRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(180, 50)
+text = "返回"
+
+[node name="StartButton" type="Button" parent="CenterContainer/VBoxContainer/ButtonRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(220, 50)
+text = "开始战斗"

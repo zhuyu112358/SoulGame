@@ -318,9 +318,9 @@ func _play_soul_select_sound(p_element: String) -> void:
 
 
 func _start_battle(soul: Dictionary) -> void:
-	GameLog.info("Starting battle with soul: %s" % soul["name"], "SoulSelect")
+	GameLog.info("Soul selected: %s, entering battle config" % soul["name"], "SoulSelect")
 
-	# Create player soul data in RTSArenaManager expected format
+	# Create player soul data in battle config expected format
 	var player_soul = {
 		"id": soul["id"],
 		"name": soul["name"],
@@ -332,32 +332,19 @@ func _start_battle(soul: Dictionary) -> void:
 		"is_player": true
 	}
 
-	# Create AI opponent soul (random element, similar level)
-	var ai_elements = ["fire", "water", "earth", "wind", "light", "dark"]
-	var ai_element = ai_elements[randi() % ai_elements.size()]
-	var ai_soul = {
-		"id": "ai_soul_01",
-		"name": "敌方灵魂",
-		"element": ai_element,
-		"level": soul["level"],
-		"hp": 100 + soul["level"] * 10,
-		"attack": 12 + soul["level"] * 2,
-		"defense": 8 + soul["level"],
-		"is_player": false
-	}
-
-	# Store battle config in GameState for RTSArenaController
-	GameState.set_value("battle", "player_soul", player_soul)
-	GameState.set_value("battle", "ai_soul", ai_soul)
-	GameState.set_value("battle", "map_name", "default_arena")
+	# Store selected soul for battle config scene
 	GameState.set_value("battle", "selected_soul", soul)
+	GameState.set("selected_soul", player_soul)
+	# Also store as team array for M2.1 multi-soul support
+	GameState.set("battle_config", {"player_souls": [player_soul]})
 
-	# Play soul excited sound when entering battle
+	# Play soul excited sound
 	if AudioManager:
 		AudioManager.play_sfx("soul_excited")
 		AudioManager.play_sfx("ui_soul_select_confirm")
 
-	SceneManager.change_scene("res://scenes/rts_arena.tscn")
+	# M2.1: Go to battle config scene instead of direct battle
+	SceneManager.change_scene("res://scenes/battle_config.tscn")
 
 
 func _on_back_pressed() -> void:
