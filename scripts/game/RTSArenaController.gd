@@ -706,8 +706,7 @@ func _update_status_icon_container(container: HBoxContainer, effects: Dictionary
 		"poison": 8,
 		"frozen": 9,
 		"burn": 10,
-		"stun": 11,
-		"defense_up": 1  # Alias for defense_up
+		"stun": 11
 	}
 	var cell_w: int = 256  # 1024 / 4
 	var cell_h: int = 341  # 1024 / 3
@@ -2699,13 +2698,13 @@ func _record_training_battle(p_won: bool, p_battle_time: float) -> void:
 
 	# Get difficulty from battle config (default: normal)
 	var difficulty = "normal"
-	if GameState and GameState.has("battle") and GameState.get_value("battle", "difficulty", ""):
+	if GameState and GameState.has_section("battle") and GameState.get_value("battle", "difficulty", ""):
 		difficulty = GameState.get_value("battle", "difficulty", "normal")
 
 	# Get soul info
 	var player_soul = {}
 	var ai_soul = {}
-	if GameState and GameState.has("battle"):
+	if GameState and GameState.has_section("battle"):
 		player_soul = GameState.get_value("battle", "player_soul", {})
 		ai_soul = GameState.get_value("battle", "ai_soul", {})
 

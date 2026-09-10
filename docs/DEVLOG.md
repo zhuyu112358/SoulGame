@@ -1,5 +1,24 @@
 ﻿# 战策 Battleplan 开发日志
 
+## [M2.14] Polish测试 - RTSArenaController Parse Error修复（2026-09-11）
+
+**GDD v2.0第14章**：Polish测试 - Bug修复。
+
+**修复内容**：
+- 修复RTSArenaController.gd的3个Parse Error：
+  1. 第710行：字典中"defense_up"键重复使用（别名注释导致重复），删除重复键
+  2. 第2702行：`GameState.has("battle")`参数太少，改为`GameState.has_section("battle")`
+  3. 第2708行：`GameState.has("battle")`参数太少，改为`GameState.has_section("battle")`
+
+**影响**：
+- RTSArenaController.gd之前因Parse Error无法加载，导致大量测试被跳过
+- 修复后M2测试从2668增加到2884（+216个测试），全部通过
+- 战斗场景控制器现在可以正常实例化和使用
+
+**测试结果**：M2测试 2884 Passed, 0 Failed（全绿，+216测试）
+
+---
+
 ## [M2.13] 成就与元游戏 - 收藏系统（2026-09-11）
 
 **GDD v2.0第13章**：成就与元游戏 - 收藏系统。
