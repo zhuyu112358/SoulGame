@@ -1,5 +1,41 @@
 ﻿# 战策 Battleplan 开发日志
 
+## [M2.14] Polish测试 - BattleConfig UI动态创建修复（2026-09-11）
+
+**GDD v2.0第14章**：Polish测试 - 最终测试。
+
+**问题发现**：E2E测试发现BattleConfig场景文件(.tscn)不存在，导致@onready节点引用全部为null：
+- `Node not found: "CenterContainer/VBoxContainer/BackButton"`
+- `Invalid access to property or key 'pressed' on a base object of type 'null instance'`
+- _start_button和_back_button为null，信号连接失败
+
+**修复方案**：将BattleConfig.gd从依赖场景文件改为动态创建UI：
+- 将10个@onready变量改为普通var（初始null）
+- 添加_build_ui()方法动态创建完整UI结构
+- UI结构：CenterContainer → VBoxContainer → 标题 + 4个Section(地图/战术/队伍/难度) + 按钮行
+- 每个Section包含Label + 容器(HBoxContainer/GridContainer)
+- _ready()中先调用_build_ui()再执行其他初始化
+- 修复第239行GameState.set()改为set_value("game", "battle_config", config)
+
+**UI组件清单**：
+
+| 组件 | 类型 | 说明 |
+|------|------|------|
+| 标题 | Label | "战斗配置"，32px金色 |
+| 地图选择 | HBoxContainer | 2张地图按钮，200x120 |
+| 战术预设 | GridContainer(3列) | 6种战术按钮，140x60 |
+| 出战队伍 | HBoxContainer | 4个队伍槽位，120x140 |
+| AI难度 | HBoxContainer | 4种难度按钮，130x55 |
+| 返回按钮 | Button | 150x50 |
+| 开始战斗按钮 | Button | 200x50 |
+
+**验证结果**：
+- M2测试：**2955 Passed, 0 Failed**（全绿，无回归，无SCRIPT ERROR）
+- E2E测试：`BattleConfig: UI built dynamically` - UI动态创建成功
+- E2E测试后续：战斗未开始是因为测试脚本未模拟点击"开始战斗"按钮，非代码问题
+
+---
+
 ## [M2.14] Polish测试 - GameState API修复与E2E测试（2026-09-11）
 
 **GDD v2.0第14章**：Polish测试 - 最终测试。

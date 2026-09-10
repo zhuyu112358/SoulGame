@@ -3,17 +3,17 @@ extends Control
 ## Follows GDD v2.0 Chapter 14: Complete Game Flow
 ## M2.1 Foundation Framework
 
-# UI references
-@onready var _map_container: HBoxContainer = $CenterContainer/VBoxContainer/MapSection/MapContainer
-@onready var _tactic_container: GridContainer = $CenterContainer/VBoxContainer/TacticSection/TacticContainer
-@onready var _team_container: HBoxContainer = $CenterContainer/VBoxContainer/TeamSection/TeamContainer
-@onready var _difficulty_container: HBoxContainer = $CenterContainer/VBoxContainer/DifficultySection/DifficultyContainer
-@onready var _start_button: Button = $CenterContainer/VBoxContainer/StartButton
-@onready var _back_button: Button = $CenterContainer/VBoxContainer/BackButton
-@onready var _map_label: Label = $CenterContainer/VBoxContainer/MapSection/MapLabel
-@onready var _tactic_label: Label = $CenterContainer/VBoxContainer/TacticSection/TacticLabel
-@onready var _team_label: Label = $CenterContainer/VBoxContainer/TeamSection/TeamLabel
-@onready var _difficulty_label: Label = $CenterContainer/VBoxContainer/DifficultySection/DifficultyLabel
+# UI references (dynamically created in _build_ui)
+var _map_container: HBoxContainer = null
+var _tactic_container: GridContainer = null
+var _team_container: HBoxContainer = null
+var _difficulty_container: HBoxContainer = null
+var _start_button: Button = null
+var _back_button: Button = null
+var _map_label: Label = null
+var _tactic_label: Label = null
+var _team_label: Label = null
+var _difficulty_label: Label = null
 
 # Configuration state
 var _selected_map: String = "aether_temple"
@@ -59,6 +59,7 @@ const TACTICS: Dictionary = {
 }
 
 func _ready() -> void:
+	_build_ui()
 	_setup_theme()
 	_build_map_selection()
 	_build_tactic_selection()
@@ -67,6 +68,108 @@ func _ready() -> void:
 	_connect_signals()
 	_load_selected_souls()
 	_update_start_button()
+
+## Build entire UI dynamically (no .tscn file needed)
+func _build_ui() -> void:
+	# Root layout
+	var center = CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(center)
+
+	var vbox = VBoxContainer.new()
+	vbox.name = "MainVBox"
+	vbox.add_theme_constant_override("separation", 15)
+	center.add_child(vbox)
+
+	# Title
+	var title = Label.new()
+	title.text = "战斗配置"
+	title.add_theme_font_size_override("font_size", 32)
+	title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(title)
+
+	# Map section
+	var map_section = VBoxContainer.new()
+	map_section.add_theme_constant_override("separation", 8)
+	vbox.add_child(map_section)
+
+	_map_label = Label.new()
+	_map_label.text = "选择地图"
+	_map_label.add_theme_font_size_override("font_size", 18)
+	_map_label.add_theme_color_override("font_color", Color(0.83, 0.66, 0.36))
+	map_section.add_child(_map_label)
+
+	_map_container = HBoxContainer.new()
+	_map_container.add_theme_constant_override("separation", 10)
+	map_section.add_child(_map_container)
+
+	# Tactic section
+	var tactic_section = VBoxContainer.new()
+	tactic_section.add_theme_constant_override("separation", 8)
+	vbox.add_child(tactic_section)
+
+	_tactic_label = Label.new()
+	_tactic_label.text = "战术预设"
+	_tactic_label.add_theme_font_size_override("font_size", 18)
+	_tactic_label.add_theme_color_override("font_color", Color(0.83, 0.66, 0.36))
+	tactic_section.add_child(_tactic_label)
+
+	_tactic_container = GridContainer.new()
+	_tactic_container.columns = 3
+	_tactic_container.add_theme_constant_override("h_separation", 10)
+	_tactic_container.add_theme_constant_override("v_separation", 10)
+	tactic_section.add_child(_tactic_container)
+
+	# Team section
+	var team_section = VBoxContainer.new()
+	team_section.add_theme_constant_override("separation", 8)
+	vbox.add_child(team_section)
+
+	_team_label = Label.new()
+	_team_label.text = "出战队伍"
+	_team_label.add_theme_font_size_override("font_size", 18)
+	_team_label.add_theme_color_override("font_color", Color(0.83, 0.66, 0.36))
+	team_section.add_child(_team_label)
+
+	_team_container = HBoxContainer.new()
+	_team_container.add_theme_constant_override("separation", 10)
+	team_section.add_child(_team_container)
+
+	# Difficulty section
+	var diff_section = VBoxContainer.new()
+	diff_section.add_theme_constant_override("separation", 8)
+	vbox.add_child(diff_section)
+
+	_difficulty_label = Label.new()
+	_difficulty_label.text = "AI难度"
+	_difficulty_label.add_theme_font_size_override("font_size", 18)
+	_difficulty_label.add_theme_color_override("font_color", Color(0.83, 0.66, 0.36))
+	diff_section.add_child(_difficulty_label)
+
+	_difficulty_container = HBoxContainer.new()
+	_difficulty_container.add_theme_constant_override("separation", 10)
+	diff_section.add_child(_difficulty_container)
+
+	# Buttons
+	var btn_hbox = HBoxContainer.new()
+	btn_hbox.add_theme_constant_override("separation", 20)
+	btn_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_child(btn_hbox)
+
+	_back_button = Button.new()
+	_back_button.text = "返回"
+	_back_button.custom_minimum_size = Vector2(150, 50)
+	_back_button.add_theme_font_size_override("font_size", 16)
+	btn_hbox.add_child(_back_button)
+
+	_start_button = Button.new()
+	_start_button.text = "开始战斗"
+	_start_button.custom_minimum_size = Vector2(200, 50)
+	_start_button.add_theme_font_size_override("font_size", 18)
+	btn_hbox.add_child(_start_button)
+
+	GameLog.info("BattleConfig: UI built dynamically", "UI")
 
 func _setup_theme() -> void:
 	# Apply battleplan theme (deep purple + gold)
@@ -236,7 +339,7 @@ func _on_start_battle() -> void:
 		"tactic_name": TACTICS[_selected_tactic]["name"],
 		"difficulty_name": diff_data["name"]
 	}
-	GameState.set("battle_config", config)
+	GameState.set_value("game", "battle_config", config)
 
 	# Play battle start sound
 	if AudioManager:
