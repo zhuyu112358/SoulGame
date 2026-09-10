@@ -95,11 +95,77 @@ func save_game(slot: int, data: Dictionary, slot_name: String = "") -> bool:
 
 	EventBus.emit("game_saved", {"slot": slot, "name": _save_metadata[slot]["name"]})
 	GameLog.info("SaveSystem: Saved game to slot %d" % slot, "Save")
+
+	# Sync to Steam cloud if available
+	_sync_save_to_cloud(slot)
+
 	return true
+
+
+## Sync save file to Steam cloud
+func _sync_save_to_cloud(slot: int) -> void:
+	if not _is_steam_manager_available():
+		return
+	if not SteamManager.is_cloud_enabled():
+		return
+	var save_path := _get_save_path(slot)
+	if not FileAccess.file_exists(save_path):
+		return
+	var file := FileAccess.open(save_path, FileAccess.READ)
+	if file:
+		var data := file.get_buffer(file.get_length())
+		file.close()
+		var cloud_filename := "save_slot_%d.cfg" % slot
+		SteamManager.save_to_cloud(cloud_filename, data)
+		GameLog.info("SaveSystem: Synced slot %d to Steam cloud" % slot, "Save")
+
+
+## Check if Steam Manager is available
+func _is_steam_manager_available() -> bool:
+	return get_node_or_null("/root/SteamManager") != null
+
+
+## Load save file from Steam cloud
+func _load_save_from_cloud(slot: int) -> PackedByteArray:
+	if not _is_steam_manager_available():
+		return PackedByteArray()
+	if not SteamManager.is_cloud_enabled():
+		return PackedByteArray()
+	var cloud_filename := "save_slot_%d.cfg" % slot
+	if not SteamManager.cloud_file_exists(cloud_filename):
+		return PackedByteArray()
+	var data := SteamManager.load_from_cloud(cloud_filename)
+	# Save to local for future use
+	if data.size() > 0:
+		var save_path := _get_save_path(slot)
+		var file := FileAccess.open(save_path, FileAccess.WRITE)
+		if file:
+			file.store_buffer(data)
+			file.close()
+			GameLog.info("SaveSystem: Restored slot %d from Steam cloud to local" % slot, "Save")
+	return data
+
+
+## Parse save data from PackedByteArray to Dictionary
+func _parse_save_data(data: PackedByteArray) -> Dictionary:
+	var save_file := ConfigFile.new()
+	# Write to temp file and load (ConfigFile doesn't support loading from buffer directly)
+	var temp_path := "user://temp_cloud_save.cfg"
+	var file := FileAccess.open(temp_path, FileAccess.WRITE)
+	if file:
+		file.store_buffer(data)
+		file.close()
+	var error_code := save_file.load(temp_path)
+	DirAccess.remove_absolute(temp_path)
+	if error_code != OK:
+		GameLog.error("SaveSystem: Failed to parse cloud save data", "Save")
+		return {}
+	return _deserialize_dict(save_file, "data")
 
 
 ## Load game data from a slot
 ## Automatically migrates old save formats to current version
+## Falls back to Steam cloud if local save not found
 func load_game(slot: int) -> Dictionary:
 	if slot < 0 or slot >= _max_slots:
 		GameLog.error("SaveSystem: Invalid slot %d" % slot, "Save")
@@ -107,6 +173,11 @@ func load_game(slot: int) -> Dictionary:
 
 	var save_path := _get_save_path(slot)
 	if not FileAccess.file_exists(save_path):
+		# Try loading from Steam cloud
+		var cloud_data := _load_save_from_cloud(slot)
+		if cloud_data.size() > 0:
+			GameLog.info("SaveSystem: Loaded slot %d from Steam cloud" % slot, "Save")
+			return _parse_save_data(cloud_data)
 		GameLog.warning("SaveSystem: No save in slot %d" % slot, "Save")
 		return {}
 

@@ -1,5 +1,32 @@
 ﻿# 战策 Battleplan 开发日志
 
+## [M2.14] Steam EA上架准备 - 云存档系统Steam集成（2026-09-11）
+
+**GDD v2.0第14章**：Steam EA上架准备 - 云存档。
+
+**集成内容**：
+- 修改SaveSystem.gd的`save_game()`方法，本地保存成功后同步到Steam云存档
+- 添加`_sync_save_to_cloud(slot)`方法，将存档文件读取为PackedByteArray并上传到Steam云
+- 修改`load_game()`方法，本地无存档时自动从Steam云存档加载
+- 添加`_load_save_from_cloud(slot)`方法，从Steam云下载存档并恢复到本地
+- 添加`_parse_save_data(data)`方法，将云存档的PackedByteArray解析为Dictionary
+- 添加`_is_steam_manager_available()`方法，安全检查SteamManager可用性
+
+**云存档流程**：
+1. 保存：本地保存 → 检查SteamManager可用 → 检查云存档启用 → 读取文件 → 上传到Steam云（文件名：save_slot_N.cfg）
+2. 加载：检查本地存档 → 不存在则检查Steam云 → 从云端下载 → 恢复到本地 → 解析数据
+3. 安全检查：SteamManager不可用或云存档未启用时静默跳过，不影响本地功能
+
+**设计原则**：
+- 本地优先：本地存档始终是第一选择，云存档作为备份和跨设备同步
+- 安全检查：使用`get_node_or_null("/root/SteamManager")`检查，不可用时静默跳过
+- 自动恢复：从云端加载的存档会自动保存到本地，下次加载直接使用本地
+- 无侵入：不修改现有存档格式和本地逻辑，仅添加云同步层
+
+**测试结果**：M2测试 2930 Passed, 0 Failed（全绿，无回归）
+
+---
+
 ## [M2.14] Steam EA上架准备 - 成就系统Steam集成（2026-09-11）
 
 **GDD v2.0第14章**：Steam EA上架准备 - 成就对接。
