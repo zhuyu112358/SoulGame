@@ -42,6 +42,9 @@ var soul_growth: Resource = null
 ## Soul display node (placeholder for M1)
 var soul_display: Node2D = null
 
+## Current soul element for portrait and glow color
+var _current_soul_element: String = "fire"
+
 ## Soul world ID for SoulArena API
 var soul_world_id: String = ""
 
@@ -77,12 +80,109 @@ var _daily_behavior_ai = null
 func _ready() -> void:
 	GameLog.info("SoulHome: Scene initialized", "SoulHome")
 	_setup_soul_display()
+	_setup_ui_styles()
 	_setup_button_hovers()
 	_init_furniture_system()
 	_init_training_system()
 	_init_daily_behavior_ai()
 	_enter_home()
 	_play_home_ambience()
+
+
+## Apply game-level UI styles to all panels and buttons
+func _setup_ui_styles() -> void:
+	# Panel style: dark purple bg + gold border + rounded corners
+	var panel_style = StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.06, 0.04, 0.12, 0.92)
+	panel_style.border_color = Color(0.83, 0.66, 0.36, 0.7)
+	panel_style.border_width_left = 2
+	panel_style.border_width_right = 2
+	panel_style.border_width_top = 2
+	panel_style.border_width_bottom = 2
+	panel_style.corner_radius_top_left = 8
+	panel_style.corner_radius_top_right = 8
+	panel_style.corner_radius_bottom_left = 8
+	panel_style.corner_radius_bottom_right = 8
+
+	# Apply to all panels
+	var panel_paths = ["StatusPanel", "GrowthPanel", "InteractionPanel", "ChatPanel"]
+	for path in panel_paths:
+		var panel = get_node_or_null(path)
+		if panel and panel is Panel:
+			panel.add_theme_stylebox_override("panel", panel_style)
+
+	# Button normal style
+	var btn_normal = StyleBoxFlat.new()
+	btn_normal.bg_color = Color(0.12, 0.08, 0.22, 0.95)
+	btn_normal.border_color = Color(0.7, 0.55, 0.3, 0.8)
+	btn_normal.border_width_left = 2
+	btn_normal.border_width_right = 2
+	btn_normal.border_width_top = 2
+	btn_normal.border_width_bottom = 2
+	btn_normal.corner_radius_top_left = 6
+	btn_normal.corner_radius_top_right = 6
+	btn_normal.corner_radius_bottom_left = 6
+	btn_normal.corner_radius_bottom_right = 6
+
+	# Button hover style (brighter)
+	var btn_hover = StyleBoxFlat.new()
+	btn_hover.bg_color = Color(0.18, 0.12, 0.3, 0.98)
+	btn_hover.border_color = Color(0.95, 0.78, 0.45, 1.0)
+	btn_hover.border_width_left = 2
+	btn_hover.border_width_right = 2
+	btn_hover.border_width_top = 2
+	btn_hover.border_width_bottom = 2
+	btn_hover.corner_radius_top_left = 6
+	btn_hover.corner_radius_top_right = 6
+	btn_hover.corner_radius_bottom_left = 6
+	btn_hover.corner_radius_bottom_right = 6
+
+	# Button pressed style (darker)
+	var btn_pressed = StyleBoxFlat.new()
+	btn_pressed.bg_color = Color(0.08, 0.05, 0.15, 1.0)
+	btn_pressed.border_color = Color(0.6, 0.48, 0.25, 0.9)
+	btn_pressed.border_width_left = 2
+	btn_pressed.border_width_right = 2
+	btn_pressed.border_width_top = 2
+	btn_pressed.border_width_bottom = 2
+	btn_pressed.corner_radius_top_left = 6
+	btn_pressed.corner_radius_top_right = 6
+	btn_pressed.corner_radius_bottom_left = 6
+	btn_pressed.corner_radius_bottom_right = 6
+
+	# Apply button styles to all buttons
+	var button_paths = [
+		"InteractionPanel/ChatButton", "InteractionPanel/PetButton",
+		"InteractionPanel/FeedButton", "InteractionPanel/PlayButton",
+		"InteractionPanel/TrainButton", "ChatPanel/ChatSend",
+		"ChatPanel/ChatClose", "BackButton", "BattleButton"
+	]
+	for path in button_paths:
+		var btn = get_node_or_null(path)
+		if btn and btn is Button:
+			btn.add_theme_stylebox_override("normal", btn_normal)
+			btn.add_theme_stylebox_override("hover", btn_hover)
+			btn.add_theme_stylebox_override("pressed", btn_pressed)
+			# Gold text color
+			btn.add_theme_color_override("font_color", Color(0.95, 0.88, 0.65))
+			btn.add_theme_color_override("font_hover_color", Color(1.0, 0.95, 0.8))
+
+	# Title labels: gold color, larger font
+	var title_paths = ["StatusPanel/StatusTitle", "GrowthPanel/GrowthTitle", "RoomLabel", "SoulDisplayArea/SoulNameLabel"]
+	for path in title_paths:
+		var label = get_node_or_null(path)
+		if label and label is Label:
+			label.add_theme_color_override("font_color", Color(1.0, 0.88, 0.5))
+			label.add_theme_font_size_override("font_size", 18)
+
+	# Body labels: gray-white color
+	var body_paths = ["StatusPanel/StatusLabel", "GrowthPanel/GrowthLabel", "EventLog"]
+	for path in body_paths:
+		var label = get_node_or_null(path)
+		if label and label is Label:
+			label.add_theme_color_override("font_color", Color(0.8, 0.78, 0.72))
+
+	GameLog.info("SoulHome: Game-level UI styles applied", "SoulHome")
 
 
 ## Setup hover effects for all buttons in the scene
@@ -460,21 +560,25 @@ func exit_home() -> void:
 
 ## --- Soul Display ---
 
-## Setup soul display with actual portrait texture
+## Setup soul display with game-level UI: large portrait + element glow + gold frame
 func _setup_soul_display() -> void:
-	# Create soul display node
+	# Create soul display node (centered, larger)
 	soul_display = Node2D.new()
 	soul_display.name = "SoulDisplay"
-	soul_display.position = Vector2(400, 280)
+	soul_display.position = Vector2(420, 300)
 	add_child(soul_display)
 
-	# Add soul portrait texture
-	var soul_sprite := TextureRect.new()
-	soul_sprite.name = "SoulPortrait"
-	soul_sprite.size = Vector2(160, 200)
-	soul_sprite.position = Vector2(-80, -100)
-	soul_sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	soul_sprite.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	# Element color map for glow
+	var element_colors = {
+		"fire": Color(1.0, 0.4, 0.15, 0.25),
+		"water": Color(0.2, 0.5, 1.0, 0.25),
+		"earth": Color(0.4, 0.7, 0.3, 0.25),
+		"wind": Color(0.3, 0.9, 0.8, 0.25),
+		"light": Color(1.0, 0.85, 0.3, 0.3),
+		"dark": Color(0.6, 0.3, 0.9, 0.25),
+		"thunder": Color(0.9, 0.8, 0.2, 0.25),
+		"ice": Color(0.5, 0.85, 1.0, 0.25)
+	}
 
 	# Load portrait based on current soul element
 	var element = _current_soul_element if _current_soul_element else "fire"
@@ -483,30 +587,79 @@ func _setup_soul_display() -> void:
 		"light": "light", "dark": "shadow", "thunder": "thunder", "ice": "ice"
 	}
 	var file_name = element_file_map.get(element, element)
+	var glow_color = element_colors.get(element, Color(0.5, 0.5, 0.5, 0.2))
+
+	# Element glow background (larger than portrait, soft radial effect)
+	var glow = ColorRect.new()
+	glow.name = "ElementGlow"
+	glow.size = Vector2(300, 360)
+	glow.position = Vector2(-150, -180)
+	glow.color = glow_color
+	soul_display.add_child(glow)
+
+	# Gold decorative frame around portrait
+	var frame = Panel.new()
+	frame.name = "GoldFrame"
+	frame.custom_minimum_size = Vector2(260, 320)
+	frame.position = Vector2(-130, -160)
+	var frame_style = StyleBoxFlat.new()
+	frame_style.bg_color = Color(0, 0, 0, 0)
+	frame_style.border_color = Color(0.83, 0.66, 0.36, 0.9)
+	frame_style.border_width_left = 3
+	frame_style.border_width_right = 3
+	frame_style.border_width_top = 3
+	frame_style.border_width_bottom = 3
+	frame_style.corner_radius_top_left = 8
+	frame_style.corner_radius_top_right = 8
+	frame_style.corner_radius_bottom_left = 8
+	frame_style.corner_radius_bottom_right = 8
+	frame.add_theme_stylebox_override("panel", frame_style)
+	soul_display.add_child(frame)
+
+	# Add soul portrait texture (larger: 240x300)
+	var soul_sprite := TextureRect.new()
+	soul_sprite.name = "SoulPortrait"
+	soul_sprite.size = Vector2(240, 300)
+	soul_sprite.position = Vector2(-120, -150)
+	soul_sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	soul_sprite.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+
 	var portrait_path = "res://assets/art/characters/character_%s_soul_portrait.png" % file_name
 	if ResourceLoader.exists(portrait_path):
 		soul_sprite.texture = load(portrait_path)
 		GameLog.info("SoulHome: Loaded portrait for %s" % element, "SoulHome")
 	else:
-		# Fallback: colored rectangle
+		# Fallback: colored rectangle with element color
 		soul_sprite.queue_free()
 		var fallback := ColorRect.new()
-		fallback.size = Vector2(96, 96)
-		fallback.color = Color(0.4, 0.4, 1.0, 0.8)
-		fallback.position = Vector2(-48, -48)
+		fallback.size = Vector2(200, 240)
+		fallback.color = Color(glow_color.r, glow_color.g, glow_color.b, 0.6)
+		fallback.position = Vector2(-100, -120)
 		soul_display.add_child(fallback)
 		GameLog.warning("SoulHome: Portrait not found, using fallback", "SoulHome")
 		return
 
 	soul_display.add_child(soul_sprite)
 
-	# Add subtle floating animation
+	# Floating animation (up/down)
 	var float_tween = create_tween()
 	float_tween.set_loops()
-	float_tween.tween_property(soul_display, "position:y", 290.0, 1.5).set_ease(Tween.EASE_IN_OUT)
-	float_tween.tween_property(soul_display, "position:y", 280.0, 1.5).set_ease(Tween.EASE_IN_OUT)
+	float_tween.tween_property(soul_display, "position:y", 310.0, 1.8).set_ease(Tween.EASE_IN_OUT)
+	float_tween.tween_property(soul_display, "position:y", 300.0, 1.8).set_ease(Tween.EASE_IN_OUT)
 
-	GameLog.info("SoulHome: Soul display created with portrait", "SoulHome")
+	# Breathing animation (subtle scale)
+	var breath_tween = create_tween()
+	breath_tween.set_loops()
+	breath_tween.tween_property(soul_sprite, "scale", Vector2(1.03, 1.03), 2.0).set_ease(Tween.EASE_IN_OUT)
+	breath_tween.tween_property(soul_sprite, "scale", Vector2(1.0, 1.0), 2.0).set_ease(Tween.EASE_IN_OUT)
+
+	# Glow pulse animation
+	var glow_tween = create_tween()
+	glow_tween.set_loops()
+	glow_tween.tween_property(glow, "color:a", glow_color.a * 1.5, 2.0).set_ease(Tween.EASE_IN_OUT)
+	glow_tween.tween_property(glow, "color:a", glow_color.a * 0.7, 2.0).set_ease(Tween.EASE_IN_OUT)
+
+	GameLog.info("SoulHome: Game-level soul display created (portrait + glow + gold frame)", "SoulHome")
 
 
 ## --- Room Management ---
