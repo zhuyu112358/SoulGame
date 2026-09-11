@@ -29,17 +29,17 @@ var _ai_unit = null
 ## ArenaMap reference
 var _arena_map = null
 
-## Background color
-var background_color: Color = Color(0.1, 0.1, 0.15, 0.9)
+## Background color (game-level: dark purple)
+var background_color: Color = Color(0.06, 0.04, 0.12, 0.92)
 
-## Border color
-var border_color: Color = Color(0.4, 0.4, 0.5, 1.0)
+## Border color (game-level: gold)
+var border_color: Color = Color(0.8, 0.6, 0.2, 1.0)
 
-## Player dot color
-var player_color: Color = Color(0.2, 0.6, 1.0, 1.0)
+## Player dot color (brighter blue)
+var player_color: Color = Color(0.3, 0.7, 1.0, 1.0)
 
-## AI dot color
-var ai_color: Color = Color(1.0, 0.3, 0.3, 1.0)
+## AI dot color (brighter red)
+var ai_color: Color = Color(1.0, 0.4, 0.4, 1.0)
 
 ## Obstacle color
 var obstacle_color: Color = Color(0.5, 0.5, 0.5, 0.8)
@@ -100,8 +100,10 @@ func _draw() -> void:
 	# Background
 	draw_rect(Rect2(Vector2.ZERO, minimap_size), background_color, true)
 
-	# Border
-	draw_rect(Rect2(Vector2.ZERO, minimap_size), border_color, false, 2.0)
+	# Border (gold, 3px for game-level look)
+	draw_rect(Rect2(Vector2.ZERO, minimap_size), border_color, false, 3.0)
+	# Inner accent border (subtle gold glow)
+	draw_rect(Rect2(Vector2(2, 2), minimap_size - Vector2(4, 4)), Color(0.6, 0.45, 0.15, 0.5), false, 1.0)
 
 	# Draw terrain (if available)
 	if show_terrain and _arena_map != null and _arena_map.has_method("terrain_grid"):
@@ -173,8 +175,8 @@ func _draw_unit_dot(p_pos: Vector2, p_color: Color, p_label: String) -> void:
 	draw_circle(clamped_pos, dot_radius + 2, Color(p_color.r, p_color.g, p_color.b, 0.3))
 	# Main dot
 	draw_circle(clamped_pos, dot_radius, p_color)
-	# Border
-	draw_arc(clamped_pos, dot_radius, 0, TAU, 16, Color.WHITE, 1.0)
+	# Gold border (game-level)
+	draw_arc(clamped_pos, dot_radius, 0, TAU, 16, Color(1.0, 0.88, 0.5, 0.9), 1.5)
 
 
 ## Convert terrain type to color
