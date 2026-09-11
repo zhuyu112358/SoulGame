@@ -1,5 +1,49 @@
 ﻿# 战策 Battleplan 开发日志
 
+## [P0紧急修复] 用户实机测试反馈 - 4个阻断性问题（2026-09-11）
+
+**用户反馈**："界面乱七八糟的，也没法进入战斗，另外这还是很像学生作业"
+
+### P0-1：战斗配置界面UI严重重复 ✅
+
+**问题**：`battle_config.tscn`中已定义完整UI结构（Title/Subtitle/MapSection/TacticSection/DifficultySection/TeamSection/ButtonRow），但`BattleConfig.gd`的`_build_ui()`又动态创建了一套完全相同的UI。两套UI叠加显示导致界面混乱。
+
+**修复**：重写`battle_config.tscn`，删除CenterContainer下所有UI子节点，只保留BattleConfig根节点+Background+DimOverlay。BattleConfig.gd已完全动态创建UI，.tscn中的UI节点是冗余的。
+
+### P0-2：无法进入战斗（开始按钮一直灰色禁用） ✅
+
+**根因**：`soul_select.gd`选中灵魂后调用`GameState.set_value("battle", "selected_soul", soul)`（namespace是"battle"），但`BattleConfig.gd`的`_load_selected_souls()`只读取namespace "game"下的key（`game/battle_config`的`player_souls`或`game/selected_soul`）。namespace不匹配导致读不到选中灵魂，`_selected_souls`为空，开始按钮被禁用。
+
+**修复**：修改`_load_selected_souls()`，添加对`"battle", "selected_soul"`的读取支持，优先级高于legacy的"game" namespace。读取顺序：
+1. `game/battle_config.player_souls`（团队配置）
+2. `battle/selected_soul`（soul_select场景存储，新增）
+3. `game/selected_soul`（legacy兼容）
+
+### P0-3：主菜单标题重复 ✅
+
+**问题**：与P0-1相同模式。`main_menu.tscn`中定义了TitleLabel/SubtitleLabel/StartButton/HomeButton/SettingsButton/QuitButton/VersionLabel，而`MainMenu.gd`的`_build_ui()`又动态创建了12按钮UI。两套UI叠加。
+
+**修复**：重写`main_menu.tscn`，删除CenterContainer下所有UI子节点，只保留MainMenu根节点+Background+Overlay。
+
+### P0-4：Debug调试面板遮挡界面 ✅
+
+**问题**：游戏运行时左侧显示"SoulGame Debug"面板（FPS/Game State/Network/System/Recent Logs），占据屏幕约1/3宽度，严重影响视觉体验，看起来像学生作业。
+
+**修复**：
+- 修改`DebugOverlay.gd`的`_ready()`，强制默认隐藏（不读取ConfigManager配置，避免配置被设为true）
+- 添加F3键作为切换快捷键（原有`~`键保留）
+- 玩家按`~`或F3可切换显示debug面板
+
+**测试结果**：2955 Passed, 0 Failed，无SCRIPT ERROR
+
+**用户体验改善**：
+- 主菜单：只显示一套12按钮动态UI，无重复标题
+- 战斗配置：只显示一套动态UI，无重复
+- 进入战斗：soul_select选灵魂后，战斗配置开始按钮可点击
+- 界面干净：默认无debug面板遮挡
+
+---
+
 ## [GAP修复] GAP-001 4v4团队对战 - RTSArenaController显示层（2026-09-11）
 
 **接续上一轮**：RTSArenaManager层4v4支持已完成（commit 3e211fe，已push）。本轮完成RTSArenaController显示层的4v4支持。

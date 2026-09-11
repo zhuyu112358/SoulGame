@@ -31,14 +31,20 @@ var _max_fps_history: int = 60
 func _ready() -> void:
 	layer = 1000
 	_build_ui()
-	_visible = ConfigManager.get_value("game", "debug", "show_debug_overlay", false)
-	_panel.visible = _visible
-	GameLog.info("DebugOverlay initialized", "Debug")
+	# P0-4 fix: Debug overlay hidden by default for release builds
+	# Toggle with ` (backtick) or F3 key
+	_visible = false
+	_panel.visible = false
+	GameLog.info("DebugOverlay initialized (hidden by default, press ` or F3 to toggle)", "Debug")
 
 
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("toggle_debug"):
 		_toggle()
+	# Also support F3 key as fallback
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_F3:
+			_toggle()
 
 
 func _process(delta: float) -> void:

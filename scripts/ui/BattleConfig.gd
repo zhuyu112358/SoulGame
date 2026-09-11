@@ -246,11 +246,20 @@ func _load_selected_souls() -> void:
 		if config.has("player_souls"):
 			_selected_souls = config["player_souls"]
 			_update_team_display()
-	elif GameState.has("game", "selected_soul"):
-		# Legacy: single soul from old flow
+			return
+	# SoulSelect scene stores selected soul in "battle" namespace
+	if GameState.has("battle", "selected_soul"):
+		var soul: Dictionary = GameState.get_value("battle", "selected_soul")
+		if soul != null and soul is Dictionary:
+			_selected_souls = [soul]
+			_update_team_display()
+			return
+	# Legacy: single soul from old flow in "game" namespace
+	if GameState.has("game", "selected_soul"):
 		var soul: Dictionary = GameState.get_value("game", "selected_soul")
-		_selected_souls = [soul]
-		_update_team_display()
+		if soul != null and soul is Dictionary:
+			_selected_souls = [soul]
+			_update_team_display()
 
 func _update_team_display() -> void:
 	# Update team slots with selected souls
