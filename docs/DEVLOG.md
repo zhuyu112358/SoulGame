@@ -10402,3 +10402,52 @@ ode/life/max_life），而_update_skill_particles()期望新版数据结构（pa
 - SettingsMenu/TrainingStats等.tscn定义按钮的场景hover效果
 - 面板区域卡片式背景美化
 - 全局UI组件统一集成(待资源导入后)
+
+---
+
+## 2026-09-11 全局hover效果全覆盖 (UI-5完成)
+
+### 完成内容
+1. **SettingsMenu.gd按钮hover效果**
+   - 返回/保存/重置按钮添加hover缩放动画
+   - mouse_entered: 缩放1.05x，0.15秒缓动
+   - mouse_exited: 恢复缩放1.0x，0.2秒缓动
+
+2. **TrainingStatsMenu.gd hover效果增强**
+   - 已有亮度hover效果(+音效)
+   - 新增缩放动画，与其他场景保持一致
+   - 使用set_parallel(true)同时播放亮度+缩放动画
+
+3. **全局hover效果覆盖确认**
+   - MainMenu.gd ✅ (缩放+亮度)
+   - BattleConfig.gd ✅ (缩放+亮度)
+   - SoulSelect.gd ✅ (缩放+元素色边框)
+   - SettingsMenu.gd ✅ (缩放，本轮添加)
+   - TrainingStatsMenu.gd ✅ (缩放+亮度+音效，本轮增强)
+   - SoulCodexUI.gd ✅ (已有)
+   - CollectionUI.gd ✅ (已有)
+   - MatchmakingUI.gd ✅ (已有)
+   - FriendUI.gd ✅ (已有)
+
+### 验证结果
+- M2测试: 2697 Passed, 0 Failed
+- 无SCRIPT ERROR
+
+### 修改的文件
+- scripts/ui/SettingsMenu.gd - 按钮添加hover缩放动画
+- scripts/ui/TrainingStatsMenu.gd - hover效果新增缩放动画
+
+### UI质量大改造最终进度
+- 主菜单游戏化分层布局 ✅
+- 灵魂选择暗黑3风格改造 ✅
+- 战斗配置面板美化 ✅
+- 其他场景背景图美化(5个场景) ✅
+- 全局按钮hover动画(9个UI场景全覆盖) ✅
+- 场景切换淡入淡出过渡 ✅
+- 结算/设置/HUD美化 ✅
+- 4v4团队HP条 ✅
+
+### 下一步
+- UI组件PNG资源导入后集成(ui_character_select_panel/ui_battle_config_panel等)
+- 面板区域卡片式背景细节优化
+- 实机测试验证整体视觉效果

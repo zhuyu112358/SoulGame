@@ -90,6 +90,15 @@ func _apply_ui_theme() -> void:
 		btn.add_theme_color_override("font_hover_color", Color(1.0, 0.95, 0.85))
 		btn.add_theme_color_override("font_pressed_color", Color(1.0, 0.85, 0.5))
 		btn.add_theme_font_size_override("font_size", 16)
+		# Hover scale animation
+		btn.mouse_entered.connect(func():
+			var t = create_tween()
+			t.tween_property(btn, "scale", Vector2(1.05, 1.05), 0.15).set_ease(Tween.EASE_OUT)
+		)
+		btn.mouse_exited.connect(func():
+			var t = create_tween()
+			t.tween_property(btn, "scale", Vector2(1.0, 1.0), 0.2).set_ease(Tween.EASE_OUT)
+		)
 
 	# TabContainer styling
 	_tab_container.add_theme_font_size_override("font_size", 14)

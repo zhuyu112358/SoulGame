@@ -265,12 +265,16 @@ func _on_button_hover(p_button: Button) -> void:
 	if AudioManager:
 		AudioManager.play_sfx("ui_hover")
 	var tween = create_tween()
+	tween.set_parallel(true)
 	tween.set_ease(Tween.EASE_OUT)
 	tween.tween_property(p_button, "modulate", Color(1.25, 1.1, 0.75), 0.15)
+	tween.tween_property(p_button, "scale", Vector2(1.05, 1.05), 0.15)
 
 
 ## Button exit visual reset
 func _on_button_exit(p_button: Button) -> void:
 	var tween = create_tween()
+	tween.set_parallel(true)
 	tween.set_ease(Tween.EASE_OUT)
 	tween.tween_property(p_button, "modulate", Color(1.0, 1.0, 1.0), 0.2)
+	tween.tween_property(p_button, "scale", Vector2(1.0, 1.0), 0.2)
