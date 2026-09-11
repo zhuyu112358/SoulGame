@@ -3274,24 +3274,37 @@ func _show_result_modal(p_result: String, p_title: String, p_title_color: Color,
 	var bg_tween = create_tween()
 	bg_tween.tween_property(modal_bg, "color:a", 0.8, 0.2)
 
-	# Create result panel with gold border style
+	# Create result panel with 9-slice game over UI component
 	var panel = Panel.new()
 	panel.position = Vector2(340, 100)
 	panel.size = Vector2(600, 520)
 	panel.name = "ResultModal"
-	# Apply custom style: dark purple bg + gold border
-	var panel_style = StyleBoxFlat.new()
-	panel_style.bg_color = Color(0.10, 0.08, 0.18, 0.97)
-	panel_style.border_color = Color(0.83, 0.66, 0.36, 1.0)
-	panel_style.border_width_left = 3
-	panel_style.border_width_right = 3
-	panel_style.border_width_top = 3
-	panel_style.border_width_bottom = 3
-	panel_style.corner_radius_top_left = 12
-	panel_style.corner_radius_top_right = 12
-	panel_style.corner_radius_bottom_left = 12
-	panel_style.corner_radius_bottom_right = 12
-	panel.add_theme_stylebox_override("panel", panel_style)
+	# Apply 9-slice game over panel texture if available
+	var panel_tex = load("res://assets/art/ui/ui_game_over_panel.png")
+	if panel_tex:
+		var panel_style = StyleBoxTexture.new()
+		panel_style.texture = panel_tex
+		panel_style.region_rect = Rect2(0, 0, panel_tex.get_width(), panel_tex.get_height())
+		panel_style.patch_margin_left = 24
+		panel_style.patch_margin_right = 24
+		panel_style.patch_margin_top = 24
+		panel_style.patch_margin_bottom = 24
+		panel_style.draw_center = true
+		panel.add_theme_stylebox_override("panel", panel_style)
+	else:
+		# Fallback: dark purple bg + gold border
+		var panel_style = StyleBoxFlat.new()
+		panel_style.bg_color = Color(0.10, 0.08, 0.18, 0.97)
+		panel_style.border_color = Color(0.83, 0.66, 0.36, 1.0)
+		panel_style.border_width_left = 3
+		panel_style.border_width_right = 3
+		panel_style.border_width_top = 3
+		panel_style.border_width_bottom = 3
+		panel_style.corner_radius_top_left = 12
+		panel_style.corner_radius_top_right = 12
+		panel_style.corner_radius_bottom_left = 12
+		panel_style.corner_radius_bottom_right = 12
+		panel.add_theme_stylebox_override("panel", panel_style)
 	add_child(panel)
 	# Animate panel appearance
 	panel.scale = Vector2(0.85, 0.85)
@@ -3598,49 +3611,33 @@ func _show_result_modal(p_result: String, p_title: String, p_title_color: Color,
 	exp_total_desc.modulate = Color(0.65, 0.7, 0.8)
 	exp_total_card.add_child(exp_total_desc)
 
-	# === Buttons ===
+	# === Buttons with 9-slice UI component ===
 	var btn_y = 440
 
-	# Rematch button
+	# Rematch button with 9-slice style
 	var rematch_btn = Button.new()
 	rematch_btn.text = "⚔ 再战一局"
 	rematch_btn.position = Vector2(100, btn_y)
 	rematch_btn.size = Vector2(170, 50)
 	rematch_btn.add_theme_font_size_override("font_size", 18)
-	var rematch_normal = StyleBoxFlat.new()
-	rematch_normal.bg_color = Color(0.15, 0.2, 0.35, 0.95)
-	rematch_normal.border_color = Color(0.4, 0.6, 0.9, 0.8)
-	rematch_normal.border_width_left = 2
-	rematch_normal.border_width_right = 2
-	rematch_normal.border_width_top = 2
-	rematch_normal.border_width_bottom = 2
-	rematch_normal.corner_radius_top_left = 8
-	rematch_normal.corner_radius_top_right = 8
-	rematch_normal.corner_radius_bottom_left = 8
-	rematch_normal.corner_radius_bottom_right = 8
-	rematch_btn.add_theme_stylebox_override("normal", rematch_normal)
+	rematch_btn.add_theme_color_override("font_color", Color(0.95, 0.9, 0.75))
+	rematch_btn.add_theme_color_override("font_hover_color", Color(1.0, 0.95, 0.85))
+	rematch_btn.add_theme_color_override("font_pressed_color", Color(1.0, 0.85, 0.5))
+	_apply_9slice_button_style(rematch_btn)
 	rematch_btn.pressed.connect(_on_rematch_pressed)
 	_setup_button_hover(rematch_btn)
 	panel.add_child(rematch_btn)
 
-	# Back to menu button
+	# Back to menu button with 9-slice style
 	var back_btn = Button.new()
 	back_btn.text = "🏠 返回主菜单"
 	back_btn.position = Vector2(330, btn_y)
 	back_btn.size = Vector2(170, 50)
 	back_btn.add_theme_font_size_override("font_size", 18)
-	var back_normal = StyleBoxFlat.new()
-	back_normal.bg_color = Color(0.2, 0.18, 0.15, 0.95)
-	back_normal.border_color = Color(0.7, 0.6, 0.4, 0.8)
-	back_normal.border_width_left = 2
-	back_normal.border_width_right = 2
-	back_normal.border_width_top = 2
-	back_normal.border_width_bottom = 2
-	back_normal.corner_radius_top_left = 8
-	back_normal.corner_radius_top_right = 8
-	back_normal.corner_radius_bottom_left = 8
-	back_normal.corner_radius_bottom_right = 8
-	back_btn.add_theme_stylebox_override("normal", back_normal)
+	back_btn.add_theme_color_override("font_color", Color(0.95, 0.9, 0.75))
+	back_btn.add_theme_color_override("font_hover_color", Color(1.0, 0.95, 0.85))
+	back_btn.add_theme_color_override("font_pressed_color", Color(1.0, 0.85, 0.5))
+	_apply_9slice_button_style(back_btn)
 	back_btn.pressed.connect(_on_back_to_menu_pressed)
 	_setup_button_hover(back_btn)
 	panel.add_child(back_btn)
@@ -3649,6 +3646,43 @@ func _show_result_modal(p_result: String, p_title: String, p_title_color: Color,
 	_animate_result_elements(panel)
 
 	GameLog.info("RTSArenaController: Result modal shown (visualized UI)", "Arena")
+
+
+## Apply 9-slice button style from UI component textures
+func _apply_9slice_button_style(p_button: Button) -> void:
+	var normal_tex = load("res://assets/art/ui/ui_button_normal.png")
+	var hover_tex = load("res://assets/art/ui/ui_button_hover.png")
+	var pressed_tex = load("res://assets/art/ui/ui_button_pressed.png")
+	if normal_tex:
+		var normal_style = StyleBoxTexture.new()
+		normal_style.texture = normal_tex
+		normal_style.region_rect = Rect2(0, 0, normal_tex.get_width(), normal_tex.get_height())
+		normal_style.patch_margin_left = 12
+		normal_style.patch_margin_right = 12
+		normal_style.patch_margin_top = 8
+		normal_style.patch_margin_bottom = 8
+		normal_style.draw_center = true
+		p_button.add_theme_stylebox_override("normal", normal_style)
+	if hover_tex:
+		var hover_style = StyleBoxTexture.new()
+		hover_style.texture = hover_tex
+		hover_style.region_rect = Rect2(0, 0, hover_tex.get_width(), hover_tex.get_height())
+		hover_style.patch_margin_left = 12
+		hover_style.patch_margin_right = 12
+		hover_style.patch_margin_top = 8
+		hover_style.patch_margin_bottom = 8
+		hover_style.draw_center = true
+		p_button.add_theme_stylebox_override("hover", hover_style)
+	if pressed_tex:
+		var pressed_style = StyleBoxTexture.new()
+		pressed_style.texture = pressed_tex
+		pressed_style.region_rect = Rect2(0, 0, pressed_tex.get_width(), pressed_tex.get_height())
+		pressed_style.patch_margin_left = 12
+		pressed_style.patch_margin_right = 12
+		pressed_style.patch_margin_top = 8
+		pressed_style.patch_margin_bottom = 8
+		pressed_style.draw_center = true
+		p_button.add_theme_stylebox_override("pressed", pressed_style)
 
 
 ## Animate result modal elements appearing sequentially (staggered fade in + slide up)

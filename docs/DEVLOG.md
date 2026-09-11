@@ -1,5 +1,22 @@
 ﻿# 战策 Battleplan 开发日志
 
+## [结算界面美化] 9-slice UI组件集成（2026-09-11）
+
+**改造内容**：
+- 结算面板从StyleBoxFlat改为使用ui_game_over_panel.png 9-slice组件
+- 再战一局和返回主菜单按钮从StyleBoxFlat改为使用ui_button_normal/hover/pressed.png 9-slice组件
+- 添加_apply_9slice_button_style辅助方法，统一按钮样式
+- 保留fallback样式（当纹理加载失败时使用StyleBoxFlat）
+- 按钮文字颜色统一为金色调（正常/悬停/按下三种状态）
+
+**修改方法**：
+- `_show_result_modal()`：面板和按钮使用9-slice UI组件
+- `_apply_9slice_button_style(p_button)`：新增辅助方法，应用9-slice按钮样式
+
+**测试结果**：2955 Passed, 0 Failed，无SCRIPT ERROR
+
+---
+
 ## [战斗HUD美化] 4v4团队HP条显示优化（2026-09-11）
 
 **改造内容**：
