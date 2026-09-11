@@ -11480,3 +11480,31 @@ ode/life/max_life），而_update_skill_particles()期望新版数据结构（pa
 - 继续升级其他界面（设置界面/随机匹配/捏脸系统等）
 - 战斗HUD技能图标按钮+冷却遮罩
 - 实机测试验证渲染效果
+
+---
+
+## 2026-09-11 游戏级UI升级：设置界面 + 修复已存在的@onready路径bug
+
+### 升级内容
+以SoulSelect.gd为质量模板，升级设置界面（SettingsMenu.gd）的视觉层。
+
+### 修复的已存在bug（导致所有设置控件为null）
+- **@onready路径错误**：脚本中所有设置控件的路径多了一个VBox层级（如Display/VBox/ResolutionRow），但场景文件中实际路径是Display/ResolutionRow。导致11个@onready变量全部为null，设置界面完全无法工作（滑块/下拉框/复选框都无法操作）。修复：移除路径中多余的VBox层级。
+
+### 视觉改进
+1. **按钮三态StyleBoxFlat样式**：返回/保存/重置按钮添加normal/hover/pressed三态背景样式（深紫底+金色边框+圆角6px），hover时边框变亮
+2. **TabContainer面板样式**：添加深紫底色面板（Color(0.06,0.04,0.12,0.92)）+金色边框+圆角8px
+3. **Tab标签样式**：选中tab=深紫底+亮金边框，未选中tab=深灰底+暗金边框
+4. **保留已有样式**：标题32号金色、Slider金色填充+grabber、CheckButton/OptionButton文字颜色、按钮hover缩放动画
+
+### 验证结果
+- settings_menu.tscn：**NO SCRIPT ERRORS**，游戏级UI样式应用成功，设置加载成功
+- M2测试：**2955 Passed, 0 Failed** 全绿
+
+### 修改的文件
+- scripts/ui/SettingsMenu.gd - 修复11个@onready路径（移除多余VBox层级），添加按钮三态样式+TabContainer面板样式
+
+### 下一步
+- 继续升级其他界面（随机匹配/捏脸系统等）
+- 战斗HUD技能图标按钮+冷却遮罩
+- 实机测试验证渲染效果

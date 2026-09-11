@@ -14,24 +14,24 @@ const FontLoader = preload("res://scripts/core/FontLoader.gd")
 @onready var _reset_button: Button = $MarginContainer/VBox/ButtonRow/ResetButton
 
 # Display settings
-@onready var _resolution_option: OptionButton = $MarginContainer/VBox/TabContainer/Display/VBox/ResolutionRow/Option
-@onready var _fullscreen_check: CheckButton = $MarginContainer/VBox/TabContainer/Display/VBox/FullscreenRow/Check
-@onready var _quality_option: OptionButton = $MarginContainer/VBox/TabContainer/Display/VBox/QualityRow/Option
-@onready var _vsync_check: CheckButton = $MarginContainer/VBox/TabContainer/Display/VBox/VsyncRow/Check
+@onready var _resolution_option: OptionButton = $MarginContainer/VBox/TabContainer/Display/ResolutionRow/Option
+@onready var _fullscreen_check: CheckButton = $MarginContainer/VBox/TabContainer/Display/FullscreenRow/Check
+@onready var _quality_option: OptionButton = $MarginContainer/VBox/TabContainer/Display/QualityRow/Option
+@onready var _vsync_check: CheckButton = $MarginContainer/VBox/TabContainer/Display/VsyncRow/Check
 
 # Audio settings
-@onready var _master_slider: HSlider = $MarginContainer/VBox/TabContainer/Audio/VBox/MasterRow/Slider
-@onready var _master_value: Label = $MarginContainer/VBox/TabContainer/Audio/VBox/MasterRow/Value
-@onready var _bgm_slider: HSlider = $MarginContainer/VBox/TabContainer/Audio/VBox/BgmRow/Slider
-@onready var _bgm_value: Label = $MarginContainer/VBox/TabContainer/Audio/VBox/BgmRow/Value
-@onready var _sfx_slider: HSlider = $MarginContainer/VBox/TabContainer/Audio/VBox/SfxRow/Slider
-@onready var _sfx_value: Label = $MarginContainer/VBox/TabContainer/Audio/VBox/SfxRow/Value
+@onready var _master_slider: HSlider = $MarginContainer/VBox/TabContainer/Audio/MasterRow/Slider
+@onready var _master_value: Label = $MarginContainer/VBox/TabContainer/Audio/MasterRow/Value
+@onready var _bgm_slider: HSlider = $MarginContainer/VBox/TabContainer/Audio/BgmRow/Slider
+@onready var _bgm_value: Label = $MarginContainer/VBox/TabContainer/Audio/BgmRow/Value
+@onready var _sfx_slider: HSlider = $MarginContainer/VBox/TabContainer/Audio/SfxRow/Slider
+@onready var _sfx_value: Label = $MarginContainer/VBox/TabContainer/Audio/SfxRow/Value
 
 # Game settings
-@onready var _language_option: OptionButton = $MarginContainer/VBox/TabContainer/Game/VBox/LanguageRow/Option
-@onready var _difficulty_option: OptionButton = $MarginContainer/VBox/TabContainer/Game/VBox/DifficultyRow/Option
-@onready var _autosave_check: CheckButton = $MarginContainer/VBox/TabContainer/Game/VBox/AutosaveRow/Check
-@onready var _show_fps_check: CheckButton = $MarginContainer/VBox/TabContainer/Game/VBox/ShowFpsRow/Check
+@onready var _language_option: OptionButton = $MarginContainer/VBox/TabContainer/Game/LanguageRow/Option
+@onready var _difficulty_option: OptionButton = $MarginContainer/VBox/TabContainer/Game/DifficultyRow/Option
+@onready var _autosave_check: CheckButton = $MarginContainer/VBox/TabContainer/Game/AutosaveRow/Check
+@onready var _show_fps_check: CheckButton = $MarginContainer/VBox/TabContainer/Game/ShowFpsRow/Check
 
 ## Settings data
 var _settings: Dictionary = {}
@@ -70,6 +70,7 @@ func _ready() -> void:
 	_apply_settings_to_ui()
 	_connect_signals()
 	_animate_entrance()
+	GameLog.info("SettingsMenu: Game-level UI styles applied", "UI")
 
 
 ## Animate entrance
@@ -84,8 +85,47 @@ func _apply_ui_theme() -> void:
 	_title_label.add_theme_font_size_override("font_size", 32)
 	_title_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.5))
 
-	# Button text colors (9-slice styles come from battleplan_theme.tres)
+	# Button three-state StyleBoxFlat styles
+	var btn_normal = StyleBoxFlat.new()
+	btn_normal.bg_color = Color(0.12, 0.08, 0.22, 0.95)
+	btn_normal.border_color = Color(0.7, 0.55, 0.3, 0.8)
+	btn_normal.border_width_left = 2
+	btn_normal.border_width_right = 2
+	btn_normal.border_width_top = 2
+	btn_normal.border_width_bottom = 2
+	btn_normal.corner_radius_top_left = 6
+	btn_normal.corner_radius_top_right = 6
+	btn_normal.corner_radius_bottom_left = 6
+	btn_normal.corner_radius_bottom_right = 6
+
+	var btn_hover = StyleBoxFlat.new()
+	btn_hover.bg_color = Color(0.18, 0.12, 0.3, 0.98)
+	btn_hover.border_color = Color(0.95, 0.78, 0.45, 1.0)
+	btn_hover.border_width_left = 2
+	btn_hover.border_width_right = 2
+	btn_hover.border_width_top = 2
+	btn_hover.border_width_bottom = 2
+	btn_hover.corner_radius_top_left = 6
+	btn_hover.corner_radius_top_right = 6
+	btn_hover.corner_radius_bottom_left = 6
+	btn_hover.corner_radius_bottom_right = 6
+
+	var btn_pressed = StyleBoxFlat.new()
+	btn_pressed.bg_color = Color(0.08, 0.05, 0.15, 1.0)
+	btn_pressed.border_color = Color(0.6, 0.48, 0.25, 0.9)
+	btn_pressed.border_width_left = 2
+	btn_pressed.border_width_right = 2
+	btn_pressed.border_width_top = 2
+	btn_pressed.border_width_bottom = 2
+	btn_pressed.corner_radius_top_left = 6
+	btn_pressed.corner_radius_top_right = 6
+	btn_pressed.corner_radius_bottom_left = 6
+	btn_pressed.corner_radius_bottom_right = 6
+
 	for btn in [_back_button, _save_button, _reset_button]:
+		btn.add_theme_stylebox_override("normal", btn_normal)
+		btn.add_theme_stylebox_override("hover", btn_hover)
+		btn.add_theme_stylebox_override("pressed", btn_pressed)
 		btn.add_theme_color_override("font_color", Color(0.95, 0.9, 0.75))
 		btn.add_theme_color_override("font_hover_color", Color(1.0, 0.95, 0.85))
 		btn.add_theme_color_override("font_pressed_color", Color(1.0, 0.85, 0.5))
@@ -100,7 +140,42 @@ func _apply_ui_theme() -> void:
 			t.tween_property(btn, "scale", Vector2(1.0, 1.0), 0.2).set_ease(Tween.EASE_OUT)
 		)
 
-	# TabContainer styling
+	# TabContainer styling with panel background
+	var tab_panel = StyleBoxFlat.new()
+	tab_panel.bg_color = Color(0.06, 0.04, 0.12, 0.92)
+	tab_panel.border_color = Color(0.7, 0.55, 0.3, 0.6)
+	tab_panel.border_width_left = 2
+	tab_panel.border_width_right = 2
+	tab_panel.border_width_top = 2
+	tab_panel.border_width_bottom = 2
+	tab_panel.corner_radius_top_left = 8
+	tab_panel.corner_radius_top_right = 8
+	tab_panel.corner_radius_bottom_left = 8
+	tab_panel.corner_radius_bottom_right = 8
+	_tab_container.add_theme_stylebox_override("panel", tab_panel)
+
+	var tab_selected = StyleBoxFlat.new()
+	tab_selected.bg_color = Color(0.15, 0.1, 0.28, 0.95)
+	tab_selected.border_color = Color(0.95, 0.78, 0.45, 0.9)
+	tab_selected.border_width_left = 1
+	tab_selected.border_width_right = 1
+	tab_selected.border_width_top = 1
+	tab_selected.border_width_bottom = 0
+	tab_selected.corner_radius_top_left = 6
+	tab_selected.corner_radius_top_right = 6
+	_tab_container.add_theme_stylebox_override("tab_selected", tab_selected)
+
+	var tab_unselected = StyleBoxFlat.new()
+	tab_unselected.bg_color = Color(0.08, 0.05, 0.15, 0.8)
+	tab_unselected.border_color = Color(0.4, 0.32, 0.2, 0.5)
+	tab_unselected.border_width_left = 1
+	tab_unselected.border_width_right = 1
+	tab_unselected.border_width_top = 1
+	tab_unselected.border_width_bottom = 0
+	tab_unselected.corner_radius_top_left = 6
+	tab_unselected.corner_radius_top_right = 6
+	_tab_container.add_theme_stylebox_override("tab_unselected", tab_unselected)
+
 	_tab_container.add_theme_font_size_override("font_size", 14)
 	_tab_container.add_theme_color_override("font_color", Color(0.8, 0.75, 0.6))
 	_tab_container.add_theme_color_override("font_selected_color", Color(1.0, 0.85, 0.5))
