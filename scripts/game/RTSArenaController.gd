@@ -3279,20 +3279,7 @@ func _show_result_modal(p_result: String, p_title: String, p_title_color: Color,
 	panel.position = Vector2(340, 100)
 	panel.size = Vector2(600, 520)
 	panel.name = "ResultModal"
-	# Apply 9-slice game over panel texture if available
-	var panel_tex = load("res://assets/art/ui/ui_game_over_panel.png")
-	if panel_tex:
-		var panel_style = StyleBoxTexture.new()
-		panel_style.texture = panel_tex
-		panel_style.region_rect = Rect2(0, 0, panel_tex.get_width(), panel_tex.get_height())
-		panel_style.patch_margin_left = 24.0
-		panel_style.patch_margin_right = 24.0
-		panel_style.patch_margin_top = 24.0
-		panel_style.patch_margin_bottom = 24.0
-		panel_style.draw_center = true
-		panel.add_theme_stylebox_override("panel", panel_style)
-	else:
-		# Fallback: dark purple bg + gold border
+		# Panel styling: StyleBoxFlat (dynamic StyleBoxTexture broken in Godot 4.7 GDScript)
 		var panel_style = StyleBoxFlat.new()
 		panel_style.bg_color = Color(0.10, 0.08, 0.18, 0.97)
 		panel_style.border_color = Color(0.83, 0.66, 0.36, 1.0)
