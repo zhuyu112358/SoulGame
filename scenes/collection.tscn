@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://battleplan_collection"]
+[gd_scene load_steps=3 format=3 uid="uid://battleplan_collection"]
 
 [ext_resource type="Script" path="res://scripts/ui/CollectionUI.gd" id="1_collection"]
+[ext_resource type="Texture2D" path="res://assets/art/background/soul_home_bg.png" id="99_bg"]
 
 [node name="Collection" type="Control"]
 layout_mode = 3
@@ -11,12 +12,21 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_collection")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="TextureRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.1, 0.08, 0.18, 1)
+texture = ExtResource("99_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="DimOverlay" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.08, 0.06, 0.12, 0.75)
 
 [node name="TopBar" type="Panel" parent="."]
 layout_mode = 1

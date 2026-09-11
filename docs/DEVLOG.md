@@ -10298,3 +10298,37 @@ ode/life/max_life），而_update_skill_particles()期望新版数据结构（pa
 ### 注意事项
 - ui_battle_config_panel.png未导入（无.import文件），暂不使用，用StyleBoxFlat代替
 - 严格遵守禁止动态创建StyleBoxTexture并设置patch_margin_*属性的约束
+
+---
+
+## 2026-09-11 其他场景背景美化 (UI-4批量改造)
+
+### 完成内容
+1. **5个场景添加背景图+暗化遮罩**
+   - training_stats_menu.tscn: soul_home_bg.png + 75%暗化遮罩
+   - soul_codex.tscn: soul_select_bg.png + 75%暗化遮罩
+   - collection.tscn: soul_home_bg.png + 75%暗化遮罩
+   - friends.tscn: settings_bg.png + 75%暗化遮罩
+   - matchmaking.tscn: rts_arena_bg.png + 75%暗化遮罩
+
+2. **改造方式**
+   - 将Background节点从ColorRect(纯色)改为TextureRect(背景图)
+   - 添加DimOverlay节点(ColorRect, alpha 0.75)确保文字可读性
+   - 使用已有的5张场景背景图资源，无需新美术
+
+### 验证结果
+- M2测试: 2697 Passed, 0 Failed
+- 无SCRIPT ERROR
+- 背景图资源均已导入(有.import文件)
+
+### 修改的文件
+- scenes/training_stats_menu.tscn - 背景图+暗化遮罩
+- scenes/soul_codex.tscn - 背景图+暗化遮罩
+- scenes/collection.tscn - 背景图+暗化遮罩
+- scenes/friends.tscn - 背景图+暗化遮罩
+- scenes/matchmaking.tscn - 背景图+暗化遮罩
+
+### 下一步
+- 给这些场景的按钮添加StyleBoxFlat样式(金色边框+深紫背景)
+- 面板区域添加卡片式背景
+- 全局动画与交互反馈(按钮hover缩放/发光)
