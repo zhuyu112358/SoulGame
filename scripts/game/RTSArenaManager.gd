@@ -946,6 +946,42 @@ func _finish_battle(p_winner_id: String, p_result: String) -> void:
 		AudioManager.play_sfx("bat_defeat")
 
 	# Process battle result and growth feedback
+	# GAP-001: Calculate team stats for 4v4 battles
+	var player_team_damage: int = 0
+	var ai_team_damage: int = 0
+	var player_alive_count: int = 0
+	var ai_alive_count: int = 0
+	var player_team_stats: Array = []
+	var ai_team_stats: Array = []
+
+	for u in player_units:
+		var unit_damage = u.max_hp - u.current_hp if u.current_hp < u.max_hp else 0
+		player_team_damage += unit_damage
+		if u.state != SoulUnit.UnitState.DEAD:
+			player_alive_count += 1
+		player_team_stats.append({
+			"name": u.soul_name,
+			"element": u.element,
+			"hp_remaining": u.current_hp,
+			"max_hp": u.max_hp,
+			"alive": u.state != SoulUnit.UnitState.DEAD,
+			"damage_dealt": unit_damage
+		})
+
+	for u in ai_units:
+		var unit_damage = u.max_hp - u.current_hp if u.current_hp < u.max_hp else 0
+		ai_team_damage += unit_damage
+		if u.state != SoulUnit.UnitState.DEAD:
+			ai_alive_count += 1
+		ai_team_stats.append({
+			"name": u.soul_name,
+			"element": u.element,
+			"hp_remaining": u.current_hp,
+			"max_hp": u.max_hp,
+			"alive": u.state != SoulUnit.UnitState.DEAD,
+			"damage_dealt": unit_damage
+		})
+
 	var battle_data: Dictionary = {
 		"result": p_result,
 		"player_soul_id": player_unit.soul_id,
@@ -959,7 +995,17 @@ func _finish_battle(p_winner_id: String, p_result: String) -> void:
 		"duration": battle_time,
 		"damage_dealt": player_unit.max_hp - ai_unit.current_hp,
 		"damage_taken": player_unit.max_hp - player_unit.current_hp,
-		"skills_used": []
+		"skills_used": [],
+		# GAP-001: Team battle stats
+		"is_team_battle": player_units.size() > 1 or ai_units.size() > 1,
+		"player_team_size": player_units.size(),
+		"ai_team_size": ai_units.size(),
+		"player_team_damage": player_team_damage,
+		"ai_team_damage": ai_team_damage,
+		"player_alive_count": player_alive_count,
+		"ai_alive_count": ai_alive_count,
+		"player_team_stats": player_team_stats,
+		"ai_team_stats": ai_team_stats
 	}
 	BattleResultManager.process_battle_result(battle_data)
 

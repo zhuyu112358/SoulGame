@@ -3389,103 +3389,181 @@ func _show_result_modal(p_result: String, p_title: String, p_title_color: Color,
 	dur_label.modulate = Color(0.8, 0.85, 0.95)
 	panel.add_child(dur_label)
 
-	# Damage dealt with bar
-	var dmg_dealt = p_battle_stats.get("damage_dealt", 0)
-	var dmg_taken = p_battle_stats.get("damage_taken", 0)
-	var max_dmg = max(dmg_dealt, dmg_taken, 1)
+	# GAP-001: Team battle stats - show team damage and alive count
+	var is_team = p_battle_stats.get("is_team_battle", false)
+	if is_team:
+		var player_team_dmg = p_battle_stats.get("player_team_damage", 0)
+		var ai_team_dmg = p_battle_stats.get("ai_team_damage", 0)
+		var player_alive = p_battle_stats.get("player_alive_count", 0)
+		var ai_alive = p_battle_stats.get("ai_alive_count", 0)
+		var player_size = p_battle_stats.get("player_team_size", 4)
+		var ai_size = p_battle_stats.get("ai_team_size", 4)
+		var max_team_dmg = max(player_team_dmg, ai_team_dmg, 1)
 
-	var dmg_dealt_label = Label.new()
-	dmg_dealt_label.text = "⚔ 伤害输出: %d" % dmg_dealt
-	dmg_dealt_label.position = Vector2(70, 222)
-	dmg_dealt_label.size = Vector2(200, 20)
-	dmg_dealt_label.add_theme_font_size_override("font_size", 13)
-	dmg_dealt_label.modulate = Color(1.0, 0.7, 0.5)
-	panel.add_child(dmg_dealt_label)
+		# Team damage dealt label
+		var dmg_dealt_label = Label.new()
+		dmg_dealt_label.text = "⚔ 我方总伤害: %d" % player_team_dmg
+		dmg_dealt_label.position = Vector2(70, 222)
+		dmg_dealt_label.size = Vector2(200, 20)
+		dmg_dealt_label.add_theme_font_size_override("font_size", 13)
+		dmg_dealt_label.modulate = Color(1.0, 0.7, 0.5)
+		panel.add_child(dmg_dealt_label)
 
-	var dmg_dealt_bar = ProgressBar.new()
-	dmg_dealt_bar.position = Vector2(280, 224)
-	dmg_dealt_bar.size = Vector2(250, 16)
-	dmg_dealt_bar.max_value = 100
-	dmg_dealt_bar.value = float(dmg_dealt) / float(max_dmg) * 100.0
-	var dmg_dealt_bg = StyleBoxFlat.new()
-	dmg_dealt_bg.bg_color = Color(0.15, 0.08, 0.08, 0.9)
-	dmg_dealt_bg.corner_radius_top_left = 4
-	dmg_dealt_bg.corner_radius_top_right = 4
-	dmg_dealt_bg.corner_radius_bottom_left = 4
-	dmg_dealt_bg.corner_radius_bottom_right = 4
-	var dmg_dealt_fill = StyleBoxFlat.new()
-	dmg_dealt_fill.bg_color = Color(0.9, 0.35, 0.25, 1.0)
-	dmg_dealt_fill.corner_radius_top_left = 3
-	dmg_dealt_fill.corner_radius_top_right = 3
-	dmg_dealt_fill.corner_radius_bottom_left = 3
-	dmg_dealt_fill.corner_radius_bottom_right = 3
-	dmg_dealt_bar.add_theme_stylebox_override("background", dmg_dealt_bg)
-	dmg_dealt_bar.add_theme_stylebox_override("fill", dmg_dealt_fill)
-	panel.add_child(dmg_dealt_bar)
+		var dmg_dealt_bar = ProgressBar.new()
+		dmg_dealt_bar.position = Vector2(280, 224)
+		dmg_dealt_bar.size = Vector2(250, 16)
+		dmg_dealt_bar.max_value = 100
+		dmg_dealt_bar.value = float(player_team_dmg) / float(max_team_dmg) * 100.0
+		var dmg_dealt_bg = StyleBoxFlat.new()
+		dmg_dealt_bg.bg_color = Color(0.15, 0.08, 0.08, 0.9)
+		dmg_dealt_bg.corner_radius_top_left = 4
+		dmg_dealt_bg.corner_radius_top_right = 4
+		dmg_dealt_bg.corner_radius_bottom_left = 4
+		dmg_dealt_bg.corner_radius_bottom_right = 4
+		var dmg_dealt_fill = StyleBoxFlat.new()
+		dmg_dealt_fill.bg_color = Color(0.9, 0.35, 0.25, 1.0)
+		dmg_dealt_fill.corner_radius_top_left = 3
+		dmg_dealt_fill.corner_radius_top_right = 3
+		dmg_dealt_fill.corner_radius_bottom_left = 3
+		dmg_dealt_fill.corner_radius_bottom_right = 3
+		dmg_dealt_bar.add_theme_stylebox_override("background", dmg_dealt_bg)
+		dmg_dealt_bar.add_theme_stylebox_override("fill", dmg_dealt_fill)
+		panel.add_child(dmg_dealt_bar)
 
-	# Damage taken with bar
-	var dmg_taken_label = Label.new()
-	dmg_taken_label.text = "🛡 承受伤害: %d" % dmg_taken
-	dmg_taken_label.position = Vector2(70, 248)
-	dmg_taken_label.size = Vector2(200, 20)
-	dmg_taken_label.add_theme_font_size_override("font_size", 13)
-	dmg_taken_label.modulate = Color(0.5, 0.7, 1.0)
-	panel.add_child(dmg_taken_label)
+		# Team damage taken label (enemy team damage)
+		var dmg_taken_label = Label.new()
+		dmg_taken_label.text = "🛡 敌方总伤害: %d" % ai_team_dmg
+		dmg_taken_label.position = Vector2(70, 248)
+		dmg_taken_label.size = Vector2(200, 20)
+		dmg_taken_label.add_theme_font_size_override("font_size", 13)
+		dmg_taken_label.modulate = Color(0.5, 0.7, 1.0)
+		panel.add_child(dmg_taken_label)
 
-	var dmg_taken_bar = ProgressBar.new()
-	dmg_taken_bar.position = Vector2(280, 250)
-	dmg_taken_bar.size = Vector2(250, 16)
-	dmg_taken_bar.max_value = 100
-	dmg_taken_bar.value = float(dmg_taken) / float(max_dmg) * 100.0
-	var dmg_taken_bg = StyleBoxFlat.new()
-	dmg_taken_bg.bg_color = Color(0.08, 0.1, 0.18, 0.9)
-	dmg_taken_bg.corner_radius_top_left = 4
-	dmg_taken_bg.corner_radius_top_right = 4
-	dmg_taken_bg.corner_radius_bottom_left = 4
-	dmg_taken_bg.corner_radius_bottom_right = 4
-	var dmg_taken_fill = StyleBoxFlat.new()
-	dmg_taken_fill.bg_color = Color(0.3, 0.55, 0.9, 1.0)
-	dmg_taken_fill.corner_radius_top_left = 3
-	dmg_taken_fill.corner_radius_top_right = 3
-	dmg_taken_fill.corner_radius_bottom_left = 3
-	dmg_taken_fill.corner_radius_bottom_right = 3
-	dmg_taken_bar.add_theme_stylebox_override("background", dmg_taken_bg)
-	dmg_taken_bar.add_theme_stylebox_override("fill", dmg_taken_fill)
-	panel.add_child(dmg_taken_bar)
+		var dmg_taken_bar = ProgressBar.new()
+		dmg_taken_bar.position = Vector2(280, 250)
+		dmg_taken_bar.size = Vector2(250, 16)
+		dmg_taken_bar.max_value = 100
+		dmg_taken_bar.value = float(ai_team_dmg) / float(max_team_dmg) * 100.0
+		var dmg_taken_bg = StyleBoxFlat.new()
+		dmg_taken_bg.bg_color = Color(0.08, 0.1, 0.18, 0.9)
+		dmg_taken_bg.corner_radius_top_left = 4
+		dmg_taken_bg.corner_radius_top_right = 4
+		dmg_taken_bg.corner_radius_bottom_left = 4
+		dmg_taken_bg.corner_radius_bottom_right = 4
+		var dmg_taken_fill = StyleBoxFlat.new()
+		dmg_taken_fill.bg_color = Color(0.3, 0.55, 0.9, 1.0)
+		dmg_taken_fill.corner_radius_top_left = 3
+		dmg_taken_fill.corner_radius_top_right = 3
+		dmg_taken_fill.corner_radius_bottom_left = 3
+		dmg_taken_fill.corner_radius_bottom_right = 3
+		dmg_taken_bar.add_theme_stylebox_override("background", dmg_taken_bg)
+		dmg_taken_bar.add_theme_stylebox_override("fill", dmg_taken_fill)
+		panel.add_child(dmg_taken_bar)
 
-	# HP remaining with bar
-	var player_hp = p_battle_stats.get("player_hp_remaining", 0)
-	var player_max_hp = p_battle_stats.get("player_max_hp", 100)
-	var hp_pct = float(player_hp) / float(player_max_hp) * 100.0 if player_max_hp > 0 else 0
+		# Team alive count
+		var alive_label = Label.new()
+		alive_label.text = "👥 存活: 我方 %d/%d  vs  敌方 %d/%d" % [player_alive, player_size, ai_alive, ai_size]
+		alive_label.position = Vector2(70, 274)
+		alive_label.size = Vector2(460, 20)
+		alive_label.add_theme_font_size_override("font_size", 13)
+		alive_label.modulate = Color(0.85, 0.8, 0.65)
+		panel.add_child(alive_label)
+	else:
+		# 1v1 damage stats
+		var dmg_dealt = p_battle_stats.get("damage_dealt", 0)
+		var dmg_taken = p_battle_stats.get("damage_taken", 0)
+		var max_dmg = max(dmg_dealt, dmg_taken, 1)
 
-	var hp_label = Label.new()
-	hp_label.text = "❤ 剩余生命: %d/%d (%.0f%%)" % [player_hp, player_max_hp, hp_pct]
-	hp_label.position = Vector2(70, 274)
-	hp_label.size = Vector2(200, 20)
-	hp_label.add_theme_font_size_override("font_size", 13)
-	hp_label.modulate = Color(0.9, 0.4, 0.4)
-	panel.add_child(hp_label)
+		var dmg_dealt_label = Label.new()
+		dmg_dealt_label.text = "⚔ 伤害输出: %d" % dmg_dealt
+		dmg_dealt_label.position = Vector2(70, 222)
+		dmg_dealt_label.size = Vector2(200, 20)
+		dmg_dealt_label.add_theme_font_size_override("font_size", 13)
+		dmg_dealt_label.modulate = Color(1.0, 0.7, 0.5)
+		panel.add_child(dmg_dealt_label)
 
-	var hp_bar = ProgressBar.new()
-	hp_bar.position = Vector2(280, 276)
-	hp_bar.size = Vector2(250, 16)
-	hp_bar.max_value = 100
-	hp_bar.value = hp_pct
-	var hp_bg = StyleBoxFlat.new()
-	hp_bg.bg_color = Color(0.15, 0.05, 0.05, 0.9)
-	hp_bg.corner_radius_top_left = 4
-	hp_bg.corner_radius_top_right = 4
-	hp_bg.corner_radius_bottom_left = 4
-	hp_bg.corner_radius_bottom_right = 4
-	var hp_fill = StyleBoxFlat.new()
-	hp_fill.bg_color = Color(0.85, 0.25, 0.25, 1.0)
-	hp_fill.corner_radius_top_left = 3
-	hp_fill.corner_radius_top_right = 3
-	hp_fill.corner_radius_bottom_left = 3
-	hp_fill.corner_radius_bottom_right = 3
-	hp_bar.add_theme_stylebox_override("background", hp_bg)
-	hp_bar.add_theme_stylebox_override("fill", hp_fill)
-	panel.add_child(hp_bar)
+		var dmg_dealt_bar = ProgressBar.new()
+		dmg_dealt_bar.position = Vector2(280, 224)
+		dmg_dealt_bar.size = Vector2(250, 16)
+		dmg_dealt_bar.max_value = 100
+		dmg_dealt_bar.value = float(dmg_dealt) / float(max_dmg) * 100.0
+		var dmg_dealt_bg = StyleBoxFlat.new()
+		dmg_dealt_bg.bg_color = Color(0.15, 0.08, 0.08, 0.9)
+		dmg_dealt_bg.corner_radius_top_left = 4
+		dmg_dealt_bg.corner_radius_top_right = 4
+		dmg_dealt_bg.corner_radius_bottom_left = 4
+		dmg_dealt_bg.corner_radius_bottom_right = 4
+		var dmg_dealt_fill = StyleBoxFlat.new()
+		dmg_dealt_fill.bg_color = Color(0.9, 0.35, 0.25, 1.0)
+		dmg_dealt_fill.corner_radius_top_left = 3
+		dmg_dealt_fill.corner_radius_top_right = 3
+		dmg_dealt_fill.corner_radius_bottom_left = 3
+		dmg_dealt_fill.corner_radius_bottom_right = 3
+		dmg_dealt_bar.add_theme_stylebox_override("background", dmg_dealt_bg)
+		dmg_dealt_bar.add_theme_stylebox_override("fill", dmg_dealt_fill)
+		panel.add_child(dmg_dealt_bar)
+
+		var dmg_taken_label = Label.new()
+		dmg_taken_label.text = "🛡 承受伤害: %d" % dmg_taken
+		dmg_taken_label.position = Vector2(70, 248)
+		dmg_taken_label.size = Vector2(200, 20)
+		dmg_taken_label.add_theme_font_size_override("font_size", 13)
+		dmg_taken_label.modulate = Color(0.5, 0.7, 1.0)
+		panel.add_child(dmg_taken_label)
+
+		var dmg_taken_bar = ProgressBar.new()
+		dmg_taken_bar.position = Vector2(280, 250)
+		dmg_taken_bar.size = Vector2(250, 16)
+		dmg_taken_bar.max_value = 100
+		dmg_taken_bar.value = float(dmg_taken) / float(max_dmg) * 100.0
+		var dmg_taken_bg = StyleBoxFlat.new()
+		dmg_taken_bg.bg_color = Color(0.08, 0.1, 0.18, 0.9)
+		dmg_taken_bg.corner_radius_top_left = 4
+		dmg_taken_bg.corner_radius_top_right = 4
+		dmg_taken_bg.corner_radius_bottom_left = 4
+		dmg_taken_bg.corner_radius_bottom_right = 4
+		var dmg_taken_fill = StyleBoxFlat.new()
+		dmg_taken_fill.bg_color = Color(0.3, 0.55, 0.9, 1.0)
+		dmg_taken_fill.corner_radius_top_left = 3
+		dmg_taken_fill.corner_radius_top_right = 3
+		dmg_taken_fill.corner_radius_bottom_left = 3
+		dmg_taken_fill.corner_radius_bottom_right = 3
+		dmg_taken_bar.add_theme_stylebox_override("background", dmg_taken_bg)
+		dmg_taken_bar.add_theme_stylebox_override("fill", dmg_taken_fill)
+		panel.add_child(dmg_taken_bar)
+
+		var player_hp = p_battle_stats.get("player_hp_remaining", 0)
+		var player_max_hp = p_battle_stats.get("player_max_hp", 100)
+		var hp_pct = float(player_hp) / float(player_max_hp) * 100.0 if player_max_hp > 0 else 0
+
+		var hp_label = Label.new()
+		hp_label.text = "❤ 剩余生命: %d/%d (%.0f%%)" % [player_hp, player_max_hp, hp_pct]
+		hp_label.position = Vector2(70, 274)
+		hp_label.size = Vector2(200, 20)
+		hp_label.add_theme_font_size_override("font_size", 13)
+		hp_label.modulate = Color(0.9, 0.4, 0.4)
+		panel.add_child(hp_label)
+
+		var hp_bar = ProgressBar.new()
+		hp_bar.position = Vector2(280, 276)
+		hp_bar.size = Vector2(250, 16)
+		hp_bar.max_value = 100
+		hp_bar.value = hp_pct
+		var hp_bg = StyleBoxFlat.new()
+		hp_bg.bg_color = Color(0.15, 0.05, 0.05, 0.9)
+		hp_bg.corner_radius_top_left = 4
+		hp_bg.corner_radius_top_right = 4
+		hp_bg.corner_radius_bottom_left = 4
+		hp_bg.corner_radius_bottom_right = 4
+		var hp_fill = StyleBoxFlat.new()
+		hp_fill.bg_color = Color(0.85, 0.25, 0.25, 1.0)
+		hp_fill.corner_radius_top_left = 3
+		hp_fill.corner_radius_top_right = 3
+		hp_fill.corner_radius_bottom_left = 3
+		hp_fill.corner_radius_bottom_right = 3
+		hp_bar.add_theme_stylebox_override("background", hp_bg)
+		hp_bar.add_theme_stylebox_override("fill", hp_fill)
+		panel.add_child(hp_bar)
 
 	# === Overall stats section ===
 	var section2_title = Label.new()

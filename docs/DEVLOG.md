@@ -1,5 +1,24 @@
 ﻿# 战策 Battleplan 开发日志
 
+## [4v4团队结算统计] 团队伤害+存活数+队员表现（2026-09-11）
+
+**改造内容**：
+- RTSArenaManager._finish_battle()添加团队统计计算
+- 团队总伤害：player_team_damage / ai_team_damage
+- 团队存活数：player_alive_count / ai_alive_count
+- 每个队员表现数组：player_team_stats / ai_team_stats（名字/元素/HP/存活/伤害）
+- 结算界面_show_result_modal()根据is_team_battle标志显示团队统计
+- 团队对战显示"我方总伤害"、"敌方总伤害"、"存活: 我方 X/4 vs 敌方 Y/4"
+- 1v1对战保持原有"伤害输出"、"承受伤害"、"剩余生命"显示
+
+**修改文件**：
+- RTSArenaManager.gd：battle_data添加团队统计字段
+- RTSArenaController.gd：结算界面团队统计显示分支
+
+**测试结果**：2955 Passed, 0 Failed，无SCRIPT ERROR
+
+---
+
 ## [设置界面美化] 9-slice按钮+滑块+选项卡样式（2026-09-11）
 
 **改造内容**：
