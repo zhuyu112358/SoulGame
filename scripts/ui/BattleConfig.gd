@@ -68,6 +68,33 @@ func _ready() -> void:
 	_connect_signals()
 	_load_selected_souls()
 	_update_start_button()
+	_animate_entrance()
+
+## Animate UI entrance with staggered fade-in + scale (game-level UI)
+func _animate_entrance() -> void:
+	# Main panel fade-in + scale
+	var main_panel = get_node_or_null("CenterContainer/MainPanel")
+	if main_panel and main_panel is CanvasItem:
+		main_panel.modulate.a = 0.0
+		main_panel.scale = Vector2(0.95, 0.95)
+		var panel_tween = create_tween()
+		panel_tween.set_ease(Tween.EASE_OUT)
+		panel_tween.set_trans(Tween.TRANS_BACK)
+		panel_tween.tween_property(main_panel, "modulate:a", 1.0, 0.5)
+		panel_tween.parallel().tween_property(main_panel, "scale", Vector2(1.0, 1.0), 0.5)
+	# Staggered fade-in for child sections
+	var vbox = get_node_or_null("CenterContainer/MainPanel/MainVBox")
+	if vbox:
+		var children = vbox.get_children()
+		for i in range(children.size()):
+			var child = children[i]
+			if child and child is CanvasItem:
+				child.modulate.a = 0.0
+				var child_tween = create_tween()
+				child_tween.set_ease(Tween.EASE_OUT)
+				child_tween.tween_interval(0.2 + i * 0.1)
+				child_tween.tween_property(child, "modulate:a", 1.0, 0.3)
+
 
 ## Build entire UI dynamically (no .tscn file needed)
 func _build_ui() -> void:
