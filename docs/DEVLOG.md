@@ -10878,3 +10878,29 @@ ode/life/max_life），而_update_skill_particles()期望新版数据结构（pa
 - 改进捏脸系统预览（当前用ColorRect，应改为灵魂立绘）
 - 改进灵魂之家互动功能
 - Push失败（github网络问题），commit f6f619a保留本地下轮重试
+
+---
+
+## 2026-09-11 UI改进：捏脸系统灵魂立绘预览
+
+### 改进内容
+- **问题**：捏脸系统预览用的是ColorRect（纯色方块），用户反馈"捏脸系统完全不行"
+- **修复**：
+  - soul_customization.tscn: PreviewSprite从ColorRect改为TextureRect，尺寸扩大到160x200
+  - SoulCustomizationUI.gd: 添加_preview_sprite引用
+  - _refresh_preview(): 根据当前灵魂元素加载对应的立绘（character_*_soul_portrait.png）
+  - 支持8种元素立绘：fire/water/earth/wind/light/dark(shadow)/thunder/ice
+  - 保留自定义颜色tint效果（golden/pastel/dark/rainbow）
+
+### 验证结果
+- M2测试: **2686 Passed, 0 Failed** 全绿
+- 之前失败的push已成功推送（f6f619a + f42aedc）
+
+### 修改的文件
+- scenes/soul_customization.tscn - PreviewSprite改为TextureRect
+- scripts/ui/SoulCustomizationUI.gd - 加载灵魂立绘预览
+
+### 下一步
+- 继续提升其他场景UI视觉质量
+- 改进灵魂之家互动功能
+- 优化按钮样式和动画效果

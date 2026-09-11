@@ -22,6 +22,7 @@ var _soul_name_label: Label = null
 var _layer_list: VBoxContainer = null
 var _option_grid: GridContainer = null
 var _preview_panel: Panel = null
+var _preview_sprite: TextureRect = null
 var _summary_label: Label = null
 var _random_button: Button = null
 var _reset_button: Button = null
@@ -72,6 +73,7 @@ func _find_ui_nodes() -> void:
 	_layer_list = get_node_or_null("Main/LayerList/ScrollContainer/LayerContainer")
 	_option_grid = get_node_or_null("Main/OptionPanel/OptionGrid")
 	_preview_panel = get_node_or_null("Main/PreviewPanel")
+	_preview_sprite = get_node_or_null("Main/PreviewPanel/PreviewSprite")
 	_summary_label = get_node_or_null("BottomBar/SummaryLabel")
 	_random_button = get_node_or_null("BottomBar/RandomButton")
 	_reset_button = get_node_or_null("BottomBar/ResetButton")
@@ -184,10 +186,22 @@ func _refresh_summary() -> void:
 
 
 func _refresh_preview() -> void:
-	# Preview would render the customized soul
-	# For M2, show a simple color indicator
-	if _preview_panel == null:
+	# Show soul portrait with customization tint
+	if _preview_sprite == null:
 		return
+	# Load portrait based on current soul element
+	var element = _current_soul_id
+	var element_file_map = {
+		"fire": "fire", "water": "water", "earth": "earth", "wind": "wind",
+		"light": "light", "dark": "shadow", "thunder": "thunder", "ice": "ice"
+	}
+	var file_name = element_file_map.get(element, element)
+	var portrait_path = "res://assets/art/characters/character_%s_soul_portrait.png" % file_name
+	if ResourceLoader.exists(portrait_path):
+		_preview_sprite.texture = load(portrait_path)
+	else:
+		_preview_sprite.texture = null
+	# Apply customization color tint
 	var customization = _customization_system.get_customization(_current_soul_id)
 	if customization.has("color"):
 		var color_id = customization["color"]
@@ -197,7 +211,9 @@ func _refresh_preview() -> void:
 			"pastel": tint = Color(1.1, 0.95, 1.05)
 			"dark": tint = Color(0.7, 0.7, 0.8)
 			"rainbow": tint = Color(1.0, 0.9, 0.95)
-		_preview_panel.modulate = tint
+		_preview_sprite.modulate = tint
+	else:
+		_preview_sprite.modulate = Color.WHITE
 
 
 func _create_gold_border_style() -> StyleBoxFlat:
