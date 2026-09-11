@@ -1,5 +1,66 @@
 ﻿# 战策 Battleplan 开发日志
 
+## [游戏级UI升级-全场景验证通过] 14个场景游戏级UI升级完成+全局验证（2026-09-12）
+
+**本轮工作**：完成全部11个界面的游戏级UI视觉升级，并通过14个场景全局验证。
+
+**已完成的UI升级（11个界面）**：
+1. 战斗配置界面：4v4灵魂槽位卡片化（元素色边框+立绘光晕+金色装饰框+HP/ATK进度条）
+2. 灵魂之家：大立绘240x300+元素色光晕脉冲+金色装饰边框+呼吸动画+浮动动画
+3. 灵魂图鉴：角色卡片列表+选中金色高亮+详情面板立绘光晕脉冲
+4. 收藏系统：物品卡片稀有度色边框（common灰/uncommon绿/rare蓝/epic紫/legendary金）+hover放大
+5. 训练统计：进度条展示+历史记录卡片化+修复数组圆括号语法bug+for循环多变量bug
+6. 教学模式：关卡卡片难度色边框+hover放大+锁定状态+修复Array.get()语法错误
+7. 好友系统：好友卡片元素色边框+hover放大+头像44x44+深紫底色圆角
+8. 设置界面：按钮三态样式+TabContainer面板样式+Tab标签样式+修复11个@onready路径bug
+9. 捏脸自定义：预览面板元素色光晕背景+3px金色装饰边框+按钮三态样式
+10. 随机匹配：按钮三态+进度条金色填充+对手面板元素色边框+修复字符串乘法bug
+11. CG播放：跳过按钮三态+文本面板美化+进度条样式+修复gui_input信号bug
+
+**同时修复的已存在脚本解析bug（6个）**：
+- SoulSelect.gd: _detail_panel变量未声明
+- RTSArenaController.gd: 5处缩进错误
+- TrainingStatsMenu.gd: 数组圆括号语法+for循环多变量语法
+- TutorialMenu.gd: Array.get()语法错误
+- SettingsMenu.gd: 11个@onready路径多了VBox层级
+- MatchmakingUI.gd: 字符串乘法操作不支持
+- CGSystem.gd: CanvasLayer没有gui_input信号
+
+**全局场景验证结果**：
+```
+Scene                    Status
+main_menu.tscn           OK
+soul_select.tscn         OK
+battle_config.tscn       OK
+rts_arena.tscn           OK
+soul_home.tscn           OK
+soul_codex.tscn          OK
+soul_customization.tscn  OK
+collection.tscn          OK
+training_stats_menu.tscn OK
+tutorial_menu.tscn       OK
+friends.tscn             OK
+settings_menu.tscn       OK
+matchmaking.tscn         OK
+cg_player.tscn          OK
+ALL SCENES PASSED!
+```
+
+**M2测试结果**：2955 Passed, 0 Failed
+
+**视觉升级通用规范（已全部应用）**：
+- 面板：StyleBoxFlat深紫底(Color(0.06,0.04,0.12,0.9))+金色/元素色边框2-3px+圆角6-12px
+- 按钮：normal/hover/pressed三态StyleBoxFlat，hover放大1.05-1.1+边框变亮
+- 文字：标题24-40号金色，正文13-14号灰白
+- 属性：HP/ATK/DEF/EXP用ProgressBar展示
+- 列表项：卡片（图标+文字+边框+hover），非纯文字行
+- 立绘：边框+元素色光晕/背景，非裸图
+- 动画：入场淡入+缩放，列表项交错淡入
+
+**关键教训**：自动化测试(2955 Passed)不检查脚本解析错误，必须用--scene直接运行场景才能发现。本轮通过场景测试发现并修复了7个已存在的脚本解析bug，这些bug是用户反馈"没一个页面是功能正常的"的根本原因。
+
+---
+
 ## [P0-紧急修复v2] 主菜单按钮不可见彻底修复（2026-09-11）
 
 **问题根因（通过游戏日志确认）**：
