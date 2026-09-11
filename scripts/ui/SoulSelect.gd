@@ -295,6 +295,12 @@ func _create_soul_card(soul: Dictionary, index: int) -> Control:
 		portrait_rect.texture = portrait_texture
 		portrait_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		portrait_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		# UI-4: Breathing animation (subtle scale pulse)
+		var breath_tween = create_tween()
+		breath_tween.set_loops()
+		breath_tween.set_parallel(true)
+		breath_tween.tween_property(portrait_rect, "scale", Vector2(1.05, 1.05), 1.5).set_ease(Tween.EASE_IN_OUT)
+		breath_tween.tween_property(portrait_rect, "scale", Vector2(1.0, 1.0), 1.5).set_ease(Tween.EASE_IN_OUT)
 		# Add subtle glow border around portrait
 		var portrait_border = PanelContainer.new()
 		portrait_border.custom_minimum_size = Vector2(84, 84)
@@ -311,6 +317,12 @@ func _create_soul_card(soul: Dictionary, index: int) -> Control:
 		border_style.corner_radius_bottom_right = 6
 		portrait_border.add_theme_stylebox_override("panel", border_style)
 		portrait_border.add_child(portrait_rect)
+		# UI-4: Element glow pulse animation on border
+		var glow_tween = create_tween()
+		glow_tween.set_loops()
+		glow_tween.set_parallel(true)
+		glow_tween.tween_property(portrait_border, "modulate", element_color * 1.3, 1.2).set_ease(Tween.EASE_IN_OUT)
+		glow_tween.tween_property(portrait_border, "modulate", Color(1, 1, 1, 1), 1.2).set_ease(Tween.EASE_IN_OUT)
 		hbox.add_child(portrait_border)
 	else:
 		# Fallback: colored circle if no portrait

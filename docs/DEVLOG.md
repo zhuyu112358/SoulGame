@@ -54,10 +54,18 @@
 - `_create_game_button(p_text, p_size, p_font_size)`：创建9-slice游戏风格按钮
 - `_create_card_panel(p_bg_color, p_border_color)`：创建带边框的卡片面板
 
-### UI-4：动画与交互反馈（进行中）
-- 按钮hover放大/发光：已有基础（MainMenu/SoulSelect）
-- 灵魂立绘呼吸动画：待添加
-- 元素粒子光效：待添加
+### UI-4：动画与交互反馈 ✅
+
+**灵魂选择界面立绘动画**：
+- 呼吸动画：立绘缩放脉冲（1.0→1.05→1.0，1.5秒循环，EASE_IN_OUT）
+- 元素光效：边框元素色脉冲（element_color * 1.3 → 白色，1.2秒循环）
+- 每个灵魂卡片独立动画，互不干扰
+
+**已有动画**：
+- 主菜单标题：浮动（上下8px）+ 金色发光脉冲
+- 按钮hover：放大1.08x + 金色发光 + 音效
+- 按钮入场：交错淡入动画
+- 场景切换：淡入淡出（SceneManager）
 
 ---
 
