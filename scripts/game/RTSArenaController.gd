@@ -58,6 +58,16 @@ var _ai_visual = null
 var _player_light = null
 var _ai_light = null
 
+## GAP-001: Team battle visual proxies (4v4)
+var _player_visuals: Array = []  # Array of Sprite2D proxies for player team
+var _ai_visuals: Array = []      # Array of Sprite2D proxies for AI team
+var _player_lights: Array = []   # Array of PointLight2D for player team
+var _ai_lights: Array = []       # Array of PointLight2D for AI team
+var _team_hp_container = null    # Container for team HP bars
+var _player_team_hp_bars: Array = []  # HP bars for player team units
+var _ai_team_hp_bars: Array = []      # HP bars for AI team units
+var _selected_unit_index: int = 0     # Currently selected player unit (for tactical commands)
+
 ## Battle active flag
 var _battle_active = false
 
@@ -217,6 +227,9 @@ var _ambient_time: float = 0.0
 ## Clean up all dynamically created resources to prevent memory leaks
 func _exit_tree() -> void:
 	_dlog("[DEBUG-EXIT] _exit_tree() start - cleaning up resources")
+
+	# GAP-001: Clean up team battle visuals
+	_clear_team_visuals()
 
 	# Clean up damage labels
 	for dmg_data in _damage_labels:
@@ -2545,6 +2558,23 @@ func _process(delta: float) -> void:
 		_player_visual.position = RTSArenaManager.player_unit.position
 	if _ai_visual and is_instance_valid(RTSArenaManager.ai_unit):
 		_ai_visual.position = RTSArenaManager.ai_unit.position
+	# GAP-001: Sync team visual proxies
+	for i in range(_player_visuals.size()):
+		if i < RTSArenaManager.player_units.size():
+			var p_unit = RTSArenaManager.player_units[i]
+			if p_unit and is_instance_valid(p_unit) and p_unit.state != SoulUnit.UnitState.DEAD:
+				_player_visuals[i].visible = true
+				_player_visuals[i].position = p_unit.position
+			else:
+				_player_visuals[i].visible = false
+	for i in range(_ai_visuals.size()):
+		if i < RTSArenaManager.ai_units.size():
+			var a_unit = RTSArenaManager.ai_units[i]
+			if a_unit and is_instance_valid(a_unit) and a_unit.state != SoulUnit.UnitState.DEAD:
+				_ai_visuals[i].visible = true
+				_ai_visuals[i].position = a_unit.position
+			else:
+				_ai_visuals[i].visible = false
 	# Sync dynamic lights to unit positions with subtle pulse
 	if _player_light and is_instance_valid(RTSArenaManager.player_unit):
 		_player_light.position = RTSArenaManager.player_unit.position
@@ -2554,6 +2584,19 @@ func _process(delta: float) -> void:
 		_ai_light.position = RTSArenaManager.ai_unit.position
 		var ai_pulse = 1.0 + sin(Time.get_ticks_msec() / 350.0 + 1.0) * 0.15
 		_ai_light.energy = 1.2 * ai_pulse
+	# GAP-001: Sync team lights
+	for i in range(_player_lights.size()):
+		if i < _player_visuals.size() and _player_visuals[i].visible:
+			_player_lights[i].position = _player_visuals[i].position
+			_player_lights[i].energy = 1.2 * (1.0 + sin(Time.get_ticks_msec() / 300.0 + i * 0.5) * 0.15)
+		else:
+			_player_lights[i].energy = 0.0
+	for i in range(_ai_lights.size()):
+		if i < _ai_visuals.size() and _ai_visuals[i].visible:
+			_ai_lights[i].position = _ai_visuals[i].position
+			_ai_lights[i].energy = 1.2 * (1.0 + sin(Time.get_ticks_msec() / 350.0 + i * 0.5 + 1.0) * 0.15)
+		else:
+			_ai_lights[i].energy = 0.0
 	_update_skill_cooldowns()
 	_update_command_cooldown(delta)
 	_update_weather_display()
@@ -2591,6 +2634,28 @@ func _update_unit_display() -> void:
 		ai_hp_bar.value = float(a.get("hp", 0)) / float(a.get("max_hp", 100)) * 100.0
 		if ai_energy_bar:
 			_target_ai_energy = float(a.get("energy", 0)) / float(a.get("max_energy", 50)) * 100.0
+
+	# GAP-001: Update team HP bars
+	if info.has("player_team"):
+		var player_team = info["player_team"]
+		for i in range(_player_team_hp_bars.size()):
+			if i < player_team.size():
+				var unit_info = player_team[i]
+				var hp_pct = float(unit_info.get("hp", 0)) / float(unit_info.get("max_hp", 100)) * 100.0
+				_player_team_hp_bars[i].value = hp_pct
+				_player_team_hp_bars[i].visible = true
+			else:
+				_player_team_hp_bars[i].visible = false
+	if info.has("ai_team"):
+		var ai_team = info["ai_team"]
+		for i in range(_ai_team_hp_bars.size()):
+			if i < ai_team.size():
+				var unit_info = ai_team[i]
+				var hp_pct = float(unit_info.get("hp", 0)) / float(unit_info.get("max_hp", 100)) * 100.0
+				_ai_team_hp_bars[i].value = hp_pct
+				_ai_team_hp_bars[i].visible = true
+			else:
+				_ai_team_hp_bars[i].visible = false
 
 
 ## Smoothly update energy bars towards target values
@@ -2706,7 +2771,162 @@ func _on_battle_started(p_battle_info: Dictionary) -> void:
 		minimap.set_arena_map(ArenaMap)
 		minimap.set_arena_size(Vector2(1280, 600))
 
+	# GAP-001: Setup team battle visuals if team battle
+	if p_battle_info.get("team_battle", false):
+		_setup_team_visuals(p_battle_info)
+
 	GameLog.info("RTSArenaController: Battle started", "Arena")
+
+
+## GAP-001: Setup visual proxies and HP bars for team battle (4v4)
+func _setup_team_visuals(p_battle_info: Dictionary) -> void:
+	GameLog.info("RTSArenaController: Setting up team battle visuals", "Arena")
+
+	# Clear existing team visuals
+	_clear_team_visuals()
+
+	# Create player team visuals
+	var player_team = p_battle_info.get("player_team", [])
+	for i in range(player_team.size()):
+		var unit_info = player_team[i]
+		var element = unit_info.get("element", "neutral")
+		var visual = _create_unit_visual(element)
+		visual.name = "PlayerTeamVisual_%d" % i
+		visual.position = Vector2(200, 300 + i * 80)
+		visual.z_index = 10
+		add_child(visual)
+		_player_visuals.append(visual)
+
+		# Create light for each unit
+		var light = PointLight2D.new()
+		light.texture = _create_light_texture()
+		light.energy = 1.2
+		light.color = _get_element_light_color(element)
+		light.position = visual.position
+		add_child(light)
+		_player_lights.append(light)
+
+	# Create AI team visuals
+	var ai_team = p_battle_info.get("ai_team", [])
+	for i in range(ai_team.size()):
+		var unit_info = ai_team[i]
+		var element = unit_info.get("element", "neutral")
+		var visual = _create_unit_visual(element)
+		visual.name = "AITeamVisual_%d" % i
+		visual.modulate = Color(1.0, 0.7, 0.7)  # Slight red tint for enemy
+		visual.position = Vector2(1080, 300 + i * 80)
+		visual.z_index = 10
+		add_child(visual)
+		_ai_visuals.append(visual)
+
+		# Create light for each unit
+		var light = PointLight2D.new()
+		light.texture = _create_light_texture()
+		light.energy = 1.2
+		light.color = Color(1.0, 0.5, 0.5)
+		light.position = visual.position
+		add_child(light)
+		_ai_lights.append(light)
+
+	# Create team HP bars container
+	_create_team_hp_bars(player_team.size(), ai_team.size())
+
+
+## GAP-001: Create team HP bars UI
+func _create_team_hp_bars(p_player_count: int, p_ai_count: int) -> void:
+	# Player team HP bars (top-left, vertical stack)
+	for i in range(p_player_count):
+		var hp_bar = ProgressBar.new()
+		hp_bar.name = "PlayerTeamHP_%d" % i
+		hp_bar.custom_minimum_size = Vector2(180, 16)
+		hp_bar.position = Vector2(20, 20 + i * 24)
+		hp_bar.max_value = 100.0
+		hp_bar.value = 100.0
+		hp_bar.show_percentage = false
+		var style = StyleBoxFlat.new()
+		style.bg_color = Color(0.2, 0.1, 0.1)
+		style.corner_radius_top_left = 4
+		style.corner_radius_top_right = 4
+		style.corner_radius_bottom_right = 4
+		style.corner_radius_bottom_left = 4
+		hp_bar.add_theme_stylebox_override("background", style)
+		var fill_style = StyleBoxFlat.new()
+		fill_style.bg_color = Color(0.3, 0.8, 0.3)
+		fill_style.corner_radius_top_left = 3
+		fill_style.corner_radius_top_right = 3
+		fill_style.corner_radius_bottom_right = 3
+		fill_style.corner_radius_bottom_left = 3
+		hp_bar.add_theme_stylebox_override("fill", fill_style)
+		add_child(hp_bar)
+		_player_team_hp_bars.append(hp_bar)
+
+	# AI team HP bars (top-right, vertical stack)
+	for i in range(p_ai_count):
+		var hp_bar = ProgressBar.new()
+		hp_bar.name = "AITeamHP_%d" % i
+		hp_bar.custom_minimum_size = Vector2(180, 16)
+		hp_bar.position = Vector2(1080, 20 + i * 24)
+		hp_bar.max_value = 100.0
+		hp_bar.value = 100.0
+		hp_bar.show_percentage = false
+		var style = StyleBoxFlat.new()
+		style.bg_color = Color(0.2, 0.1, 0.1)
+		style.corner_radius_top_left = 4
+		style.corner_radius_top_right = 4
+		style.corner_radius_bottom_right = 4
+		style.corner_radius_bottom_left = 4
+		hp_bar.add_theme_stylebox_override("background", style)
+		var fill_style = StyleBoxFlat.new()
+		fill_style.bg_color = Color(0.8, 0.3, 0.3)
+		fill_style.corner_radius_top_left = 3
+		fill_style.corner_radius_top_right = 3
+		fill_style.corner_radius_bottom_right = 3
+		fill_style.corner_radius_bottom_left = 3
+		hp_bar.add_theme_stylebox_override("fill", fill_style)
+		add_child(hp_bar)
+		_ai_team_hp_bars.append(hp_bar)
+
+
+## GAP-001: Clear team battle visuals
+func _clear_team_visuals() -> void:
+	for visual in _player_visuals:
+		if visual and is_instance_valid(visual):
+			visual.queue_free()
+	_player_visuals.clear()
+	for visual in _ai_visuals:
+		if visual and is_instance_valid(visual):
+			visual.queue_free()
+	_ai_visuals.clear()
+	for light in _player_lights:
+		if light and is_instance_valid(light):
+			light.queue_free()
+	_player_lights.clear()
+	for light in _ai_lights:
+		if light and is_instance_valid(light):
+			light.queue_free()
+	_ai_lights.clear()
+	for hp_bar in _player_team_hp_bars:
+		if hp_bar and is_instance_valid(hp_bar):
+			hp_bar.queue_free()
+	_player_team_hp_bars.clear()
+	for hp_bar in _ai_team_hp_bars:
+		if hp_bar and is_instance_valid(hp_bar):
+			hp_bar.queue_free()
+	_ai_team_hp_bars.clear()
+
+
+## Get element light color
+func _get_element_light_color(p_element: String) -> Color:
+	match p_element:
+		"fire": return Color(1.0, 0.6, 0.2)
+		"water": return Color(0.3, 0.6, 1.0)
+		"earth": return Color(0.6, 0.5, 0.3)
+		"wind": return Color(0.7, 1.0, 0.8)
+		"thunder": return Color(1.0, 0.9, 0.3)
+		"ice": return Color(0.6, 0.9, 1.0)
+		"dark": return Color(0.6, 0.3, 0.8)
+		"light": return Color(1.0, 0.95, 0.7)
+		_: return Color(1.0, 1.0, 1.0)
 
 
 ## Start battle countdown (3-2-1-GO!)

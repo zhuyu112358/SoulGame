@@ -1,5 +1,50 @@
 ﻿# 战策 Battleplan 开发日志
 
+## [GAP修复] GAP-001 4v4团队对战 - RTSArenaController显示层（2026-09-11）
+
+**接续上一轮**：RTSArenaManager层4v4支持已完成（commit 3e211fe，已push）。本轮完成RTSArenaController显示层的4v4支持。
+
+### RTSArenaController 4v4显示支持 ✅
+
+**新增变量**：
+- `_player_visuals`/`_ai_visuals`：团队单位视觉代理数组（Sprite2D）
+- `_player_lights`/`_ai_lights`：团队单位动态光源数组（PointLight2D）
+- `_player_team_hp_bars`/`_ai_team_hp_bars`：团队HP条数组
+- `_selected_unit_index`：当前选中的玩家单位索引（用于战术指令）
+
+**新增方法**：
+- `_setup_team_visuals(p_battle_info)`：战斗开始时创建团队视觉代理和光源，每个单位独立元素颜色
+- `_create_team_hp_bars(p_player_count, p_ai_count)`：创建团队HP条UI（左上玩家队/右上AI队，垂直堆叠）
+- `_clear_team_visuals()`：清理所有团队视觉资源
+- `_get_element_light_color(p_element)`：获取元素对应的光源颜色（8元素差异化）
+
+**修改方法**：
+- `_on_battle_started()`：检测team_battle标志，调用_setup_team_visuals创建团队显示
+- `_process()`：同步所有团队视觉代理位置，死亡单位隐藏；同步所有团队光源位置和脉冲效果
+- `_update_unit_display()`：更新所有团队HP条数值，死亡单位隐藏HP条
+- `_exit_tree()`：清理团队视觉资源，防止内存泄漏
+
+**视觉设计**：
+- 玩家团队：元素本色光源，垂直编队显示
+- AI团队：微红色调（enemy tint），红色HP条
+- HP条：左上玩家队（绿色），右上AI队（红色），每个单位独立HP条
+- 死亡单位：视觉代理和光源自动隐藏
+
+**向后兼容**：
+- 1v1模式继续使用原有的_player_visual/_ai_visual和player_hp_bar/ai_hp_bar
+- 团队模式仅在battle_info包含team_battle=true时激活
+- 所有现有测试通过（2955 Passed, 0 Failed）
+
+**测试结果**：2955 Passed, 0 Failed，无SCRIPT ERROR
+
+**后续工作**（下一轮）：
+- BattleConfig实际使用_max_team_size=4，默认启动4v4
+- 玩家对单个灵魂下达战术指令的UI（点击选择单位+指令面板）
+- 技能目标选择（点击技能后选择目标单位）
+- 4v4平衡性调整和队伍搭配系统
+
+---
+
 ## [GAP修复] GAP-001 1v1→4v4团队对战（2026-09-11）
 
 **用户明确指令**：不接受当前1v1状态作为M2发布版本，战斗必须支持每方4个灵魂的团队对战。
