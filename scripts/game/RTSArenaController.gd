@@ -2354,6 +2354,20 @@ func _apply_hud_skin() -> void:
 		battle_time_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		battle_time_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 
+	# Player name label: blue font with outline
+	if player_name_label:
+		player_name_label.add_theme_font_size_override("font_size", 16)
+		player_name_label.add_theme_color_override("font_color", Color(0.5, 0.75, 1.0))
+		player_name_label.add_theme_color_override("font_outline_color", Color(0.0, 0.05, 0.15, 0.9))
+		player_name_label.add_theme_constant_override("outline_size", 3)
+
+	# AI name label: red font with outline
+	if ai_name_label:
+		ai_name_label.add_theme_font_size_override("font_size", 16)
+		ai_name_label.add_theme_color_override("font_color", Color(1.0, 0.55, 0.5))
+		ai_name_label.add_theme_color_override("font_outline_color", Color(0.15, 0.0, 0.0, 0.9))
+		ai_name_label.add_theme_constant_override("outline_size", 3)
+
 	GameLog.info("RTSArenaController: Applied HUD skin (dark purple + gold)", "UI")
 
 
