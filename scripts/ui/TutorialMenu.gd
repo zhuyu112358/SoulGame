@@ -36,6 +36,57 @@ func _ready() -> void:
 	_setup_ui_styles()
 
 	GameLog.info("TutorialMenu: Opened (game-level UI)", "UI")
+	_animate_entrance()
+
+
+## Animate UI entrance with staggered fade-in + scale (game-level UI)
+func _animate_entrance() -> void:
+	# Title fade-in
+	var title = get_node_or_null("MarginContainer/VBox/TitleLabel")
+	if title and title is CanvasItem:
+		title.modulate.a = 0.0
+		var title_tween = create_tween()
+		title_tween.set_ease(Tween.EASE_OUT)
+		title_tween.tween_property(title, "modulate:a", 1.0, 0.4)
+	# Progress label fade-in
+	if _progress_label and _progress_label is CanvasItem:
+		_progress_label.modulate.a = 0.0
+		var prog_tween = create_tween()
+		prog_tween.set_ease(Tween.EASE_OUT)
+		prog_tween.tween_interval(0.15)
+		prog_tween.tween_property(_progress_label, "modulate:a", 1.0, 0.3)
+	# Level container fade-in + scale
+	if _level_container and _level_container is CanvasItem:
+		_level_container.modulate.a = 0.0
+		_level_container.scale = Vector2(0.95, 0.95)
+		var container_tween = create_tween()
+		container_tween.set_ease(Tween.EASE_OUT)
+		container_tween.set_trans(Tween.TRANS_BACK)
+		container_tween.tween_interval(0.3)
+		container_tween.tween_property(_level_container, "modulate:a", 1.0, 0.4)
+		container_tween.parallel().tween_property(_level_container, "scale", Vector2(1.0, 1.0), 0.4)
+	# Staggered fade-in for level cards
+	await get_tree().create_timer(0.6).timeout
+	if _level_container:
+		var cards = _level_container.get_children()
+		for i in range(cards.size()):
+			var card = cards[i]
+			if card and card is CanvasItem:
+				card.modulate.a = 0.0
+				card.scale = Vector2(0.9, 0.9)
+				var card_tween = create_tween()
+				card_tween.set_ease(Tween.EASE_OUT)
+				card_tween.set_trans(Tween.TRANS_BACK)
+				card_tween.tween_interval(i * 0.08)
+				card_tween.tween_property(card, "modulate:a", 1.0, 0.25)
+				card_tween.parallel().tween_property(card, "scale", Vector2(1.0, 1.0), 0.25)
+	# Back button fade-in
+	if _back_button and _back_button is CanvasItem:
+		_back_button.modulate.a = 0.0
+		var back_tween = create_tween()
+		back_tween.set_ease(Tween.EASE_OUT)
+		back_tween.tween_interval(0.8)
+		back_tween.tween_property(_back_button, "modulate:a", 1.0, 0.3)
 
 
 ## Build tutorial level list
