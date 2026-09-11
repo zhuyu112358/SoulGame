@@ -2864,62 +2864,124 @@ func _setup_team_visuals(p_battle_info: Dictionary) -> void:
 		add_child(light)
 		_ai_lights.append(light)
 
-	# Create team HP bars container
-	_create_team_hp_bars(player_team.size(), ai_team.size())
+	# Create team HP bars with soul names and element colors
+	_create_team_hp_bars(player_team, ai_team)
 
 
-## GAP-001: Create team HP bars UI
-func _create_team_hp_bars(p_player_count: int, p_ai_count: int) -> void:
-	# Player team HP bars (top-left, vertical stack)
-	for i in range(p_player_count):
+## GAP-001: Create team HP bars UI with soul names and element colors
+func _create_team_hp_bars(p_player_team: Array, p_ai_team: Array) -> void:
+	# Element colors for HP bar fill
+	var element_colors = {
+		"fire": Color(1.0, 0.4, 0.2),
+		"water": Color(0.2, 0.5, 1.0),
+		"earth": Color(0.6, 0.5, 0.3),
+		"wind": Color(0.4, 0.9, 0.7),
+		"thunder": Color(0.9, 0.8, 0.2),
+		"ice": Color(0.5, 0.8, 1.0),
+		"dark": Color(0.6, 0.3, 0.8),
+		"light": Color(1.0, 0.9, 0.5),
+		"neutral": Color(0.5, 0.5, 0.5)
+	}
+
+	# Player team HP bars (top-left, vertical stack with names)
+	for i in range(p_player_team.size()):
+		var unit_info = p_player_team[i]
+		var soul_name = unit_info.get("name", "灵魂%d" % (i + 1))
+		var element = unit_info.get("element", "neutral")
+		var fill_color = element_colors.get(element, Color(0.3, 0.8, 0.3))
+
+		# Container for name + HP bar
+		var container = VBoxContainer.new()
+		container.name = "PlayerTeamHPContainer_%d" % i
+		container.position = Vector2(15, 15 + i * 42)
+		container.custom_minimum_size = Vector2(200, 38)
+		add_child(container)
+
+		# Name label
+		var name_label = Label.new()
+		name_label.text = soul_name
+		name_label.add_theme_font_size_override("font_size", 11)
+		name_label.add_theme_color_override("font_color", Color(0.9, 0.85, 0.6))
+		container.add_child(name_label)
+
+		# HP bar
 		var hp_bar = ProgressBar.new()
 		hp_bar.name = "PlayerTeamHP_%d" % i
-		hp_bar.custom_minimum_size = Vector2(180, 16)
-		hp_bar.position = Vector2(20, 20 + i * 24)
+		hp_bar.custom_minimum_size = Vector2(200, 18)
 		hp_bar.max_value = 100.0
 		hp_bar.value = 100.0
 		hp_bar.show_percentage = false
-		var style = StyleBoxFlat.new()
-		style.bg_color = Color(0.2, 0.1, 0.1)
-		style.corner_radius_top_left = 4
-		style.corner_radius_top_right = 4
-		style.corner_radius_bottom_right = 4
-		style.corner_radius_bottom_left = 4
-		hp_bar.add_theme_stylebox_override("background", style)
+		var bg_style = StyleBoxFlat.new()
+		bg_style.bg_color = Color(0.1, 0.08, 0.12, 0.9)
+		bg_style.border_color = Color(0.5, 0.4, 0.25)
+		bg_style.border_width_left = 1
+		bg_style.border_width_right = 1
+		bg_style.border_width_top = 1
+		bg_style.border_width_bottom = 1
+		bg_style.corner_radius_top_left = 3
+		bg_style.corner_radius_top_right = 3
+		bg_style.corner_radius_bottom_right = 3
+		bg_style.corner_radius_bottom_left = 3
+		hp_bar.add_theme_stylebox_override("background", bg_style)
 		var fill_style = StyleBoxFlat.new()
-		fill_style.bg_color = Color(0.3, 0.8, 0.3)
-		fill_style.corner_radius_top_left = 3
-		fill_style.corner_radius_top_right = 3
-		fill_style.corner_radius_bottom_right = 3
-		fill_style.corner_radius_bottom_left = 3
+		fill_style.bg_color = fill_color
+		fill_style.corner_radius_top_left = 2
+		fill_style.corner_radius_top_right = 2
+		fill_style.corner_radius_bottom_right = 2
+		fill_style.corner_radius_bottom_left = 2
 		hp_bar.add_theme_stylebox_override("fill", fill_style)
-		add_child(hp_bar)
+		container.add_child(hp_bar)
 		_player_team_hp_bars.append(hp_bar)
 
-	# AI team HP bars (top-right, vertical stack)
-	for i in range(p_ai_count):
+	# AI team HP bars (top-right, vertical stack with names)
+	for i in range(p_ai_team.size()):
+		var unit_info = p_ai_team[i]
+		var soul_name = unit_info.get("name", "敌方%d" % (i + 1))
+		var element = unit_info.get("element", "neutral")
+		var fill_color = element_colors.get(element, Color(0.8, 0.3, 0.3))
+
+		# Container for name + HP bar
+		var container = VBoxContainer.new()
+		container.name = "AITeamHPContainer_%d" % i
+		container.position = Vector2(1065, 15 + i * 42)
+		container.custom_minimum_size = Vector2(200, 38)
+		add_child(container)
+
+		# Name label (right-aligned)
+		var name_label = Label.new()
+		name_label.text = soul_name
+		name_label.add_theme_font_size_override("font_size", 11)
+		name_label.add_theme_color_override("font_color", Color(0.9, 0.7, 0.7))
+		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		container.add_child(name_label)
+
+		# HP bar
 		var hp_bar = ProgressBar.new()
 		hp_bar.name = "AITeamHP_%d" % i
-		hp_bar.custom_minimum_size = Vector2(180, 16)
-		hp_bar.position = Vector2(1080, 20 + i * 24)
+		hp_bar.custom_minimum_size = Vector2(200, 18)
 		hp_bar.max_value = 100.0
 		hp_bar.value = 100.0
 		hp_bar.show_percentage = false
-		var style = StyleBoxFlat.new()
-		style.bg_color = Color(0.2, 0.1, 0.1)
-		style.corner_radius_top_left = 4
-		style.corner_radius_top_right = 4
-		style.corner_radius_bottom_right = 4
-		style.corner_radius_bottom_left = 4
-		hp_bar.add_theme_stylebox_override("background", style)
+		var bg_style = StyleBoxFlat.new()
+		bg_style.bg_color = Color(0.12, 0.08, 0.08, 0.9)
+		bg_style.border_color = Color(0.5, 0.3, 0.25)
+		bg_style.border_width_left = 1
+		bg_style.border_width_right = 1
+		bg_style.border_width_top = 1
+		bg_style.border_width_bottom = 1
+		bg_style.corner_radius_top_left = 3
+		bg_style.corner_radius_top_right = 3
+		bg_style.corner_radius_bottom_right = 3
+		bg_style.corner_radius_bottom_left = 3
+		hp_bar.add_theme_stylebox_override("background", bg_style)
 		var fill_style = StyleBoxFlat.new()
-		fill_style.bg_color = Color(0.8, 0.3, 0.3)
-		fill_style.corner_radius_top_left = 3
-		fill_style.corner_radius_top_right = 3
-		fill_style.corner_radius_bottom_right = 3
-		fill_style.corner_radius_bottom_left = 3
+		fill_style.bg_color = fill_color
+		fill_style.corner_radius_top_left = 2
+		fill_style.corner_radius_top_right = 2
+		fill_style.corner_radius_bottom_right = 2
+		fill_style.corner_radius_bottom_left = 2
 		hp_bar.add_theme_stylebox_override("fill", fill_style)
-		add_child(hp_bar)
+		container.add_child(hp_bar)
 		_ai_team_hp_bars.append(hp_bar)
 
 
@@ -2943,11 +3005,21 @@ func _clear_team_visuals() -> void:
 	_ai_lights.clear()
 	for hp_bar in _player_team_hp_bars:
 		if hp_bar and is_instance_valid(hp_bar):
-			hp_bar.queue_free()
+			# Free parent container if it exists (new layout), else free the bar itself
+			var parent = hp_bar.get_parent()
+			if parent and parent.name.begins_with("PlayerTeamHPContainer_"):
+				parent.queue_free()
+			else:
+				hp_bar.queue_free()
 	_player_team_hp_bars.clear()
 	for hp_bar in _ai_team_hp_bars:
 		if hp_bar and is_instance_valid(hp_bar):
-			hp_bar.queue_free()
+			# Free parent container if it exists (new layout), else free the bar itself
+			var parent = hp_bar.get_parent()
+			if parent and parent.name.begins_with("AITeamHPContainer_"):
+				parent.queue_free()
+			else:
+				hp_bar.queue_free()
 	_ai_team_hp_bars.clear()
 
 

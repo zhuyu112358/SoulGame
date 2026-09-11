@@ -1,5 +1,24 @@
 ﻿# 战策 Battleplan 开发日志
 
+## [战斗HUD美化] 4v4团队HP条显示优化（2026-09-11）
+
+**改造内容**：
+- 团队HP条从简单ProgressBar改为带名字标签的VBoxContainer布局
+- 每个HP条显示灵魂名字（玩家方左对齐，AI方右对齐）
+- HP条填充颜色按元素区分（火=红橙、水=蓝、土=棕、风=青、雷=黄、冰=浅蓝、暗=紫、光=金）
+- HP条背景使用深紫半透明+金色边框样式
+- 玩家方HP条在左上角垂直堆叠，AI方在右上角垂直堆叠
+- 间距从24px增加到42px，容纳名字标签
+
+**修改方法**：
+- `_create_team_hp_bars(p_player_team, p_ai_team)`：接收团队数组，创建带名字的HP条
+- `_setup_team_visuals()`：调用时传递player_team和ai_team数组
+- `_clear_team_visuals()`：安全清理HP条container（检测父节点名称）
+
+**测试结果**：2955 Passed, 0 Failed，无SCRIPT ERROR
+
+---
+
 ## [GAP-001] 4v4团队对战完整集成（2026-09-11）
 
 **目标**：从1v1格斗改造为4v4 RTS团队对战（GDD v2.0第3章核心战斗）
