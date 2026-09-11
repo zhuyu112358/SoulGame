@@ -49,23 +49,11 @@ func _ready() -> void:
 
 	FontLoader.apply_font_to_control(self)
 
-	# Connect button signals and hover effects (only once per button)
+	# Connect button pressed signals (hover animations set up in button creation)
 	for btn_name in _buttons.keys():
 		var btn = _buttons[btn_name]
 		if btn:
 			btn.pressed.connect(_on_button_pressed.bind(btn_name))
-			_setup_button_hover(btn)
-
-
-	# Compatibility: explicit hover setup for test source-code checks
-	if _start_button:
-		_setup_button_hover(_start_button)
-	if _home_button:
-		_setup_button_hover(_home_button)
-	if _settings_button:
-		_setup_button_hover(_settings_button)
-	if _quit_button:
-		_setup_button_hover(_quit_button)
 
 	# Set version text (GAP-003: M2 Early Access, not Prototype)
 	var version = GameState.get_value("game", "version", "0.2.0")
@@ -125,149 +113,285 @@ func _force_buttons_visible() -> void:
 	GameLog.info("MainMenu: Safety fallback - buttons forced visible", "UI")
 
 
-## Build entire UI dynamically (no .tscn node dependency)
-## UI-1 redesign: Game-style layout (StarCraft/Diablo inspired) with 9-slice UI components
+## Build entire UI dynamically - Diablo/StarCraft inspired game menu
+## Design: large primary CTA, feature cards with icons, system icon row
 func _build_ui() -> void:
-	# Root layout - use margin container for padding
+	# Root layout
 	var margin = MarginContainer.new()
 	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
-	margin.add_theme_constant_override("margin_left", 60)
-	margin.add_theme_constant_override("margin_right", 60)
-	margin.add_theme_constant_override("margin_top", 40)
-	margin.add_theme_constant_override("margin_bottom", 40)
+	margin.add_theme_constant_override("margin_left", 40)
+	margin.add_theme_constant_override("margin_right", 40)
+	margin.add_theme_constant_override("margin_top", 30)
+	margin.add_theme_constant_override("margin_bottom", 20)
 	add_child(margin)
 
 	var vbox = VBoxContainer.new()
 	vbox.name = "MainVBox"
-	vbox.add_theme_constant_override("separation", 20)
+	vbox.add_theme_constant_override("separation", 16)
 	margin.add_child(vbox)
 
 	# === TITLE SECTION ===
 	var title_container = VBoxContainer.new()
-	title_container.add_theme_constant_override("separation", 5)
+	title_container.add_theme_constant_override("separation", 4)
 	vbox.add_child(title_container)
 
-	# Title with gold glow
 	_title_label = Label.new()
 	_title_label.text = "战策  Battleplan"
-	_title_label.add_theme_font_size_override("font_size", 56)
+	_title_label.add_theme_font_size_override("font_size", 52)
 	_title_label.add_theme_color_override("font_color", Color(1.0, 0.88, 0.4))
-	_title_label.add_theme_color_override("font_shadow_color", Color(0.3, 0.15, 0.0, 0.8))
-	_title_label.add_theme_constant_override("shadow_offset_x", 3)
-	_title_label.add_theme_constant_override("shadow_offset_y", 3)
+	_title_label.add_theme_color_override("font_shadow_color", Color(0.3, 0.15, 0.0, 0.9))
+	_title_label.add_theme_constant_override("shadow_offset_x", 2)
+	_title_label.add_theme_constant_override("shadow_offset_y", 2)
 	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title_container.add_child(_title_label)
 
-	# Subtitle
 	var subtitle = Label.new()
 	subtitle.text = "灵 魂 指 挥 官 · R T S 对 战 竞 技 场"
-	subtitle.add_theme_font_size_override("font_size", 16)
+	subtitle.add_theme_font_size_override("font_size", 15)
 	subtitle.add_theme_color_override("font_color", Color(0.75, 0.65, 0.45))
 	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title_container.add_child(subtitle)
 
-	# Decorative separator
-	var sep = HSeparator.new()
-	sep.custom_minimum_size = Vector2(0, 4)
-	vbox.add_child(sep)
+	# === PRIMARY CTA: Start Battle ===
+	var cta_center = CenterContainer.new()
+	vbox.add_child(cta_center)
 
-	# === MAIN ACTION BUTTON (Start Game - largest, most prominent) ===
-	var main_btn_container = CenterContainer.new()
-	vbox.add_child(main_btn_container)
-
-	var start_btn = _create_game_button("start", "开始战斗", "START BATTLE", Vector2(420, 90), 28)
-	start_btn.modulate = Color(1.0, 0.92, 0.5)  # Gold highlight for primary action
-	# Add golden glowing border for primary action
-	var start_normal = StyleBoxFlat.new()
-	start_normal.bg_color = Color(0.15, 0.1, 0.25, 0.95)
-	start_normal.border_color = Color(1.0, 0.85, 0.4)
-	start_normal.border_width_left = 4
-	start_normal.border_width_right = 4
-	start_normal.border_width_top = 4
-	start_normal.border_width_bottom = 4
-	start_normal.corner_radius_top_left = 10
-	start_normal.corner_radius_top_right = 10
-	start_normal.corner_radius_bottom_left = 10
-	start_normal.corner_radius_bottom_right = 10
-	start_btn.add_theme_stylebox_override("normal", start_normal)
-	var start_hover = StyleBoxFlat.new()
-	start_hover.bg_color = Color(0.25, 0.15, 0.35, 1.0)
-	start_hover.border_color = Color(1.0, 0.95, 0.6)
-	start_hover.border_width_left = 4
-	start_hover.border_width_right = 4
-	start_hover.border_width_top = 4
-	start_hover.border_width_bottom = 4
-	start_hover.corner_radius_top_left = 10
-	start_hover.corner_radius_top_right = 10
-	start_hover.corner_radius_bottom_left = 10
-	start_hover.corner_radius_bottom_right = 10
-	start_btn.add_theme_stylebox_override("hover", start_hover)
-	main_btn_container.add_child(start_btn)
+	var start_btn = _create_cta_button()
+	cta_center.add_child(start_btn)
 	_buttons["start"] = start_btn
 	_start_button = start_btn
 
-	# === META-GAME BUTTONS (2x3 grid - secondary actions) ===
-	var meta_label = Label.new()
-	meta_label.text = "— 灵 魂 世 界 —"
-	meta_label.add_theme_font_size_override("font_size", 14)
-	meta_label.add_theme_color_override("font_color", Color(0.7, 0.6, 0.45))
-	meta_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	vbox.add_child(meta_label)
+	# === FEATURE CARDS (soul world systems) ===
+	var feature_row = HBoxContainer.new()
+	feature_row.add_theme_constant_override("separation", 12)
+	feature_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_child(feature_row)
 
-	var meta_grid = GridContainer.new()
-	meta_grid.columns = 3
-	meta_grid.add_theme_constant_override("h_separation", 15)
-	meta_grid.add_theme_constant_override("v_separation", 10)
-	vbox.add_child(meta_grid)
+	var features = [
+		{"name": "home", "icon": "🏠", "label": "灵魂之家"},
+		{"name": "codex", "icon": "📖", "label": "灵魂图鉴"},
+		{"name": "collection", "icon": "💎", "label": "收藏系统"},
+		{"name": "training", "icon": "📊", "label": "训练统计"},
+		{"name": "tutorial", "icon": "🎓", "label": "教学模式"},
+		{"name": "story", "icon": "🎬", "label": "剧情CG"},
+	]
+	for f in features:
+		var card = _create_menu_card(f["name"], f["icon"], f["label"])
+		feature_row.add_child(card)
+		_buttons[f["name"]] = card
 
-	var meta_buttons = ["home", "codex", "collection", "training", "tutorial", "story"]
-	for btn_name in meta_buttons:
-		var btn_def = _find_button_def(btn_name)
-		if btn_def:
-			var btn = _create_game_button(btn_name, btn_def["label"], btn_def["label_en"], Vector2(200, 55), 14)
-			btn.modulate = btn_def["color"]
-			meta_grid.add_child(btn)
-			_buttons[btn_name] = btn
-
-	# === ONLINE / SYSTEM BUTTONS (bottom row) ===
-	var sys_label = Label.new()
-	sys_label.text = "— 对 战 与 系 统 —"
-	sys_label.add_theme_font_size_override("font_size", 14)
-	sys_label.add_theme_color_override("font_color", Color(0.7, 0.6, 0.45))
-	sys_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	vbox.add_child(sys_label)
-
+	# === SYSTEM / ONLINE ROW ===
 	var sys_row = HBoxContainer.new()
-	sys_row.add_theme_constant_override("separation", 15)
+	sys_row.add_theme_constant_override("separation", 10)
 	sys_row.alignment = BoxContainer.ALIGNMENT_CENTER
 	vbox.add_child(sys_row)
 
-	var sys_buttons = ["matchmaking", "friends", "customize", "settings", "quit"]
-	for btn_name in sys_buttons:
-		var btn_def = _find_button_def(btn_name)
-		if btn_def:
-			var btn = _create_game_button(btn_name, btn_def["label"], btn_def["label_en"], Vector2(170, 50), 13)
-			btn.modulate = btn_def["color"]
-			sys_row.add_child(btn)
-			_buttons[btn_name] = btn
+	var sys_items = [
+		{"name": "matchmaking", "icon": "⚔", "label": "随机匹配"},
+		{"name": "friends", "icon": "👥", "label": "好友系统"},
+		{"name": "customize", "icon": "✨", "label": "捏脸系统"},
+	]
+	for s in sys_items:
+		var card = _create_menu_card(s["name"], s["icon"], s["label"], true)
+		sys_row.add_child(card)
+		_buttons[s["name"]] = card
 
-	# Set compatibility references
-	if _buttons.has("home"):
-		_home_button = _buttons["home"]
-	if _buttons.has("settings"):
-		_settings_button = _buttons["settings"]
-	if _buttons.has("quit"):
-		_quit_button = _buttons["quit"]
+	# Spacer
+	var spacer = Control.new()
+	spacer.custom_minimum_size = Vector2(0, 8)
+	vbox.add_child(spacer)
 
-	# Version label (GAP-003)
+	# === BOTTOM BAR: settings + quit + version ===
+	var bottom_row = HBoxContainer.new()
+	bottom_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	bottom_row.add_theme_constant_override("separation", 20)
+	vbox.add_child(bottom_row)
+
+	var settings_btn = _create_text_button("settings", "设置")
+	bottom_row.add_child(settings_btn)
+	_buttons["settings"] = settings_btn
+	_settings_button = settings_btn
+
+	var quit_btn = _create_text_button("quit", "退出游戏")
+	bottom_row.add_child(quit_btn)
+	_buttons["quit"] = quit_btn
+	_quit_button = quit_btn
+
 	_version_label = Label.new()
 	_version_label.text = "v0.2.0 - M2 Early Access"
-	_version_label.add_theme_font_size_override("font_size", 11)
-	_version_label.add_theme_color_override("font_color", Color(0.5, 0.45, 0.35))
+	_version_label.add_theme_font_size_override("font_size", 10)
+	_version_label.add_theme_color_override("font_color", Color(0.45, 0.4, 0.3))
 	_version_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(_version_label)
 
-	GameLog.info("MainMenu: UI rebuilt with game-style layout and 9-slice components", "UI")
+	if _buttons.has("home"):
+		_home_button = _buttons["home"]
+
+	GameLog.info("MainMenu: Game-style menu built (CTA + feature cards + system row)", "UI")
+
+
+## Create large primary CTA button with gold glow
+func _create_cta_button() -> Button:
+	var btn = Button.new()
+	btn.name = "Btn_Start"
+	btn.text = "开始战斗\nSTART BATTLE"
+	btn.custom_minimum_size = Vector2(380, 80)
+	btn.add_theme_font_size_override("font_size", 26)
+	btn.add_theme_color_override("font_color", Color(1.0, 0.92, 0.5))
+	btn.add_theme_color_override("font_hover_color", Color(1.0, 0.97, 0.7))
+	btn.add_theme_color_override("font_pressed_color", Color(1.0, 0.85, 0.3))
+
+	var normal = StyleBoxFlat.new()
+	normal.bg_color = Color(0.15, 0.08, 0.28, 0.95)
+	normal.border_color = Color(1.0, 0.82, 0.35, 1.0)
+	normal.border_width_left = 3
+	normal.border_width_right = 3
+	normal.border_width_top = 3
+	normal.border_width_bottom = 3
+	normal.corner_radius_top_left = 8
+	normal.corner_radius_top_right = 8
+	normal.corner_radius_bottom_left = 8
+	normal.corner_radius_bottom_right = 8
+	normal.shadow_color = Color(1.0, 0.75, 0.2, 0.3)
+	normal.shadow_size = 12
+	btn.add_theme_stylebox_override("normal", normal)
+
+	var hover = StyleBoxFlat.new()
+	hover.bg_color = Color(0.25, 0.12, 0.4, 1.0)
+	hover.border_color = Color(1.0, 0.92, 0.55, 1.0)
+	hover.border_width_left = 3
+	hover.border_width_right = 3
+	hover.border_width_top = 3
+	hover.border_width_bottom = 3
+	hover.corner_radius_top_left = 8
+	hover.corner_radius_top_right = 8
+	hover.corner_radius_bottom_left = 8
+	hover.corner_radius_bottom_right = 8
+	hover.shadow_color = Color(1.0, 0.8, 0.3, 0.5)
+	hover.shadow_size = 18
+	btn.add_theme_stylebox_override("hover", hover)
+
+	var pressed = StyleBoxFlat.new()
+	pressed.bg_color = Color(0.2, 0.1, 0.32, 1.0)
+	pressed.border_color = Color(1.0, 0.88, 0.5, 1.0)
+	pressed.border_width_left = 4
+	pressed.border_width_right = 4
+	pressed.border_width_top = 4
+	pressed.border_width_bottom = 4
+	pressed.corner_radius_top_left = 8
+	pressed.corner_radius_top_right = 8
+	pressed.corner_radius_bottom_left = 8
+	pressed.corner_radius_bottom_right = 8
+	btn.add_theme_stylebox_override("pressed", pressed)
+
+	_setup_hover_anim(btn, 1.06)
+	return btn
+
+
+## Create a menu card button with icon + label
+func _create_menu_card(p_name: String, p_icon: String, p_label: String, p_small: bool = false) -> Button:
+	var btn = Button.new()
+	btn.name = "Card_" + p_name
+	btn.text = p_icon + "\n" + p_label
+	var size = Vector2(100, 75) if p_small else Vector2(120, 85)
+	btn.custom_minimum_size = size
+	btn.add_theme_font_size_override("font_size", 11 if p_small else 12)
+	btn.add_theme_color_override("font_color", Color(0.9, 0.85, 0.7))
+	btn.add_theme_color_override("font_hover_color", Color(1.0, 0.95, 0.8))
+	btn.add_theme_color_override("font_pressed_color", Color(1.0, 0.85, 0.5))
+	btn.tooltip_text = p_label
+
+	var normal = StyleBoxFlat.new()
+	normal.bg_color = Color(0.1, 0.07, 0.18, 0.85)
+	normal.border_color = Color(0.6, 0.5, 0.3, 0.6)
+	normal.border_width_left = 1
+	normal.border_width_right = 1
+	normal.border_width_top = 1
+	normal.border_width_bottom = 1
+	normal.corner_radius_top_left = 6
+	normal.corner_radius_top_right = 6
+	normal.corner_radius_bottom_left = 6
+	normal.corner_radius_bottom_right = 6
+	btn.add_theme_stylebox_override("normal", normal)
+
+	var hover = StyleBoxFlat.new()
+	hover.bg_color = Color(0.18, 0.1, 0.3, 0.95)
+	hover.border_color = Color(0.9, 0.75, 0.4, 0.9)
+	hover.border_width_left = 2
+	hover.border_width_right = 2
+	hover.border_width_top = 2
+	hover.border_width_bottom = 2
+	hover.corner_radius_top_left = 6
+	hover.corner_radius_top_right = 6
+	hover.corner_radius_bottom_left = 6
+	hover.corner_radius_bottom_right = 6
+	hover.shadow_color = Color(0.8, 0.65, 0.3, 0.25)
+	hover.shadow_size = 8
+	btn.add_theme_stylebox_override("hover", hover)
+
+	var pressed = StyleBoxFlat.new()
+	pressed.bg_color = Color(0.15, 0.09, 0.25, 1.0)
+	pressed.border_color = Color(1.0, 0.85, 0.5, 1.0)
+	pressed.border_width_left = 2
+	pressed.border_width_right = 2
+	pressed.border_width_top = 2
+	pressed.border_width_bottom = 2
+	pressed.corner_radius_top_left = 6
+	pressed.corner_radius_top_right = 6
+	pressed.corner_radius_bottom_left = 6
+	pressed.corner_radius_bottom_right = 6
+	btn.add_theme_stylebox_override("pressed", pressed)
+
+	_setup_hover_anim(btn, 1.08)
+	return btn
+
+
+## Create a minimal text-only button (settings, quit)
+func _create_text_button(p_name: String, p_label: String) -> Button:
+	var btn = Button.new()
+	btn.name = "Btn_" + p_name
+	btn.text = p_label
+	btn.custom_minimum_size = Vector2(100, 32)
+	btn.add_theme_font_size_override("font_size", 13)
+	btn.add_theme_color_override("font_color", Color(0.7, 0.65, 0.55))
+	btn.add_theme_color_override("font_hover_color", Color(0.95, 0.88, 0.7))
+	btn.add_theme_color_override("font_pressed_color", Color(1.0, 0.85, 0.5))
+
+	var normal = StyleBoxFlat.new()
+	normal.bg_color = Color(0, 0, 0, 0)
+	normal.border_width_left = 0
+	normal.border_width_right = 0
+	normal.border_width_top = 0
+	normal.border_width_bottom = 0
+	btn.add_theme_stylebox_override("normal", normal)
+
+	var hover = StyleBoxFlat.new()
+	hover.bg_color = Color(0.15, 0.1, 0.25, 0.6)
+	hover.border_color = Color(0.7, 0.6, 0.35, 0.5)
+	hover.border_width_left = 1
+	hover.border_width_right = 1
+	hover.border_width_top = 1
+	hover.border_width_bottom = 1
+	hover.corner_radius_top_left = 4
+	hover.corner_radius_top_right = 4
+	hover.corner_radius_bottom_left = 4
+	hover.corner_radius_bottom_right = 4
+	btn.add_theme_stylebox_override("hover", hover)
+
+	_setup_hover_anim(btn, 1.05)
+	return btn
+
+
+## Shared hover scale animation
+func _setup_hover_anim(p_btn: Button, p_scale: float) -> void:
+	p_btn.mouse_entered.connect(func():
+		var t = create_tween()
+		t.tween_property(p_btn, "scale", Vector2(p_scale, p_scale), 0.15).set_ease(Tween.EASE_OUT)
+	)
+	p_btn.mouse_exited.connect(func():
+		var t = create_tween()
+		t.tween_property(p_btn, "scale", Vector2(1.0, 1.0), 0.2).set_ease(Tween.EASE_OUT)
+	)
 
 
 ## Create a game-style button with clean StyleBoxFlat (no design mockup textures)
