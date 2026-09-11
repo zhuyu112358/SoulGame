@@ -20,6 +20,10 @@ const PORTRAIT_ATLAS_PATH := "res://assets/art/character_portrait_sheet_v1.png"
 const PORTRAIT_COLS := 4
 const PORTRAIT_ROWS := 2
 
+## Individual portrait textures (UI-2 redesign: use separate portrait files)
+var _portrait_textures: Dictionary = {}  # {element: Texture2D}
+const PORTRAIT_PATH_TEMPLATE := "res://assets/art/characters/character_%s_soul_portrait.png"
+
 ## Element to portrait index mapping
 const ELEMENT_PORTRAIT_INDEX := {
 	"fire": 0,
@@ -30,6 +34,18 @@ const ELEMENT_PORTRAIT_INDEX := {
 	"ice": 5,
 	"dark": 6,
 	"light": 7
+}
+
+## Element name mapping for portrait files (shadow = dark)
+const ELEMENT_FILE_NAMES := {
+	"fire": "fire",
+	"water": "water",
+	"earth": "earth",
+	"wind": "wind",
+	"thunder": "thunder",
+	"ice": "ice",
+	"dark": "shadow",
+	"light": "light"
 }
 
 
@@ -47,17 +63,34 @@ func _ready() -> void:
 	_animate_entrance()
 
 
-## Load portrait atlas texture
+## Load portrait atlas texture and individual portrait files
 func _load_portrait_atlas() -> void:
+	# Try atlas first (legacy)
 	if ResourceLoader.exists(PORTRAIT_ATLAS_PATH):
 		_portrait_atlas = load(PORTRAIT_ATLAS_PATH)
 		GameLog.info("SoulSelect: Portrait atlas loaded", "SoulSelect")
 	else:
 		GameLog.warning("SoulSelect: Portrait atlas not found at %s" % PORTRAIT_ATLAS_PATH, "SoulSelect")
 
+	# UI-2: Load individual portrait files (higher quality, separate per element)
+	for element in ELEMENT_FILE_NAMES.keys():
+		var file_name = ELEMENT_FILE_NAMES[element]
+		var path = PORTRAIT_PATH_TEMPLATE % file_name
+		if ResourceLoader.exists(path):
+			_portrait_textures[element] = load(path)
+			GameLog.info("SoulSelect: Loaded portrait for %s" % element, "SoulSelect")
+		else:
+			GameLog.warning("SoulSelect: Portrait not found for %s at %s" % [element, path], "SoulSelect")
 
-## Get portrait texture for a specific element (AtlasTexture)
+
+## Get portrait texture for a specific element
+## UI-2: Prefer individual high-quality portrait files, fall back to atlas
 func _get_portrait_texture(element: String) -> Texture2D:
+	# UI-2: Try individual portrait first (higher quality)
+	if _portrait_textures.has(element):
+		return _portrait_textures[element]
+
+	# Fallback: atlas texture
 	if _portrait_atlas == null:
 		return null
 	var index = ELEMENT_PORTRAIT_INDEX.get(element, -1)

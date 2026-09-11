@@ -100,56 +100,107 @@ func _ready() -> void:
 
 
 ## Build entire UI dynamically (no .tscn node dependency)
+## UI-1 redesign: Game-style layout (StarCraft/Diablo inspired) with 9-slice UI components
 func _build_ui() -> void:
-	# Root layout
-	var center = CenterContainer.new()
-	center.set_anchors_preset(Control.PRESET_FULL_RECT)
-	add_child(center)
+	# Root layout - use margin container for padding
+	var margin = MarginContainer.new()
+	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
+	margin.add_theme_constant_override("margin_left", 60)
+	margin.add_theme_constant_override("margin_right", 60)
+	margin.add_theme_constant_override("margin_top", 40)
+	margin.add_theme_constant_override("margin_bottom", 40)
+	add_child(margin)
 
 	var vbox = VBoxContainer.new()
 	vbox.name = "MainVBox"
-	vbox.add_theme_constant_override("separation", 15)
-	center.add_child(vbox)
+	vbox.add_theme_constant_override("separation", 20)
+	margin.add_child(vbox)
 
-	# Title
+	# === TITLE SECTION ===
+	var title_container = VBoxContainer.new()
+	title_container.add_theme_constant_override("separation", 5)
+	vbox.add_child(title_container)
+
+	# Title with gold glow
 	_title_label = Label.new()
-	_title_label.text = "战策 Battleplan"
-	_title_label.add_theme_font_size_override("font_size", 42)
-	_title_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+	_title_label.text = "战策  Battleplan"
+	_title_label.add_theme_font_size_override("font_size", 56)
+	_title_label.add_theme_color_override("font_color", Color(1.0, 0.88, 0.4))
+	_title_label.add_theme_color_override("font_shadow_color", Color(0.3, 0.15, 0.0, 0.8))
+	_title_label.add_theme_constant_override("shadow_offset_x", 3)
+	_title_label.add_theme_constant_override("shadow_offset_y", 3)
 	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	vbox.add_child(_title_label)
+	title_container.add_child(_title_label)
 
 	# Subtitle
 	var subtitle = Label.new()
-	subtitle.text = "灵魂指挥官 · RTS对战竞技场"
-	subtitle.add_theme_font_size_override("font_size", 14)
-	subtitle.add_theme_color_override("font_color", Color(0.7, 0.6, 0.4))
+	subtitle.text = "灵 魂 指 挥 官 · R T S 对 战 竞 技 场"
+	subtitle.add_theme_font_size_override("font_size", 16)
+	subtitle.add_theme_color_override("font_color", Color(0.75, 0.65, 0.45))
 	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	vbox.add_child(subtitle)
+	title_container.add_child(subtitle)
 
-	# Button grid (3 columns x 4 rows = 12 buttons)
-	_button_grid = GridContainer.new()
-	_button_grid.columns = 3
-	_button_grid.add_theme_constant_override("h_separation", 12)
-	_button_grid.add_theme_constant_override("v_separation", 12)
-	vbox.add_child(_button_grid)
+	# Decorative separator
+	var sep = HSeparator.new()
+	sep.custom_minimum_size = Vector2(0, 4)
+	vbox.add_child(sep)
 
-	# Create all menu buttons
-	for btn_def in MENU_BUTTONS:
-		var btn = Button.new()
-		btn.name = "Btn_" + btn_def["name"]
-		btn.text = btn_def["label"] + "\n" + btn_def["label_en"]
-		btn.custom_minimum_size = Vector2(160, 70)
-		btn.add_theme_font_size_override("font_size", 14)
-		# Apply accent color via modulate (will be reset on hover)
-		btn.modulate = btn_def["color"]
-		btn.tooltip_text = btn_def["label"]
-		_button_grid.add_child(btn)
-		_buttons[btn_def["name"]] = btn
+	# === MAIN ACTION BUTTON (Start Game - largest, most prominent) ===
+	var main_btn_container = CenterContainer.new()
+	vbox.add_child(main_btn_container)
 
-	# Set compatibility references for tests
-	if _buttons.has("start"):
-		_start_button = _buttons["start"]
+	var start_btn = _create_game_button("start", "开始战斗", "START BATTLE", Vector2(360, 80), 24)
+	start_btn.modulate = Color(1.0, 0.92, 0.5)  # Gold highlight for primary action
+	main_btn_container.add_child(start_btn)
+	_buttons["start"] = start_btn
+	_start_button = start_btn
+
+	# === META-GAME BUTTONS (2x3 grid - secondary actions) ===
+	var meta_label = Label.new()
+	meta_label.text = "— 灵 魂 世 界 —"
+	meta_label.add_theme_font_size_override("font_size", 14)
+	meta_label.add_theme_color_override("font_color", Color(0.7, 0.6, 0.45))
+	meta_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(meta_label)
+
+	var meta_grid = GridContainer.new()
+	meta_grid.columns = 3
+	meta_grid.add_theme_constant_override("h_separation", 15)
+	meta_grid.add_theme_constant_override("v_separation", 10)
+	vbox.add_child(meta_grid)
+
+	var meta_buttons = ["home", "codex", "collection", "training", "tutorial", "story"]
+	for btn_name in meta_buttons:
+		var btn_def = _find_button_def(btn_name)
+		if btn_def:
+			var btn = _create_game_button(btn_name, btn_def["label"], btn_def["label_en"], Vector2(200, 55), 14)
+			btn.modulate = btn_def["color"]
+			meta_grid.add_child(btn)
+			_buttons[btn_name] = btn
+
+	# === ONLINE / SYSTEM BUTTONS (bottom row) ===
+	var sys_label = Label.new()
+	sys_label.text = "— 对 战 与 系 统 —"
+	sys_label.add_theme_font_size_override("font_size", 14)
+	sys_label.add_theme_color_override("font_color", Color(0.7, 0.6, 0.45))
+	sys_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(sys_label)
+
+	var sys_row = HBoxContainer.new()
+	sys_row.add_theme_constant_override("separation", 15)
+	sys_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_child(sys_row)
+
+	var sys_buttons = ["matchmaking", "friends", "customize", "settings", "quit"]
+	for btn_name in sys_buttons:
+		var btn_def = _find_button_def(btn_name)
+		if btn_def:
+			var btn = _create_game_button(btn_name, btn_def["label"], btn_def["label_en"], Vector2(170, 50), 13)
+			btn.modulate = btn_def["color"]
+			sys_row.add_child(btn)
+			_buttons[btn_name] = btn
+
+	# Set compatibility references
 	if _buttons.has("home"):
 		_home_button = _buttons["home"]
 	if _buttons.has("settings"):
@@ -160,12 +211,70 @@ func _build_ui() -> void:
 	# Version label (GAP-003)
 	_version_label = Label.new()
 	_version_label.text = "v0.2.0 - M2 Early Access"
-	_version_label.add_theme_font_size_override("font_size", 10)
+	_version_label.add_theme_font_size_override("font_size", 11)
 	_version_label.add_theme_color_override("font_color", Color(0.5, 0.45, 0.35))
 	_version_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(_version_label)
 
-	GameLog.info("MainMenu: UI built with %d buttons" % MENU_BUTTONS.size(), "UI")
+	GameLog.info("MainMenu: UI rebuilt with game-style layout and 9-slice components", "UI")
+
+
+## Create a game-style button with 9-slice UI component textures
+func _create_game_button(p_name: String, p_label: String, p_label_en: String, p_size: Vector2, p_font_size: int) -> Button:
+	var btn = Button.new()
+	btn.name = "Btn_" + p_name
+	btn.text = p_label + "\n" + p_label_en
+	btn.custom_minimum_size = p_size
+	btn.add_theme_font_size_override("font_size", p_font_size)
+	btn.add_theme_color_override("font_color", Color(0.95, 0.9, 0.75))
+	btn.add_theme_color_override("font_hover_color", Color(1.0, 0.95, 0.85))
+	btn.add_theme_color_override("font_pressed_color", Color(1.0, 0.85, 0.5))
+	btn.tooltip_text = p_label
+
+	# Apply 9-slice button textures if available
+	var normal_tex = load("res://assets/art/ui/ui_button_normal.png")
+	var hover_tex = load("res://assets/art/ui/ui_button_hover.png")
+	var pressed_tex = load("res://assets/art/ui/ui_button_pressed.png")
+	if normal_tex:
+		var normal_style = StyleBoxTexture.new()
+		normal_style.texture = normal_tex
+		normal_style.region_rect = Rect2(0, 0, normal_tex.get_width(), normal_tex.get_height())
+		normal_style.patch_margin_left = 12
+		normal_style.patch_margin_right = 12
+		normal_style.patch_margin_top = 8
+		normal_style.patch_margin_bottom = 8
+		normal_style.draw_center = true
+		btn.add_theme_stylebox_override("normal", normal_style)
+	if hover_tex:
+		var hover_style = StyleBoxTexture.new()
+		hover_style.texture = hover_tex
+		hover_style.region_rect = Rect2(0, 0, hover_tex.get_width(), hover_tex.get_height())
+		hover_style.patch_margin_left = 12
+		hover_style.patch_margin_right = 12
+		hover_style.patch_margin_top = 8
+		hover_style.patch_margin_bottom = 8
+		hover_style.draw_center = true
+		btn.add_theme_stylebox_override("hover", hover_style)
+	if pressed_tex:
+		var pressed_style = StyleBoxTexture.new()
+		pressed_style.texture = pressed_tex
+		pressed_style.region_rect = Rect2(0, 0, pressed_tex.get_width(), pressed_tex.get_height())
+		pressed_style.patch_margin_left = 12
+		pressed_style.patch_margin_right = 12
+		pressed_style.patch_margin_top = 8
+		pressed_style.patch_margin_bottom = 8
+		pressed_style.draw_center = true
+		btn.add_theme_stylebox_override("pressed", pressed_style)
+
+	return btn
+
+
+## Find button definition by name
+func _find_button_def(p_name: String) -> Dictionary:
+	for btn_def in MENU_BUTTONS:
+		if btn_def["name"] == p_name:
+			return btn_def
+	return {}
 
 
 ## Start title floating + breathing glow animation

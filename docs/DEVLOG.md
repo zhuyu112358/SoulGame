@@ -1,5 +1,64 @@
 ﻿# 战策 Battleplan 开发日志
 
+## [UI质量大改造] 从工业软件到真正的游戏（2026-09-11）
+
+**用户反馈**："还有哪有一排按钮按顺序贴在那的，随便找个游戏参考下也不至于这么设计吧，包括角色选择之类，不能做成一个个旋转或者摆pose的备选角色之类的？像星际争霸啊，暗黑破坏神啊之类的。设计给出的艺术图还可以的，怎么做出来都是工业软件的风格"
+
+### UI-1：主菜单重新设计 ✅
+
+**问题**：12个按钮等大排列在3x4网格中，像设置面板/工业软件，不像游戏主菜单。
+
+**改造方案**（参考星际争霸2/暗黑破坏神3主菜单）：
+- 视觉层级：不是所有按钮等大。"开始战斗"作为主行动按钮最大最突出（360x80，金色高亮）
+- 分类布局：
+  - 顶部：大标题"战策 Battleplan"（56号字，金色发光+阴影）+ 副标题
+  - 中间：主行动按钮"开始战斗"（最大最突出）
+  - 元游戏区：灵魂之家/图鉴/收藏/训练统计/教学模式/剧情CG（3x2网格，200x55）
+  - 对战与系统区：随机匹配/好友/捏脸/设置/退出（横向排列，170x50）
+- 9-slice UI组件：所有按钮使用ui_button_normal/hover/pressed.png作为StyleBoxTexture背景
+- 按钮文字颜色：正常浅金色、hover亮金色、pressed金色
+- 保留所有12个系统入口，只是重新组织视觉层级
+
+**新增方法**：
+- `_create_game_button(p_name, p_label, p_label_en, p_size, p_font_size)`：创建9-slice游戏风格按钮
+- `_find_button_def(p_name)`：按名称查找按钮定义
+
+### UI-2：灵魂选择界面立绘展示 ✅
+
+**问题**：灵魂选择使用character_portrait_sheet_v1.png atlas（可能不存在），立绘显示不出来。
+
+**改造方案**：
+- 使用单独的高质量立绘文件：`assets/art/characters/character_{element}_soul_portrait.png`
+- 8元素立绘全部支持：fire/water/earth/wind/thunder/ice/shadow(dark)/light
+- 优先加载单独立绘文件，atlas作为fallback
+- 每个灵魂卡片显示80x80立绘+元素色边框+名字+属性
+
+**新增**：
+- `_portrait_textures`字典：缓存各元素立绘纹理
+- `ELEMENT_FILE_NAMES`映射：dark→shadow文件名映射
+- 修改`_load_portrait_atlas()`：同时加载单独立绘文件
+- 修改`_get_portrait_texture()`：优先使用单独立绘
+
+### UI-3：统一使用UI组件素材（进行中）
+
+**已完成**：
+- 主菜单按钮使用9-slice ui_button_*.png
+- 所有场景使用对应背景图（main_menu_bg/soul_select_bg等）
+
+**待完成**：
+- 战斗配置界面美化（地图预览卡片/战术图标/队伍槽位头像）
+- 所有面板使用ui_panel_bg.png 9-slice背景
+- 进度条使用ui_progress_bar.png
+
+### 美术资源盘点（已确认可用）
+- UI组件：ui_main_menu_panel.png, ui_button_normal/hover/pressed.png, ui_panel_bg.png, ui_border_frame.png等30+个
+- 背景图：main_menu_bg.png, rts_arena_bg.png, settings_bg.png, soul_home_bg.png, soul_select_bg.png
+- 灵魂立绘：character_{fire/water/earth/wind/thunder/ice/shadow/light}_soul_portrait.png（8个）
+- 游戏精灵：game_sprite_{element}_idle.png（8个，4帧动画）
+- UI皮肤图集：ui_skin_sheet.png, ui_hud_skin.png, ui_icon_set.png
+
+---
+
 ## [P0紧急修复] 用户实机测试反馈 - 4个阻断性问题（2026-09-11）
 
 **用户反馈**："界面乱七八糟的，也没法进入战斗，另外这还是很像学生作业"
