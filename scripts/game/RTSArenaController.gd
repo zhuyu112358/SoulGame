@@ -4589,7 +4589,32 @@ func _on_log_added(p_message: String) -> void:
 ## Add message to battle log
 func _add_log(p_message: String) -> void:
 	if battle_log:
-		battle_log.text += p_message + "\n"
+		# Color-code messages based on content type
+		var colored_msg = p_message
+		var lower = p_message.to_lower()
+		if "暴击" in p_message or "critical" in lower:
+			colored_msg = "[color=#ffd700]%s[/color]" % p_message  # Gold for crits
+		elif "治疗" in p_message or "heal" in lower:
+			colored_msg = "[color=#4ade80]%s[/color]" % p_message  # Green for heals
+		elif "闪避" in p_message or "dodge" in lower:
+			colored_msg = "[color=#94a3b8]%s[/color]" % p_message  # Gray for dodges
+		elif "防御" in p_message or "defend" in lower:
+			colored_msg = "[color=#60a5fa]%s[/color]" % p_message  # Blue for defense
+		elif "战术" in p_message or "tactic" in lower or "指令" in p_message:
+			colored_msg = "[color=#c084fc]%s[/color]" % p_message  # Purple for tactics
+		elif "伤害" in p_message or "damage" in lower or "攻击" in p_message:
+			colored_msg = "[color=#f87171]%s[/color]" % p_message  # Red for damage
+		elif "胜利" in p_message or "victory" in lower or "win" in lower:
+			colored_msg = "[color=#fbbf24]%s[/color]" % p_message  # Gold for victory
+		elif "失败" in p_message or "defeat" in lower or "lose" in lower:
+			colored_msg = "[color=#ef4444]%s[/color]" % p_message  # Red for defeat
+		elif "技能" in p_message or "skill" in lower:
+			colored_msg = "[color=#38bdf8]%s[/color]" % p_message  # Cyan for skills
+		elif "暂停" in p_message or "继续" in p_message:
+			colored_msg = "[color=#a78bfa]%s[/color]" % p_message  # Violet for system
+		else:
+			colored_msg = "[color=#d4d4d8]%s[/color]" % p_message  # Light gray for normal
+		battle_log.text += colored_msg + "\n"
 		# Scroll to bottom (RichTextLabel uses scroll_to_line, not caret_position)
 		battle_log.scroll_to_line(battle_log.get_line_count() - 1)
 

@@ -1,6 +1,37 @@
 ﻿# 战策 Battleplan 开发日志
 
 
+## [战斗HUD升级] 战斗日志消息颜色编码-暴击金/治疗绿/伤害红/战术紫等10种颜色（2026-09-12）
+
+**本轮工作**：为战斗日志添加消息类型颜色编码，不同战斗事件使用不同颜色显示，提升可读性和游戏感。
+
+**颜色编码规则**：
+- 暴击：金色 #ffd700
+- 治疗：绿色 #4ade80
+- 闪避：灰色 #94a3b8
+- 防御：蓝色 #60a5fa
+- 战术指令：紫色 #c084fc
+- 伤害/攻击：红色 #f87171
+- 胜利：金色 #fbbf24
+- 失败：红色 #ef4444
+- 技能：青色 #38bdf8
+- 暂停/继续：紫罗兰 #a78bfa
+- 普通消息：浅灰 #d4d4d8
+
+**实现方式**：
+- 重写_add_log()方法，根据消息内容自动匹配颜色
+- 使用RichTextLabel的BBCode [color=xxx]标签实现颜色
+- 场景中LogText已启用bbcode_enabled=true和scroll_following=true
+
+**修改文件**：
+- scripts/game/RTSArenaController.gd：重写_add_log()方法
+
+**验证结果**：
+- rts_arena场景测试：NO SCRIPT ERROR
+- M2测试：2955 Passed, 0 Failed
+
+---
+
 ## [战斗HUD升级] 暂停菜单按钮三态样式-继续战斗/返回主菜单hover+pressed效果（2026-09-12）
 
 **本轮工作**：为战斗暂停菜单的两个按钮添加hover和pressed三态样式，之前只有normal状态。
