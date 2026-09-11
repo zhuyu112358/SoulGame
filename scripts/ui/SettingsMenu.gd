@@ -84,6 +84,105 @@ func _apply_ui_theme() -> void:
 	_title_label.add_theme_font_size_override("font_size", 32)
 	_title_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.5))
 
+	# Apply 9-slice button style to all buttons
+	_apply_9slice_button_style(_back_button)
+	_apply_9slice_button_style(_save_button)
+	_apply_9slice_button_style(_reset_button)
+
+	# Button text colors
+	for btn in [_back_button, _save_button, _reset_button]:
+		btn.add_theme_color_override("font_color", Color(0.95, 0.9, 0.75))
+		btn.add_theme_color_override("font_hover_color", Color(1.0, 0.95, 0.85))
+		btn.add_theme_color_override("font_pressed_color", Color(1.0, 0.85, 0.5))
+		btn.add_theme_font_size_override("font_size", 16)
+
+	# TabContainer styling
+	_tab_container.add_theme_font_size_override("font_size", 14)
+	_tab_container.add_theme_color_override("font_color", Color(0.8, 0.75, 0.6))
+	_tab_container.add_theme_color_override("font_selected_color", Color(1.0, 0.85, 0.5))
+
+	# Slider styling
+	for slider in [_master_slider, _bgm_slider, _sfx_slider]:
+		var slider_bg = StyleBoxFlat.new()
+		slider_bg.bg_color = Color(0.15, 0.12, 0.22, 0.9)
+		slider_bg.border_color = Color(0.5, 0.4, 0.25)
+		slider_bg.border_width_left = 1
+		slider_bg.border_width_right = 1
+		slider_bg.border_width_top = 1
+		slider_bg.border_width_bottom = 1
+		slider_bg.corner_radius_top_left = 4
+		slider_bg.corner_radius_top_right = 4
+		slider_bg.corner_radius_bottom_right = 4
+		slider_bg.corner_radius_bottom_left = 4
+		slider.add_theme_stylebox_override("slider", slider_bg)
+		var slider_fill = StyleBoxFlat.new()
+		slider_fill.bg_color = Color(0.83, 0.66, 0.36, 0.8)
+		slider_fill.corner_radius_top_left = 3
+		slider_fill.corner_radius_top_right = 3
+		slider_fill.corner_radius_bottom_right = 3
+		slider_fill.corner_radius_bottom_left = 3
+		slider.add_theme_stylebox_override("fill_area", slider_fill)
+		var grabber = StyleBoxFlat.new()
+		grabber.bg_color = Color(1.0, 0.85, 0.5)
+		grabber.corner_radius_top_left = 4
+		grabber.corner_radius_top_right = 4
+		grabber.corner_radius_bottom_right = 4
+		grabber.corner_radius_bottom_left = 4
+		slider.add_theme_stylebox_override("grabber", grabber)
+		slider.add_theme_stylebox_override("grabber_highlight", grabber)
+
+	# Value labels
+	for label in [_master_value, _bgm_value, _sfx_value]:
+		label.add_theme_color_override("font_color", Color(0.9, 0.85, 0.6))
+		label.add_theme_font_size_override("font_size", 14)
+
+	# CheckButton styling
+	for check in [_fullscreen_check, _vsync_check, _autosave_check, _show_fps_check]:
+		check.add_theme_color_override("font_color", Color(0.85, 0.8, 0.7))
+		check.add_theme_font_size_override("font_size", 14)
+
+	# OptionButton styling
+	for opt in [_resolution_option, _quality_option, _language_option, _difficulty_option]:
+		opt.add_theme_color_override("font_color", Color(0.9, 0.85, 0.7))
+		opt.add_theme_font_size_override("font_size", 14)
+
+
+## Apply 9-slice button style from UI component textures
+func _apply_9slice_button_style(p_button: Button) -> void:
+	var normal_tex = load("res://assets/art/ui/ui_button_normal.png")
+	var hover_tex = load("res://assets/art/ui/ui_button_hover.png")
+	var pressed_tex = load("res://assets/art/ui/ui_button_pressed.png")
+	if normal_tex:
+		var normal_style = StyleBoxTexture.new()
+		normal_style.texture = normal_tex
+		normal_style.region_rect = Rect2(0, 0, normal_tex.get_width(), normal_tex.get_height())
+		normal_style.patch_margin_left = 12
+		normal_style.patch_margin_right = 12
+		normal_style.patch_margin_top = 8
+		normal_style.patch_margin_bottom = 8
+		normal_style.draw_center = true
+		p_button.add_theme_stylebox_override("normal", normal_style)
+	if hover_tex:
+		var hover_style = StyleBoxTexture.new()
+		hover_style.texture = hover_tex
+		hover_style.region_rect = Rect2(0, 0, hover_tex.get_width(), hover_tex.get_height())
+		hover_style.patch_margin_left = 12
+		hover_style.patch_margin_right = 12
+		hover_style.patch_margin_top = 8
+		hover_style.patch_margin_bottom = 8
+		hover_style.draw_center = true
+		p_button.add_theme_stylebox_override("hover", hover_style)
+	if pressed_tex:
+		var pressed_style = StyleBoxTexture.new()
+		pressed_style.texture = pressed_tex
+		pressed_style.region_rect = Rect2(0, 0, pressed_tex.get_width(), pressed_tex.get_height())
+		pressed_style.patch_margin_left = 12
+		pressed_style.patch_margin_right = 12
+		pressed_style.patch_margin_top = 8
+		pressed_style.patch_margin_bottom = 8
+		pressed_style.draw_center = true
+		p_button.add_theme_stylebox_override("pressed", pressed_style)
+
 
 ## Populate option buttons
 func _populate_options() -> void:

@@ -1,5 +1,24 @@
 ﻿# 战策 Battleplan 开发日志
 
+## [设置界面美化] 9-slice按钮+滑块+选项卡样式（2026-09-11）
+
+**改造内容**：
+- 所有按钮（返回/保存/重置）使用ui_button_normal/hover/pressed.png 9-slice组件
+- 按钮文字颜色统一为金色调（正常/悬停/按下三种状态）
+- TabContainer选项卡样式美化（选中金色，未选中浅金）
+- 音频滑块样式美化（深紫背景+金色填充+金色滑块）
+- 数值标签颜色统一为金色调
+- CheckButton和OptionButton文字颜色统一
+- 添加_apply_9slice_button_style辅助方法
+
+**修改方法**：
+- `_apply_ui_theme()`：完整UI主题美化
+- `_apply_9slice_button_style(p_button)`：新增辅助方法
+
+**测试结果**：2955 Passed, 0 Failed，无SCRIPT ERROR
+
+---
+
 ## [结算界面美化] 9-slice UI组件集成（2026-09-11）
 
 **改造内容**：
