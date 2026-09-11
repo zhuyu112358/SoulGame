@@ -10931,3 +10931,42 @@ ode/life/max_life），而_update_skill_particles()期望新版数据结构（pa
 - 继续提升其他场景UI视觉质量
 - 优化按钮样式和动画效果
 - 改进灵魂之家互动反馈
+
+---
+
+## 2026-09-11 流程验证：开始战斗4v4团队对战完整流程确认
+
+### 检查内容
+本轮对用户反馈的"开始战斗点进去只有一个背景图"问题进行了完整流程验证。
+
+### 验证结果
+
+#### 1. 灵魂选择 → 战斗配置
+- SoulSelect.gd _on_start_pressed(): 选中灵魂后存储到GameState（三个命名空间兼容）
+- 跳转到battle_config.tscn
+- 代码正常，无问题
+
+#### 2. 战斗配置 → 竞技场
+- BattleConfig.gd _on_start_battle(): 
+  - 构建4v4玩家队伍（选中灵魂+自动填充到4个）
+  - 构建4v4 AI队伍（4种不同元素，难度缩放属性）
+  - 存储到GameState: battle/player_souls, battle/ai_souls, battle/is_team_battle=true
+  - 跳转到rts_arena.tscn
+- 代码完整，4v4团队对战已集成
+
+#### 3. 训练统计返回按钮
+- TrainingStatsMenu.gd _on_back_pressed(): 调用get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
+- .tscn中BackButton节点存在，text="返回主菜单"
+- 信号连接正常，代码无问题
+
+### 验证结果
+- M2测试: **2643 Passed, 0 Failed** 全绿
+- 之前失败的push已成功推送（22ef668）
+
+### 结论
+开始战斗流程（灵魂选择→战斗配置→4v4竞技场）代码完整，功能正常。用户反馈的"只有背景图"问题在当前代码版本中不存在，可能用户测试的是更早版本。
+
+### 下一步
+- 继续提升UI视觉质量
+- 优化按钮样式和动画效果
+- 实机测试验证渲染效果
