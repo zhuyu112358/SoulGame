@@ -202,6 +202,18 @@ func _create_game_button(p_text: String, p_size: Vector2, p_font_size: int = 16)
 	btn.add_theme_color_override("font_hover_color", Color(1.0, 0.95, 0.85))
 	btn.add_theme_color_override("font_pressed_color", Color(1.0, 0.85, 0.5))
 
+	# Hover animation: scale up + brightness boost
+	btn.mouse_entered.connect(func():
+		var t = create_tween()
+		t.tween_property(btn, "scale", Vector2(1.05, 1.05), 0.15).set_ease(Tween.EASE_OUT)
+		t.parallel().tween_property(btn, "modulate", Color(1.15, 1.1, 0.9), 0.15)
+	)
+	btn.mouse_exited.connect(func():
+		var t = create_tween()
+		t.tween_property(btn, "scale", Vector2(1.0, 1.0), 0.2).set_ease(Tween.EASE_OUT)
+		t.parallel().tween_property(btn, "modulate", Color(1.0, 1.0, 1.0), 0.2)
+	)
+
 	# Button styling handled by theme
 	return btn
 

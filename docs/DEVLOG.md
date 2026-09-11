@@ -10332,3 +10332,35 @@ ode/life/max_life），而_update_skill_particles()期望新版数据结构（pa
 - 给这些场景的按钮添加StyleBoxFlat样式(金色边框+深紫背景)
 - 面板区域添加卡片式背景
 - 全局动画与交互反馈(按钮hover缩放/发光)
+
+---
+
+## 2026-09-11 全局按钮hover动画效果 (UI-5交互反馈)
+
+### 完成内容
+1. **MainMenu.gd按钮hover效果**
+   - mouse_entered: 缩放1.05x + 亮度提升(Color(1.15,1.1,0.9))，0.15秒缓动
+   - mouse_exited: 恢复缩放1.0x + 亮度恢复，0.2秒缓动
+   - 应用于所有12个主菜单按钮
+
+2. **BattleConfig.gd按钮hover效果**
+   - 同样的hover缩放+亮度动画
+   - 应用于返回/开始战斗等所有按钮
+
+3. **实现方式**
+   - 使用lambda函数连接mouse_entered/mouse_exited信号
+   - create_tween实现平滑动画
+   - 不使用动态StyleBoxTexture（符合监控任务要求）
+
+### 验证结果
+- M2测试: 2697 Passed, 0 Failed
+- 无SCRIPT ERROR
+
+### 修改的文件
+- scripts/ui/MainMenu.gd - _create_game_button添加hover动画
+- scripts/ui/BattleConfig.gd - _create_game_button添加hover动画
+
+### 下一步
+- SoulSelect.gd角色栏按钮hover效果
+- SettingsMenu/TrainingStats等场景按钮hover效果
+- 场景切换淡入淡出过渡优化

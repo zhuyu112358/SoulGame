@@ -282,6 +282,18 @@ func _create_game_button(p_name: String, p_label: String, p_label_en: String, p_
 	btn.add_theme_color_override("font_pressed_color", Color(1.0, 0.85, 0.5))
 	btn.tooltip_text = p_label
 
+	# Hover animation: scale up + brightness boost
+	btn.mouse_entered.connect(func():
+		var t = create_tween()
+		t.tween_property(btn, "scale", Vector2(1.05, 1.05), 0.15).set_ease(Tween.EASE_OUT)
+		t.parallel().tween_property(btn, "modulate", Color(1.15, 1.1, 0.9), 0.15)
+	)
+	btn.mouse_exited.connect(func():
+		var t = create_tween()
+		t.tween_property(btn, "scale", Vector2(1.0, 1.0), 0.2).set_ease(Tween.EASE_OUT)
+		t.parallel().tween_property(btn, "modulate", Color(1.0, 1.0, 1.0), 0.2)
+	)
+
 	# Button styling handled by battleplan_theme.tres
 	return btn
 
