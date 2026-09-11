@@ -61,18 +61,45 @@ func _build_level_list() -> void:
 ## Create a level card
 func _create_level_card(level_data: Dictionary) -> PanelContainer:
 	var card = PanelContainer.new()
-	card.custom_minimum_size = Vector2(0, 80)
+	card.custom_minimum_size = Vector2(0, 90)
 
 	var hbox = HBoxContainer.new()
-	hbox.add_theme_constant_override("separation", 15)
+	hbox.add_theme_constant_override("separation", 12)
 	card.add_child(hbox)
+
+	# Difficulty icon (colored square based on level type)
+	var icon_container = VBoxContainer.new()
+	icon_container.custom_minimum_size = Vector2(56, 0)
+	icon_container.alignment = BoxContainer.ALIGNMENT_CENTER
+	hbox.add_child(icon_container)
+
+	var icon_rect = ColorRect.new()
+	icon_rect.custom_minimum_size = Vector2(40, 40)
+	var difficulty_colors = {
+		0: Color(0.3, 0.7, 0.4, 0.9),  # Basic - green
+		1: Color(0.3, 0.5, 0.9, 0.9),  # Intermediate - blue
+		2: Color(0.8, 0.5, 0.2, 0.9),  # Advanced - orange
+		3: Color(0.8, 0.3, 0.3, 0.9)   # Expert - red
+	}
+	var level_type = level_data.get("type", 0)
+	icon_rect.color = difficulty_colors.get(level_type, Color(0.5, 0.5, 0.5, 0.9))
+	icon_container.add_child(icon_rect)
+
+	var type_names = ["基础", "进阶", "高级", "专家"]
+	var type_label = Label.new()
+	type_label.text = type_names.get(level_type, "基础")
+	type_label.add_theme_font_size_override("font_size", 10)
+	type_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
+	type_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	icon_container.add_child(type_label)
 
 	# Level number
 	var number_label = Label.new()
 	number_label.text = "%d." % (level_data["id"] + 1)
-	number_label.add_theme_font_size_override("font_size", 20)
-	number_label.custom_minimum_size = Vector2(40, 0)
+	number_label.add_theme_font_size_override("font_size", 22)
+	number_label.custom_minimum_size = Vector2(36, 0)
 	number_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	number_label.add_theme_color_override("font_color", Color(0.9, 0.75, 0.4))
 	hbox.add_child(number_label)
 
 	# Level info (name + description)
@@ -92,7 +119,6 @@ func _create_level_card(level_data: Dictionary) -> PanelContainer:
 	desc_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
 	info_vbox.add_child(desc_label)
 
-	# Level meta (time + steps)
 	var meta_label = Label.new()
 	meta_label.text = "预计%d秒 · %d步骤" % [level_data["estimated_time"], level_data["step_count"]]
 	meta_label.add_theme_font_size_override("font_size", 11)
@@ -106,7 +132,6 @@ func _create_level_card(level_data: Dictionary) -> PanelContainer:
 	hbox.add_child(status_container)
 
 	if level_data["completed"]:
-		# Completed status
 		var completed_label = Label.new()
 		completed_label.text = "✓ 已完成"
 		completed_label.add_theme_font_size_override("font_size", 14)
@@ -114,7 +139,6 @@ func _create_level_card(level_data: Dictionary) -> PanelContainer:
 		completed_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		status_container.add_child(completed_label)
 
-		# Replay button
 		var replay_button = Button.new()
 		replay_button.text = "重新学习"
 		replay_button.custom_minimum_size = Vector2(100, 32)
@@ -122,7 +146,6 @@ func _create_level_card(level_data: Dictionary) -> PanelContainer:
 		status_container.add_child(replay_button)
 		_setup_button_hover(replay_button)
 	else:
-		# Start button
 		var start_button = Button.new()
 		start_button.text = "开始学习"
 		start_button.custom_minimum_size = Vector2(100, 36)
@@ -132,8 +155,6 @@ func _create_level_card(level_data: Dictionary) -> PanelContainer:
 
 	return card
 
-
-## Start a tutorial level
 func _on_start_tutorial(level_id: int) -> void:
 	GameLog.info("TutorialMenu: Starting tutorial %d" % level_id, "UI")
 	# Store selected tutorial in GameState for battle scene
