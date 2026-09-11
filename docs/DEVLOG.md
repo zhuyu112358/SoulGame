@@ -11421,3 +11421,35 @@ ode/life/max_life），而_update_skill_particles()期望新版数据结构（pa
 - 继续升级其他界面（教学模式/好友系统/设置界面等）
 - 战斗HUD技能图标按钮+冷却遮罩
 - 实机测试验证渲染效果
+
+---
+
+## 2026-09-11 游戏级UI升级：教学模式界面
+
+### 升级内容
+以SoulSelect.gd为质量模板，升级教学模式界面（TutorialMenu.gd）的视觉层。
+
+### 视觉改进
+1. **关卡卡片难度色边框**：_create_level_card()方法重写，根据关卡类型添加对应颜色边框（基础=绿/进阶=蓝/高级=橙/专家=红），锁定关卡显示灰色样式
+2. **卡片hover效果**：鼠标悬停时卡片放大1.02倍+边框变亮3px，移开恢复
+3. **卡片面板美化**：深紫底色（Color(0.08,0.05,0.15,0.92)）+难度色边框+圆角8px，高度从90增加到96
+4. **标题放大**：标题字号增加到28号金色
+5. **进度标签金色**：进度标签16号暗金色
+6. **返回按钮三态样式**：normal/hover/pressed三态StyleBoxFlat，hover时边框变亮，文字金色
+7. **添加_setup_ui_styles()方法**：统一管理所有面板和按钮的视觉样式
+8. **移除重复代码**：移除icon section中重复的difficulty_colors定义，复用方法顶部的定义
+
+### 修复的语法问题
+- type_names是Array类型，Array.get()不支持默认值参数，改为索引访问	ype_names[level_type] if level_type < type_names.size() else "基础"
+
+### 验证结果
+- tutorial_menu.tscn：**NO SCRIPT ERRORS**，游戏级UI样式应用成功
+- M2测试：**2955 Passed, 0 Failed** 全绿
+
+### 修改的文件
+- scripts/ui/TutorialMenu.gd - _create_level_card()重写（难度色边框+hover+锁定状态），添加_setup_ui_styles()方法
+
+### 下一步
+- 继续升级其他界面（好友系统/设置界面/随机匹配等）
+- 战斗HUD技能图标按钮+冷却遮罩
+- 实机测试验证渲染效果

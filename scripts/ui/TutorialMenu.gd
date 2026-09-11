@@ -32,7 +32,10 @@ func _ready() -> void:
 	# Setup button hover effects
 	_setup_button_hover(_back_button)
 
-	GameLog.info("TutorialMenu: Opened", "UI")
+	# Apply game-level UI styles
+	_setup_ui_styles()
+
+	GameLog.info("TutorialMenu: Opened (game-level UI)", "UI")
 
 
 ## Build tutorial level list
@@ -58,13 +61,65 @@ func _build_level_list() -> void:
 		_level_container.add_child(card)
 
 
-## Create a level card
+## Create a level card (game-level UI: difficulty color border + hover effect)
 func _create_level_card(level_data: Dictionary) -> PanelContainer:
 	var card = PanelContainer.new()
-	card.custom_minimum_size = Vector2(0, 90)
+	card.custom_minimum_size = Vector2(0, 96)
+
+	# Difficulty-colored border style
+	var difficulty_colors = {
+		0: Color(0.3, 0.7, 0.4, 0.8),  # Basic - green
+		1: Color(0.3, 0.5, 0.9, 0.8),  # Intermediate - blue
+		2: Color(0.8, 0.5, 0.2, 0.8),  # Advanced - orange
+		3: Color(0.8, 0.3, 0.3, 0.8)   # Expert - red
+	}
+	var level_type = level_data.get("type", 0)
+	var diff_color = difficulty_colors.get(level_type, Color(0.5, 0.5, 0.5, 0.8))
+
+	var card_style = StyleBoxFlat.new()
+	if level_data.get("locked", false):
+		card_style.bg_color = Color(0.05, 0.05, 0.08, 0.7)
+		card_style.border_color = Color(0.3, 0.3, 0.35, 0.5)
+	else:
+		card_style.bg_color = Color(0.08, 0.05, 0.15, 0.92)
+		card_style.border_color = diff_color
+	card_style.border_width_left = 2
+	card_style.border_width_right = 2
+	card_style.border_width_top = 2
+	card_style.border_width_bottom = 2
+	card_style.corner_radius_top_left = 8
+	card_style.corner_radius_top_right = 8
+	card_style.corner_radius_bottom_left = 8
+	card_style.corner_radius_bottom_right = 8
+	card.add_theme_stylebox_override("panel", card_style)
+
+	# Hover effect: scale up + brighter border
+	card.mouse_entered.connect(func():
+		var s = card.get_theme_stylebox("panel")
+		if s and s is StyleBoxFlat:
+			s.border_width_left = 3
+			s.border_width_right = 3
+			s.border_width_top = 3
+			s.border_width_bottom = 3
+			if not level_data.get("locked", false):
+				s.border_color = diff_color.lightened(0.3)
+		card.scale = Vector2(1.02, 1.02)
+	)
+	card.mouse_exited.connect(func():
+		var s = card.get_theme_stylebox("panel")
+		if s and s is StyleBoxFlat:
+			s.border_width_left = 2
+			s.border_width_right = 2
+			s.border_width_top = 2
+			s.border_width_bottom = 2
+			if not level_data.get("locked", false):
+				s.border_color = diff_color
+		card.scale = Vector2(1.0, 1.0)
+	)
 
 	var hbox = HBoxContainer.new()
 	hbox.add_theme_constant_override("separation", 12)
+	hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	card.add_child(hbox)
 
 	# Difficulty icon (colored square based on level type)
@@ -75,19 +130,12 @@ func _create_level_card(level_data: Dictionary) -> PanelContainer:
 
 	var icon_rect = ColorRect.new()
 	icon_rect.custom_minimum_size = Vector2(40, 40)
-	var difficulty_colors = {
-		0: Color(0.3, 0.7, 0.4, 0.9),  # Basic - green
-		1: Color(0.3, 0.5, 0.9, 0.9),  # Intermediate - blue
-		2: Color(0.8, 0.5, 0.2, 0.9),  # Advanced - orange
-		3: Color(0.8, 0.3, 0.3, 0.9)   # Expert - red
-	}
-	var level_type = level_data.get("type", 0)
-	icon_rect.color = difficulty_colors.get(level_type, Color(0.5, 0.5, 0.5, 0.9))
+	icon_rect.color = diff_color
 	icon_container.add_child(icon_rect)
 
 	var type_names = ["基础", "进阶", "高级", "专家"]
 	var type_label = Label.new()
-	type_label.text = type_names.get(level_type, "基础")
+	type_label.text = type_names[level_type] if level_type < type_names.size() else "基础"
 	type_label.add_theme_font_size_override("font_size", 10)
 	type_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
 	type_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -165,6 +213,63 @@ func _on_start_tutorial(level_id: int) -> void:
 	_tutorial_system.start_tutorial(level_id)
 	# For now, go to soul select (tutorial battle will be integrated later)
 	get_tree().change_scene_to_file("res://scenes/soul_select.tscn")
+
+
+## Apply game-level UI styles to panels and buttons
+func _setup_ui_styles() -> void:
+	# Title: large gold
+	if _title_label:
+		_title_label.add_theme_color_override("font_color", Color(1.0, 0.88, 0.5))
+		_title_label.add_theme_font_size_override("font_size", 28)
+
+	# Progress label: gold
+	if _progress_label:
+		_progress_label.add_theme_color_override("font_color", Color(0.9, 0.8, 0.55))
+		_progress_label.add_theme_font_size_override("font_size", 16)
+
+	# Back button: three-state style
+	var btn_normal = StyleBoxFlat.new()
+	btn_normal.bg_color = Color(0.12, 0.08, 0.22, 0.95)
+	btn_normal.border_color = Color(0.7, 0.55, 0.3, 0.8)
+	btn_normal.border_width_left = 2
+	btn_normal.border_width_right = 2
+	btn_normal.border_width_top = 2
+	btn_normal.border_width_bottom = 2
+	btn_normal.corner_radius_top_left = 6
+	btn_normal.corner_radius_top_right = 6
+	btn_normal.corner_radius_bottom_left = 6
+	btn_normal.corner_radius_bottom_right = 6
+
+	var btn_hover = StyleBoxFlat.new()
+	btn_hover.bg_color = Color(0.18, 0.12, 0.3, 0.98)
+	btn_hover.border_color = Color(0.95, 0.78, 0.45, 1.0)
+	btn_hover.border_width_left = 2
+	btn_hover.border_width_right = 2
+	btn_hover.border_width_top = 2
+	btn_hover.border_width_bottom = 2
+	btn_hover.corner_radius_top_left = 6
+	btn_hover.corner_radius_top_right = 6
+	btn_hover.corner_radius_bottom_left = 6
+	btn_hover.corner_radius_bottom_right = 6
+
+	var btn_pressed = StyleBoxFlat.new()
+	btn_pressed.bg_color = Color(0.08, 0.05, 0.15, 1.0)
+	btn_pressed.border_color = Color(0.6, 0.48, 0.25, 0.9)
+	btn_pressed.border_width_left = 2
+	btn_pressed.border_width_right = 2
+	btn_pressed.border_width_top = 2
+	btn_pressed.border_width_bottom = 2
+	btn_pressed.corner_radius_top_left = 6
+	btn_pressed.corner_radius_top_right = 6
+	btn_pressed.corner_radius_bottom_left = 6
+	btn_pressed.corner_radius_bottom_right = 6
+
+	_back_button.add_theme_stylebox_override("normal", btn_normal)
+	_back_button.add_theme_stylebox_override("hover", btn_hover)
+	_back_button.add_theme_stylebox_override("pressed", btn_pressed)
+	_back_button.add_theme_color_override("font_color", Color(0.95, 0.88, 0.65))
+
+	GameLog.info("TutorialMenu: Game-level UI styles applied", "UI")
 
 
 ## Back to main menu
