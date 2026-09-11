@@ -1,6 +1,26 @@
 ﻿# 战策 Battleplan 开发日志
 
 
+## [战斗HUD升级] HUD入场动画-淡入+缩放+交错延迟+队伍HP条交错淡入（2026-09-12）
+
+**本轮工作**：为战斗HUD添加入场动画，之前HUD元素直接出现，没有过渡效果，不符合游戏级UI规范。
+
+**改进内容**：
+- 新增_animate_hud_entry()方法，在_ready末尾调用
+- TopBar/Minimap/BattleLog/BottomBar四个面板交错淡入+缩放（0.95→1.0）
+- 每个面板延迟0.12秒依次出现，使用EASE_OUT + TRANS_BACK缓动
+- 玩家队伍4个HP条额外交错淡入+缩放（0.9→1.0），每个延迟0.08秒
+- 动画总时长约1.2秒，战斗开始时HUD元素依次浮现
+
+**修改文件**：
+- scripts/game/RTSArenaController.gd：新增_animate_hud_entry()方法+_ready调用
+
+**验证结果**：
+- rts_arena场景测试：NO SCRIPT ERROR
+- M2测试：2955 Passed, 0 Failed
+
+---
+
 ## [战斗HUD升级] 队伍HP条灵魂头像-4v4双方各4个灵魂立绘缩略图+元素色边框（2026-09-12）
 
 **本轮工作**：为战斗HUD的玩家和AI队伍HP条添加灵魂头像，之前HP条只有名字+进度条，没有角色立绘展示，视觉辨识度不够。

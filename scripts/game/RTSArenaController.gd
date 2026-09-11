@@ -412,6 +412,7 @@ func _ready() -> void:
 	_setup_macro_commands()
 	_setup_weather_display()
 	_setup_button_hovers()
+	_animate_hud_entry()
 	_setup_pause_button()
 	_setup_speed_button()
 	_setup_status_labels()
@@ -427,6 +428,44 @@ func _ready() -> void:
 
 	# Auto-start battle if config is set in GameState
 	_try_auto_start_battle()
+
+
+## Animate HUD entry with staggered fade-in + scale (game-level UI)
+func _animate_hud_entry() -> void:
+	# Collect HUD panels in order
+	var hud_elements = [
+		get_node_or_null("TopBar"),
+		get_node_or_null("Minimap"),
+		get_node_or_null("BattleLog"),
+		get_node_or_null("BottomBar"),
+	]
+	var delay := 0.1
+	for element in hud_elements:
+		if element and element is CanvasItem:
+			# Set initial state: invisible + scaled down
+			element.modulate.a = 0.0
+			element.scale = Vector2(0.95, 0.95)
+			# Create tween for fade-in + scale-up
+			var tween = create_tween()
+			tween.set_ease(Tween.EASE_OUT)
+			tween.set_trans(Tween.TRANS_BACK)
+			tween.tween_interval(delay)
+			tween.parallel().tween_property(element, "modulate:a", 1.0, 0.4)
+			tween.parallel().tween_property(element, "scale", Vector2(1.0, 1.0), 0.4)
+			delay += 0.12
+	# Animate team HP bars with extra delay
+	await get_tree().create_timer(0.5).timeout
+	for i in range(_player_unit_containers.size()):
+		var container = _player_unit_containers[i]
+		if container and is_instance_valid(container):
+			container.modulate.a = 0.0
+			container.scale = Vector2(0.9, 0.9)
+			var tween = create_tween()
+			tween.set_ease(Tween.EASE_OUT)
+			tween.set_trans(Tween.TRANS_BACK)
+			tween.tween_interval(i * 0.08)
+			tween.parallel().tween_property(container, "modulate:a", 1.0, 0.3)
+			tween.parallel().tween_property(container, "scale", Vector2(1.0, 1.0), 0.3)
 
 
 ## Setup hover effects for all buttons in the arena
