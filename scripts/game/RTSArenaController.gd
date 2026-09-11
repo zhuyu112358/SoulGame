@@ -3290,7 +3290,7 @@ func _create_team_hp_bars(p_player_team: Array, p_ai_team: Array) -> void:
 		var container = Button.new()
 		container.name = "PlayerUnitSelect_%d" % i
 		container.position = Vector2(15, 15 + i * 42)
-		container.custom_minimum_size = Vector2(200, 38)
+		container.custom_minimum_size = Vector2(245, 44)
 		container.flat = true
 		# Normal style: transparent with element color border
 		var normal_style = StyleBoxFlat.new()
@@ -3347,11 +3347,51 @@ func _create_team_hp_bars(p_player_team: Array, p_ai_team: Array) -> void:
 		add_child(container)
 		_player_unit_containers.append(container)
 
+		# Inner HBox for portrait + (name + HP bar)
+		var inner_hbox = HBoxContainer.new()
+		inner_hbox.name = "InnerHBox"
+		inner_hbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		container.add_child(inner_hbox)
+
+		# Soul portrait (40x40 with element color border)
+		var portrait_panel = Panel.new()
+		portrait_panel.name = "PortraitPanel"
+		portrait_panel.custom_minimum_size = Vector2(40, 40)
+		var portrait_style = StyleBoxFlat.new()
+		portrait_style.bg_color = Color(0.06, 0.04, 0.12, 0.9)
+		portrait_style.border_color = fill_color
+		portrait_style.border_width_left = 2
+		portrait_style.border_width_right = 2
+		portrait_style.border_width_top = 2
+		portrait_style.border_width_bottom = 2
+		portrait_style.corner_radius_top_left = 4
+		portrait_style.corner_radius_top_right = 4
+		portrait_style.corner_radius_bottom_right = 4
+		portrait_style.corner_radius_bottom_left = 4
+		portrait_panel.add_theme_stylebox_override("panel", portrait_style)
+		inner_hbox.add_child(portrait_panel)
+
+		var portrait_texture = TextureRect.new()
+		portrait_texture.name = "PortraitTexture"
+		portrait_texture.custom_minimum_size = Vector2(36, 36)
+		portrait_texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		portrait_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		portrait_texture.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		# Load soul portrait based on element
+		var element_name = element
+		if element_name == "dark":
+			element_name = "shadow"
+		var portrait_path = "res://assets/art/characters/character_%s_soul_portrait.png" % element_name
+		if ResourceLoader.exists(portrait_path):
+			portrait_texture.texture = load(portrait_path)
+		portrait_panel.add_child(portrait_texture)
+
 		# Inner VBox for name + HP bar
 		var inner_box = VBoxContainer.new()
 		inner_box.name = "InnerBox"
 		inner_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		container.add_child(inner_box)
+		inner_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		inner_hbox.add_child(inner_box)
 
 		# Name label
 		var name_label = Label.new()
@@ -3364,7 +3404,7 @@ func _create_team_hp_bars(p_player_team: Array, p_ai_team: Array) -> void:
 		# HP bar
 		var hp_bar = ProgressBar.new()
 		hp_bar.name = "PlayerTeamHP_%d" % i
-		hp_bar.custom_minimum_size = Vector2(200, 18)
+		hp_bar.custom_minimum_size = Vector2(195, 18)
 		hp_bar.max_value = 100.0
 		hp_bar.value = 100.0
 		hp_bar.show_percentage = false
@@ -3420,7 +3460,7 @@ func _create_team_hp_bars(p_player_team: Array, p_ai_team: Array) -> void:
 		var container = Panel.new()
 		container.name = "AITeamHPContainer_%d" % i
 		container.position = Vector2(1065, 15 + i * 42)
-		container.custom_minimum_size = Vector2(200, 38)
+		container.custom_minimum_size = Vector2(245, 44)
 		var panel_style = StyleBoxFlat.new()
 		panel_style.bg_color = Color(0.06, 0.04, 0.12, 0.7)
 		panel_style.border_color = fill_color.darkened(0.4)
@@ -3435,11 +3475,18 @@ func _create_team_hp_bars(p_player_team: Array, p_ai_team: Array) -> void:
 		container.add_theme_stylebox_override("panel", panel_style)
 		add_child(container)
 
+		# Inner HBox for (name + HP bar) + portrait
+		var inner_hbox = HBoxContainer.new()
+		inner_hbox.name = "InnerHBox"
+		inner_hbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		container.add_child(inner_hbox)
+
 		# Inner VBox for name + HP bar
 		var inner_box = VBoxContainer.new()
 		inner_box.name = "InnerBox"
 		inner_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		container.add_child(inner_box)
+		inner_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		inner_hbox.add_child(inner_box)
 
 		# Name label (right-aligned)
 		var name_label = Label.new()
@@ -3448,6 +3495,39 @@ func _create_team_hp_bars(p_player_team: Array, p_ai_team: Array) -> void:
 		name_label.add_theme_color_override("font_color", Color(0.9, 0.7, 0.7))
 		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		inner_box.add_child(name_label)
+
+		# Soul portrait (40x40 with element color border, on the right)
+		var portrait_panel = Panel.new()
+		portrait_panel.name = "PortraitPanel"
+		portrait_panel.custom_minimum_size = Vector2(40, 40)
+		var ai_portrait_style = StyleBoxFlat.new()
+		ai_portrait_style.bg_color = Color(0.06, 0.04, 0.12, 0.9)
+		ai_portrait_style.border_color = fill_color
+		ai_portrait_style.border_width_left = 2
+		ai_portrait_style.border_width_right = 2
+		ai_portrait_style.border_width_top = 2
+		ai_portrait_style.border_width_bottom = 2
+		ai_portrait_style.corner_radius_top_left = 4
+		ai_portrait_style.corner_radius_top_right = 4
+		ai_portrait_style.corner_radius_bottom_right = 4
+		ai_portrait_style.corner_radius_bottom_left = 4
+		portrait_panel.add_theme_stylebox_override("panel", ai_portrait_style)
+		inner_hbox.add_child(portrait_panel)
+
+		var ai_portrait_texture = TextureRect.new()
+		ai_portrait_texture.name = "PortraitTexture"
+		ai_portrait_texture.custom_minimum_size = Vector2(36, 36)
+		ai_portrait_texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		ai_portrait_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		ai_portrait_texture.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		# Load soul portrait based on element
+		var ai_element_name = element
+		if ai_element_name == "dark":
+			ai_element_name = "shadow"
+		var ai_portrait_path = "res://assets/art/characters/character_%s_soul_portrait.png" % ai_element_name
+		if ResourceLoader.exists(ai_portrait_path):
+			ai_portrait_texture.texture = load(ai_portrait_path)
+		portrait_panel.add_child(ai_portrait_texture)
 
 		# HP bar
 		var hp_bar = ProgressBar.new()
