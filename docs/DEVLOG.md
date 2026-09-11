@@ -1,5 +1,37 @@
 ﻿# 战策 Battleplan 开发日志
 
+## [战斗HUD升级] 战术指令按钮游戏级UI-6个按钮各对应颜色边框+选中金色高亮（2026-09-12）
+
+**本轮工作**：为战斗HUD的6个战术指令按钮添加游戏级UI三态样式，改进选中状态视觉效果。
+
+**战术按钮视觉升级**：
+- 6个战术指令按钮各有对应颜色边框：
+  - 进攻(aggressive)：红色 Color(0.9,0.3,0.3)
+  - 防守(defensive)：蓝色 Color(0.3,0.5,0.9)
+  - 集火(focus)：橙色 Color(0.9,0.5,0.2)
+  - 撤退(retreat)：黄色 Color(0.7,0.7,0.3)
+  - 跟随(follow)：绿色 Color(0.3,0.8,0.5)
+  - 自由(free)：灰色 Color(0.6,0.6,0.65)
+- 每个按钮三态StyleBoxFlat样式：
+  - normal：深紫底+对应颜色边框(2px)+圆角(5px)
+  - hover：更亮底+更亮边框(3px)
+  - pressed：深色底+对应颜色边框
+- 文字：normal灰白(0.88,0.85,0.78)，hover亮金(1.0,0.95,0.88)，12号字
+
+**选中状态改进**：
+- 之前：仅用modulate=Color(1.3,1.2,0.9)简单提亮
+- 现在：选中按钮使用金色边框(3px)+深棕底(0.18,0.14,0.08)+轻微提亮(1.1,1.05,0.95)
+- 未选中按钮恢复对应颜色边框样式
+
+**修改文件**：
+- scripts/game/RTSArenaController.gd：_apply_hud_skin()中添加战术按钮三态样式，_on_tactical_command_changed()中改进选中状态视觉
+
+**验证结果**：
+- rts_arena场景测试：NO SCRIPT ERROR，Tactical command system initialized
+- M2测试：2955 Passed, 0 Failed
+
+---
+
 ## [战斗HUD升级] 宏指令面板游戏级UI+选中单位信息面板（2026-09-12）
 
 **本轮工作**：升级战斗HUD的宏指令面板为游戏级UI，并添加选中单位信息面板。

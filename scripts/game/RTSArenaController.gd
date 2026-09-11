@@ -2189,6 +2189,64 @@ func _apply_hud_skin() -> void:
 			btn.add_theme_stylebox_override("hover", skill_btn_hover)
 			btn.add_theme_stylebox_override("pressed", skill_btn_pressed)
 
+	# Tactical command buttons: each with its own color border (game-level UI)
+	var tactical_colors = {
+		"aggressive": Color(0.9, 0.3, 0.3),
+		"defensive": Color(0.3, 0.5, 0.9),
+		"focus": Color(0.9, 0.5, 0.2),
+		"retreat": Color(0.7, 0.7, 0.3),
+		"follow": Color(0.3, 0.8, 0.5),
+		"free": Color(0.6, 0.6, 0.65)
+	}
+	for cmd_id in _tactical_buttons.keys():
+		var tbtn = _tactical_buttons[cmd_id]
+		if not tbtn or not (tbtn is Button):
+			continue
+		var cmd_color = tactical_colors.get(cmd_id, Color(0.6, 0.6, 0.65))
+		# Normal: dark bg + colored border
+		var t_normal = StyleBoxFlat.new()
+		t_normal.bg_color = Color(0.08, 0.06, 0.15, 0.95)
+		t_normal.border_color = cmd_color
+		t_normal.border_width_left = 2
+		t_normal.border_width_right = 2
+		t_normal.border_width_top = 2
+		t_normal.border_width_bottom = 2
+		t_normal.corner_radius_top_left = 5
+		t_normal.corner_radius_top_right = 5
+		t_normal.corner_radius_bottom_right = 5
+		t_normal.corner_radius_bottom_left = 5
+		tbtn.add_theme_stylebox_override("normal", t_normal)
+		# Hover: brighter bg + lighter border
+		var t_hover = StyleBoxFlat.new()
+		t_hover.bg_color = Color(0.14, 0.10, 0.22, 0.98)
+		t_hover.border_color = cmd_color.lightened(0.35)
+		t_hover.border_width_left = 3
+		t_hover.border_width_right = 3
+		t_hover.border_width_top = 3
+		t_hover.border_width_bottom = 3
+		t_hover.corner_radius_top_left = 5
+		t_hover.corner_radius_top_right = 5
+		t_hover.corner_radius_bottom_right = 5
+		t_hover.corner_radius_bottom_left = 5
+		tbtn.add_theme_stylebox_override("hover", t_hover)
+		# Pressed: darker bg
+		var t_pressed = StyleBoxFlat.new()
+		t_pressed.bg_color = Color(0.05, 0.04, 0.1, 1.0)
+		t_pressed.border_color = cmd_color
+		t_pressed.border_width_left = 2
+		t_pressed.border_width_right = 2
+		t_pressed.border_width_top = 2
+		t_pressed.border_width_bottom = 2
+		t_pressed.corner_radius_top_left = 5
+		t_pressed.corner_radius_top_right = 5
+		t_pressed.corner_radius_bottom_right = 5
+		t_pressed.corner_radius_bottom_left = 5
+		tbtn.add_theme_stylebox_override("pressed", t_pressed)
+		# Text colors
+		tbtn.add_theme_color_override("font_color", Color(0.88, 0.85, 0.78))
+		tbtn.add_theme_color_override("font_hover_color", Color(1.0, 0.95, 0.88))
+		tbtn.add_theme_font_size_override("font_size", 12)
+
 	# Battle log text color adjustment
 	if battle_log:
 		battle_log.modulate = Color(0.9, 0.85, 0.75)
@@ -4553,13 +4611,48 @@ func _on_tactical_command_changed(command_id: String, command_name: String) -> v
 	if _tactical_system:
 		var weights = _tactical_system.get_weight_modifiers()
 		RTSArenaManager.set_tactical_command(command_id, weights)
-	# Update button visual states
+	# Update button visual states: active = gold border + bright bg
+	var tactical_colors = {
+		"aggressive": Color(0.9, 0.3, 0.3),
+		"defensive": Color(0.3, 0.5, 0.9),
+		"focus": Color(0.9, 0.5, 0.2),
+		"retreat": Color(0.7, 0.7, 0.3),
+		"follow": Color(0.3, 0.8, 0.5),
+		"free": Color(0.6, 0.6, 0.65)
+	}
 	for btn_id in _tactical_buttons.keys():
 		var button = _tactical_buttons[btn_id]
 		if button:
 			if btn_id == command_id:
-				button.modulate = Color(1.3, 1.2, 0.9)  # Gold highlight for active
+				# Active: bright gold border + lighter bg + scale up
+				var active_style = StyleBoxFlat.new()
+				active_style.bg_color = Color(0.18, 0.14, 0.08, 0.98)
+				active_style.border_color = Color(1.0, 0.88, 0.5)
+				active_style.border_width_left = 3
+				active_style.border_width_right = 3
+				active_style.border_width_top = 3
+				active_style.border_width_bottom = 3
+				active_style.corner_radius_top_left = 5
+				active_style.corner_radius_top_right = 5
+				active_style.corner_radius_bottom_right = 5
+				active_style.corner_radius_bottom_left = 5
+				button.add_theme_stylebox_override("normal", active_style)
+				button.modulate = Color(1.1, 1.05, 0.95)
 			else:
+				# Inactive: reset to colored border style
+				var cmd_color = tactical_colors.get(btn_id, Color(0.6, 0.6, 0.65))
+				var inactive_style = StyleBoxFlat.new()
+				inactive_style.bg_color = Color(0.08, 0.06, 0.15, 0.95)
+				inactive_style.border_color = cmd_color
+				inactive_style.border_width_left = 2
+				inactive_style.border_width_right = 2
+				inactive_style.border_width_top = 2
+				inactive_style.border_width_bottom = 2
+				inactive_style.corner_radius_top_left = 5
+				inactive_style.corner_radius_top_right = 5
+				inactive_style.corner_radius_bottom_right = 5
+				inactive_style.corner_radius_bottom_left = 5
+				button.add_theme_stylebox_override("normal", inactive_style)
 				button.modulate = Color(1, 1, 1)
 	# Show battle log message
 	if battle_log:
