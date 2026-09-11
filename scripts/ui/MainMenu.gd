@@ -270,7 +270,7 @@ func _build_ui() -> void:
 	GameLog.info("MainMenu: UI rebuilt with game-style layout and 9-slice components", "UI")
 
 
-## Create a game-style button with 9-slice UI component textures
+## Create a game-style button with clean StyleBoxFlat (no design mockup textures)
 func _create_game_button(p_name: String, p_label: String, p_label_en: String, p_size: Vector2, p_font_size: int) -> Button:
 	var btn = Button.new()
 	btn.name = "Btn_" + p_name
@@ -281,6 +281,46 @@ func _create_game_button(p_name: String, p_label: String, p_label_en: String, p_
 	btn.add_theme_color_override("font_hover_color", Color(1.0, 0.95, 0.85))
 	btn.add_theme_color_override("font_pressed_color", Color(1.0, 0.85, 0.5))
 	btn.tooltip_text = p_label
+
+	# Clean button styles - StyleBoxFlat only, no design mockup textures
+	var normal_style = StyleBoxFlat.new()
+	normal_style.bg_color = Color(0.12, 0.08, 0.22, 0.92)
+	normal_style.border_color = Color(0.75, 0.6, 0.3, 0.9)
+	normal_style.border_width_left = 2
+	normal_style.border_width_right = 2
+	normal_style.border_width_top = 2
+	normal_style.border_width_bottom = 2
+	normal_style.corner_radius_top_left = 6
+	normal_style.corner_radius_top_right = 6
+	normal_style.corner_radius_bottom_left = 6
+	normal_style.corner_radius_bottom_right = 6
+	btn.add_theme_stylebox_override("normal", normal_style)
+
+	var hover_style = StyleBoxFlat.new()
+	hover_style.bg_color = Color(0.2, 0.12, 0.32, 1.0)
+	hover_style.border_color = Color(0.95, 0.8, 0.45, 1.0)
+	hover_style.border_width_left = 2
+	hover_style.border_width_right = 2
+	hover_style.border_width_top = 2
+	hover_style.border_width_bottom = 2
+	hover_style.corner_radius_top_left = 6
+	hover_style.corner_radius_top_right = 6
+	hover_style.corner_radius_bottom_left = 6
+	hover_style.corner_radius_bottom_right = 6
+	btn.add_theme_stylebox_override("hover", hover_style)
+
+	var pressed_style = StyleBoxFlat.new()
+	pressed_style.bg_color = Color(0.18, 0.1, 0.28, 1.0)
+	pressed_style.border_color = Color(1.0, 0.88, 0.5, 1.0)
+	pressed_style.border_width_left = 3
+	pressed_style.border_width_right = 3
+	pressed_style.border_width_top = 3
+	pressed_style.border_width_bottom = 3
+	pressed_style.corner_radius_top_left = 6
+	pressed_style.corner_radius_top_right = 6
+	pressed_style.corner_radius_bottom_left = 6
+	pressed_style.corner_radius_bottom_right = 6
+	btn.add_theme_stylebox_override("pressed", pressed_style)
 
 	# Hover animation: scale up + brightness boost
 	btn.mouse_entered.connect(func():
@@ -294,7 +334,6 @@ func _create_game_button(p_name: String, p_label: String, p_label_en: String, p_
 		t.parallel().tween_property(btn, "modulate", Color(1.0, 1.0, 1.0), 0.2)
 	)
 
-	# Button styling handled by battleplan_theme.tres
 	return btn
 
 
