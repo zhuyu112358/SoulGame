@@ -10622,3 +10622,51 @@ ode/life/max_life），而_update_skill_particles()期望新版数据结构（pa
 - 实机测试验证所有UI改造效果
 - 根据实机反馈调整细节
 - 准备M2 EA发布
+
+---
+
+## 2026-09-11 UI细节优化收尾 (growth_visualizer背景+SoulCustomization hover)
+
+### 完成内容
+1. **growth_visualizer.tscn添加背景图+暗化遮罩**
+   - 添加Background TextureRect (soul_home_bg.png)
+   - 添加DimOverlay ColorRect (alpha 0.75)
+   - 与其他场景视觉风格统一
+
+2. **SoulCustomizationUI按钮hover效果**
+   - 随机/重置/保存/返回4个按钮添加hover缩放动画
+   - mouse_entered: 缩放1.05x，0.15秒缓动
+   - mouse_exited: 恢复缩放1.0x，0.2秒缓动
+   - 与全局hover效果统一
+
+3. **全局UI场景覆盖确认**
+   - 所有主场景都有背景图+暗化遮罩
+   - 所有有按钮的场景都有hover效果
+   - 所有有Panel的场景都有9-slice样式
+
+### 验证结果
+- M2测试: 2686 Passed, 0 Failed
+- 无SCRIPT ERROR
+
+### 修改的文件
+- scenes/growth_visualizer.tscn - 添加Background+DimOverlay
+- scripts/ui/SoulCustomizationUI.gd - 4个按钮添加hover效果
+
+### UI质量大改造最终完成状态
+所有UI优化项目已完成：
+- 主菜单游戏化分层布局 ✅
+- 灵魂选择暗黑3风格改造 ✅
+- 战斗配置面板美化 ✅
+- 其他场景背景图美化(6个场景) ✅
+- 全局按钮hover动画(10+场景全覆盖) ✅
+- 场景切换淡入淡出过渡 ✅
+- 结算/设置/HUD美化 ✅
+- 4v4团队HP条 ✅
+- UI组件9-slice集成(7个场景全覆盖) ✅
+- growth_visualizer背景图 ✅
+- SoulCustomizationUI hover ✅
+
+### 下一步
+- 实机测试验证所有UI改造效果
+- 根据实机反馈调整细节
+- 准备M2 EA发布

@@ -54,6 +54,18 @@ func _ready() -> void:
 	_refresh_summary()
 	GameLog.info("SoulCustomizationUI: Ready", "UI")
 
+	# Setup button hover effects
+	for btn in [_random_button, _reset_button, _save_button, _back_button]:
+		if btn:
+			btn.mouse_entered.connect(func():
+				var tw = create_tween()
+				tw.tween_property(btn, "scale", Vector2(1.05, 1.05), 0.15)
+			)
+			btn.mouse_exited.connect(func():
+				var tw = create_tween()
+				tw.tween_property(btn, "scale", Vector2(1.0, 1.0), 0.2)
+			)
+
 
 func _find_ui_nodes() -> void:
 	_soul_name_label = get_node_or_null("TopBar/SoulNameLabel")
