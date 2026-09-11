@@ -73,6 +73,46 @@ func _ready() -> void:
 	_setup_ui_styles()
 
 	GameLog.info("TrainingStatsMenu: Opened (game-level UI)", "UI")
+	_animate_entrance()
+
+
+## Animate UI entrance with staggered fade-in + scale (game-level UI)
+func _animate_entrance() -> void:
+	# Main panel fade-in + scale
+	var main_panel = get_node_or_null("MarginContainer/MainPanel")
+	if main_panel and main_panel is CanvasItem:
+		main_panel.modulate.a = 0.0
+		main_panel.scale = Vector2(0.95, 0.95)
+		var panel_tween = create_tween()
+		panel_tween.set_ease(Tween.EASE_OUT)
+		panel_tween.set_trans(Tween.TRANS_BACK)
+		panel_tween.tween_property(main_panel, "modulate:a", 1.0, 0.5)
+		panel_tween.parallel().tween_property(main_panel, "scale", Vector2(1.0, 1.0), 0.5)
+	# Staggered fade-in for child sections
+	var vbox = get_node_or_null("MarginContainer/MainPanel/VBox")
+	if vbox:
+		var children = vbox.get_children()
+		for i in range(children.size()):
+			var child = children[i]
+			if child and child is CanvasItem:
+				child.modulate.a = 0.0
+				var child_tween = create_tween()
+				child_tween.set_ease(Tween.EASE_OUT)
+				child_tween.tween_interval(0.3 + i * 0.1)
+				child_tween.tween_property(child, "modulate:a", 1.0, 0.3)
+	# Buttons fade-in
+	if _back_button and _back_button is CanvasItem:
+		_back_button.modulate.a = 0.0
+		var back_tween = create_tween()
+		back_tween.set_ease(Tween.EASE_OUT)
+		back_tween.tween_interval(0.8)
+		back_tween.tween_property(_back_button, "modulate:a", 1.0, 0.3)
+	if _reset_button and _reset_button is CanvasItem:
+		_reset_button.modulate.a = 0.0
+		var reset_tween = create_tween()
+		reset_tween.set_ease(Tween.EASE_OUT)
+		reset_tween.tween_interval(0.9)
+		reset_tween.tween_property(_reset_button, "modulate:a", 1.0, 0.3)
 
 
 ## Build rank section
