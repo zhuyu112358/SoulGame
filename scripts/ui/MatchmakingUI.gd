@@ -88,7 +88,10 @@ func _ready() -> void:
 	# Start matchmaking automatically
 	_matchmaking.start_matchmaking()
 
-	GameLog.info("MatchmakingUI: Ready", "UI")
+	# Apply game-level UI styles
+	_setup_ui_styles()
+
+	GameLog.info("MatchmakingUI: Ready (game-level UI)", "UI")
 
 
 ## Matchmaking started
@@ -108,7 +111,10 @@ func _on_matchmaking_progress(progress: float, elapsed: float) -> void:
 	_timer_label.text = "%.1f秒" % elapsed
 
 	# Update status text with searching animation
-	var dots = "." * (int(elapsed) % 4)
+	var dot_count = int(elapsed) % 4
+	var dots = ""
+	for i in range(dot_count):
+		dots += "."
 	_status_label.text = "正在寻找对手%s" % dots
 
 
@@ -130,6 +136,20 @@ func _on_opponent_found(opponent_data: Dictionary) -> void:
 	_opponent_info.text = "元素: %s · 等级: %d · 难度: %s" % [
 		element, opponent_data.get("level", 1), difficulty_name
 	]
+
+	# Apply element color border to opponent panel
+	var opponent_style = StyleBoxFlat.new()
+	opponent_style.bg_color = Color(0.08, 0.05, 0.15, 0.95)
+	opponent_style.border_color = element_color
+	opponent_style.border_width_left = 3
+	opponent_style.border_width_right = 3
+	opponent_style.border_width_top = 3
+	opponent_style.border_width_bottom = 3
+	opponent_style.corner_radius_top_left = 8
+	opponent_style.corner_radius_top_right = 8
+	opponent_style.corner_radius_bottom_left = 8
+	opponent_style.corner_radius_bottom_right = 8
+	_opponent_panel.add_theme_stylebox_override("panel", opponent_style)
 
 	_opponent_panel.visible = true
 	_start_button.visible = true
@@ -166,6 +186,88 @@ func _on_start_pressed() -> void:
 	_matchmaking.start_battle_with_opponent()
 	# Go to soul select for battle
 	get_tree().change_scene_to_file("res://scenes/soul_select.tscn")
+
+
+## Apply game-level UI styles to panels, buttons, and progress bar
+func _setup_ui_styles() -> void:
+	# Three-state button style
+	var btn_normal = StyleBoxFlat.new()
+	btn_normal.bg_color = Color(0.12, 0.08, 0.22, 0.95)
+	btn_normal.border_color = Color(0.7, 0.55, 0.3, 0.8)
+	btn_normal.border_width_left = 2
+	btn_normal.border_width_right = 2
+	btn_normal.border_width_top = 2
+	btn_normal.border_width_bottom = 2
+	btn_normal.corner_radius_top_left = 6
+	btn_normal.corner_radius_top_right = 6
+	btn_normal.corner_radius_bottom_left = 6
+	btn_normal.corner_radius_bottom_right = 6
+
+	var btn_hover = StyleBoxFlat.new()
+	btn_hover.bg_color = Color(0.18, 0.12, 0.3, 0.98)
+	btn_hover.border_color = Color(0.95, 0.78, 0.45, 1.0)
+	btn_hover.border_width_left = 2
+	btn_hover.border_width_right = 2
+	btn_hover.border_width_top = 2
+	btn_hover.border_width_bottom = 2
+	btn_hover.corner_radius_top_left = 6
+	btn_hover.corner_radius_top_right = 6
+	btn_hover.corner_radius_bottom_left = 6
+	btn_hover.corner_radius_bottom_right = 6
+
+	var btn_pressed = StyleBoxFlat.new()
+	btn_pressed.bg_color = Color(0.08, 0.05, 0.15, 1.0)
+	btn_pressed.border_color = Color(0.6, 0.48, 0.25, 0.9)
+	btn_pressed.border_width_left = 2
+	btn_pressed.border_width_right = 2
+	btn_pressed.border_width_top = 2
+	btn_pressed.border_width_bottom = 2
+	btn_pressed.corner_radius_top_left = 6
+	btn_pressed.corner_radius_top_right = 6
+	btn_pressed.corner_radius_bottom_left = 6
+	btn_pressed.corner_radius_bottom_right = 6
+
+	for btn in [_cancel_button, _start_button]:
+		if btn:
+			btn.add_theme_stylebox_override("normal", btn_normal)
+			btn.add_theme_stylebox_override("hover", btn_hover)
+			btn.add_theme_stylebox_override("pressed", btn_pressed)
+			btn.add_theme_color_override("font_color", Color(0.95, 0.88, 0.65))
+			btn.add_theme_font_size_override("font_size", 16)
+
+	# Progress bar style: gold fill with dark bg
+	if _progress_bar:
+		var bar_bg = StyleBoxFlat.new()
+		bar_bg.bg_color = Color(0.1, 0.07, 0.18, 0.9)
+		bar_bg.border_color = Color(0.6, 0.5, 0.3, 0.7)
+		bar_bg.border_width_left = 1
+		bar_bg.border_width_right = 1
+		bar_bg.border_width_top = 1
+		bar_bg.border_width_bottom = 1
+		bar_bg.corner_radius_top_left = 4
+		bar_bg.corner_radius_top_right = 4
+		bar_bg.corner_radius_bottom_left = 4
+		bar_bg.corner_radius_bottom_right = 4
+		_progress_bar.add_theme_stylebox_override("background", bar_bg)
+
+		var bar_fill = StyleBoxFlat.new()
+		bar_fill.bg_color = Color(0.9, 0.7, 0.35, 0.9)
+		bar_fill.corner_radius_top_left = 3
+		bar_fill.corner_radius_top_right = 3
+		bar_fill.corner_radius_bottom_left = 3
+		bar_fill.corner_radius_bottom_right = 3
+		_progress_bar.add_theme_stylebox_override("fill", bar_fill)
+
+	# Status label: larger gold
+	if _status_label:
+		_status_label.add_theme_font_size_override("font_size", 24)
+
+	# Timer label: gold
+	if _timer_label:
+		_timer_label.add_theme_font_size_override("font_size", 18)
+		_timer_label.add_theme_color_override("font_color", Color(0.9, 0.8, 0.55))
+
+	GameLog.info("MatchmakingUI: Game-level UI styles applied", "UI")
 
 
 ## Setup button hover effects
