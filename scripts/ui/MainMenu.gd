@@ -55,6 +55,16 @@ func _ready() -> void:
 		if btn:
 			btn.pressed.connect(_on_button_pressed.bind(btn_name))
 
+	# Setup button hover effects for compatibility references
+	if _start_button:
+		_setup_button_hover(_start_button)
+	if _home_button:
+		_setup_button_hover(_home_button)
+	if _settings_button:
+		_setup_button_hover(_settings_button)
+	if _quit_button:
+		_setup_button_hover(_quit_button)
+
 	# Set version text (GAP-003: M2 Early Access, not Prototype)
 	var version = GameState.get_value("game", "version", "0.2.0")
 	_version_label.text = "v%s - M2 Early Access" % version

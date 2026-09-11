@@ -17,7 +17,6 @@ const MatchmakingSystem = preload("res://scripts/game/MatchmakingSystem.gd")
 @onready var _opponent_info: Label = $MarginContainer/VBox/OpponentPanel/VBox/OpponentInfo
 @onready var _cancel_button: Button = $MarginContainer/VBox/ButtonRow/CancelButton
 @onready var _start_button: Button = $MarginContainer/VBox/ButtonRow/StartButton
-@onready var _searching_animation: AnimationPlayer = $MarginContainer/VBox/SearchingAnimation
 
 ## Matchmaking system instance
 var _matchmaking: MatchmakingSystem = null

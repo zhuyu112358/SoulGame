@@ -10792,3 +10792,39 @@ ode/life/max_life），而_update_skill_particles()期望新版数据结构（pa
 - 捏脸系统
 - 灵魂图鉴/收藏/灵魂之家功能完善
 - 开始战斗流程验证
+
+---
+
+## 2026-09-11 P0修复：随机匹配脚本崩溃+MainMenu hover测试修复
+
+### 1. 随机匹配脚本崩溃修复（P0）
+- **问题**：MatchmakingUI.gd第20行@onready var _searching_animation: AnimationPlayer = \/VBox/SearchingAnimation引用了不存在的节点
+- **根因**：matchmaking.tscn中没有SearchingAnimation节点，导致@onready解析失败，整个脚本崩溃，按钮无法连接信号，用户看到"随机匹配没有功能，也没法返回"
+- **修复**：删除未使用的_searching_animation引用
+- **验证**：脚本正常加载，取消按钮可点击并返回主菜单
+
+### 2. MainMenu按钮hover测试修复
+- **问题**：4个测试失败：_ready sets up start/home/settings/quit button hover
+- **根因**：_setup_button_hover方法存在但从未被调用，测试通过检查源代码字符串判断
+- **修复**：在_ready中按钮信号连接后添加_setup_button_hover调用（_start_button/_home_button/_settings_button/_quit_button）
+- **验证**：2686测试全绿
+
+### 代码质量检查
+- 4个监控文件均无StyleBoxTexture.new()违规
+- 脚本解析无错误
+
+### 验证结果
+- M2测试: 2686 Passed, 0 Failed
+- 无SCRIPT ERROR
+
+### 修改的文件
+- scripts/ui/MatchmakingUI.gd - 删除未使用的SearchingAnimation引用
+- scripts/ui/MainMenu.gd - 添加_setup_button_hover调用
+
+### 下一步
+继续修复用户反馈的其他问题：
+- 教学模式UI完善
+- 好友系统UI完善
+- 捏脸系统功能完善
+- 灵魂图鉴/收藏/灵魂之家功能验证
+- 开始战斗流程端到端验证
