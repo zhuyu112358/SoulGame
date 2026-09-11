@@ -77,15 +77,19 @@ func _ready() -> void:
 		if soul_list_panel:
 			soul_list_panel.add_theme_stylebox_override("panel", codex_fallback)
 
+	# Apply game-level UI styles
+	_setup_ui_styles()
+
 	# Auto-select first unlocked soul
 	var unlocked = _codex.get_unlocked_souls()
 	if not unlocked.is_empty():
 		_select_soul(unlocked[0])
 
-	GameLog.info("SoulCodexUI: Ready", "UI")
+	GameLog.info("SoulCodexUI: Ready (game-level UI)", "UI")
 
 
 ## Build soul list buttons
+## Build soul list with card-style buttons (portrait thumbnail + element color border)
 func _build_soul_list() -> void:
 	# Clear existing
 	for child in _soul_list.get_children():
@@ -93,51 +97,180 @@ func _build_soul_list() -> void:
 	_soul_buttons.clear()
 
 	var souls = _codex.get_all_souls()
+	var element_file_map = {
+		"fire": "fire", "water": "water", "earth": "earth", "wind": "wind",
+		"light": "light", "dark": "shadow", "thunder": "thunder", "ice": "ice"
+	}
+
 	for soul in souls:
 		var element = soul["element"]
 		var is_unlocked = soul["unlocked"]
+		var soul_color = soul["color"]
 
-		var button = Button.new()
-		button.custom_minimum_size = Vector2(0, 50)
-		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-
+		# Create card container (Panel with element color border)
+		var card = Panel.new()
+		card.custom_minimum_size = Vector2(0, 64)
+		card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var card_style = StyleBoxFlat.new()
 		if is_unlocked:
-			button.text = "%s  [%s]" % [soul["name"], soul["element_name"]]
-			button.add_theme_color_override("font_color", soul["color"])
+			card_style.bg_color = Color(0.08, 0.05, 0.15, 0.9)
+			card_style.border_color = soul_color
 		else:
-			button.text = "???  [未发现]"
-			button.add_theme_color_override("font_color", Color(0.4, 0.4, 0.4))
+			card_style.bg_color = Color(0.05, 0.05, 0.08, 0.7)
+			card_style.border_color = Color(0.3, 0.3, 0.35, 0.5)
+		card_style.border_width_left = 2
+		card_style.border_width_right = 2
+		card_style.border_width_top = 2
+		card_style.border_width_bottom = 2
+		card_style.corner_radius_top_left = 6
+		card_style.corner_radius_top_right = 6
+		card_style.corner_radius_bottom_left = 6
+		card_style.corner_radius_bottom_right = 6
+		card.add_theme_stylebox_override("panel", card_style)
 
+		# HBox for layout: portrait + name
+		var hbox = HBoxContainer.new()
+		hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		hbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		hbox.add_theme_constant_override("separation", 10)
+		card.add_child(hbox)
+
+		# Portrait thumbnail (48x48)
+		var portrait_rect = TextureRect.new()
+		portrait_rect.custom_minimum_size = Vector2(48, 48)
+		portrait_rect.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		portrait_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		portrait_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		if is_unlocked:
+			var file_name = element_file_map.get(element, element)
+			var portrait_path = "res://assets/art/characters/character_%s_soul_portrait.png" % file_name
+			if ResourceLoader.exists(portrait_path):
+				portrait_rect.texture = load(portrait_path)
+			else:
+				portrait_rect.texture = null
+		else:
+			portrait_rect.modulate = Color(0.2, 0.2, 0.25, 0.5)
+		hbox.add_child(portrait_rect)
+
+		# Name label
+		var name_label = Label.new()
+		name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		name_label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		if is_unlocked:
+			name_label.text = "%s" % soul["name"]
+			name_label.add_theme_color_override("font_color", soul_color)
+			name_label.add_theme_font_size_override("font_size", 15)
+		else:
+			name_label.text = "??? (locked)"
+			name_label.add_theme_color_override("font_color", Color(0.4, 0.4, 0.45))
+			name_label.add_theme_font_size_override("font_size", 14)
+		hbox.add_child(name_label)
+
+		# Clickable button overlay (transparent, covers entire card)
+		var button = Button.new()
+		button.custom_minimum_size = Vector2(0, 64)
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		button.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		button.flat = true
+		button.text = ""
 		button.pressed.connect(_on_soul_selected.bind(element))
 		_setup_button_hover(button)
+		card.add_child(button)
 
-		_soul_list.add_child(button)
-		_soul_buttons[element] = button
+		_soul_list.add_child(card)
+		_soul_buttons[element] = card
 
 
-## Select a soul
+## Select a soul (card highlight with gold border)
 func _select_soul(p_element: String) -> void:
 	_selected_element = p_element
 
-	# Update button styles
+	# Update card styles: selected gets gold border + brighter bg
 	for element in _soul_buttons.keys():
-		var button = _soul_buttons[element]
-		if element == p_element:
-			button.modulate = Color(1.3, 1.2, 0.8)
-		else:
-			button.modulate = Color(1.0, 1.0, 1.0)
+		var card = _soul_buttons[element]
+		if card and card is Panel:
+			var style = card.get_theme_stylebox("panel")
+			if style and style is StyleBoxFlat:
+				if element == p_element:
+					style.border_color = Color(1.0, 0.85, 0.4, 1.0)
+					style.bg_color = Color(0.12, 0.08, 0.2, 0.95)
+					style.border_width_left = 3
+					style.border_width_right = 3
+					style.border_width_top = 3
+					style.border_width_bottom = 3
+				else:
+					var soul = _codex.get_soul_data(element)
+					if soul and !soul.is_empty():
+						style.border_color = soul.get("color", Color(0.5, 0.5, 0.5))
+						style.bg_color = Color(0.08, 0.05, 0.15, 0.9)
+					style.border_width_left = 2
+					style.border_width_right = 2
+					style.border_width_top = 2
+					style.border_width_bottom = 2
 
 	# Update detail panel
 	_update_detail_panel(p_element)
 
 
-## Update detail panel
+## Update detail panel (game-level UI: portrait glow + gold frame + stat bars)
 func _update_detail_panel(p_element: String) -> void:
 	var soul = _codex.get_soul_data(p_element)
 	if soul.is_empty():
 		return
 
 	var is_unlocked = _codex.is_soul_unlocked(p_element)
+
+	# Element color map for glow
+	var element_colors = {
+		"fire": Color(1.0, 0.4, 0.15, 0.2), "water": Color(0.2, 0.5, 1.0, 0.2),
+		"earth": Color(0.4, 0.7, 0.3, 0.2), "wind": Color(0.3, 0.9, 0.8, 0.2),
+		"light": Color(1.0, 0.85, 0.3, 0.25), "dark": Color(0.6, 0.3, 0.9, 0.2),
+		"thunder": Color(0.9, 0.8, 0.2, 0.2), "ice": Color(0.5, 0.85, 1.0, 0.2)
+	}
+
+	# Add/remove glow behind portrait
+	var portrait_parent = _portrait_texture.get_parent()
+	if portrait_parent:
+		# Remove old glow
+		var old_glow = portrait_parent.get_node_or_null("PortraitGlow")
+		if old_glow:
+			old_glow.queue_free()
+		var old_frame = portrait_parent.get_node_or_null("PortraitFrame")
+		if old_frame:
+			old_frame.queue_free()
+
+		if is_unlocked:
+			# Add element glow
+			var glow = ColorRect.new()
+			glow.name = "PortraitGlow"
+			glow.size = Vector2(220, 260)
+			glow.position = Vector2(-10, -10)
+			glow.color = element_colors.get(p_element, Color(0.5, 0.5, 0.5, 0.2))
+			portrait_parent.add_child(glow)
+			# Glow pulse animation
+			var glow_tween = create_tween()
+			glow_tween.set_loops()
+			glow_tween.tween_property(glow, "color:a", glow.color.a * 1.8, 2.0).set_ease(Tween.EASE_IN_OUT)
+			glow_tween.tween_property(glow, "color:a", glow.color.a * 0.6, 2.0).set_ease(Tween.EASE_IN_OUT)
+
+			# Add gold frame
+			var frame = Panel.new()
+			frame.name = "PortraitFrame"
+			frame.custom_minimum_size = Vector2(206, 246)
+			frame.position = Vector2(-3, -3)
+			var frame_style = StyleBoxFlat.new()
+			frame_style.bg_color = Color(0, 0, 0, 0)
+			frame_style.border_color = Color(0.83, 0.66, 0.36, 0.9)
+			frame_style.border_width_left = 3
+			frame_style.border_width_right = 3
+			frame_style.border_width_top = 3
+			frame_style.border_width_bottom = 3
+			frame_style.corner_radius_top_left = 8
+			frame_style.corner_radius_top_right = 8
+			frame_style.corner_radius_bottom_left = 8
+			frame_style.corner_radius_bottom_right = 8
+			frame.add_theme_stylebox_override("panel", frame_style)
+			portrait_parent.add_child(frame)
 
 	if not is_unlocked:
 		_portrait_texture.texture = null
@@ -217,6 +350,78 @@ func _on_back_pressed() -> void:
 	if AudioManager:
 		AudioManager.play_sfx("ui_button_click")
 	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
+
+
+## Apply game-level UI styles to panels and buttons
+func _setup_ui_styles() -> void:
+	# Detail panel: dark purple + gold border
+	var detail_style = StyleBoxFlat.new()
+	detail_style.bg_color = Color(0.06, 0.04, 0.12, 0.92)
+	detail_style.border_color = Color(0.83, 0.66, 0.36, 0.7)
+	detail_style.border_width_left = 2
+	detail_style.border_width_right = 2
+	detail_style.border_width_top = 2
+	detail_style.border_width_bottom = 2
+	detail_style.corner_radius_top_left = 10
+	detail_style.corner_radius_top_right = 10
+	detail_style.corner_radius_bottom_left = 10
+	detail_style.corner_radius_bottom_right = 10
+	_detail_panel.add_theme_stylebox_override("panel", detail_style)
+
+	# Soul list panel
+	var list_panel = get_node_or_null("MarginContainer/VBox/Body/SoulList")
+	if list_panel and list_panel is Panel:
+		list_panel.add_theme_stylebox_override("panel", detail_style)
+
+	# Back button: three-state style
+	var btn_normal = StyleBoxFlat.new()
+	btn_normal.bg_color = Color(0.12, 0.08, 0.22, 0.95)
+	btn_normal.border_color = Color(0.7, 0.55, 0.3, 0.8)
+	btn_normal.border_width_left = 2
+	btn_normal.border_width_right = 2
+	btn_normal.border_width_top = 2
+	btn_normal.border_width_bottom = 2
+	btn_normal.corner_radius_top_left = 6
+	btn_normal.corner_radius_top_right = 6
+	btn_normal.corner_radius_bottom_left = 6
+	btn_normal.corner_radius_bottom_right = 6
+
+	var btn_hover = StyleBoxFlat.new()
+	btn_hover.bg_color = Color(0.18, 0.12, 0.3, 0.98)
+	btn_hover.border_color = Color(0.95, 0.78, 0.45, 1.0)
+	btn_hover.border_width_left = 2
+	btn_hover.border_width_right = 2
+	btn_hover.border_width_top = 2
+	btn_hover.border_width_bottom = 2
+	btn_hover.corner_radius_top_left = 6
+	btn_hover.corner_radius_top_right = 6
+	btn_hover.corner_radius_bottom_left = 6
+	btn_hover.corner_radius_bottom_right = 6
+
+	var btn_pressed = StyleBoxFlat.new()
+	btn_pressed.bg_color = Color(0.08, 0.05, 0.15, 1.0)
+	btn_pressed.border_color = Color(0.6, 0.48, 0.25, 0.9)
+	btn_pressed.border_width_left = 2
+	btn_pressed.border_width_right = 2
+	btn_pressed.border_width_top = 2
+	btn_pressed.border_width_bottom = 2
+	btn_pressed.corner_radius_top_left = 6
+	btn_pressed.corner_radius_top_right = 6
+	btn_pressed.corner_radius_bottom_left = 6
+	btn_pressed.corner_radius_bottom_right = 6
+
+	_back_button.add_theme_stylebox_override("normal", btn_normal)
+	_back_button.add_theme_stylebox_override("hover", btn_hover)
+	_back_button.add_theme_stylebox_override("pressed", btn_pressed)
+	_back_button.add_theme_color_override("font_color", Color(0.95, 0.88, 0.65))
+
+	# Title labels: gold
+	var progress_label = get_node_or_null("MarginContainer/VBox/Header/ProgressLabel")
+	if progress_label and progress_label is Label:
+		progress_label.add_theme_color_override("font_color", Color(1.0, 0.88, 0.5))
+		progress_label.add_theme_font_size_override("font_size", 18)
+
+	GameLog.info("SoulCodexUI: Game-level UI styles applied", "UI")
 
 
 ## Setup button hover effects
