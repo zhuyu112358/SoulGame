@@ -1304,6 +1304,8 @@ func _setup_damage_label() -> void:
 		_damage_label.size = Vector2(80, 30)
 		_damage_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		_damage_label.add_theme_font_size_override("font_size", 24)
+		_damage_label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.9))
+		_damage_label.add_theme_constant_override("outline_size", 3)
 		_damage_label.z_index = 100
 		add_child(_damage_label)
 	GameLog.debug("RTSArena: Damage floating text system initialized", "UI")
@@ -1393,7 +1395,9 @@ func _show_damage_at(damage_amount: int, p_position: Vector2, p_color: Color = C
 	label.size = Vector2(80, 30)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.add_theme_font_size_override("font_size", p_font_size)
-	label.modulate = p_color
+	label.add_theme_color_override("font_color", p_color)
+	label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.9))
+	label.add_theme_constant_override("outline_size", 3)
 	label.z_index = 100
 	add_child(label)
 	_damage_labels.append({
