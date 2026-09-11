@@ -86,6 +86,61 @@ func _ready() -> void:
 		_select_soul(unlocked[0])
 
 	GameLog.info("SoulCodexUI: Ready (game-level UI)", "UI")
+	_animate_entrance()
+
+
+## Animate UI entrance with staggered fade-in + scale (game-level UI)
+func _animate_entrance() -> void:
+	# Title fade-in
+	var title = get_node_or_null("MarginContainer/VBox/TitleLabel")
+	if title and title is CanvasItem:
+		title.modulate.a = 0.0
+		var title_tween = create_tween()
+		title_tween.set_ease(Tween.EASE_OUT)
+		title_tween.tween_property(title, "modulate:a", 1.0, 0.4)
+	# Soul list panel fade-in + scale
+	var soul_list_panel = get_node_or_null("MarginContainer/VBox/Body/SoulList")
+	if soul_list_panel and soul_list_panel is CanvasItem:
+		soul_list_panel.modulate.a = 0.0
+		soul_list_panel.scale = Vector2(0.95, 0.95)
+		var list_tween = create_tween()
+		list_tween.set_ease(Tween.EASE_OUT)
+		list_tween.set_trans(Tween.TRANS_BACK)
+		list_tween.tween_interval(0.2)
+		list_tween.tween_property(soul_list_panel, "modulate:a", 1.0, 0.4)
+		list_tween.parallel().tween_property(soul_list_panel, "scale", Vector2(1.0, 1.0), 0.4)
+	# Detail panel fade-in + scale
+	if _detail_panel and _detail_panel is CanvasItem:
+		_detail_panel.modulate.a = 0.0
+		_detail_panel.scale = Vector2(0.95, 0.95)
+		var detail_tween = create_tween()
+		detail_tween.set_ease(Tween.EASE_OUT)
+		detail_tween.set_trans(Tween.TRANS_BACK)
+		detail_tween.tween_interval(0.4)
+		detail_tween.tween_property(_detail_panel, "modulate:a", 1.0, 0.4)
+		detail_tween.parallel().tween_property(_detail_panel, "scale", Vector2(1.0, 1.0), 0.4)
+	# Back button fade-in
+	if _back_button and _back_button is CanvasItem:
+		_back_button.modulate.a = 0.0
+		var back_tween = create_tween()
+		back_tween.set_ease(Tween.EASE_OUT)
+		back_tween.tween_interval(0.6)
+		back_tween.tween_property(_back_button, "modulate:a", 1.0, 0.3)
+	# Staggered fade-in for soul list items
+	await get_tree().create_timer(0.5).timeout
+	var btn_index = 0
+	for element in _soul_buttons.keys():
+		var btn = _soul_buttons[element]
+		if btn and is_instance_valid(btn):
+			btn.modulate.a = 0.0
+			btn.scale = Vector2(0.9, 0.9)
+			var btn_tween = create_tween()
+			btn_tween.set_ease(Tween.EASE_OUT)
+			btn_tween.set_trans(Tween.TRANS_BACK)
+			btn_tween.tween_interval(btn_index * 0.06)
+			btn_tween.tween_property(btn, "modulate:a", 1.0, 0.25)
+			btn_tween.parallel().tween_property(btn, "scale", Vector2(1.0, 1.0), 0.25)
+			btn_index += 1
 
 
 ## Build soul list buttons
