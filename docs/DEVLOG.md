@@ -10996,3 +10996,29 @@ ode/life/max_life），而_update_skill_particles()期望新版数据结构（pa
 - 继续提升其他场景UI视觉质量
 - 收藏系统添加物品图标展示
 - 优化按钮样式和动画效果
+
+---
+
+## 2026-09-11 UI改进：收藏系统物品卡片添加图标
+
+### 改进内容
+- **问题**：收藏系统物品卡片只显示文字（名称/稀有度/描述），没有物品图标，看起来像工业软件
+- **修复**：
+  - CollectionUI.gd: _create_item_card()从纯VBox布局改为HBox（图标+文字）布局
+  - 添加48x48的TextureRect物品图标区域
+  - 根据物品ID映射到对应的图标文件（17种物品图标）
+  - 支持的图标：health_potion/energy_potion/attack_boost/defense_boost/speed_boost/shield/revive/teleport/invisibility等
+  - 图标资源来自assets/art/items/目录
+  - 未收集的物品不显示图标
+
+### 验证结果
+- M2测试: **2643 Passed, 0 Failed** 全绿
+- 之前失败的push已成功推送（8ddec48）
+
+### 修改的文件
+- scripts/ui/CollectionUI.gd - 物品卡片添加图标显示
+
+### 下一步
+- 继续提升其他场景UI视觉质量
+- 教学模式/好友系统等场景美化
+- 优化按钮样式和动画效果

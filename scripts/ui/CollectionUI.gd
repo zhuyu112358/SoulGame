@@ -142,20 +142,58 @@ func _refresh_items() -> void:
 
 func _create_item_card(p_item: Dictionary) -> Control:
 	var panel = Panel.new()
-	panel.custom_minimum_size = Vector2(180, 80)
+	panel.custom_minimum_size = Vector2(180, 90)
+
+	var hbox = HBoxContainer.new()
+	hbox.layout_mode = 1
+	hbox.anchors_preset = 15
+	hbox.anchor_right = 1.0
+	hbox.anchor_bottom = 1.0
+	hbox.offset_left = 5.0
+	hbox.offset_top = 5.0
+	hbox.offset_right = -5.0
+	hbox.offset_bottom = -5.0
+	panel.add_child(hbox)
+
+	# Item icon
+	var icon_rect = TextureRect.new()
+	icon_rect.custom_minimum_size = Vector2(48, 48)
+	icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	hbox.add_child(icon_rect)
 
 	var vbox = VBoxContainer.new()
-	vbox.layout_mode = 1
-	vbox.anchors_preset = 15
-	vbox.anchor_right = 1.0
-	vbox.anchor_bottom = 1.0
-	vbox.offset_left = 5.0
-	vbox.offset_top = 5.0
-	vbox.offset_right = -5.0
-	vbox.offset_bottom = -5.0
-	panel.add_child(vbox)
+	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hbox.add_child(vbox)
 
 	if p_item["collected"]:
+		# Load item icon based on item id
+		var item_id = p_item.get("id", "")
+		var icon_map = {
+			"health_potion": "item_consumable_health_potion.png",
+			"energy_potion": "item_consumable_energy_potion.png",
+			"attack_boost": "item_buff_attack_boost.png",
+			"defense_boost": "item_buff_defense_boost.png",
+			"speed_boost": "item_buff_speed_boost.png",
+			"crit_boost": "item_buff_focus.png",
+			"shield": "item_buff_shield.png",
+			"revive": "item_consumable_revival_potion.png",
+			"teleport": "item_special_teleport_scroll.png",
+			"invisibility": "item_buff_invisibility.png",
+			"damage_amplify": "item_buff_attack_boost.png",
+			"heal_aura": "item_consumable_full_restore.png",
+			"energy_surge": "item_consumable_energy_potion.png",
+			"rage": "item_buff_attack_boost.png",
+			"freeze": "item_special_smoke_bomb.png",
+			"lightning": "item_special_flash_bang.png",
+			"soul_stone": "item_special_summon_stone.png"
+		}
+		var icon_file = icon_map.get(item_id, "")
+		if icon_file != "":
+			var icon_path = "res://assets/art/items/%s" % icon_file
+			if ResourceLoader.exists(icon_path):
+				icon_rect.texture = load(icon_path)
+
 		# Collected - show details
 		var name_label = Label.new()
 		name_label.text = p_item["name"]
@@ -185,7 +223,6 @@ func _create_item_card(p_item: Dictionary) -> Control:
 		vbox.add_child(unknown_label)
 
 	return panel
-
 
 func _refresh_concept_art() -> void:
 	if _art_grid == null:
