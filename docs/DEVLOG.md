@@ -10226,3 +10226,42 @@ ode/life/max_life），而_update_skill_particles()期望新版数据结构（pa
 ### 注意事项
 - ui_character_select_panel.png未导入（无.import文件），tscn中暂不使用，需用户用Godot编辑器打开项目自动导入
 - 禁止在GDScript里动态创建StyleBoxTexture并设置patch_margin_*属性（Godot 4.7会报错）
+
+---
+
+## 2026-09-11 主菜单视觉层次优化 (UI-1深度改造)
+
+### 完成内容
+1. **开始战斗按钮突出优化**
+   - 尺寸从360x80增大到420x90
+   - 字体从24增大到28
+   - 添加金色发光边框（4px金色边框，圆角10px）
+   - hover状态边框更亮（Color(1.0, 0.95, 0.6)）
+   - 使用StyleBoxFlat（禁止动态StyleBoxTexture）
+
+2. **开始按钮呼吸光效动画**
+   - 新增_start_button_glow()方法
+   - 金色亮度脉冲（Color(1.3, 1.15, 0.6) ↔ Color(1.0, 0.92, 0.5)，1.2秒循环）
+   - 微妙缩放脉冲（1.03 ↔ 1.0，1.2秒循环）
+   - 在_ready()中标题动画后启动
+
+3. **视觉层次保持**
+   - 开始按钮：420x90，金色边框+呼吸光效（最突出）
+   - 元游戏按钮：200x55，2x3网格（次要）
+   - 系统按钮：170x50，横向排列（最次）
+
+### 设计参考
+- 星际争霸2主菜单（大背景+少量大按钮+侧边信息）
+- 暗黑破坏神3主菜单（角色在背景中+菜单按钮）
+
+### 验证结果
+- M2测试: 2697 Passed, 0 Failed
+- 无SCRIPT ERROR
+- 无动态StyleBoxTexture创建（符合监控任务要求）
+
+### 修改的文件
+- scripts/ui/MainMenu.gd - 开始按钮增大+金色边框+呼吸光效动画
+
+### 注意事项
+- 严格遵守禁止动态创建StyleBoxTexture并设置patch_margin_*属性的约束
+- 所有9-slice样式使用StyleBoxFlat或主题中已有的.tres资源

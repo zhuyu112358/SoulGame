@@ -89,6 +89,9 @@ func _ready() -> void:
 		# Add subtle floating animation after entrance
 		title_tween.tween_callback(_start_title_float)
 
+	# Start button breathing glow (primary action highlight)
+	_start_button_glow()
+
 	# Animate buttons appearance (staggered fade in, deferred to ensure tween runs)
 	call_deferred("_animate_buttons")
 
@@ -172,8 +175,33 @@ func _build_ui() -> void:
 	var main_btn_container = CenterContainer.new()
 	vbox.add_child(main_btn_container)
 
-	var start_btn = _create_game_button("start", "开始战斗", "START BATTLE", Vector2(360, 80), 24)
+	var start_btn = _create_game_button("start", "开始战斗", "START BATTLE", Vector2(420, 90), 28)
 	start_btn.modulate = Color(1.0, 0.92, 0.5)  # Gold highlight for primary action
+	# Add golden glowing border for primary action
+	var start_normal = StyleBoxFlat.new()
+	start_normal.bg_color = Color(0.15, 0.1, 0.25, 0.95)
+	start_normal.border_color = Color(1.0, 0.85, 0.4)
+	start_normal.border_width_left = 4
+	start_normal.border_width_right = 4
+	start_normal.border_width_top = 4
+	start_normal.border_width_bottom = 4
+	start_normal.corner_radius_top_left = 10
+	start_normal.corner_radius_top_right = 10
+	start_normal.corner_radius_bottom_left = 10
+	start_normal.corner_radius_bottom_right = 10
+	start_btn.add_theme_stylebox_override("normal", start_normal)
+	var start_hover = StyleBoxFlat.new()
+	start_hover.bg_color = Color(0.25, 0.15, 0.35, 1.0)
+	start_hover.border_color = Color(1.0, 0.95, 0.6)
+	start_hover.border_width_left = 4
+	start_hover.border_width_right = 4
+	start_hover.border_width_top = 4
+	start_hover.border_width_bottom = 4
+	start_hover.corner_radius_top_left = 10
+	start_hover.corner_radius_top_right = 10
+	start_hover.corner_radius_bottom_left = 10
+	start_hover.corner_radius_bottom_right = 10
+	start_btn.add_theme_stylebox_override("hover", start_hover)
 	main_btn_container.add_child(start_btn)
 	_buttons["start"] = start_btn
 	_start_button = start_btn
@@ -280,6 +308,22 @@ func _start_title_float() -> void:
 	glow_tween.set_loops()
 	glow_tween.tween_property(_title_label, "modulate", Color(1.3, 1.1, 0.7), 1.5).set_ease(Tween.EASE_IN_OUT)
 	glow_tween.tween_property(_title_label, "modulate", Color(1.0, 0.95, 0.8), 1.5).set_ease(Tween.EASE_IN_OUT)
+
+
+## Start button breathing glow animation (primary action highlight)
+func _start_button_glow() -> void:
+	if _start_button == null:
+		return
+	# Breathing glow animation (golden brightness pulse)
+	var glow_tween = create_tween()
+	glow_tween.set_loops()
+	glow_tween.tween_property(_start_button, "modulate", Color(1.3, 1.15, 0.6), 1.2).set_ease(Tween.EASE_IN_OUT)
+	glow_tween.tween_property(_start_button, "modulate", Color(1.0, 0.92, 0.5), 1.2).set_ease(Tween.EASE_IN_OUT)
+	# Subtle scale pulse
+	var scale_tween = create_tween()
+	scale_tween.set_loops()
+	scale_tween.tween_property(_start_button, "scale", Vector2(1.03, 1.03), 1.2).set_ease(Tween.EASE_IN_OUT)
+	scale_tween.tween_property(_start_button, "scale", Vector2(1.0, 1.0), 1.2).set_ease(Tween.EASE_IN_OUT)
 
 
 ## Setup button hover effects (audio + visual)
