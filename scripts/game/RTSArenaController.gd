@@ -3961,9 +3961,58 @@ func _show_result_modal(p_result: String, p_title: String, p_title_color: Color,
 
 ## Apply 9-slice button style from UI component textures
 func _apply_9slice_button_style(p_button: Button) -> void:
-	# No-op: dynamic StyleBoxTexture creation broken in Godot 4.7 GDScript
-	# Button styling handled by theme
-	pass
+	# Apply game-level three-state StyleBoxFlat (dynamic StyleBoxTexture broken in Godot 4.7)
+	var normal_style = StyleBoxFlat.new()
+	normal_style.bg_color = Color(0.12, 0.09, 0.20, 0.95)
+	normal_style.border_color = Color(0.83, 0.66, 0.36, 0.9)
+	normal_style.border_width_left = 2
+	normal_style.border_width_right = 2
+	normal_style.border_width_top = 2
+	normal_style.border_width_bottom = 2
+	normal_style.corner_radius_top_left = 8
+	normal_style.corner_radius_top_right = 8
+	normal_style.corner_radius_bottom_right = 8
+	normal_style.corner_radius_bottom_left = 8
+	p_button.add_theme_stylebox_override("normal", normal_style)
+
+	var hover_style = StyleBoxFlat.new()
+	hover_style.bg_color = Color(0.20, 0.15, 0.30, 0.98)
+	hover_style.border_color = Color(1.0, 0.88, 0.5, 1.0)
+	hover_style.border_width_left = 3
+	hover_style.border_width_right = 3
+	hover_style.border_width_top = 3
+	hover_style.border_width_bottom = 3
+	hover_style.corner_radius_top_left = 8
+	hover_style.corner_radius_top_right = 8
+	hover_style.corner_radius_bottom_right = 8
+	hover_style.corner_radius_bottom_left = 8
+	p_button.add_theme_stylebox_override("hover", hover_style)
+
+	var pressed_style = StyleBoxFlat.new()
+	pressed_style.bg_color = Color(0.08, 0.06, 0.14, 1.0)
+	pressed_style.border_color = Color(0.7, 0.55, 0.3, 1.0)
+	pressed_style.border_width_left = 2
+	pressed_style.border_width_right = 2
+	pressed_style.border_width_top = 2
+	pressed_style.border_width_bottom = 2
+	pressed_style.corner_radius_top_left = 8
+	pressed_style.corner_radius_top_right = 8
+	pressed_style.corner_radius_bottom_right = 8
+	pressed_style.corner_radius_bottom_left = 8
+	p_button.add_theme_stylebox_override("pressed", pressed_style)
+
+	var disabled_style = StyleBoxFlat.new()
+	disabled_style.bg_color = Color(0.08, 0.07, 0.10, 0.8)
+	disabled_style.border_color = Color(0.4, 0.35, 0.25, 0.5)
+	disabled_style.border_width_left = 1
+	disabled_style.border_width_right = 1
+	disabled_style.border_width_top = 1
+	disabled_style.border_width_bottom = 1
+	disabled_style.corner_radius_top_left = 8
+	disabled_style.corner_radius_top_right = 8
+	disabled_style.corner_radius_bottom_right = 8
+	disabled_style.corner_radius_bottom_left = 8
+	p_button.add_theme_stylebox_override("disabled", disabled_style)
 
 ## Animate result modal elements appearing sequentially (staggered fade in + slide up)
 func _animate_result_elements(p_panel: Panel) -> void:

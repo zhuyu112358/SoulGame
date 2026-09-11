@@ -1,5 +1,30 @@
 ﻿# 战策 Battleplan 开发日志
 
+## [战斗结算修复] 修复结算按钮空样式方法-再战一局/返回主菜单按钮三态StyleBoxFlat（2026-09-12）
+
+**本轮工作**：发现并修复战斗结算界面按钮样式为空的问题——`_apply_9slice_button_style()`方法是no-op（空方法），导致"再战一局"和"返回主菜单"按钮没有任何样式，使用默认按钮外观。
+
+**问题根因**：
+- 之前因为Godot 4.7动态创建StyleBoxTexture会崩溃，将该方法改为空方法
+- 但忘记改用StyleBoxFlat实现，导致结算按钮一直是默认工业软件风样式
+
+**修复内容**：
+- 将`_apply_9slice_button_style()`从空方法改为实际应用四态StyleBoxFlat样式：
+  - normal：深紫底(Color(0.12,0.09,0.20,0.95))+金色边框(2px)+圆角(8px)
+  - hover：更亮底+亮金边框(3px)
+  - pressed：深色底+暗金边框(2px)
+  - disabled：灰底+暗边框(1px)
+- 影响范围：战斗结算界面的"再战一局"和"返回主菜单"按钮
+
+**修改文件**：
+- scripts/game/RTSArenaController.gd：重写_apply_9slice_button_style()方法
+
+**验证结果**：
+- rts_arena场景测试：NO SCRIPT ERROR
+- M2测试：2955 Passed, 0 Failed
+
+---
+
 ## [战斗HUD升级] 战术指令按钮游戏级UI-6个按钮各对应颜色边框+选中金色高亮（2026-09-12）
 
 **本轮工作**：为战斗HUD的6个战术指令按钮添加游戏级UI三态样式，改进选中状态视觉效果。
