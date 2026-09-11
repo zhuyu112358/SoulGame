@@ -11453,3 +11453,30 @@ ode/life/max_life），而_update_skill_particles()期望新版数据结构（pa
 - 继续升级其他界面（好友系统/设置界面/随机匹配等）
 - 战斗HUD技能图标按钮+冷却遮罩
 - 实机测试验证渲染效果
+
+---
+
+## 2026-09-11 游戏级UI升级：好友系统界面
+
+### 升级内容
+以SoulSelect.gd为质量模板，升级好友系统界面（FriendUI.gd）的视觉层。
+
+### 视觉改进
+1. **好友卡片元素色边框**：_create_friend_item()方法重写，根据好友主元素添加对应颜色边框（8种元素对应颜色），深紫底色+圆角8px，高度从70增加到76
+2. **卡片hover效果**：鼠标悬停时卡片放大1.015倍+边框变亮3px，移开恢复
+3. **头像放大**：头像从40x40增加到44x44，元素色背景加深
+4. **按钮三态样式**：添加好友/刷新/返回按钮使用normal/hover/pressed三态StyleBoxFlat，hover时边框变亮，文字金色
+5. **添加_setup_ui_styles()方法**：统一管理所有按钮的视觉样式
+6. **移除重复代码**：移除avatar section中重复的element_color定义，复用方法顶部的定义
+
+### 验证结果
+- friends.tscn：**NO SCRIPT ERRORS**，游戏级UI样式应用成功
+- M2测试：**2955 Passed, 0 Failed** 全绿
+
+### 修改的文件
+- scripts/ui/FriendUI.gd - _create_friend_item()重写（元素色边框+hover效果），添加_setup_ui_styles()方法
+
+### 下一步
+- 继续升级其他界面（设置界面/随机匹配/捏脸系统等）
+- 战斗HUD技能图标按钮+冷却遮罩
+- 实机测试验证渲染效果

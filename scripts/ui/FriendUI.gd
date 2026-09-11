@@ -43,7 +43,10 @@ func _ready() -> void:
 	_refresh_friend_list()
 	_refresh_request_list()
 	_update_counts()
-	GameLog.info("FriendUI: Ready", "UI")
+	# Apply game-level UI styles
+	_setup_ui_styles()
+
+	GameLog.info("FriendUI: Ready (game-level UI)", "UI")
 
 	# Apply 9-slice panel style to all Panel nodes
 	var panel_style_path = "res://assets/ui/ui_character_select_panel_style.tres"
@@ -135,18 +138,55 @@ func _refresh_friend_list() -> void:
 
 func _create_friend_item(p_friend: Dictionary) -> Control:
 	var panel = Panel.new()
-	panel.custom_minimum_size = Vector2(0, 70)
+	panel.custom_minimum_size = Vector2(0, 76)
+
+	# Element-colored border style
+	var element_color = _element_colors.get(p_friend["element"], Color(0.5, 0.5, 0.5))
+	var card_style = StyleBoxFlat.new()
+	card_style.bg_color = Color(0.08, 0.05, 0.15, 0.92)
+	card_style.border_color = element_color
+	card_style.border_width_left = 2
+	card_style.border_width_right = 2
+	card_style.border_width_top = 2
+	card_style.border_width_bottom = 2
+	card_style.corner_radius_top_left = 8
+	card_style.corner_radius_top_right = 8
+	card_style.corner_radius_bottom_left = 8
+	card_style.corner_radius_bottom_right = 8
+	panel.add_theme_stylebox_override("panel", card_style)
+
+	# Hover effect: scale up + brighter border
+	panel.mouse_entered.connect(func():
+		var s = panel.get_theme_stylebox("panel")
+		if s and s is StyleBoxFlat:
+			s.border_width_left = 3
+			s.border_width_right = 3
+			s.border_width_top = 3
+			s.border_width_bottom = 3
+			s.border_color = element_color.lightened(0.3)
+		panel.scale = Vector2(1.015, 1.015)
+	)
+	panel.mouse_exited.connect(func():
+		var s = panel.get_theme_stylebox("panel")
+		if s and s is StyleBoxFlat:
+			s.border_width_left = 2
+			s.border_width_right = 2
+			s.border_width_top = 2
+			s.border_width_bottom = 2
+			s.border_color = element_color
+		panel.scale = Vector2(1.0, 1.0)
+	)
 
 	var hbox = HBoxContainer.new()
 	hbox.layout_mode = 1
 	hbox.anchors_preset = 15
 	hbox.anchor_right = 1.0
 	hbox.anchor_bottom = 1.0
-	hbox.offset_left = 5.0
-	hbox.offset_top = 5.0
-	hbox.offset_right = -5.0
-	hbox.offset_bottom = -5.0
-	hbox.add_theme_constant_override("separation", 10)
+	hbox.offset_left = 8.0
+	hbox.offset_top = 6.0
+	hbox.offset_right = -8.0
+	hbox.offset_bottom = -6.0
+	hbox.add_theme_constant_override("separation", 12)
 	panel.add_child(hbox)
 
 	# Friend avatar (element-colored square with first letter)
@@ -156,9 +196,8 @@ func _create_friend_item(p_friend: Dictionary) -> Control:
 	hbox.add_child(avatar_container)
 
 	var avatar_bg = ColorRect.new()
-	avatar_bg.custom_minimum_size = Vector2(40, 40)
-	var element_color = _element_colors.get(p_friend["element"], Color(0.5, 0.5, 0.5))
-	avatar_bg.color = Color(element_color.r * 0.6, element_color.g * 0.6, element_color.b * 0.6, 0.9)
+	avatar_bg.custom_minimum_size = Vector2(44, 44)
+	avatar_bg.color = Color(element_color.r * 0.5, element_color.g * 0.5, element_color.b * 0.5, 0.9)
 	avatar_container.add_child(avatar_bg)
 
 	var avatar_label = Label.new()
@@ -341,6 +380,56 @@ func _on_refresh_pressed() -> void:
 	_refresh_request_list()
 	_update_counts()
 	GameLog.info("FriendUI: Refreshed", "UI")
+
+
+## Apply game-level UI styles to panels and buttons
+func _setup_ui_styles() -> void:
+	# Three-state button style
+	var btn_normal = StyleBoxFlat.new()
+	btn_normal.bg_color = Color(0.12, 0.08, 0.22, 0.95)
+	btn_normal.border_color = Color(0.7, 0.55, 0.3, 0.8)
+	btn_normal.border_width_left = 2
+	btn_normal.border_width_right = 2
+	btn_normal.border_width_top = 2
+	btn_normal.border_width_bottom = 2
+	btn_normal.corner_radius_top_left = 6
+	btn_normal.corner_radius_top_right = 6
+	btn_normal.corner_radius_bottom_left = 6
+	btn_normal.corner_radius_bottom_right = 6
+
+	var btn_hover = StyleBoxFlat.new()
+	btn_hover.bg_color = Color(0.18, 0.12, 0.3, 0.98)
+	btn_hover.border_color = Color(0.95, 0.78, 0.45, 1.0)
+	btn_hover.border_width_left = 2
+	btn_hover.border_width_right = 2
+	btn_hover.border_width_top = 2
+	btn_hover.border_width_bottom = 2
+	btn_hover.corner_radius_top_left = 6
+	btn_hover.corner_radius_top_right = 6
+	btn_hover.corner_radius_bottom_left = 6
+	btn_hover.corner_radius_bottom_right = 6
+
+	var btn_pressed = StyleBoxFlat.new()
+	btn_pressed.bg_color = Color(0.08, 0.05, 0.15, 1.0)
+	btn_pressed.border_color = Color(0.6, 0.48, 0.25, 0.9)
+	btn_pressed.border_width_left = 2
+	btn_pressed.border_width_right = 2
+	btn_pressed.border_width_top = 2
+	btn_pressed.border_width_bottom = 2
+	btn_pressed.corner_radius_top_left = 6
+	btn_pressed.corner_radius_top_right = 6
+	btn_pressed.corner_radius_bottom_left = 6
+	btn_pressed.corner_radius_bottom_right = 6
+
+	# Apply to all buttons
+	for btn in [_add_friend_button, _refresh_button, _back_button]:
+		if btn:
+			btn.add_theme_stylebox_override("normal", btn_normal)
+			btn.add_theme_stylebox_override("hover", btn_hover)
+			btn.add_theme_stylebox_override("pressed", btn_pressed)
+			btn.add_theme_color_override("font_color", Color(0.95, 0.88, 0.65))
+
+	GameLog.info("FriendUI: Game-level UI styles applied", "UI")
 
 
 func _on_back_pressed() -> void:
