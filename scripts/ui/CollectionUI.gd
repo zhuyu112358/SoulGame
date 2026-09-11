@@ -42,6 +42,36 @@ func _ready() -> void:
 	_refresh_all()
 	GameLog.info("CollectionUI: Ready", "UI")
 
+	# Apply 9-slice panel styles to TopBar and BottomBar
+	var coll_panel_style_path = "res://assets/ui/ui_character_select_panel_style.tres"
+	if ResourceLoader.exists(coll_panel_style_path):
+		var coll_panel_style = load(coll_panel_style_path)
+		if coll_panel_style:
+			var top_bar = get_node_or_null("TopBar")
+			if top_bar:
+				top_bar.add_theme_stylebox_override("panel", coll_panel_style)
+			var bottom_bar = get_node_or_null("BottomBar")
+			if bottom_bar:
+				bottom_bar.add_theme_stylebox_override("panel", coll_panel_style)
+	else:
+		var coll_fallback = StyleBoxFlat.new()
+		coll_fallback.bg_color = Color(0.08, 0.05, 0.15, 0.9)
+		coll_fallback.border_color = Color(0.83, 0.66, 0.36)
+		coll_fallback.border_width_left = 2
+		coll_fallback.border_width_right = 2
+		coll_fallback.border_width_top = 2
+		coll_fallback.border_width_bottom = 2
+		coll_fallback.corner_radius_top_left = 8
+		coll_fallback.corner_radius_top_right = 8
+		coll_fallback.corner_radius_bottom_left = 8
+		coll_fallback.corner_radius_bottom_right = 8
+		var top_bar = get_node_or_null("TopBar")
+		if top_bar:
+			top_bar.add_theme_stylebox_override("panel", coll_fallback)
+		var bottom_bar = get_node_or_null("BottomBar")
+		if bottom_bar:
+			bottom_bar.add_theme_stylebox_override("panel", coll_fallback)
+
 
 func _find_ui_nodes() -> void:
 	_total_progress_label = get_node_or_null("TopBar/TotalProgressLabel")

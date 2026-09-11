@@ -50,6 +50,32 @@ func _ready() -> void:
 	_build_soul_list()
 	_update_progress()
 
+	# Apply 9-slice panel styles
+	var codex_panel_style_path = "res://assets/ui/ui_character_select_panel_style.tres"
+	if ResourceLoader.exists(codex_panel_style_path):
+		var codex_panel_style = load(codex_panel_style_path)
+		if codex_panel_style:
+			_detail_panel.add_theme_stylebox_override("panel", codex_panel_style)
+			var soul_list_panel = get_node_or_null("MarginContainer/VBox/Body/SoulList")
+			if soul_list_panel:
+				soul_list_panel.add_theme_stylebox_override("panel", codex_panel_style)
+	else:
+		var codex_fallback = StyleBoxFlat.new()
+		codex_fallback.bg_color = Color(0.08, 0.05, 0.15, 0.9)
+		codex_fallback.border_color = Color(0.83, 0.66, 0.36)
+		codex_fallback.border_width_left = 2
+		codex_fallback.border_width_right = 2
+		codex_fallback.border_width_top = 2
+		codex_fallback.border_width_bottom = 2
+		codex_fallback.corner_radius_top_left = 8
+		codex_fallback.corner_radius_top_right = 8
+		codex_fallback.corner_radius_bottom_left = 8
+		codex_fallback.corner_radius_bottom_right = 8
+		_detail_panel.add_theme_stylebox_override("panel", codex_fallback)
+		var soul_list_panel = get_node_or_null("MarginContainer/VBox/Body/SoulList")
+		if soul_list_panel:
+			soul_list_panel.add_theme_stylebox_override("panel", codex_fallback)
+
 	# Auto-select first unlocked soul
 	var unlocked = _codex.get_unlocked_souls()
 	if not unlocked.is_empty():

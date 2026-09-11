@@ -10525,3 +10525,52 @@ ode/life/max_life），而_update_skill_particles()期望新版数据结构（pa
 - 其他场景面板9-slice样式集成(soul_codex/collection/friends/matchmaking)
 - training_stats_menu添加Panel容器
 - 实机测试验证9-slice面板渲染效果
+
+---
+
+## 2026-09-11 其他场景面板9-slice样式集成 (UI组件集成第三步)
+
+### 完成内容
+1. **SoulCodexUI面板9-slice集成**
+   - SoulList Panel应用ui_character_select_panel_style.tres
+   - DetailPanel应用ui_character_select_panel_style.tres
+   - 带fallback到StyleBoxFlat
+
+2. **CollectionUI面板9-slice集成**
+   - TopBar Panel应用9-slice样式
+   - BottomBar Panel应用9-slice样式
+   - 带fallback到StyleBoxFlat
+
+3. **FriendUI面板9-slice集成**
+   - 遍历所有子节点，自动给所有Panel/PanelContainer应用9-slice样式
+   - 4个Panel全部覆盖
+   - 带fallback到StyleBoxFlat
+
+4. **MatchmakingUI面板9-slice集成**
+   - 遍历所有子节点，自动给所有Panel/PanelContainer应用9-slice样式
+   - 带fallback到StyleBoxFlat
+
+### 验证结果
+- M2测试: 2686 Passed, 0 Failed
+- 无SCRIPT ERROR
+- 所有9-slice面板样式可正常加载
+
+### 修改的文件
+- scripts/ui/SoulCodexUI.gd - SoulList+DetailPanel应用9-slice样式
+- scripts/ui/CollectionUI.gd - TopBar+BottomBar应用9-slice样式
+- scripts/ui/FriendUI.gd - 遍历所有Panel应用9-slice样式
+- scripts/ui/MatchmakingUI.gd - 遍历所有Panel应用9-slice样式
+
+### UI组件集成最终进度
+- SoulSelect详情面板 ✅
+- BattleConfig主面板 ✅
+- SoulCodex面板(SoulList+DetailPanel) ✅
+- Collection面板(TopBar+BottomBar) ✅
+- Friend面板(4个Panel) ✅
+- Matchmaking面板 ✅
+- training_stats_menu ⏳ (无Panel节点，需添加)
+
+### 下一步
+- training_stats_menu添加Panel容器+9-slice样式
+- 实机测试验证所有9-slice面板渲染效果
+- UI组件集成完成后进入实机测试阶段

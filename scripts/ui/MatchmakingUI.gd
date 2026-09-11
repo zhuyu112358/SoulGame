@@ -53,6 +53,31 @@ func _ready() -> void:
 	_matchmaking.matchmaking_progress.connect(_on_matchmaking_progress)
 	_matchmaking.opponent_found.connect(_on_opponent_found)
 	_matchmaking.matchmaking_cancelled.connect(_on_matchmaking_cancelled)
+	# Apply 9-slice panel style to all Panel nodes
+	var panel_style_path = "res://assets/ui/ui_character_select_panel_style.tres"
+	var panel_style_to_apply = null
+	if ResourceLoader.exists(panel_style_path):
+		panel_style_to_apply = load(panel_style_path)
+	else:
+		panel_style_to_apply = StyleBoxFlat.new()
+		panel_style_to_apply.bg_color = Color(0.08, 0.05, 0.15, 0.9)
+		panel_style_to_apply.border_color = Color(0.83, 0.66, 0.36)
+		panel_style_to_apply.border_width_left = 2
+		panel_style_to_apply.border_width_right = 2
+		panel_style_to_apply.border_width_top = 2
+		panel_style_to_apply.border_width_bottom = 2
+		panel_style_to_apply.corner_radius_top_left = 8
+		panel_style_to_apply.corner_radius_top_right = 8
+		panel_style_to_apply.corner_radius_bottom_left = 8
+		panel_style_to_apply.corner_radius_bottom_right = 8
+	if panel_style_to_apply:
+		for child in get_children():
+			if child is Panel or child is PanelContainer:
+				child.add_theme_stylebox_override("panel", panel_style_to_apply)
+			for grandchild in child.get_children():
+				if grandchild is Panel or grandchild is PanelContainer:
+					grandchild.add_theme_stylebox_override("panel", panel_style_to_apply)
+
 
 	_cancel_button.pressed.connect(_on_cancel_pressed)
 	_start_button.pressed.connect(_on_start_pressed)
