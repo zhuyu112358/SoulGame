@@ -73,6 +73,52 @@ func _ready() -> void:
 				if grandchild is Panel or grandchild is PanelContainer:
 					grandchild.add_theme_stylebox_override("panel", panel_style_to_apply)
 
+	_animate_entrance()
+
+
+## Animate UI entrance with staggered fade-in + scale (game-level UI)
+func _animate_entrance() -> void:
+	# TopBar fade-in
+	var top_bar = get_node_or_null("TopBar")
+	if top_bar and top_bar is CanvasItem:
+		top_bar.modulate.a = 0.0
+		var top_tween = create_tween()
+		top_tween.set_ease(Tween.EASE_OUT)
+		top_tween.tween_property(top_bar, "modulate:a", 1.0, 0.4)
+	# Main content fade-in + scale
+	var main = get_node_or_null("Main")
+	if main and main is CanvasItem:
+		main.modulate.a = 0.0
+		main.scale = Vector2(0.95, 0.95)
+		var main_tween = create_tween()
+		main_tween.set_ease(Tween.EASE_OUT)
+		main_tween.set_trans(Tween.TRANS_BACK)
+		main_tween.tween_interval(0.2)
+		main_tween.tween_property(main, "modulate:a", 1.0, 0.4)
+		main_tween.parallel().tween_property(main, "scale", Vector2(1.0, 1.0), 0.4)
+	# BottomBar fade-in
+	var bottom_bar = get_node_or_null("BottomBar")
+	if bottom_bar and bottom_bar is CanvasItem:
+		bottom_bar.modulate.a = 0.0
+		var bottom_tween = create_tween()
+		bottom_tween.set_ease(Tween.EASE_OUT)
+		bottom_tween.tween_interval(0.4)
+		bottom_tween.tween_property(bottom_bar, "modulate:a", 1.0, 0.3)
+	# Staggered fade-in for friend items
+	await get_tree().create_timer(0.5).timeout
+	if _friend_list:
+		var items = _friend_list.get_children()
+		for i in range(items.size()):
+			var item = items[i]
+			if item and item is CanvasItem:
+				item.modulate.a = 0.0
+				item.scale = Vector2(0.9, 0.9)
+				var item_tween = create_tween()
+				item_tween.set_ease(Tween.EASE_OUT)
+				item_tween.set_trans(Tween.TRANS_BACK)
+				item_tween.tween_interval(i * 0.06)
+				item_tween.tween_property(item, "modulate:a", 1.0, 0.25)
+				item_tween.parallel().tween_property(item, "scale", Vector2(1.0, 1.0), 0.25)
 
 
 func _find_ui_nodes() -> void:
