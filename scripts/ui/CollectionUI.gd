@@ -73,6 +73,59 @@ func _ready() -> void:
 		if bottom_bar:
 			bottom_bar.add_theme_stylebox_override("panel", coll_fallback)
 
+	_animate_entrance()
+
+
+## Animate UI entrance with staggered fade-in + scale (game-level UI)
+func _animate_entrance() -> void:
+	# TopBar fade-in + scale
+	var top_bar = get_node_or_null("TopBar")
+	if top_bar and top_bar is CanvasItem:
+		top_bar.modulate.a = 0.0
+		top_bar.scale = Vector2(0.95, 0.95)
+		var top_tween = create_tween()
+		top_tween.set_ease(Tween.EASE_OUT)
+		top_tween.set_trans(Tween.TRANS_BACK)
+		top_tween.tween_property(top_bar, "modulate:a", 1.0, 0.4)
+		top_tween.parallel().tween_property(top_bar, "scale", Vector2(1.0, 1.0), 0.4)
+	# Main content fade-in + scale
+	var main = get_node_or_null("Main")
+	if main and main is CanvasItem:
+		main.modulate.a = 0.0
+		main.scale = Vector2(0.95, 0.95)
+		var main_tween = create_tween()
+		main_tween.set_ease(Tween.EASE_OUT)
+		main_tween.set_trans(Tween.TRANS_BACK)
+		main_tween.tween_interval(0.2)
+		main_tween.tween_property(main, "modulate:a", 1.0, 0.4)
+		main_tween.parallel().tween_property(main, "scale", Vector2(1.0, 1.0), 0.4)
+	# BottomBar fade-in + scale
+	var bottom_bar = get_node_or_null("BottomBar")
+	if bottom_bar and bottom_bar is CanvasItem:
+		bottom_bar.modulate.a = 0.0
+		bottom_bar.scale = Vector2(0.95, 0.95)
+		var bottom_tween = create_tween()
+		bottom_tween.set_ease(Tween.EASE_OUT)
+		bottom_tween.set_trans(Tween.TRANS_BACK)
+		bottom_tween.tween_interval(0.4)
+		bottom_tween.tween_property(bottom_bar, "modulate:a", 1.0, 0.4)
+		bottom_tween.parallel().tween_property(bottom_bar, "scale", Vector2(1.0, 1.0), 0.4)
+	# Staggered fade-in for item cards
+	await get_tree().create_timer(0.5).timeout
+	if _item_grid:
+		var cards = _item_grid.get_children()
+		for i in range(cards.size()):
+			var card = cards[i]
+			if card and card is CanvasItem:
+				card.modulate.a = 0.0
+				card.scale = Vector2(0.9, 0.9)
+				var card_tween = create_tween()
+				card_tween.set_ease(Tween.EASE_OUT)
+				card_tween.set_trans(Tween.TRANS_BACK)
+				card_tween.tween_interval(i * 0.04)
+				card_tween.tween_property(card, "modulate:a", 1.0, 0.2)
+				card_tween.parallel().tween_property(card, "scale", Vector2(1.0, 1.0), 0.2)
+
 
 func _find_ui_nodes() -> void:
 	_total_progress_label = get_node_or_null("TopBar/TotalProgressLabel")
