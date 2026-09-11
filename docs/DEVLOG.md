@@ -39,16 +39,29 @@
 - 修改`_load_portrait_atlas()`：同时加载单独立绘文件
 - 修改`_get_portrait_texture()`：优先使用单独立绘
 
-### UI-3：统一使用UI组件素材（进行中）
+### UI-3：战斗配置界面美化 ✅
 
-**已完成**：
-- 主菜单按钮使用9-slice ui_button_*.png
-- 所有场景使用对应背景图（main_menu_bg/soul_select_bg等）
+**改造内容**：
+- 所有按钮使用9-slice `ui_button_normal/hover/pressed.png`样式
+- 地图选择：从纯文字按钮改为卡片样式（带背景色+元素色边框+名称+英文名+描述）
+- 战术预设：6种战术按钮使用9-slice样式+各战术主题色
+- AI难度：4种难度按钮使用9-slice样式+难度颜色（简单绿/普通蓝/困难橙/噩梦红）
+- 队伍槽位：从纯文字改为卡片样式，选中灵魂后显示立绘缩略图
+- 开始战斗按钮：金色高亮（主行动按钮）
+- 返回/开始按钮：统一9-slice样式
 
-**待完成**：
-- 战斗配置界面美化（地图预览卡片/战术图标/队伍槽位头像）
-- 所有面板使用ui_panel_bg.png 9-slice背景
-- 进度条使用ui_progress_bar.png
+**新增方法**：
+- `_create_game_button(p_text, p_size, p_font_size)`：创建9-slice游戏风格按钮
+- `_create_card_panel(p_bg_color, p_border_color)`：创建带边框的卡片面板
+
+### UI-4：动画与交互反馈（进行中）
+- 按钮hover放大/发光：已有基础（MainMenu/SoulSelect）
+- 灵魂立绘呼吸动画：待添加
+- 元素粒子光效：待添加
+
+---
+
+## [UI质量大改造] 从工业软件到真正的游戏（2026-09-11）
 
 ### 美术资源盘点（已确认可用）
 - UI组件：ui_main_menu_panel.png, ui_button_normal/hover/pressed.png, ui_panel_bg.png, ui_border_frame.png等30+个

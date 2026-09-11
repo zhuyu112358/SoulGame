@@ -157,19 +157,84 @@ func _build_ui() -> void:
 	btn_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	vbox.add_child(btn_hbox)
 
-	_back_button = Button.new()
-	_back_button.text = "返回"
-	_back_button.custom_minimum_size = Vector2(150, 50)
-	_back_button.add_theme_font_size_override("font_size", 16)
+	_back_button = _create_game_button("返回", Vector2(150, 50), 16)
 	btn_hbox.add_child(_back_button)
 
-	_start_button = Button.new()
-	_start_button.text = "开始战斗"
-	_start_button.custom_minimum_size = Vector2(200, 50)
-	_start_button.add_theme_font_size_override("font_size", 18)
+	_start_button = _create_game_button("开始战斗", Vector2(220, 55), 18)
+	_start_button.modulate = Color(1.0, 0.92, 0.5)  # Gold highlight for primary action
 	btn_hbox.add_child(_start_button)
 
 	GameLog.info("BattleConfig: UI built dynamically", "UI")
+
+
+## Create a game-style button with 9-slice UI component textures
+func _create_game_button(p_text: String, p_size: Vector2, p_font_size: int = 16) -> Button:
+	var btn = Button.new()
+	btn.text = p_text
+	btn.custom_minimum_size = p_size
+	btn.add_theme_font_size_override("font_size", p_font_size)
+	btn.add_theme_color_override("font_color", Color(0.95, 0.9, 0.75))
+	btn.add_theme_color_override("font_hover_color", Color(1.0, 0.95, 0.85))
+	btn.add_theme_color_override("font_pressed_color", Color(1.0, 0.85, 0.5))
+
+	# Apply 9-slice button textures
+	var normal_tex = load("res://assets/art/ui/ui_button_normal.png")
+	var hover_tex = load("res://assets/art/ui/ui_button_hover.png")
+	var pressed_tex = load("res://assets/art/ui/ui_button_pressed.png")
+	if normal_tex:
+		var normal_style = StyleBoxTexture.new()
+		normal_style.texture = normal_tex
+		normal_style.region_rect = Rect2(0, 0, normal_tex.get_width(), normal_tex.get_height())
+		normal_style.patch_margin_left = 12
+		normal_style.patch_margin_right = 12
+		normal_style.patch_margin_top = 8
+		normal_style.patch_margin_bottom = 8
+		normal_style.draw_center = true
+		btn.add_theme_stylebox_override("normal", normal_style)
+	if hover_tex:
+		var hover_style = StyleBoxTexture.new()
+		hover_style.texture = hover_tex
+		hover_style.region_rect = Rect2(0, 0, hover_tex.get_width(), hover_tex.get_height())
+		hover_style.patch_margin_left = 12
+		hover_style.patch_margin_right = 12
+		hover_style.patch_margin_top = 8
+		hover_style.patch_margin_bottom = 8
+		hover_style.draw_center = true
+		btn.add_theme_stylebox_override("hover", hover_style)
+	if pressed_tex:
+		var pressed_style = StyleBoxTexture.new()
+		pressed_style.texture = pressed_tex
+		pressed_style.region_rect = Rect2(0, 0, pressed_tex.get_width(), pressed_tex.get_height())
+		pressed_style.patch_margin_left = 12
+		pressed_style.patch_margin_right = 12
+		pressed_style.patch_margin_top = 8
+		pressed_style.patch_margin_bottom = 8
+		pressed_style.draw_center = true
+		btn.add_theme_stylebox_override("pressed", pressed_style)
+
+	return btn
+
+
+## Create a styled card panel with 9-slice background
+func _create_card_panel(p_bg_color: Color, p_border_color: Color) -> PanelContainer:
+	var panel = PanelContainer.new()
+	var style = StyleBoxFlat.new()
+	style.bg_color = p_bg_color
+	style.border_color = p_border_color
+	style.border_width_left = 2
+	style.border_width_right = 2
+	style.border_width_top = 2
+	style.border_width_bottom = 2
+	style.corner_radius_top_left = 8
+	style.corner_radius_top_right = 8
+	style.corner_radius_bottom_left = 8
+	style.corner_radius_bottom_right = 8
+	style.content_margin_left = 10
+	style.content_margin_right = 10
+	style.content_margin_top = 8
+	style.content_margin_bottom = 8
+	panel.add_theme_stylebox_override("panel", style)
+	return panel
 
 func _setup_theme() -> void:
 	# Apply battleplan theme (deep purple + gold)
@@ -178,61 +243,112 @@ func _setup_theme() -> void:
 		theme = load(theme_path)
 
 func _build_map_selection() -> void:
-	# Create map selection buttons
+	# Create map selection cards (UI-3: card style with bg color + border)
 	for map_id in MAPS.keys():
 		var map_data: Dictionary = MAPS[map_id]
-		var btn: Button = Button.new()
-		btn.custom_minimum_size = Vector2(200, 120)
-		btn.text = map_data["name"] + "\n" + map_data["name_en"]
-		btn.tooltip_text = map_data["description"]
-		btn.name = "MapBtn_" + map_id
-		btn.pressed.connect(_on_map_selected.bind(map_id))
-		_map_container.add_child(btn)
+		var card = _create_card_panel(map_data["bg_color"], map_data["accent_color"])
+		card.custom_minimum_size = Vector2(220, 130)
+		card.name = "MapCard_" + map_id
+
+		var vbox = VBoxContainer.new()
+		vbox.add_theme_constant_override("separation", 6)
+		card.add_child(vbox)
+
+		var name_label = Label.new()
+		name_label.text = map_data["name"]
+		name_label.add_theme_font_size_override("font_size", 20)
+		name_label.add_theme_color_override("font_color", Color(0.95, 0.9, 0.75))
+		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		vbox.add_child(name_label)
+
+		var en_label = Label.new()
+		en_label.text = map_data["name_en"]
+		en_label.add_theme_font_size_override("font_size", 12)
+		en_label.add_theme_color_override("font_color", Color(0.7, 0.65, 0.5))
+		en_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		vbox.add_child(en_label)
+
+		var desc_label = Label.new()
+		desc_label.text = map_data["description"]
+		desc_label.add_theme_font_size_override("font_size", 11)
+		desc_label.add_theme_color_override("font_color", Color(0.6, 0.55, 0.45))
+		desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD
+		vbox.add_child(desc_label)
+
+		# Transparent click button overlay
+		var click_btn = Button.new()
+		click_btn.set_anchors_preset(Control.PRESET_FULL_RECT)
+		click_btn.text = ""
+		var transparent_style = StyleBoxEmpty.new()
+		click_btn.add_theme_stylebox_override("normal", transparent_style)
+		click_btn.add_theme_stylebox_override("hover", transparent_style)
+		click_btn.add_theme_stylebox_override("pressed", transparent_style)
+		click_btn.add_theme_stylebox_override("focus", transparent_style)
+		click_btn.tooltip_text = map_data["description"]
+		click_btn.pressed.connect(_on_map_selected.bind(map_id))
+		card.add_child(click_btn)
+
+		_map_container.add_child(card)
 		# Highlight selected
 		if map_id == _selected_map:
-			_highlight_button(btn, true)
+			card.modulate = Color(1.2, 1.1, 0.8)
 
 func _build_tactic_selection() -> void:
-	# Create tactical preset buttons (2 rows x 3 columns)
+	# Create tactical preset buttons (2 rows x 3 columns) with 9-slice style
 	for tactic_id in TACTICS.keys():
 		var tactic_data: Dictionary = TACTICS[tactic_id]
-		var btn: Button = Button.new()
-		btn.custom_minimum_size = Vector2(140, 60)
-		btn.text = tactic_data["name"] + "\n" + tactic_data["name_en"]
+		var btn = _create_game_button(tactic_data["name"] + "\n" + tactic_data["name_en"], Vector2(150, 60), 14)
+		btn.modulate = tactic_data["color"]
 		btn.tooltip_text = tactic_data["desc"]
 		btn.name = "TacticBtn_" + tactic_id
 		btn.pressed.connect(_on_tactic_selected.bind(tactic_id))
 		_tactic_container.add_child(btn)
 		# Highlight selected
 		if tactic_id == _selected_tactic:
-			_highlight_button(btn, true)
+			btn.modulate = Color(1.2, 1.1, 0.7)
 
 func _build_difficulty_selection() -> void:
-	# Create AI difficulty selection buttons (GDD v2.0: 4 difficulties)
+	# Create AI difficulty selection buttons (GDD v2.0: 4 difficulties) with badge style
 	for diff_id in DIFFICULTIES.keys():
 		var diff_data: Dictionary = DIFFICULTIES[diff_id]
-		var btn: Button = Button.new()
-		btn.custom_minimum_size = Vector2(130, 55)
-		btn.text = diff_data["name"] + "\n" + diff_data["name_en"]
+		var btn = _create_game_button(diff_data["name"] + "\n" + diff_data["name_en"], Vector2(140, 55), 13)
+		btn.modulate = diff_data["color"]
 		btn.tooltip_text = diff_data["desc"]
 		btn.name = "DiffBtn_" + diff_id
 		btn.pressed.connect(_on_difficulty_selected.bind(diff_id))
 		_difficulty_container.add_child(btn)
 		# Highlight selected
 		if diff_id == _selected_difficulty:
-			_highlight_button(btn, true)
+			btn.modulate = Color(1.2, 1.1, 0.7)
 
 func _build_team_display() -> void:
-	# Create team slots (4 slots per GDD v2.0)
+	# Create team slots (4 slots per GDD v2.0) with portrait display
 	for i in _max_team_size:
-		var slot: PanelContainer = PanelContainer.new()
-		slot.custom_minimum_size = Vector2(120, 140)
+		var slot = _create_card_panel(Color(0.1, 0.08, 0.18, 0.9), Color(0.5, 0.4, 0.3))
+		slot.custom_minimum_size = Vector2(130, 150)
 		slot.name = "TeamSlot_" + str(i)
-		var label: Label = Label.new()
-		label.text = "槽位 " + str(i + 1) + "\n(空)"
-		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		slot.add_child(label)
+
+		var vbox = VBoxContainer.new()
+		vbox.add_theme_constant_override("separation", 4)
+		slot.add_child(vbox)
+
+		var slot_label = Label.new()
+		slot_label.text = "槽位 " + str(i + 1)
+		slot_label.add_theme_font_size_override("font_size", 12)
+		slot_label.add_theme_color_override("font_color", Color(0.7, 0.6, 0.45))
+		slot_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		vbox.add_child(slot_label)
+
+		var empty_label = Label.new()
+		empty_label.text = "(空)"
+		empty_label.add_theme_font_size_override("font_size", 16)
+		empty_label.add_theme_color_override("font_color", Color(0.4, 0.35, 0.3))
+		empty_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		empty_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		empty_label.name = "EmptyLabel"
+		vbox.add_child(empty_label)
+
 		_team_container.add_child(slot)
 
 func _connect_signals() -> void:
@@ -262,18 +378,39 @@ func _load_selected_souls() -> void:
 			_update_team_display()
 
 func _update_team_display() -> void:
-	# Update team slots with selected souls
+	# Update team slots with selected souls and portraits
 	for i in _max_team_size:
 		var slot = _team_container.get_child(i)
-		if slot and slot.get_child_count() > 0:
-			var label: Label = slot.get_child(0)
-			if i < _selected_souls.size():
-				var soul: Dictionary = _selected_souls[i]
-				var soul_name: String = soul.get("name", "未知")
-				var element: String = soul.get("element", "unknown")
-				label.text = soul_name + "\n[" + element + "]"
-			else:
-				label.text = "槽位 " + str(i + 1) + "\n(空)"
+		if slot == null:
+			continue
+		var vbox = slot.get_child(0)
+		if vbox == null or vbox.get_child_count() < 2:
+			continue
+		var empty_label = vbox.get_child(1)
+		if i < _selected_souls.size():
+			var soul: Dictionary = _selected_souls[i]
+			var soul_name: String = soul.get("name", "未知")
+			var element: String = soul.get("element", "unknown")
+			empty_label.text = soul_name + "\n[" + element + "]"
+			empty_label.add_theme_color_override("font_color", Color(0.95, 0.9, 0.75))
+			# Try to load and display soul portrait
+			var portrait_path = "res://assets/art/characters/character_%s_soul_portrait.png" % element
+			if element == "dark":
+				portrait_path = "res://assets/art/characters/character_shadow_soul_portrait.png"
+			if ResourceLoader.exists(portrait_path):
+				var portrait_tex = load(portrait_path)
+				if portrait_tex:
+					# Remove empty label and add portrait
+					empty_label.queue_free()
+					var portrait_rect = TextureRect.new()
+					portrait_rect.custom_minimum_size = Vector2(80, 80)
+					portrait_rect.texture = portrait_tex
+					portrait_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+					portrait_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+					vbox.add_child(portrait_rect)
+		else:
+			empty_label.text = "(空)"
+			empty_label.add_theme_color_override("font_color", Color(0.4, 0.35, 0.3))
 
 func _update_start_button() -> void:
 	# Enable start button only if at least 1 soul selected
@@ -281,24 +418,35 @@ func _update_start_button() -> void:
 
 func _on_map_selected(map_id: String) -> void:
 	_selected_map = map_id
-	# Update highlights
+	# Update highlights (cards are PanelContainer, not Button)
 	for child in _map_container.get_children():
-		if child is Button:
-			_highlight_button(child, child.name == "MapBtn_" + map_id)
+		if child is PanelContainer:
+			if child.name == "MapCard_" + map_id:
+				child.modulate = Color(1.2, 1.1, 0.8)
+			else:
+				child.modulate = Color(1.0, 1.0, 1.0)
 
 func _on_tactic_selected(tactic_id: String) -> void:
 	_selected_tactic = tactic_id
 	# Update highlights
 	for child in _tactic_container.get_children():
 		if child is Button:
-			_highlight_button(child, child.name == "TacticBtn_" + tactic_id)
+			if child.name == "TacticBtn_" + tactic_id:
+				child.modulate = Color(1.2, 1.1, 0.7)
+			else:
+				var tactic_data = TACTICS.get(tactic_id, {})
+				child.modulate = tactic_data.get("color", Color(1, 1, 1))
 
 func _on_difficulty_selected(diff_id: String) -> void:
 	_selected_difficulty = diff_id
 	# Update highlights
 	for child in _difficulty_container.get_children():
 		if child is Button:
-			_highlight_button(child, child.name == "DiffBtn_" + diff_id)
+			if child.name == "DiffBtn_" + diff_id:
+				child.modulate = Color(1.2, 1.1, 0.7)
+			else:
+				var diff_data = DIFFICULTIES.get(diff_id, {})
+				child.modulate = diff_data.get("color", Color(1, 1, 1))
 
 func _on_start_battle() -> void:
 	# Get difficulty settings
