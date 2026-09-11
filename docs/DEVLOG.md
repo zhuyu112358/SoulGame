@@ -11388,3 +11388,36 @@ ode/life/max_life），而_update_skill_particles()期望新版数据结构（pa
 - 继续升级其他界面（训练统计/教学模式/好友系统等）
 - 战斗HUD技能图标按钮+冷却遮罩
 - 实机测试验证渲染效果
+
+---
+
+## 2026-09-11 游戏级UI升级：训练统计界面 + 修复已存在的脚本解析bug
+
+### 升级内容
+以SoulSelect.gd为质量模板，升级训练统计界面（TrainingStatsMenu.gd）的视觉层。
+
+### 修复的已存在bug（导致整个界面无法加载）
+1. **数组字面量语法错误**：_build_overall_stats()中使用(a, b)圆括号语法定义数组元素，GDScript不支持，导致"Expected closing ')' after grouping expression"解析错误。修复为[a, b]方括号语法。
+2. **for循环多变量语法错误**：使用or label, value in items:多变量遍历语法，GDScript不支持，导致"Expected 'in' or ':' after 'for' variable name"解析错误。修复为单变量遍历+索引访问。
+- 这两个bug导致训练统计界面脚本完全无法加载，是用户反馈"返回主菜单按钮是坏的"的根本原因（界面根本打不开）。
+
+### 视觉改进
+1. **统计项进度条**：_create_stat_item()方法添加可选progress参数，支持显示金色进度条（6px高，圆角3px）
+2. **统计数值放大**：数值字号从18增加到20，颜色从灰白改为亮金色
+3. **历史记录卡片化**：_create_history_item()添加结果色边框面板（胜利=绿色，失败=红色），卡片高度从30增加到36
+4. **面板美化**：MainPanel使用深紫底色（Color(0.06,0.04,0.12,0.92)）+金色边框+圆角12px
+5. **按钮三态样式**：返回按钮和重置按钮使用normal/hover/pressed三态StyleBoxFlat，hover时边框变亮，文字金色
+6. **等级标签放大**：_rank_label字号增加到28
+7. **添加_setup_ui_styles()方法**：统一管理所有面板和按钮的视觉样式
+
+### 验证结果
+- training_stats_menu.tscn：**NO SCRIPT ERRORS**，游戏级UI样式应用成功
+- M2测试：**2955 Passed, 0 Failed** 全绿
+
+### 修改的文件
+- scripts/ui/TrainingStatsMenu.gd - 修复数组和for循环语法bug，_create_stat_item()添加进度条，_create_history_item()卡片化，添加_setup_ui_styles()方法
+
+### 下一步
+- 继续升级其他界面（教学模式/好友系统/设置界面等）
+- 战斗HUD技能图标按钮+冷却遮罩
+- 实机测试验证渲染效果

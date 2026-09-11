@@ -69,7 +69,10 @@ func _ready() -> void:
 		panel.add_child(vbox)
 		margin.add_child(panel)
 
-	GameLog.info("TrainingStatsMenu: Opened", "UI")
+	# Apply game-level UI styles
+	_setup_ui_styles()
+
+	GameLog.info("TrainingStatsMenu: Opened (game-level UI)", "UI")
 
 
 ## Build rank section
@@ -90,17 +93,19 @@ func _build_overall_stats() -> void:
 
 	# Add stat items
 	var items = [
-		("总场次", str(stats["total_battles"])),
-		("胜利", str(stats["total_wins"])),
-		("失败", str(stats["total_losses"])),
-		("胜率", "%.1f%%" % stats["win_rate"]),
-		("当前连胜", str(stats["current_streak"])),
-		("最高连胜", str(stats["best_streak"])),
-		("总战斗时间", _format_time(stats["total_battle_time"])),
-		("平均时长", _format_time(stats["avg_battle_time"]))
+		["总场次", str(stats["total_battles"])],
+		["胜利", str(stats["total_wins"])],
+		["失败", str(stats["total_losses"])],
+		["胜率", "%.1f%%" % stats["win_rate"]],
+		["当前连胜", str(stats["current_streak"])],
+		["最高连胜", str(stats["best_streak"])],
+		["总战斗时间", _format_time(stats["total_battle_time"])],
+		["平均时长", _format_time(stats["avg_battle_time"])]
 	]
 
-	for label, value in items:
+	for item_data in items:
+		var label = item_data[0]
+		var value = item_data[1]
 		var item = _create_stat_item(label, value)
 		_overall_grid.add_child(item)
 
@@ -186,31 +191,75 @@ func _build_history() -> void:
 		_history_container.add_child(item)
 
 
-## Create a stat item (label + value)
-func _create_stat_item(label_text: String, value_text: String) -> VBoxContainer:
+## Create a stat item (label + value + optional progress bar)
+func _create_stat_item(label_text: String, value_text: String, progress: float = -1.0) -> VBoxContainer:
 	var vbox = VBoxContainer.new()
 	vbox.custom_minimum_size = Vector2(140, 0)
 
 	var label = Label.new()
 	label.text = label_text
 	label.add_theme_font_size_override("font_size", 11)
-	label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
+	label.add_theme_color_override("font_color", Color(0.7, 0.65, 0.55))
 	vbox.add_child(label)
 
 	var value = Label.new()
 	value.text = value_text
-	value.add_theme_font_size_override("font_size", 18)
-	value.add_theme_color_override("font_color", Color(0.9, 0.85, 0.7))
+	value.add_theme_font_size_override("font_size", 20)
+	value.add_theme_color_override("font_color", Color(1.0, 0.92, 0.7))
 	vbox.add_child(value)
+
+	# Add progress bar if progress is provided (0-100)
+	if progress >= 0.0:
+		var bar = ProgressBar.new()
+		bar.custom_minimum_size = Vector2(0, 6)
+		bar.max_value = 100.0
+		bar.value = progress
+		bar.show_percentage = false
+		var bar_style = StyleBoxFlat.new()
+		bar_style.bg_color = Color(0.1, 0.08, 0.15, 0.8)
+		bar_style.corner_radius_top_left = 3
+		bar_style.corner_radius_top_right = 3
+		bar_style.corner_radius_bottom_left = 3
+		bar_style.corner_radius_bottom_right = 3
+		var fill_style = StyleBoxFlat.new()
+		fill_style.bg_color = Color(0.83, 0.66, 0.36, 0.9)
+		fill_style.corner_radius_top_left = 3
+		fill_style.corner_radius_top_right = 3
+		fill_style.corner_radius_bottom_left = 3
+		fill_style.corner_radius_bottom_right = 3
+		bar.add_theme_stylebox_override("background", bar_style)
+		bar.add_theme_stylebox_override("fill", fill_style)
+		vbox.add_child(bar)
 
 	return vbox
 
 
-## Create a history item
+## Create a history item (card style with result color border)
 func _create_history_item(entry: Dictionary) -> HBoxContainer:
 	var hbox = HBoxContainer.new()
 	hbox.add_theme_constant_override("separation", 15)
-	hbox.custom_minimum_size = Vector2(0, 30)
+	hbox.custom_minimum_size = Vector2(0, 36)
+
+	# Card background panel
+	var card = Panel.new()
+	card.custom_minimum_size = Vector2(0, 36)
+	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var card_style = StyleBoxFlat.new()
+	if entry.get("won", false):
+		card_style.bg_color = Color(0.06, 0.1, 0.08, 0.85)
+		card_style.border_color = Color(0.3, 0.7, 0.4, 0.5)
+	else:
+		card_style.bg_color = Color(0.1, 0.06, 0.06, 0.85)
+		card_style.border_color = Color(0.7, 0.35, 0.35, 0.5)
+	card_style.border_width_left = 2
+	card_style.border_width_right = 2
+	card_style.border_width_top = 2
+	card_style.border_width_bottom = 2
+	card_style.corner_radius_top_left = 4
+	card_style.corner_radius_top_right = 4
+	card_style.corner_radius_bottom_left = 4
+	card_style.corner_radius_bottom_right = 4
+	card.add_theme_stylebox_override("panel", card_style)
 
 	# Result
 	var result_label = Label.new()
@@ -248,10 +297,11 @@ func _create_history_item(entry: Dictionary) -> HBoxContainer:
 	var date_label = Label.new()
 	date_label.text = entry.get("timestamp", "")
 	date_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	date_label.add_theme_color_override("font_color", Color(0.4, 0.4, 0.4))
+	date_label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.55))
 	hbox.add_child(date_label)
 
-	return hbox
+	card.add_child(hbox)
+	return card
 
 
 ## Format time (seconds to MM:SS)
@@ -259,6 +309,79 @@ func _format_time(seconds: float) -> String:
 	var mins = int(seconds) / 60
 	var secs = int(seconds) % 60
 	return "%02d:%02d" % [mins, secs]
+
+
+## Apply game-level UI styles to panels and buttons
+func _setup_ui_styles() -> void:
+	# Main panel: dark purple + gold border
+	var main_panel = get_node_or_null("MarginContainer/MainPanel")
+	if main_panel and main_panel is PanelContainer:
+		var panel_style = StyleBoxFlat.new()
+		panel_style.bg_color = Color(0.06, 0.04, 0.12, 0.92)
+		panel_style.border_color = Color(0.83, 0.66, 0.36, 0.7)
+		panel_style.border_width_left = 2
+		panel_style.border_width_right = 2
+		panel_style.border_width_top = 2
+		panel_style.border_width_bottom = 2
+		panel_style.corner_radius_top_left = 12
+		panel_style.corner_radius_top_right = 12
+		panel_style.corner_radius_bottom_left = 12
+		panel_style.corner_radius_bottom_right = 12
+		main_panel.add_theme_stylebox_override("panel", panel_style)
+
+	# Back button: three-state style
+	var btn_normal = StyleBoxFlat.new()
+	btn_normal.bg_color = Color(0.12, 0.08, 0.22, 0.95)
+	btn_normal.border_color = Color(0.7, 0.55, 0.3, 0.8)
+	btn_normal.border_width_left = 2
+	btn_normal.border_width_right = 2
+	btn_normal.border_width_top = 2
+	btn_normal.border_width_bottom = 2
+	btn_normal.corner_radius_top_left = 6
+	btn_normal.corner_radius_top_right = 6
+	btn_normal.corner_radius_bottom_left = 6
+	btn_normal.corner_radius_bottom_right = 6
+
+	var btn_hover = StyleBoxFlat.new()
+	btn_hover.bg_color = Color(0.18, 0.12, 0.3, 0.98)
+	btn_hover.border_color = Color(0.95, 0.78, 0.45, 1.0)
+	btn_hover.border_width_left = 2
+	btn_hover.border_width_right = 2
+	btn_hover.border_width_top = 2
+	btn_hover.border_width_bottom = 2
+	btn_hover.corner_radius_top_left = 6
+	btn_hover.corner_radius_top_right = 6
+	btn_hover.corner_radius_bottom_left = 6
+	btn_hover.corner_radius_bottom_right = 6
+
+	var btn_pressed = StyleBoxFlat.new()
+	btn_pressed.bg_color = Color(0.08, 0.05, 0.15, 1.0)
+	btn_pressed.border_color = Color(0.6, 0.48, 0.25, 0.9)
+	btn_pressed.border_width_left = 2
+	btn_pressed.border_width_right = 2
+	btn_pressed.border_width_top = 2
+	btn_pressed.border_width_bottom = 2
+	btn_pressed.corner_radius_top_left = 6
+	btn_pressed.corner_radius_top_right = 6
+	btn_pressed.corner_radius_bottom_left = 6
+	btn_pressed.corner_radius_bottom_right = 6
+
+	_back_button.add_theme_stylebox_override("normal", btn_normal)
+	_back_button.add_theme_stylebox_override("hover", btn_hover)
+	_back_button.add_theme_stylebox_override("pressed", btn_pressed)
+	_back_button.add_theme_color_override("font_color", Color(0.95, 0.88, 0.65))
+
+	if _reset_button:
+		_reset_button.add_theme_stylebox_override("normal", btn_normal)
+		_reset_button.add_theme_stylebox_override("hover", btn_hover)
+		_reset_button.add_theme_stylebox_override("pressed", btn_pressed)
+		_reset_button.add_theme_color_override("font_color", Color(0.95, 0.88, 0.65))
+
+	# Rank label: larger gold
+	if _rank_label:
+		_rank_label.add_theme_font_size_override("font_size", 28)
+
+	GameLog.info("TrainingStatsMenu: Game-level UI styles applied", "UI")
 
 
 ## Back to main menu
