@@ -10574,3 +10574,51 @@ ode/life/max_life），而_update_skill_particles()期望新版数据结构（pa
 - training_stats_menu添加Panel容器+9-slice样式
 - 实机测试验证所有9-slice面板渲染效果
 - UI组件集成完成后进入实机测试阶段
+
+---
+
+## 2026-09-11 training_stats_menu面板9-slice集成 (UI组件集成完成)
+
+### 完成内容
+1. **training_stats_menu添加Panel容器**
+   - 在_ready中动态创建PanelContainer(MainPanel)
+   - 将VBox从MarginContainer reparent到PanelContainer
+   - 应用ui_character_select_panel_style.tres (9-slice样式)
+   - 带fallback到StyleBoxFlat（深紫背景+金色边框+圆角10px）
+
+2. **UI组件9-slice集成全部完成**
+   - 所有有Panel的场景都已集成9-slice样式
+   - training_stats_menu是最后一个需要添加Panel的场景
+
+### 验证结果
+- M2测试: 2686 Passed, 0 Failed
+- 无SCRIPT ERROR
+- Panel容器reparent正常工作，@onready引用不受影响
+
+### 修改的文件
+- scripts/ui/TrainingStatsMenu.gd - 动态创建PanelContainer+9-slice样式+reparent VBox
+
+### UI组件9-slice集成最终完成清单
+- SoulSelect详情面板 ✅
+- BattleConfig主面板 ✅
+- SoulCodex面板(SoulList+DetailPanel) ✅
+- Collection面板(TopBar+BottomBar) ✅
+- Friend面板(4个Panel) ✅
+- Matchmaking面板 ✅
+- TrainingStatsMenu主面板 ✅ (本轮)
+
+### UI质量大改造整体进度
+- 主菜单游戏化分层布局 ✅
+- 灵魂选择暗黑3风格改造 ✅
+- 战斗配置面板美化 ✅
+- 其他场景背景图美化(5个) ✅
+- 全局按钮hover动画(9场景全覆盖) ✅
+- 场景切换淡入淡出过渡 ✅
+- 结算/设置/HUD美化 ✅
+- 4v4团队HP条 ✅
+- UI组件9-slice集成(7个场景全覆盖) ✅
+
+### 下一步
+- 实机测试验证所有UI改造效果
+- 根据实机反馈调整细节
+- 准备M2 EA发布

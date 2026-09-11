@@ -41,6 +41,34 @@ func _ready() -> void:
 	_setup_button_hover(_back_button)
 	_setup_button_hover(_reset_button)
 
+	# Wrap content in PanelContainer with 9-slice style
+	var margin = get_node_or_null("MarginContainer")
+	var vbox = get_node_or_null("MarginContainer/VBox")
+	if margin and vbox:
+		var panel = PanelContainer.new()
+		panel.name = "MainPanel"
+		var panel_style_path = "res://assets/ui/ui_character_select_panel_style.tres"
+		if ResourceLoader.exists(panel_style_path):
+			var panel_style = load(panel_style_path)
+			if panel_style:
+				panel.add_theme_stylebox_override("panel", panel_style)
+		else:
+			var fallback_style = StyleBoxFlat.new()
+			fallback_style.bg_color = Color(0.08, 0.05, 0.15, 0.9)
+			fallback_style.border_color = Color(0.83, 0.66, 0.36)
+			fallback_style.border_width_left = 3
+			fallback_style.border_width_right = 3
+			fallback_style.border_width_top = 3
+			fallback_style.border_width_bottom = 3
+			fallback_style.corner_radius_top_left = 10
+			fallback_style.corner_radius_top_right = 10
+			fallback_style.corner_radius_bottom_left = 10
+			fallback_style.corner_radius_bottom_right = 10
+			panel.add_theme_stylebox_override("panel", fallback_style)
+		margin.remove_child(vbox)
+		panel.add_child(vbox)
+		margin.add_child(panel)
+
 	GameLog.info("TrainingStatsMenu: Opened", "UI")
 
 
