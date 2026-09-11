@@ -10904,3 +10904,30 @@ ode/life/max_life），而_update_skill_particles()期望新版数据结构（pa
 - 继续提升其他场景UI视觉质量
 - 改进灵魂之家互动功能
 - 优化按钮样式和动画效果
+
+---
+
+## 2026-09-11 UI改进：灵魂之家灵魂立绘显示
+
+### 改进内容
+- **问题**：灵魂之家的灵魂显示只是一个蓝色方块占位符（ColorRect），用户反馈"灵魂之家基本就是个电子宠物"
+- **根因**：_setup_soul_display()方法注释写着"placeholder for M1 - will be replaced with actual sprite"，但一直没有替换
+- **修复**：
+  - SoulHomeController.gd: _setup_soul_display()从创建ColorRect占位符改为加载灵魂立绘
+  - 支持8种元素立绘：fire/water/earth/wind/light/dark(shadow)/thunder/ice
+  - 立绘尺寸160x200，居中显示
+  - 添加浮动动画（上下浮动10像素，3秒循环）
+  - 立绘不存在时回退到ColorRect占位符
+  - 添加_current_soul_element变量跟踪当前灵魂元素
+
+### 验证结果
+- M2测试: **2643 Passed, 0 Failed** 全绿
+- 无SCRIPT ERROR
+
+### 修改的文件
+- scripts/game/SoulHomeController.gd - 灵魂显示从占位符改为立绘+浮动动画
+
+### 下一步
+- 继续提升其他场景UI视觉质量
+- 优化按钮样式和动画效果
+- 改进灵魂之家互动反馈

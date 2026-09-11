@@ -460,22 +460,53 @@ func exit_home() -> void:
 
 ## --- Soul Display ---
 
-## Setup soul display (placeholder for M1 - will be replaced with actual sprite)
+## Setup soul display with actual portrait texture
 func _setup_soul_display() -> void:
-	# Create a placeholder soul display
+	# Create soul display node
 	soul_display = Node2D.new()
 	soul_display.name = "SoulDisplay"
-	soul_display.position = Vector2(400, 300)
+	soul_display.position = Vector2(400, 280)
 	add_child(soul_display)
 
-	# Add a placeholder sprite (colored circle)
-	var sprite := ColorRect.new()
-	sprite.size = Vector2(64, 64)
-	sprite.color = Color(0.4, 0.4, 1.0, 0.8)
-	sprite.position = Vector2(-32, -32)
-	soul_display.add_child(sprite)
+	# Add soul portrait texture
+	var soul_sprite := TextureRect.new()
+	soul_sprite.name = "SoulPortrait"
+	soul_sprite.size = Vector2(160, 200)
+	soul_sprite.position = Vector2(-80, -100)
+	soul_sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	soul_sprite.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 
-	GameLog.debug("SoulHome: Soul display created (placeholder)", "SoulHome")
+	# Load portrait based on current soul element
+	var element = _current_soul_element if _current_soul_element else "fire"
+	var element_file_map = {
+		"fire": "fire", "water": "water", "earth": "earth", "wind": "wind",
+		"light": "light", "dark": "shadow", "thunder": "thunder", "ice": "ice"
+	}
+	var file_name = element_file_map.get(element, element)
+	var portrait_path = "res://assets/art/characters/character_%s_soul_portrait.png" % file_name
+	if ResourceLoader.exists(portrait_path):
+		soul_sprite.texture = load(portrait_path)
+		GameLog.info("SoulHome: Loaded portrait for %s" % element, "SoulHome")
+	else:
+		# Fallback: colored rectangle
+		soul_sprite.queue_free()
+		var fallback := ColorRect.new()
+		fallback.size = Vector2(96, 96)
+		fallback.color = Color(0.4, 0.4, 1.0, 0.8)
+		fallback.position = Vector2(-48, -48)
+		soul_display.add_child(fallback)
+		GameLog.warning("SoulHome: Portrait not found, using fallback", "SoulHome")
+		return
+
+	soul_display.add_child(soul_sprite)
+
+	# Add subtle floating animation
+	var float_tween = create_tween()
+	float_tween.set_loops()
+	float_tween.tween_property(soul_display, "position:y", 290.0, 1.5).set_ease(Tween.EASE_IN_OUT)
+	float_tween.tween_property(soul_display, "position:y", 280.0, 1.5).set_ease(Tween.EASE_IN_OUT)
+
+	GameLog.info("SoulHome: Soul display created with portrait", "SoulHome")
 
 
 ## --- Room Management ---
