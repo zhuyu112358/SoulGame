@@ -2294,6 +2294,19 @@ func _apply_hud_skin() -> void:
 			s_pressed.corner_radius_bottom_left = 4
 			s_pressed.corner_radius_bottom_right = 4
 			btn.add_theme_stylebox_override("pressed", s_pressed)
+			# Disabled: grayed out for cooldown
+			var s_disabled = StyleBoxFlat.new()
+			s_disabled.bg_color = Color(0.06, 0.05, 0.08, 0.9)
+			s_disabled.border_color = Color(0.3, 0.28, 0.25, 0.6)
+			s_disabled.border_width_left = 2
+			s_disabled.border_width_right = 2
+			s_disabled.border_width_top = 2
+			s_disabled.border_width_bottom = 2
+			s_disabled.corner_radius_top_left = 4
+			s_disabled.corner_radius_top_right = 4
+			s_disabled.corner_radius_bottom_left = 4
+			s_disabled.corner_radius_bottom_right = 4
+			btn.add_theme_stylebox_override("disabled", s_disabled)
 
 	# Back button style: red accent border (danger/exit)
 	if back_button and back_button is Button:

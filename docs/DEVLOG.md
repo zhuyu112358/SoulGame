@@ -1,6 +1,25 @@
 ﻿# 战策 Battleplan 开发日志
 
 
+## [战斗HUD升级] 技能按钮disabled样式-冷却中灰色禁用状态（2026-09-12）
+
+**本轮工作**：为战斗HUD的4个技能按钮添加disabled状态样式，之前技能按钮只有normal/hover/pressed三态，冷却或禁用时使用默认灰色样式，与游戏风格不统一。
+
+**改进内容**：
+- 技能按钮添加disabled状态StyleBoxFlat样式
+- disabled状态：深灰底色(Color(0.06,0.05,0.08,0.9))+暗金色边框(2px,alpha 0.6)+圆角4px
+- 冷却中的技能按钮会显示灰色禁用状态，与冷却遮罩配合
+- 与已有的normal/hover/pressed三态样式保持一致的视觉语言
+
+**修改文件**：
+- scripts/game/RTSArenaController.gd：_apply_hud_skin()中技能按钮添加disabled样式
+
+**验证结果**：
+- rts_arena场景测试：NO SCRIPT ERROR
+- M2测试：2955 Passed, 0 Failed
+
+---
+
 ## [战斗HUD升级] 伤害数字黑色描边-增强战场可读性（2026-09-12）
 
 **本轮工作**：为战斗中的浮动伤害数字添加黑色描边效果，之前伤害数字只有颜色，在复杂背景或粒子效果下可能不够清晰。
