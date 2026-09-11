@@ -14,6 +14,7 @@ const SoulCodexSystem = preload("res://scripts/game/SoulCodexSystem.gd")
 @onready var _progress_bar: ProgressBar = $MarginContainer/VBox/Header/ProgressBar
 @onready var _soul_list: VBoxContainer = $MarginContainer/VBox/Body/SoulList/ScrollContainer/VBox
 @onready var _detail_panel: Panel = $MarginContainer/VBox/Body/DetailPanel
+@onready var _portrait_texture: TextureRect = $MarginContainer/VBox/Body/DetailPanel/VBox/PortraitContainer/PortraitTexture
 @onready var _detail_name: Label = $MarginContainer/VBox/Body/DetailPanel/VBox/NameLabel
 @onready var _detail_rarity: Label = $MarginContainer/VBox/Body/DetailPanel/VBox/RarityLabel
 @onready var _detail_element: Label = $MarginContainer/VBox/Body/DetailPanel/VBox/ElementLabel
@@ -139,6 +140,7 @@ func _update_detail_panel(p_element: String) -> void:
 	var is_unlocked = _codex.is_soul_unlocked(p_element)
 
 	if not is_unlocked:
+		_portrait_texture.texture = null
 		_detail_name.text = "???"
 		_detail_rarity.text = "稀有度: ???"
 		_detail_element.text = "元素: ???"
@@ -151,6 +153,19 @@ func _update_detail_panel(p_element: String) -> void:
 
 	_detail_name.text = soul["name"]
 	_detail_name.add_theme_color_override("font_color", soul["color"])
+
+	# Load soul portrait
+	var element_file_map = {
+		"fire": "fire", "water": "water", "earth": "earth", "wind": "wind",
+		"light": "light", "dark": "shadow", "thunder": "thunder", "ice": "ice"
+	}
+	var file_name = element_file_map.get(p_element, p_element)
+	var portrait_path = "res://assets/art/characters/character_%s_soul_portrait.png" % file_name
+	if ResourceLoader.exists(portrait_path):
+		_portrait_texture.texture = load(portrait_path)
+		_portrait_texture.modulate = Color.WHITE
+	else:
+		_portrait_texture.texture = null
 
 	var rarity_name = _codex.get_rarity_name(soul["rarity"])
 	var rarity_color = _codex.get_rarity_color(soul["rarity"])

@@ -10970,3 +10970,29 @@ ode/life/max_life），而_update_skill_particles()期望新版数据结构（pa
 - 继续提升UI视觉质量
 - 优化按钮样式和动画效果
 - 实机测试验证渲染效果
+
+---
+
+## 2026-09-11 UI改进：灵魂图鉴详情面板添加灵魂立绘
+
+### 改进内容
+- **问题**：灵魂图鉴详情面板只显示文字信息（名称/稀有度/元素/属性/技能/背景故事），没有灵魂立绘展示
+- **修复**：
+  - soul_codex.tscn: 在DetailPanel/VBox中添加PortraitContainer(CenterContainer)+PortraitTexture(TextureRect)，尺寸120x150
+  - SoulCodexUI.gd: 添加_portrait_texture引用
+  - _update_detail_panel(): 根据灵魂元素加载对应立绘（8种元素）
+  - 未解锁的灵魂不显示立绘（texture=null）
+  - 立绘不存在时自动回退
+
+### 验证结果
+- M2测试: **2643 Passed, 0 Failed** 全绿
+- 无SCRIPT ERROR
+
+### 修改的文件
+- scenes/soul_codex.tscn - 添加PortraitTexture节点
+- scripts/ui/SoulCodexUI.gd - 加载灵魂立绘
+
+### 下一步
+- 继续提升其他场景UI视觉质量
+- 收藏系统添加物品图标展示
+- 优化按钮样式和动画效果
