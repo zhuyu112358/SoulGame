@@ -619,7 +619,34 @@ func _show_pause_overlay() -> void:
 	resume_style.corner_radius_bottom_left = 8
 	resume_style.corner_radius_bottom_right = 8
 	resume_btn.add_theme_stylebox_override("normal", resume_style)
+	# Hover style: brighter bg + lighter gold border
+	var resume_hover = StyleBoxFlat.new()
+	resume_hover.bg_color = Color(0.22, 0.15, 0.35)
+	resume_hover.border_color = Color(1.0, 0.88, 0.5)
+	resume_hover.border_width_left = 3
+	resume_hover.border_width_right = 3
+	resume_hover.border_width_top = 3
+	resume_hover.border_width_bottom = 3
+	resume_hover.corner_radius_top_left = 8
+	resume_hover.corner_radius_top_right = 8
+	resume_hover.corner_radius_bottom_left = 8
+	resume_hover.corner_radius_bottom_right = 8
+	resume_btn.add_theme_stylebox_override("hover", resume_hover)
+	# Pressed style: darker bg
+	var resume_pressed = StyleBoxFlat.new()
+	resume_pressed.bg_color = Color(0.10, 0.07, 0.18)
+	resume_pressed.border_color = Color(0.7, 0.55, 0.3)
+	resume_pressed.border_width_left = 2
+	resume_pressed.border_width_right = 2
+	resume_pressed.border_width_top = 2
+	resume_pressed.border_width_bottom = 2
+	resume_pressed.corner_radius_top_left = 8
+	resume_pressed.corner_radius_top_right = 8
+	resume_pressed.corner_radius_bottom_left = 8
+	resume_pressed.corner_radius_bottom_right = 8
+	resume_btn.add_theme_stylebox_override("pressed", resume_pressed)
 	resume_btn.add_theme_color_override("font_color", Color(1.0, 0.9, 0.6))
+	resume_btn.add_theme_color_override("font_hover_color", Color(1.0, 0.95, 0.8))
 	resume_btn.pressed.connect(_resume_battle)
 	panel.add_child(resume_btn)
 
@@ -642,7 +669,34 @@ func _show_pause_overlay() -> void:
 	quit_style.corner_radius_bottom_left = 8
 	quit_style.corner_radius_bottom_right = 8
 	quit_btn.add_theme_stylebox_override("normal", quit_style)
+	# Hover style: brighter bg + lighter red border
+	var quit_hover = StyleBoxFlat.new()
+	quit_hover.bg_color = Color(0.22, 0.12, 0.18)
+	quit_hover.border_color = Color(0.9, 0.55, 0.55)
+	quit_hover.border_width_left = 3
+	quit_hover.border_width_right = 3
+	quit_hover.border_width_top = 3
+	quit_hover.border_width_bottom = 3
+	quit_hover.corner_radius_top_left = 8
+	quit_hover.corner_radius_top_right = 8
+	quit_hover.corner_radius_bottom_left = 8
+	quit_hover.corner_radius_bottom_right = 8
+	quit_btn.add_theme_stylebox_override("hover", quit_hover)
+	# Pressed style: darker bg
+	var quit_pressed = StyleBoxFlat.new()
+	quit_pressed.bg_color = Color(0.10, 0.06, 0.10)
+	quit_pressed.border_color = Color(0.55, 0.3, 0.3)
+	quit_pressed.border_width_left = 2
+	quit_pressed.border_width_right = 2
+	quit_pressed.border_width_top = 2
+	quit_pressed.border_width_bottom = 2
+	quit_pressed.corner_radius_top_left = 8
+	quit_pressed.corner_radius_top_right = 8
+	quit_pressed.corner_radius_bottom_left = 8
+	quit_pressed.corner_radius_bottom_right = 8
+	quit_btn.add_theme_stylebox_override("pressed", quit_pressed)
 	quit_btn.add_theme_color_override("font_color", Color(0.95, 0.75, 0.7))
+	quit_btn.add_theme_color_override("font_hover_color", Color(1.0, 0.85, 0.8))
 	quit_btn.pressed.connect(_on_pause_quit_pressed)
 	panel.add_child(quit_btn)
 

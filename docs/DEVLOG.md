@@ -1,5 +1,30 @@
 ﻿# 战策 Battleplan 开发日志
 
+
+## [战斗HUD升级] 暂停菜单按钮三态样式-继续战斗/返回主菜单hover+pressed效果（2026-09-12）
+
+**本轮工作**：为战斗暂停菜单的两个按钮添加hover和pressed三态样式，之前只有normal状态。
+
+**暂停菜单按钮升级**：
+- 继续战斗按钮：
+  - normal：深紫底+金色边框(2px)+圆角(8px)
+  - hover：更亮紫底+亮金边框(3px)
+  - pressed：深色底+暗金边框(2px)
+  - 文字：normal金色，hover亮金色
+- 返回主菜单按钮：
+  - normal：深紫底+红色边框(2px)+圆角(8px)
+  - hover：更亮红底+亮红边框(3px)
+  - pressed：深色底+暗红边框(2px)
+  - 文字：normal浅红，hover亮红色
+
+**修改文件**：
+- scripts/game/RTSArenaController.gd：_show_pause_overlay()中为两个按钮添加hover/pressed样式
+
+**验证结果**：
+- rts_arena场景测试：NO SCRIPT ERROR
+- M2测试：2955 Passed, 0 Failed
+
+---
 ## [战斗结算修复] 修复结算按钮空样式方法-再战一局/返回主菜单按钮三态StyleBoxFlat（2026-09-12）
 
 **本轮工作**：发现并修复战斗结算界面按钮样式为空的问题——`_apply_9slice_button_style()`方法是no-op（空方法），导致"再战一局"和"返回主菜单"按钮没有任何样式，使用默认按钮外观。
@@ -7784,7 +7809,8 @@ ALL SCENES PASSED!
 - stop() - 停止世界模拟
 - update(delta: float) - 更新世界
 - create_entity() -> ArboreusEntity - 期望0参数（非1参数）
-- emove_entity(?) - 参数类型待探索（Object不兼容）
+- 
+emove_entity(?) - 参数类型待探索（Object不兼容）
 - get_entity_count() -> int
 - get_status() -> Dictionary - 返回{entity_count, is_running, time, day_count, time_of_day, spatial_entity_count, queued_events}
 - get_grid_map() -> Object - 当前返回null（需单独配置）
@@ -7813,7 +7839,8 @@ ALL SCENES PASSED!
 - stop(): ✓ World stopped
 
 ### [SDK需求] ArboreusWorld API待明确
-1. emove_entity()参数类型：Object不兼容，可能是int（entity ID）或String
+1. 
+emove_entity()参数类型：Object不兼容，可能是int（entity ID）或String
 2. get_grid_map()返回null：是否需要在create config中指定grid配置？
 3. create_entity()返回的ArboreusEntity有哪些方法和属性？
 4. 实体位置/属性如何设置？（create_entity无参数，后续如何设置position？）
@@ -7857,9 +7884,11 @@ ALL SCENES PASSED!
 **已确认API**:
 - set_name(name: String) / get_name() -> String - 名称管理（已验证可用）
 - has_component(component: String) -> bool - 组件检查
-- emove_component(component: String) - 移除组件
+- 
+emove_component(component: String) - 移除组件
 - has_tag(tag: String) -> bool - 标签检查
-- emove_tag(tag: String) - 移除标签
+- 
+emove_tag(tag: String) - 移除标签
 - **无内置位置属性** - 实体没有set_position/get_position等方法
 - **无add_component方法** - 只有has_component/remove_component，如何添加组件待明确
 
@@ -7877,7 +7906,8 @@ ame (String) - 唯一可见属性
 - create_entity中自动设置实体名称
 
 **修复**:
-- emove_entity: 明确ArboreusWorld.remove_entity()返回void（非bool）
+- 
+emove_entity: 明确ArboreusWorld.remove_entity()返回void（非bool）
 
 **测试结果**:
 - Bridge初始化: ✓
@@ -10965,7 +10995,9 @@ ode/life/max_life），而_update_skill_particles()期望新版数据结构（pa
 
 #### 1. 设置界面跳转错误修复
 - **问题**：主菜单设置按钮跳转到settings.tscn（只有简单音量滑块），而不是settings_menu.tscn（完整设置界面，49个节点，包含TabContainer/分辨率/全屏/画质/语言/难度等）
-- **修复**：MainMenu.gd中settings按钮的scene从es://scenes/settings.tscn改为es://scenes/settings_menu.tscn
+- **修复**：MainMenu.gd中settings按钮的scene从
+es://scenes/settings.tscn改为
+es://scenes/settings_menu.tscn
 - **验证**：现在点击设置会进入完整的设置界面
 
 #### 2. 剧情CG黑屏修复
