@@ -11354,3 +11354,37 @@ ode/life/max_life），而_update_skill_particles()期望新版数据结构（pa
 - 继续升级其他界面（收藏系统/训练统计/教学模式等）
 - 战斗HUD技能图标按钮+冷却遮罩
 - 实机测试验证渲染效果
+
+---
+
+## 2026-09-11 游戏级UI升级：收藏系统界面
+
+### 升级内容
+以SoulSelect.gd为质量模板，升级收藏系统界面（CollectionUI.gd）的视觉层。
+
+### 视觉改进
+1. **物品卡片稀有度色边框**：每个物品卡片根据稀有度（common/uncommon/rare/epic/legendary）显示对应颜色边框（灰/绿/蓝/紫/金），未收集物品显示灰色边框
+2. **物品卡片hover效果**：鼠标悬停时卡片放大1.03倍+边框变亮+边框宽度增加到3px
+3. **概念艺术卡片**：金色边框+hover放大效果，未解锁显示灰色
+4. **陷阱卡片**：红色边框+hover放大效果，未发现显示灰色
+5. **面板美化**：TopBar和BottomBar使用深紫底色（Color(0.06,0.04,0.12,0.95)）+金色边框+圆角8px
+6. **按钮三态样式**：返回按钮使用normal/hover/pressed三态StyleBoxFlat，hover时边框变亮，文字金色
+7. **标题文字层次**：总进度标签16号金色
+8. **添加_setup_ui_styles()方法**：统一管理所有面板和按钮的视觉样式
+9. **卡片尺寸优化**：物品卡片从180x90增加到180x96，内边距从5px增加到8px
+
+### 升级前 vs 升级后
+- 升级前：默认Panel样式+无hover效果+无稀有度边框
+- 升级后：稀有度色边框卡片+hover放大效果+深紫金边框面板+三态按钮
+
+### 验证结果
+- collection.tscn：**NO SCRIPT ERRORS**，游戏级UI样式应用成功
+- M2测试：**2955 Passed, 0 Failed** 全绿
+
+### 修改的文件
+- scripts/ui/CollectionUI.gd - _create_item_card()添加稀有度边框+hover，_create_art_card()添加边框+hover，_create_trap_card()添加边框+hover，添加_setup_ui_styles()方法
+
+### 下一步
+- 继续升级其他界面（训练统计/教学模式/好友系统等）
+- 战斗HUD技能图标按钮+冷却遮罩
+- 实机测试验证渲染效果

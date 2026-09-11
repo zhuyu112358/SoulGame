@@ -40,7 +40,8 @@ func _ready() -> void:
 	_find_ui_nodes()
 	_setup_ui()
 	_refresh_all()
-	GameLog.info("CollectionUI: Ready", "UI")
+	_setup_ui_styles()
+	GameLog.info("CollectionUI: Ready (game-level UI)", "UI")
 
 	# Apply 9-slice panel styles to TopBar and BottomBar
 	var coll_panel_style_path = "res://assets/ui/ui_character_select_panel_style.tres"
@@ -142,17 +143,62 @@ func _refresh_items() -> void:
 
 func _create_item_card(p_item: Dictionary) -> Control:
 	var panel = Panel.new()
-	panel.custom_minimum_size = Vector2(180, 90)
+	panel.custom_minimum_size = Vector2(180, 96)
+
+	# Rarity-colored border style
+	var rarity = p_item.get("rarity", "common")
+	var rarity_color = _rarity_colors.get(rarity, Color(0.7, 0.7, 0.7))
+	var card_style = StyleBoxFlat.new()
+	if p_item["collected"]:
+		card_style.bg_color = Color(0.08, 0.05, 0.15, 0.92)
+		card_style.border_color = rarity_color
+	else:
+		card_style.bg_color = Color(0.05, 0.05, 0.08, 0.7)
+		card_style.border_color = Color(0.3, 0.3, 0.35, 0.5)
+	card_style.border_width_left = 2
+	card_style.border_width_right = 2
+	card_style.border_width_top = 2
+	card_style.border_width_bottom = 2
+	card_style.corner_radius_top_left = 8
+	card_style.corner_radius_top_right = 8
+	card_style.corner_radius_bottom_left = 8
+	card_style.corner_radius_bottom_right = 8
+	panel.add_theme_stylebox_override("panel", card_style)
+
+	# Hover effect: scale up + brighter border
+	var hover_tween = null
+	panel.mouse_entered.connect(func():
+		var s = panel.get_theme_stylebox("panel")
+		if s and s is StyleBoxFlat:
+			s.border_width_left = 3
+			s.border_width_right = 3
+			s.border_width_top = 3
+			s.border_width_bottom = 3
+			if p_item["collected"]:
+				s.border_color = rarity_color.lightened(0.3)
+		panel.scale = Vector2(1.03, 1.03)
+	)
+	panel.mouse_exited.connect(func():
+		var s = panel.get_theme_stylebox("panel")
+		if s and s is StyleBoxFlat:
+			s.border_width_left = 2
+			s.border_width_right = 2
+			s.border_width_top = 2
+			s.border_width_bottom = 2
+			if p_item["collected"]:
+				s.border_color = rarity_color
+		panel.scale = Vector2(1.0, 1.0)
+	)
 
 	var hbox = HBoxContainer.new()
 	hbox.layout_mode = 1
 	hbox.anchors_preset = 15
 	hbox.anchor_right = 1.0
 	hbox.anchor_bottom = 1.0
-	hbox.offset_left = 5.0
-	hbox.offset_top = 5.0
-	hbox.offset_right = -5.0
-	hbox.offset_bottom = -5.0
+	hbox.offset_left = 8.0
+	hbox.offset_top = 8.0
+	hbox.offset_right = -8.0
+	hbox.offset_bottom = -8.0
 	panel.add_child(hbox)
 
 	# Item icon
@@ -244,7 +290,39 @@ func _refresh_concept_art() -> void:
 
 func _create_art_card(p_art: Dictionary) -> Control:
 	var panel = Panel.new()
-	panel.custom_minimum_size = Vector2(180, 80)
+	panel.custom_minimum_size = Vector2(180, 86)
+
+	# Art card style
+	var art_style = StyleBoxFlat.new()
+	if p_art.get("unlocked", false):
+		art_style.bg_color = Color(0.08, 0.05, 0.15, 0.92)
+		art_style.border_color = Color(0.83, 0.66, 0.36, 0.7)
+	else:
+		art_style.bg_color = Color(0.05, 0.05, 0.08, 0.7)
+		art_style.border_color = Color(0.3, 0.3, 0.35, 0.5)
+	art_style.border_width_left = 2
+	art_style.border_width_right = 2
+	art_style.border_width_top = 2
+	art_style.border_width_bottom = 2
+	art_style.corner_radius_top_left = 8
+	art_style.corner_radius_top_right = 8
+	art_style.corner_radius_bottom_left = 8
+	art_style.corner_radius_bottom_right = 8
+	panel.add_theme_stylebox_override("panel", art_style)
+
+	# Hover effect
+	panel.mouse_entered.connect(func():
+		var s = panel.get_theme_stylebox("panel")
+		if s and s is StyleBoxFlat:
+			s.border_color = Color(0.95, 0.78, 0.45, 1.0)
+		panel.scale = Vector2(1.03, 1.03)
+	)
+	panel.mouse_exited.connect(func():
+		var s = panel.get_theme_stylebox("panel")
+		if s and s is StyleBoxFlat:
+			s.border_color = Color(0.83, 0.66, 0.36, 0.7)
+		panel.scale = Vector2(1.0, 1.0)
+	)
 
 	var vbox = VBoxContainer.new()
 	vbox.layout_mode = 1
@@ -307,7 +385,39 @@ func _refresh_traps() -> void:
 
 func _create_trap_card(p_trap: Dictionary) -> Control:
 	var panel = Panel.new()
-	panel.custom_minimum_size = Vector2(180, 80)
+	panel.custom_minimum_size = Vector2(180, 86)
+
+	# Trap card style
+	var trap_style = StyleBoxFlat.new()
+	if p_trap.get("discovered", false):
+		trap_style.bg_color = Color(0.08, 0.05, 0.15, 0.92)
+		trap_style.border_color = Color(0.9, 0.4, 0.3, 0.7)
+	else:
+		trap_style.bg_color = Color(0.05, 0.05, 0.08, 0.7)
+		trap_style.border_color = Color(0.3, 0.3, 0.35, 0.5)
+	trap_style.border_width_left = 2
+	trap_style.border_width_right = 2
+	trap_style.border_width_top = 2
+	trap_style.border_width_bottom = 2
+	trap_style.corner_radius_top_left = 8
+	trap_style.corner_radius_top_right = 8
+	trap_style.corner_radius_bottom_left = 8
+	trap_style.corner_radius_bottom_right = 8
+	panel.add_theme_stylebox_override("panel", trap_style)
+
+	# Hover effect
+	panel.mouse_entered.connect(func():
+		var s = panel.get_theme_stylebox("panel")
+		if s and s is StyleBoxFlat:
+			s.border_color = Color(1.0, 0.5, 0.4, 1.0)
+		panel.scale = Vector2(1.03, 1.03)
+	)
+	panel.mouse_exited.connect(func():
+		var s = panel.get_theme_stylebox("panel")
+		if s and s is StyleBoxFlat:
+			s.border_color = Color(0.9, 0.4, 0.3, 0.7)
+		panel.scale = Vector2(1.0, 1.0)
+	)
 
 	var vbox = VBoxContainer.new()
 	vbox.layout_mode = 1
@@ -348,6 +458,79 @@ func _create_trap_card(p_trap: Dictionary) -> Control:
 		vbox.add_child(unknown_label)
 
 	return panel
+
+
+## Apply game-level UI styles to panels and buttons
+func _setup_ui_styles() -> void:
+	# Top bar and bottom bar: dark purple + gold border
+	var bar_style = StyleBoxFlat.new()
+	bar_style.bg_color = Color(0.06, 0.04, 0.12, 0.95)
+	bar_style.border_color = Color(0.83, 0.66, 0.36, 0.6)
+	bar_style.border_width_left = 2
+	bar_style.border_width_right = 2
+	bar_style.border_width_top = 2
+	bar_style.border_width_bottom = 2
+	bar_style.corner_radius_top_left = 8
+	bar_style.corner_radius_top_right = 8
+	bar_style.corner_radius_bottom_left = 8
+	bar_style.corner_radius_bottom_right = 8
+
+	var top_bar = get_node_or_null("TopBar")
+	if top_bar and top_bar is Panel:
+		top_bar.add_theme_stylebox_override("panel", bar_style)
+	var bottom_bar = get_node_or_null("BottomBar")
+	if bottom_bar and bottom_bar is Panel:
+		bottom_bar.add_theme_stylebox_override("panel", bar_style)
+
+	# Back button: three-state style
+	if _back_button:
+		var btn_normal = StyleBoxFlat.new()
+		btn_normal.bg_color = Color(0.12, 0.08, 0.22, 0.95)
+		btn_normal.border_color = Color(0.7, 0.55, 0.3, 0.8)
+		btn_normal.border_width_left = 2
+		btn_normal.border_width_right = 2
+		btn_normal.border_width_top = 2
+		btn_normal.border_width_bottom = 2
+		btn_normal.corner_radius_top_left = 6
+		btn_normal.corner_radius_top_right = 6
+		btn_normal.corner_radius_bottom_left = 6
+		btn_normal.corner_radius_bottom_right = 6
+
+		var btn_hover = StyleBoxFlat.new()
+		btn_hover.bg_color = Color(0.18, 0.12, 0.3, 0.98)
+		btn_hover.border_color = Color(0.95, 0.78, 0.45, 1.0)
+		btn_hover.border_width_left = 2
+		btn_hover.border_width_right = 2
+		btn_hover.border_width_top = 2
+		btn_hover.border_width_bottom = 2
+		btn_hover.corner_radius_top_left = 6
+		btn_hover.corner_radius_top_right = 6
+		btn_hover.corner_radius_bottom_left = 6
+		btn_hover.corner_radius_bottom_right = 6
+
+		var btn_pressed = StyleBoxFlat.new()
+		btn_pressed.bg_color = Color(0.08, 0.05, 0.15, 1.0)
+		btn_pressed.border_color = Color(0.6, 0.48, 0.25, 0.9)
+		btn_pressed.border_width_left = 2
+		btn_pressed.border_width_right = 2
+		btn_pressed.border_width_top = 2
+		btn_pressed.border_width_bottom = 2
+		btn_pressed.corner_radius_top_left = 6
+		btn_pressed.corner_radius_top_right = 6
+		btn_pressed.corner_radius_bottom_left = 6
+		btn_pressed.corner_radius_bottom_right = 6
+
+		_back_button.add_theme_stylebox_override("normal", btn_normal)
+		_back_button.add_theme_stylebox_override("hover", btn_hover)
+		_back_button.add_theme_stylebox_override("pressed", btn_pressed)
+		_back_button.add_theme_color_override("font_color", Color(0.95, 0.88, 0.65))
+
+	# Progress labels: gold
+	if _total_progress_label:
+		_total_progress_label.add_theme_color_override("font_color", Color(1.0, 0.88, 0.5))
+		_total_progress_label.add_theme_font_size_override("font_size", 16)
+
+	GameLog.info("CollectionUI: Game-level UI styles applied", "UI")
 
 
 func _on_back_pressed() -> void:
