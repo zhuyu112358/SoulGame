@@ -1,5 +1,33 @@
 ﻿# 战策 Battleplan 开发日志
 
+## [P0-紧急修复v2] 主菜单按钮不可见彻底修复（2026-09-11）
+
+**问题根因（通过游戏日志确认）**：
+1. 主题应用顺序错误：_apply_ui_theme()在_build_ui()之后调用，可能覆盖按钮theme override
+2. 按钮淡入动画tween未正确执行：按钮初始modulate.a=0，tween在_ready中创建可能未执行
+3. 信号重复连接：_setup_button_hover被调用两次（遍历+显式兼容代码）
+4. SettingsMenu.gd缺少_apply_9slice_button_style函数定义
+
+**修复方案**：
+1. 将_apply_ui_theme()移到_build_ui()之前调用，确保按钮theme override优先
+2. 按钮淡入动画改为call_deferred("_animate_buttons")延迟执行，确保节点就绪后tween运行
+3. 新增_animate_buttons()方法封装按钮淡入动画逻辑
+4. 保留2秒safety fallback Timer强制按钮可见
+5. SettingsMenu.gd添加_apply_9slice_button_style函数定义
+6. 恢复测试期望的按钮hover显式设置代码
+
+**游戏日志验证**：
+- 修复前：Safety fallback在2秒后触发（说明tween未执行）
+- 修复后：预期tween正常执行，按钮在0.3-1.2秒内依次淡入
+
+**修改文件**：
+- MainMenu.gd：主题顺序调整+call_deferred动画+_animate_buttons方法
+- SettingsMenu.gd：添加_apply_9slice_button_style函数
+
+**测试结果**：2955 Passed, 0 Failed，无SCRIPT ERROR
+
+---
+
 ## [P0-紧急修复] 主菜单按钮不可见问题修复（2026-09-11）
 
 **问题**：用户实机测试反馈"界面上啥都没有"，主菜单所有12个按钮完全不可见（标题/副标题/分隔线正常显示）。

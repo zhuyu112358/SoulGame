@@ -41,19 +41,21 @@ const MENU_BUTTONS: Array = [
 func _ready() -> void:
 	GameLog.info("MainMenu initialized (GAP-002: 12 systems accessible)", "MainMenu")
 
+	# Apply Battleplan UI theme BEFORE building UI so button overrides take priority
+	_apply_ui_theme()
+
 	# Build UI dynamically
 	_build_ui()
 
-	# Apply Battleplan UI theme (gold/dark pixel-fantasy style)
-	_apply_ui_theme()
 	FontLoader.apply_font_to_control(self)
 
-	# Connect button signals and hover effects
+	# Connect button signals and hover effects (only once per button)
 	for btn_name in _buttons.keys():
 		var btn = _buttons[btn_name]
 		if btn:
 			btn.pressed.connect(_on_button_pressed.bind(btn_name))
 			_setup_button_hover(btn)
+
 
 	# Compatibility: explicit hover setup for test source-code checks
 	if _start_button:
@@ -87,7 +89,20 @@ func _ready() -> void:
 		# Add subtle floating animation after entrance
 		title_tween.tween_callback(_start_title_float)
 
-	# Animate buttons appearance (staggered fade in)
+	# Animate buttons appearance (staggered fade in, deferred to ensure tween runs)
+	call_deferred("_animate_buttons")
+
+	# P0-紧急: Safety fallback - force all buttons visible after 2 seconds
+	var safety_timer = Timer.new()
+	safety_timer.wait_time = 2.0
+	safety_timer.one_shot = true
+	safety_timer.timeout.connect(_force_buttons_visible)
+	add_child(safety_timer)
+	safety_timer.start()
+
+
+## Animate buttons with staggered fade in (deferred to ensure tween runs)
+func _animate_buttons() -> void:
 	var btn_list = MENU_BUTTONS
 	for i in range(btn_list.size()):
 		var btn_name = btn_list[i]["name"]
@@ -97,14 +112,6 @@ func _ready() -> void:
 			var btn_tween = create_tween()
 			btn_tween.tween_interval(0.3 + i * 0.08)
 			btn_tween.tween_property(btn, "modulate:a", 1.0, 0.4).set_ease(Tween.EASE_OUT)
-
-	# P0-紧急: Safety fallback - force all buttons visible after 2 seconds
-	var safety_timer = Timer.new()
-	safety_timer.wait_time = 2.0
-	safety_timer.one_shot = true
-	safety_timer.timeout.connect(_force_buttons_visible)
-	add_child(safety_timer)
-	safety_timer.start()
 
 
 ## P0-紧急: Force all buttons visible (fallback if tween animation fails)
