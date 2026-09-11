@@ -1,5 +1,44 @@
 ﻿# 战策 Battleplan 开发日志
 
+## [战斗HUD升级] 宏指令面板游戏级UI+选中单位信息面板（2026-09-12）
+
+**本轮工作**：升级战斗HUD的宏指令面板为游戏级UI，并添加选中单位信息面板。
+
+**宏指令面板视觉升级**：
+- 面板：深紫底色(Color(0.06,0.04,0.12,0.92))+金色边框(2px)+圆角(8px)
+- 标题：14号金色(Color(1.0,0.88,0.5))
+- 按钮：三态StyleBoxFlat样式
+  - normal：深紫底+元素色边框(2px)+圆角(5px)
+  - hover：更亮底+更亮边框(3px)
+  - pressed：深色底+元素色边框
+- 文字：normal灰白(0.9,0.88,0.82)，hover亮金(1.0,0.95,0.85)
+- 4个指令按钮各有对应元素色：集合(蓝)/进攻(红)/防守(绿)/撤退(黄)
+
+**选中单位信息面板**（新增）：
+- 位置：左侧HP条上方(15, 200)，尺寸220x110
+- 面板：深紫底+金色边框(2px)+圆角(8px)
+- 显示内容：
+  - 单位名字（16号金色）
+  - 元素类型（12号暗金）
+  - HP进度条（红色填充+深色背景+边框）
+  - HP数值（11号灰白）
+  - ATK/DEF/SPD属性（11号灰白）
+- 选中单位时自动显示，死亡或无选中时隐藏
+- 每帧实时更新HP数值
+
+**新增方法**：
+- _create_selected_unit_panel()：创建信息面板
+- _update_selected_unit_panel()：更新面板显示
+
+**修改文件**：
+- scripts/game/RTSArenaController.gd：添加_selected_unit_panel变量，重写_setup_macro_commands()，添加_create_selected_unit_panel()和_update_selected_unit_panel()
+
+**验证结果**：
+- rts_arena场景测试：NO SCRIPT ERROR，Macro command UI setup complete (game-level)
+- M2测试：2955 Passed, 0 Failed
+
+---
+
 ## [战斗玩法增强] 选中单位战场金色选择指示器+脉冲动画（2026-09-12）
 
 **本轮工作**：为4v4战斗中选中的玩家单位添加战场金色选择指示器，让玩家在战场上清楚看到当前选中的单位。

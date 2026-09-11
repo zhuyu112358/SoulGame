@@ -68,6 +68,7 @@ var _player_team_hp_bars: Array = []  # HP bars for player team units
 var _ai_team_hp_bars: Array = []      # HP bars for AI team units
 var _player_unit_containers: Array = []  # Clickable containers for player unit selection
 var _selection_indicator = null  # Gold circle indicator for selected unit
+var _selected_unit_panel = null  # Info panel for selected unit
 var _selected_unit_index: int = 0     # Currently selected player unit (for tactical commands)
 
 ## Battle active flag
@@ -2377,30 +2378,43 @@ func _apply_skill_icons() -> void:
 ## Player can issue one macro command per 30 seconds
 ## Commands: gather, retreat, attack, defend
 func _setup_macro_commands() -> void:
-	# Create command panel at bottom center
+	# Create command panel at bottom center with game-level UI
 	_command_panel = Panel.new()
 	_command_panel.position = Vector2(380, 490)
-	_command_panel.size = Vector2(520, 70)
+	_command_panel.size = Vector2(520, 75)
 	_command_panel.name = "MacroCommandPanel"
+	# Game-level panel style: dark purple + gold border + rounded corners
+	var panel_style = StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.06, 0.04, 0.12, 0.92)
+	panel_style.border_color = Color(0.8, 0.7, 0.4)
+	panel_style.border_width_left = 2
+	panel_style.border_width_right = 2
+	panel_style.border_width_top = 2
+	panel_style.border_width_bottom = 2
+	panel_style.corner_radius_top_left = 8
+	panel_style.corner_radius_top_right = 8
+	panel_style.corner_radius_bottom_right = 8
+	panel_style.corner_radius_bottom_left = 8
+	_command_panel.add_theme_stylebox_override("panel", panel_style)
 	add_child(_command_panel)
 
-	# Title label
+	# Title label (gold, 14px)
 	var title = Label.new()
-	title.text = "教练指令 (30秒冷却)"
-	title.position = Vector2(10, 5)
-	title.add_theme_font_size_override("font_size", 11)
-	title.modulate = Color(0.8, 0.8, 0.9)
+	title.text = "教练指令"
+	title.position = Vector2(12, 6)
+	title.add_theme_font_size_override("font_size", 14)
+	title.add_theme_color_override("font_color", Color(1.0, 0.88, 0.5))
 	_command_panel.add_child(title)
 
-	# Cooldown label
+	# Cooldown label (right-aligned)
 	_command_cooldown_label = Label.new()
 	_command_cooldown_label.text = "就绪"
-	_command_cooldown_label.position = Vector2(400, 5)
-	_command_cooldown_label.add_theme_font_size_override("font_size", 11)
-	_command_cooldown_label.modulate = Color(0.4, 0.9, 0.5)
+	_command_cooldown_label.position = Vector2(420, 6)
+	_command_cooldown_label.add_theme_font_size_override("font_size", 13)
+	_command_cooldown_label.add_theme_color_override("font_color", Color(0.4, 0.9, 0.5))
 	_command_panel.add_child(_command_cooldown_label)
 
-	# Create command buttons
+	# Create command buttons with game-level three-state styles
 	var commands = [
 		{"name": "gather", "label": "集合", "color": Color(0.3, 0.6, 0.9)},
 		{"name": "attack", "label": "进攻", "color": Color(0.9, 0.4, 0.3)},
@@ -2412,17 +2426,58 @@ func _setup_macro_commands() -> void:
 	for cmd in commands:
 		var btn = Button.new()
 		btn.text = cmd["label"]
-		btn.position = Vector2(btn_x, 30)
-		btn.size = Vector2(115, 32)
-		btn.add_theme_font_size_override("font_size", 12)
-		btn.modulate = cmd["color"]
+		btn.position = Vector2(btn_x, 32)
+		btn.size = Vector2(115, 34)
+		btn.add_theme_font_size_override("font_size", 13)
 		btn.name = "Cmd_%s" % cmd["name"]
+		# Normal style: dark bg + element color border
+		var normal_style = StyleBoxFlat.new()
+		normal_style.bg_color = Color(0.08, 0.06, 0.15, 0.95)
+		normal_style.border_color = cmd["color"]
+		normal_style.border_width_left = 2
+		normal_style.border_width_right = 2
+		normal_style.border_width_top = 2
+		normal_style.border_width_bottom = 2
+		normal_style.corner_radius_top_left = 5
+		normal_style.corner_radius_top_right = 5
+		normal_style.corner_radius_bottom_right = 5
+		normal_style.corner_radius_bottom_left = 5
+		btn.add_theme_stylebox_override("normal", normal_style)
+		# Hover style: brighter bg + lighter border
+		var hover_style = StyleBoxFlat.new()
+		hover_style.bg_color = Color(0.12, 0.09, 0.2, 0.98)
+		hover_style.border_color = cmd["color"].lightened(0.3)
+		hover_style.border_width_left = 3
+		hover_style.border_width_right = 3
+		hover_style.border_width_top = 3
+		hover_style.border_width_bottom = 3
+		hover_style.corner_radius_top_left = 5
+		hover_style.corner_radius_top_right = 5
+		hover_style.corner_radius_bottom_right = 5
+		hover_style.corner_radius_bottom_left = 5
+		btn.add_theme_stylebox_override("hover", hover_style)
+		# Pressed style: darker bg
+		var pressed_style = StyleBoxFlat.new()
+		pressed_style.bg_color = Color(0.05, 0.04, 0.1, 1.0)
+		pressed_style.border_color = cmd["color"]
+		pressed_style.border_width_left = 2
+		pressed_style.border_width_right = 2
+		pressed_style.border_width_top = 2
+		pressed_style.border_width_bottom = 2
+		pressed_style.corner_radius_top_left = 5
+		pressed_style.corner_radius_top_right = 5
+		pressed_style.corner_radius_bottom_right = 5
+		pressed_style.corner_radius_bottom_left = 5
+		btn.add_theme_stylebox_override("pressed", pressed_style)
+		# Text color: light
+		btn.add_theme_color_override("font_color", Color(0.9, 0.88, 0.82))
+		btn.add_theme_color_override("font_hover_color", Color(1.0, 0.95, 0.85))
 		btn.pressed.connect(_on_macro_command.bind(cmd["name"]))
 		_command_panel.add_child(btn)
 		_command_buttons[cmd["name"]] = btn
 		btn_x += 125
 
-	GameLog.info("RTSArenaController: Macro command UI setup complete", "Arena")
+	GameLog.info("RTSArenaController: Macro command UI setup complete (game-level)", "Arena")
 
 
 ## Update macro command cooldown display
@@ -2871,6 +2926,11 @@ func _setup_team_visuals(p_battle_info: Dictionary) -> void:
 	add_child(_selection_indicator)
 	_selection_indicator.visible = false
 
+	# Create selected unit info panel (bottom-left, above HP bars)
+	_selected_unit_panel = _create_selected_unit_panel()
+	add_child(_selected_unit_panel)
+	_selected_unit_panel.visible = false
+
 	# Create team HP bars with soul names and element colors
 	_create_team_hp_bars(player_team, ai_team)
 
@@ -3137,6 +3197,9 @@ func _clear_team_visuals() -> void:
 	if _selection_indicator and is_instance_valid(_selection_indicator):
 		_selection_indicator.queue_free()
 	_selection_indicator = null
+	if _selected_unit_panel and is_instance_valid(_selected_unit_panel):
+		_selected_unit_panel.queue_free()
+	_selected_unit_panel = null
 	for hp_bar in _ai_team_hp_bars:
 		if hp_bar and is_instance_valid(hp_bar):
 			# Free parent container if it exists (new layout), else free the bar itself
@@ -3926,6 +3989,130 @@ func _on_battle_time_updated(p_time: float) -> void:
 
 
 ## Create unit visual: AnimatedSprite2D from design sheet (with chroma-key shader) or procedural sprite with bob
+## Create selected unit info panel (game-level UI)
+func _create_selected_unit_panel() -> Panel:
+	var panel = Panel.new()
+	panel.name = "SelectedUnitPanel"
+	panel.position = Vector2(15, 200)
+	panel.size = Vector2(220, 110)
+	# Game-level panel style
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.06, 0.04, 0.12, 0.95)
+	style.border_color = Color(1.0, 0.88, 0.5)
+	style.border_width_left = 2
+	style.border_width_right = 2
+	style.border_width_top = 2
+	style.border_width_bottom = 2
+	style.corner_radius_top_left = 8
+	style.corner_radius_top_right = 8
+	style.corner_radius_bottom_right = 8
+	style.corner_radius_bottom_left = 8
+	panel.add_theme_stylebox_override("panel", style)
+
+	# Title
+	var title = Label.new()
+	title.name = "UnitName"
+	title.text = "选中单位"
+	title.position = Vector2(10, 8)
+	title.add_theme_font_size_override("font_size", 16)
+	title.add_theme_color_override("font_color", Color(1.0, 0.88, 0.5))
+	panel.add_child(title)
+
+	# Element label
+	var elem_label = Label.new()
+	elem_label.name = "UnitElement"
+	elem_label.text = ""
+	elem_label.position = Vector2(10, 30)
+	elem_label.add_theme_font_size_override("font_size", 12)
+	elem_label.add_theme_color_override("font_color", Color(0.7, 0.65, 0.55))
+	panel.add_child(elem_label)
+
+	# HP bar
+	var hp_bar = ProgressBar.new()
+	hp_bar.name = "UnitHPBar"
+	hp_bar.position = Vector2(10, 52)
+	hp_bar.size = Vector2(200, 16)
+	hp_bar.max_value = 100.0
+	hp_bar.value = 100.0
+	hp_bar.show_percentage = false
+	var hp_bg = StyleBoxFlat.new()
+	hp_bg.bg_color = Color(0.1, 0.05, 0.05, 0.9)
+	hp_bg.border_color = Color(0.5, 0.3, 0.3)
+	hp_bg.border_width_left = 1
+	hp_bg.border_width_right = 1
+	hp_bg.border_width_top = 1
+	hp_bg.border_width_bottom = 1
+	hp_bg.corner_radius_top_left = 3
+	hp_bg.corner_radius_top_right = 3
+	hp_bg.corner_radius_bottom_right = 3
+	hp_bg.corner_radius_bottom_left = 3
+	hp_bar.add_theme_stylebox_override("background", hp_bg)
+	var hp_fill = StyleBoxFlat.new()
+	hp_fill.bg_color = Color(0.9, 0.25, 0.2)
+	hp_fill.corner_radius_top_left = 2
+	hp_fill.corner_radius_top_right = 2
+	hp_fill.corner_radius_bottom_right = 2
+	hp_fill.corner_radius_bottom_left = 2
+	hp_bar.add_theme_stylebox_override("fill", hp_fill)
+	panel.add_child(hp_bar)
+
+	# HP text
+	var hp_text = Label.new()
+	hp_text.name = "UnitHPText"
+	hp_text.text = ""
+	hp_text.position = Vector2(10, 70)
+	hp_text.add_theme_font_size_override("font_size", 11)
+	hp_text.add_theme_color_override("font_color", Color(0.8, 0.75, 0.7))
+	panel.add_child(hp_text)
+
+	# ATK/DEF labels
+	var stats_label = Label.new()
+	stats_label.name = "UnitStats"
+	stats_label.text = ""
+	stats_label.position = Vector2(10, 88)
+	stats_label.add_theme_font_size_override("font_size", 11)
+	stats_label.add_theme_color_override("font_color", Color(0.7, 0.68, 0.62))
+	panel.add_child(stats_label)
+
+	return panel
+
+
+## Update selected unit info panel display
+func _update_selected_unit_panel() -> void:
+	if not _selected_unit_panel or not is_instance_valid(_selected_unit_panel):
+		return
+	if _selected_unit_index >= RTSArenaManager.player_units.size():
+		_selected_unit_panel.visible = false
+		return
+	var unit = RTSArenaManager.player_units[_selected_unit_index]
+	if not unit or not is_instance_valid(unit) or unit.state == SoulUnit.UnitState.DEAD:
+		_selected_unit_panel.visible = false
+		return
+	_selected_unit_panel.visible = true
+	# Update name
+	var name_label = _selected_unit_panel.get_node_or_null("UnitName")
+	if name_label:
+		name_label.text = unit.soul_name if unit.soul_name else "灵魂%d" % (_selected_unit_index + 1)
+	# Update element
+	var elem_label = _selected_unit_panel.get_node_or_null("UnitElement")
+	if elem_label:
+		var elem_names = {"fire": "火元素", "water": "水元素", "earth": "土元素", "wind": "风元素", "thunder": "雷元素", "ice": "冰元素", "light": "光元素", "dark": "暗元素"}
+		elem_label.text = elem_names.get(unit.element, unit.element)
+	# Update HP bar
+	var hp_bar = _selected_unit_panel.get_node_or_null("UnitHPBar")
+	if hp_bar:
+		hp_bar.max_value = unit.max_hp
+		hp_bar.value = unit.current_hp
+	# Update HP text
+	var hp_text = _selected_unit_panel.get_node_or_null("UnitHPText")
+	if hp_text:
+		hp_text.text = "HP: %d / %d" % [int(unit.current_hp), int(unit.max_hp)]
+	# Update stats
+	var stats_label = _selected_unit_panel.get_node_or_null("UnitStats")
+	if stats_label:
+		stats_label.text = "ATK: %d  DEF: %d  SPD: %.1f" % [int(unit.attack), int(unit.defense), unit.speed]
+
+
 ## Create gold circle selection indicator for selected unit
 func _create_selection_indicator() -> Node2D:
 	var indicator = Node2D.new()
