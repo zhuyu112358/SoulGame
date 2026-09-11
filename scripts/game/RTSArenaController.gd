@@ -2291,6 +2291,46 @@ func _apply_hud_skin() -> void:
 			s_pressed.corner_radius_bottom_right = 4
 			btn.add_theme_stylebox_override("pressed", s_pressed)
 
+	# Back button style: red accent border (danger/exit)
+	if back_button and back_button is Button:
+		var back_normal = StyleBoxFlat.new()
+		back_normal.bg_color = Color(0.15, 0.08, 0.10, 0.95)
+		back_normal.border_color = Color(0.8, 0.3, 0.3)
+		back_normal.border_width_left = 2
+		back_normal.border_width_right = 2
+		back_normal.border_width_top = 2
+		back_normal.border_width_bottom = 2
+		back_normal.corner_radius_top_left = 6
+		back_normal.corner_radius_top_right = 6
+		back_normal.corner_radius_bottom_left = 6
+		back_normal.corner_radius_bottom_right = 6
+		back_button.add_theme_stylebox_override("normal", back_normal)
+		var back_hover = StyleBoxFlat.new()
+		back_hover.bg_color = Color(0.25, 0.12, 0.15, 0.98)
+		back_hover.border_color = Color(1.0, 0.45, 0.45)
+		back_hover.border_width_left = 3
+		back_hover.border_width_right = 3
+		back_hover.border_width_top = 3
+		back_hover.border_width_bottom = 3
+		back_hover.corner_radius_top_left = 6
+		back_hover.corner_radius_top_right = 6
+		back_hover.corner_radius_bottom_left = 6
+		back_hover.corner_radius_bottom_right = 6
+		back_button.add_theme_stylebox_override("hover", back_hover)
+		var back_pressed = StyleBoxFlat.new()
+		back_pressed.bg_color = Color(0.10, 0.05, 0.08, 1.0)
+		back_pressed.border_color = Color(0.6, 0.2, 0.2)
+		back_pressed.border_width_left = 2
+		back_pressed.border_width_right = 2
+		back_pressed.border_width_top = 2
+		back_pressed.border_width_bottom = 2
+		back_pressed.corner_radius_top_left = 6
+		back_pressed.corner_radius_top_right = 6
+		back_pressed.corner_radius_bottom_left = 6
+		back_pressed.corner_radius_bottom_right = 6
+		back_button.add_theme_stylebox_override("pressed", back_pressed)
+		back_button.add_theme_color_override("font_color", Color(0.95, 0.7, 0.7))
+
 	# Tactical command buttons: each with its own color border (game-level UI)
 	var tactical_colors = {
 		"aggressive": Color(0.9, 0.3, 0.3),
