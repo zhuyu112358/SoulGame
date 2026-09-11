@@ -262,6 +262,17 @@ func _populate_soul_list() -> void:
 		btn.add_theme_stylebox_override("pressed", pressed_style)
 
 		btn.pressed.connect(_on_soul_selected.bind(i))
+
+		# Hover scale animation
+		btn.mouse_entered.connect(func():
+			var t = create_tween()
+			t.tween_property(btn, "scale", Vector2(1.1, 1.1), 0.15).set_ease(Tween.EASE_OUT)
+		)
+		btn.mouse_exited.connect(func():
+			var t = create_tween()
+			t.tween_property(btn, "scale", Vector2(1.0, 1.0), 0.2).set_ease(Tween.EASE_OUT)
+		)
+
 		_character_bar.add_child(btn)
 		_character_buttons.append(btn)
 

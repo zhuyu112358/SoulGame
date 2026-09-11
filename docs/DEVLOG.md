@@ -10364,3 +10364,41 @@ ode/life/max_life），而_update_skill_particles()期望新版数据结构（pa
 - SoulSelect.gd角色栏按钮hover效果
 - SettingsMenu/TrainingStats等场景按钮hover效果
 - 场景切换淡入淡出过渡优化
+
+---
+
+## 2026-09-11 SoulSelect角色栏hover动画+场景切换过渡确认 (UI-5续)
+
+### 完成内容
+1. **SoulSelect.gd角色栏按钮hover缩放效果**
+   - mouse_entered: 缩放1.1x，0.15秒缓动
+   - mouse_exited: 恢复缩放1.0x，0.2秒缓动
+   - 与已有的StyleBoxFlat元素色边框样式配合
+   - 应用于8个灵魂角色栏按钮
+
+2. **场景切换淡入淡出过渡确认**
+   - SceneManager已有完善的过渡效果：深紫色渐变+金色边框闪光
+   - 过渡时长0.4秒，EASE_IN_OUT缓动
+   - 无需修改，已满足游戏级过渡体验
+
+### 验证结果
+- M2测试: 2697 Passed, 0 Failed
+- 无SCRIPT ERROR
+
+### 修改的文件
+- scripts/ui/SoulSelect.gd - 角色栏按钮添加hover缩放动画
+
+### UI质量大改造进度总结
+- 主菜单游戏化分层布局 ✅
+- 灵魂选择暗黑3风格改造 ✅
+- 战斗配置面板美化 ✅
+- 其他场景背景图美化(5个场景) ✅
+- 全局按钮hover动画(MainMenu+BattleConfig+SoulSelect) ✅
+- 场景切换淡入淡出过渡 ✅
+- 结算/设置/HUD美化 ✅
+- 4v4团队HP条 ✅
+
+### 下一步
+- SettingsMenu/TrainingStats等.tscn定义按钮的场景hover效果
+- 面板区域卡片式背景美化
+- 全局UI组件统一集成(待资源导入后)
