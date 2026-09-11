@@ -1,4 +1,4 @@
-extends Control
+﻿extends Control
 ## SoulSelect - Soul selection scene controller (Diablo 3 style redesign)
 ##
 ## Large portrait center display, character bar at bottom, detail panel on right.
@@ -21,6 +21,9 @@ const FontLoader = preload("res://scripts/core/FontLoader.gd")
 var _souls: Array = []
 var _selected_index: int = -1
 var _character_buttons: Array = []
+var _portrait_glow: ColorRect = null
+var _portrait_frame: Panel = null
+var _stat_bars: Dictionary = {}
 
 ## Compatibility: soul list alias for tests
 var _soul_list: VBoxContainer = null
@@ -78,7 +81,122 @@ func _ready() -> void:
 	_load_available_souls()
 	_populate_soul_list()
 	_play_select_music()
+	_setup_portrait_frame()
+	_setup_stat_bars()
 	_animate_entrance()
+
+
+## Setup decorative frame and glow around main portrait
+func _setup_portrait_frame() -> void:
+	if not _portrait_texture:
+		return
+	var container = _portrait_texture.get_parent()
+	if not container:
+		return
+
+	# Element glow behind portrait
+	_portrait_glow = ColorRect.new()
+	_portrait_glow.color = Color(0.8, 0.6, 0.3, 0.15)
+	_portrait_glow.custom_minimum_size = Vector2(420, 420)
+	container.add_child(_portrait_glow)
+	container.move_child(_portrait_glow, 0)
+
+	# Gold frame border
+	_portrait_frame = Panel.new()
+	_portrait_frame.custom_minimum_size = Vector2(410, 410)
+	var frame_style = StyleBoxFlat.new()
+	frame_style.bg_color = Color(0, 0, 0, 0)
+	frame_style.border_color = Color(0.9, 0.75, 0.35, 0.8)
+	frame_style.border_width_left = 3
+	frame_style.border_width_right = 3
+	frame_style.border_width_top = 3
+	frame_style.border_width_bottom = 3
+	frame_style.corner_radius_top_left = 12
+	frame_style.corner_radius_top_right = 12
+	frame_style.corner_radius_bottom_left = 12
+	frame_style.corner_radius_bottom_right = 12
+	_portrait_frame.add_theme_stylebox_override("panel", frame_style)
+	container.add_child(_portrait_frame)
+	container.move_child(_portrait_frame, 1)
+
+	# Pulse glow animation
+	var glow_tween = create_tween()
+	glow_tween.set_loops()
+	glow_tween.tween_property(_portrait_glow, "color:a", 0.25, 1.5).set_ease(Tween.EASE_IN_OUT)
+	glow_tween.tween_property(_portrait_glow, "color:a", 0.12, 1.5).set_ease(Tween.EASE_IN_OUT)
+
+
+## Setup stat bars in detail panel (replace plain text with progress bars)
+func _setup_stat_bars() -> void:
+	if not _stats_label:
+		return
+	var detail_vbox = _stats_label.get_parent()
+	if not detail_vbox:
+		return
+
+	# Hide old plain text stats label
+	_stats_label.visible = false
+
+	# Stats section title
+	var stats_title = Label.new()
+	stats_title.text = "属 性"
+	stats_title.add_theme_font_size_override("font_size", 18)
+	stats_title.add_theme_color_override("font_color", Color(1.0, 0.88, 0.5))
+	detail_vbox.add_child(stats_title)
+
+	# Create stat bars: HP, ATK, DEF
+	var stats = [
+		{"key": "hp", "label": "生命值", "color": Color(0.9, 0.3, 0.3), "max": 200},
+		{"key": "attack", "label": "攻击力", "color": Color(0.95, 0.7, 0.2), "max": 40},
+		{"key": "defense", "label": "防御力", "color": Color(0.3, 0.6, 0.95), "max": 30},
+	]
+	for s in stats:
+		var row = HBoxContainer.new()
+		row.add_theme_constant_override("separation", 8)
+
+		var stat_label = Label.new()
+		stat_label.text = s["label"]
+		stat_label.custom_minimum_size = Vector2(60, 0)
+		stat_label.add_theme_font_size_override("font_size", 13)
+		stat_label.add_theme_color_override("font_color", Color(0.8, 0.78, 0.72))
+		row.add_child(stat_label)
+
+		var bar = ProgressBar.new()
+		bar.custom_minimum_size = Vector2(180, 18)
+		bar.max_value = s["max"]
+		bar.value = 0
+		bar.show_percentage = false
+		var bar_style = StyleBoxFlat.new()
+		bar_style.bg_color = Color(0.1, 0.08, 0.15, 0.8)
+		bar_style.corner_radius_top_left = 3
+		bar_style.corner_radius_top_right = 3
+		bar_style.corner_radius_bottom_left = 3
+		bar_style.corner_radius_bottom_right = 3
+		bar.add_theme_stylebox_override("background", bar_style)
+		var fill_style = StyleBoxFlat.new()
+		fill_style.bg_color = s["color"]
+		fill_style.corner_radius_top_left = 3
+		fill_style.corner_radius_top_right = 3
+		fill_style.corner_radius_bottom_left = 3
+		fill_style.corner_radius_bottom_right = 3
+		bar.add_theme_stylebox_override("fill", fill_style)
+		row.add_child(bar)
+
+		var value_label = Label.new()
+		value_label.text = "0"
+		value_label.custom_minimum_size = Vector2(36, 0)
+		value_label.add_theme_font_size_override("font_size", 13)
+		value_label.add_theme_color_override("font_color", Color(0.9, 0.88, 0.8))
+		value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		row.add_child(value_label)
+
+		detail_vbox.add_child(row)
+		_stat_bars[s["key"]] = {"bar": bar, "value": value_label, "max": s["max"]}
+
+	# Spacer
+	var spacer = Control.new()
+	spacer.custom_minimum_size = Vector2(0, 8)
+	detail_vbox.add_child(spacer)
 
 
 ## Load individual portrait files
@@ -202,7 +320,7 @@ func _load_available_souls() -> void:
 		]
 
 
-## Populate character bar with soul portrait buttons
+## Populate character bar with soul portrait cards (portrait + name)
 func _populate_soul_list() -> void:
 	for child in _character_bar.get_children():
 		child.queue_free()
@@ -210,67 +328,103 @@ func _populate_soul_list() -> void:
 
 	for i in range(_souls.size()):
 		var soul = _souls[i]
-		var btn = Button.new()
-		btn.custom_minimum_size = Vector2(100, 100)
-		btn.tooltip_text = soul["name"]
+		var element_color = _get_element_color(soul["element"])
 
-		# Set portrait as icon if available
+		# Card root: Button with transparent bg, VBox child
+		var btn = Button.new()
+		btn.custom_minimum_size = Vector2(96, 120)
+		btn.tooltip_text = soul["name"]
+		btn.flat = true
+
+		# Transparent normal style
+		var transparent = StyleBoxEmpty.new()
+		btn.add_theme_stylebox_override("normal", transparent)
+		btn.add_theme_stylebox_override("hover", transparent)
+		btn.add_theme_stylebox_override("pressed", transparent)
+		btn.add_theme_stylebox_override("disabled", transparent)
+
+		# Card VBox: portrait + name
+		var card_vbox = VBoxContainer.new()
+		card_vbox.add_theme_constant_override("separation", 4)
+		card_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+		btn.add_child(card_vbox)
+
+		# Portrait frame panel
+		var portrait_panel = Panel.new()
+		portrait_panel.custom_minimum_size = Vector2(80, 80)
+		var panel_style = StyleBoxFlat.new()
+		panel_style.bg_color = Color(0.06, 0.04, 0.12, 0.9)
+		panel_style.border_color = element_color * 0.7
+		panel_style.border_width_left = 2
+		panel_style.border_width_right = 2
+		panel_style.border_width_top = 2
+		panel_style.border_width_bottom = 2
+		panel_style.corner_radius_top_left = 6
+		panel_style.corner_radius_top_right = 6
+		panel_style.corner_radius_bottom_left = 6
+		panel_style.corner_radius_bottom_right = 6
+		portrait_panel.add_theme_stylebox_override("panel", panel_style)
+		portrait_panel.set_meta("base_style", panel_style)
+		card_vbox.add_child(portrait_panel)
+
+		# Portrait texture inside panel
+		var portrait_tex = TextureRect.new()
+		portrait_tex.custom_minimum_size = Vector2(72, 72)
+		portrait_tex.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		portrait_tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		var portrait = _get_portrait_texture(soul["element"])
 		if portrait:
-			btn.icon = portrait
-			btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			portrait_tex.texture = portrait
+		portrait_panel.add_child(portrait_tex)
 
-		# Element color border via StyleBoxFlat (no dynamic StyleBoxTexture)
-		var element_color = _get_element_color(soul["element"])
-		var btn_style = StyleBoxFlat.new()
-		btn_style.bg_color = Color(0.08, 0.05, 0.15, 0.9)
-		btn_style.border_color = element_color
-		btn_style.border_width_left = 3
-		btn_style.border_width_right = 3
-		btn_style.border_width_top = 3
-		btn_style.border_width_bottom = 3
-		btn_style.corner_radius_top_left = 8
-		btn_style.corner_radius_top_right = 8
-		btn_style.corner_radius_bottom_left = 8
-		btn_style.corner_radius_bottom_right = 8
-		btn.add_theme_stylebox_override("normal", btn_style)
+		# Name label
+		var name_label = Label.new()
+		name_label.text = soul["name"]
+		name_label.add_theme_font_size_override("font_size", 12)
+		name_label.add_theme_color_override("font_color", Color(0.85, 0.8, 0.7))
+		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		card_vbox.add_child(name_label)
 
-		var hover_style = StyleBoxFlat.new()
-		hover_style.bg_color = Color(0.15, 0.1, 0.25, 0.95)
-		hover_style.border_color = element_color * 1.3
-		hover_style.border_width_left = 3
-		hover_style.border_width_right = 3
-		hover_style.border_width_top = 3
-		hover_style.border_width_bottom = 3
-		hover_style.corner_radius_top_left = 8
-		hover_style.corner_radius_top_right = 8
-		hover_style.corner_radius_bottom_left = 8
-		hover_style.corner_radius_bottom_right = 8
-		btn.add_theme_stylebox_override("hover", hover_style)
-
-		var pressed_style = StyleBoxFlat.new()
-		pressed_style.bg_color = Color(0.2, 0.15, 0.3, 1.0)
-		pressed_style.border_color = Color(1.0, 0.85, 0.5)
-		pressed_style.border_width_left = 3
-		pressed_style.border_width_right = 3
-		pressed_style.border_width_top = 3
-		pressed_style.border_width_bottom = 3
-		pressed_style.corner_radius_top_left = 8
-		pressed_style.corner_radius_top_right = 8
-		pressed_style.corner_radius_bottom_left = 8
-		pressed_style.corner_radius_bottom_right = 8
-		btn.add_theme_stylebox_override("pressed", pressed_style)
+		btn.set_meta("card_root", btn)
+		btn.set_meta("portrait_panel", portrait_panel)
+		btn.set_meta("name_label", name_label)
+		btn.set_meta("element_color", element_color)
 
 		btn.pressed.connect(_on_soul_selected.bind(i))
 
-		# Hover scale animation
+		# Hover: scale up + brighten border
 		btn.mouse_entered.connect(func():
 			var t = create_tween()
+			t.set_parallel(true)
 			t.tween_property(btn, "scale", Vector2(1.1, 1.1), 0.15).set_ease(Tween.EASE_OUT)
+			var pp = btn.get_meta("portrait_panel") as Panel
+			if pp:
+				var hs = pp.get_meta("base_style") as StyleBoxFlat
+				var hover_s = StyleBoxFlat.new()
+				hover_s.bg_color = Color(0.1, 0.07, 0.18, 0.95)
+				hover_s.border_color = element_color * 1.3
+				hover_s.border_width_left = 2
+				hover_s.border_width_right = 2
+				hover_s.border_width_top = 2
+				hover_s.border_width_bottom = 2
+				hover_s.corner_radius_top_left = 6
+				hover_s.corner_radius_top_right = 6
+				hover_s.corner_radius_bottom_left = 6
+				hover_s.corner_radius_bottom_right = 6
+				pp.add_theme_stylebox_override("panel", hover_s)
+			var nl = btn.get_meta("name_label") as Label
+			if nl:
+				nl.add_theme_color_override("font_color", Color(1.0, 0.95, 0.8))
 		)
 		btn.mouse_exited.connect(func():
 			var t = create_tween()
 			t.tween_property(btn, "scale", Vector2(1.0, 1.0), 0.2).set_ease(Tween.EASE_OUT)
+			var pp = btn.get_meta("portrait_panel") as Panel
+			if pp and i != _selected_index:
+				pp.add_theme_stylebox_override("panel", pp.get_meta("base_style"))
+			var nl = btn.get_meta("name_label") as Label
+			if nl and i != _selected_index:
+				nl.add_theme_color_override("font_color", Color(0.85, 0.8, 0.7))
 		)
 
 		_character_bar.add_child(btn)
@@ -279,7 +433,7 @@ func _populate_soul_list() -> void:
 		# Staggered fade in
 		btn.modulate = Color(1, 1, 1, 0)
 		var btn_tween = create_tween()
-		btn_tween.tween_interval(0.3 + i * 0.1)
+		btn_tween.tween_interval(0.3 + i * 0.08)
 		btn_tween.tween_property(btn, "modulate:a", 1.0, 0.3).set_ease(Tween.EASE_OUT)
 
 
