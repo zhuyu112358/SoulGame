@@ -1,5 +1,32 @@
 ﻿# 战策 Battleplan 开发日志
 
+## [战斗玩法增强] 4v4玩家单位点击选择功能+选中金色高亮（2026-09-12）
+
+**本轮工作**：在4v4团队战斗中实现玩家单位点击选择功能，填补核心玩法缺失。
+
+**功能实现**：
+1. 玩家队伍HP条从VBoxContainer改为可点击的Button
+2. 每个玩家单位HP条有三态样式：normal（深紫底+暗金边框）、hover（亮金边框）、pressed（金色边框）
+3. 点击后选中对应单位，显示3px金色边框高亮+更亮背景
+4. 选中状态切换时播放点击音效
+5. _selected_unit_index变量现在真正被使用（之前只声明未使用）
+6. _clear_team_visuals中清除_player_unit_containers数组
+
+**视觉效果**：
+- 未选中：深紫底(Color(0.06,0.04,0.12,0.7))+1px暗金边框
+- hover：亮底+2px亮金边框
+- 选中：深紫亮底(Color(0.15,0.1,0.25,0.95))+3px金色边框
+- HP条保持元素色填充（8种元素对应颜色）
+
+**修改文件**：
+- scripts/game/RTSArenaController.gd：添加_player_unit_containers变量，修改_create_team_hp_bars方法，添加_select_player_unit方法
+
+**验证结果**：
+- rts_arena场景测试：NO SCRIPT ERROR，HUD skin正常加载
+- M2测试：2955 Passed, 0 Failed
+
+---
+
 ## [游戏级UI升级-全场景验证通过] 14个场景游戏级UI升级完成+全局验证（2026-09-12）
 
 **本轮工作**：完成全部11个界面的游戏级UI视觉升级，并通过14个场景全局验证。

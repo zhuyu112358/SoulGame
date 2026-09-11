@@ -66,6 +66,7 @@ var _ai_lights: Array = []       # Array of PointLight2D for AI team
 var _team_hp_container = null    # Container for team HP bars
 var _player_team_hp_bars: Array = []  # HP bars for player team units
 var _ai_team_hp_bars: Array = []      # HP bars for AI team units
+var _player_unit_containers: Array = []  # Clickable containers for player unit selection
 var _selected_unit_index: int = 0     # Currently selected player unit (for tactical commands)
 
 ## Battle active flag
@@ -2890,19 +2891,80 @@ func _create_team_hp_bars(p_player_team: Array, p_ai_team: Array) -> void:
 		var element = unit_info.get("element", "neutral")
 		var fill_color = element_colors.get(element, Color(0.3, 0.8, 0.3))
 
-		# Container for name + HP bar
-		var container = VBoxContainer.new()
-		container.name = "PlayerTeamHPContainer_%d" % i
+		# Clickable container for name + HP bar (unit selection)
+		var container = Button.new()
+		container.name = "PlayerUnitSelect_%d" % i
 		container.position = Vector2(15, 15 + i * 42)
 		container.custom_minimum_size = Vector2(200, 38)
+		container.flat = true
+		# Normal style: transparent with subtle border
+		var normal_style = StyleBoxFlat.new()
+		normal_style.bg_color = Color(0.06, 0.04, 0.12, 0.7)
+		normal_style.border_color = Color(0.4, 0.35, 0.2)
+		normal_style.border_width_left = 1
+		normal_style.border_width_right = 1
+		normal_style.border_width_top = 1
+		normal_style.border_width_bottom = 1
+		normal_style.corner_radius_top_left = 4
+		normal_style.corner_radius_top_right = 4
+		normal_style.corner_radius_bottom_right = 4
+		normal_style.corner_radius_bottom_left = 4
+		container.add_theme_stylebox_override("normal", normal_style)
+		# Hover style: brighter border
+		var hover_style = StyleBoxFlat.new()
+		hover_style.bg_color = Color(0.1, 0.08, 0.18, 0.85)
+		hover_style.border_color = Color(0.8, 0.7, 0.4)
+		hover_style.border_width_left = 2
+		hover_style.border_width_right = 2
+		hover_style.border_width_top = 2
+		hover_style.border_width_bottom = 2
+		hover_style.corner_radius_top_left = 4
+		hover_style.corner_radius_top_right = 4
+		hover_style.corner_radius_bottom_right = 4
+		hover_style.corner_radius_bottom_left = 4
+		container.add_theme_stylebox_override("hover", hover_style)
+		# Pressed style
+		var pressed_style = StyleBoxFlat.new()
+		pressed_style.bg_color = Color(0.12, 0.1, 0.2, 0.9)
+		pressed_style.border_color = Color(1.0, 0.88, 0.5)
+		pressed_style.border_width_left = 2
+		pressed_style.border_width_right = 2
+		pressed_style.border_width_top = 2
+		pressed_style.border_width_bottom = 2
+		pressed_style.corner_radius_top_left = 4
+		pressed_style.corner_radius_top_right = 4
+		pressed_style.corner_radius_bottom_right = 4
+		pressed_style.corner_radius_bottom_left = 4
+		container.add_theme_stylebox_override("pressed", pressed_style)
+		# Focus style: gold border for selected
+		var focus_style = StyleBoxFlat.new()
+		focus_style.bg_color = Color(0.12, 0.08, 0.2, 0.9)
+		focus_style.border_color = Color(1.0, 0.88, 0.5)
+		focus_style.border_width_left = 3
+		focus_style.border_width_right = 3
+		focus_style.border_width_top = 3
+		focus_style.border_width_bottom = 3
+		focus_style.corner_radius_top_left = 4
+		focus_style.corner_radius_top_right = 4
+		focus_style.corner_radius_bottom_right = 4
+		focus_style.corner_radius_bottom_left = 4
+		container.add_theme_stylebox_override("focus", focus_style)
 		add_child(container)
+		_player_unit_containers.append(container)
+
+		# Inner VBox for name + HP bar
+		var inner_box = VBoxContainer.new()
+		inner_box.name = "InnerBox"
+		inner_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		container.add_child(inner_box)
 
 		# Name label
 		var name_label = Label.new()
 		name_label.text = soul_name
 		name_label.add_theme_font_size_override("font_size", 11)
 		name_label.add_theme_color_override("font_color", Color(0.9, 0.85, 0.6))
-		container.add_child(name_label)
+		name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		inner_box.add_child(name_label)
 
 		# HP bar
 		var hp_bar = ProgressBar.new()
@@ -2911,6 +2973,7 @@ func _create_team_hp_bars(p_player_team: Array, p_ai_team: Array) -> void:
 		hp_bar.max_value = 100.0
 		hp_bar.value = 100.0
 		hp_bar.show_percentage = false
+		hp_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		var bg_style = StyleBoxFlat.new()
 		bg_style.bg_color = Color(0.1, 0.08, 0.12, 0.9)
 		bg_style.border_color = Color(0.5, 0.4, 0.25)
@@ -2930,8 +2993,12 @@ func _create_team_hp_bars(p_player_team: Array, p_ai_team: Array) -> void:
 		fill_style.corner_radius_bottom_right = 2
 		fill_style.corner_radius_bottom_left = 2
 		hp_bar.add_theme_stylebox_override("fill", fill_style)
-		container.add_child(hp_bar)
+		inner_box.add_child(hp_bar)
 		_player_team_hp_bars.append(hp_bar)
+
+		# Connect click signal for unit selection
+		var unit_idx = i
+		container.pressed.connect(func(): _select_player_unit(unit_idx))
 
 	# AI team HP bars (top-right, vertical stack with names)
 	for i in range(p_ai_team.size()):
@@ -2985,6 +3052,47 @@ func _create_team_hp_bars(p_player_team: Array, p_ai_team: Array) -> void:
 		_ai_team_hp_bars.append(hp_bar)
 
 
+## Select a player unit by index (clickable HP bar)
+func _select_player_unit(p_index: int) -> void:
+	_selected_unit_index = p_index
+	GameLog.info("RTSArena: Selected player unit %d" % p_index, "Arena")
+	# Update visual selection state
+	for idx in range(_player_unit_containers.size()):
+		var btn = _player_unit_containers[idx]
+		if btn and is_instance_valid(btn):
+			if idx == p_index:
+				# Selected: gold border + brighter bg
+				var selected_style = StyleBoxFlat.new()
+				selected_style.bg_color = Color(0.15, 0.1, 0.25, 0.95)
+				selected_style.border_color = Color(1.0, 0.88, 0.5)
+				selected_style.border_width_left = 3
+				selected_style.border_width_right = 3
+				selected_style.border_width_top = 3
+				selected_style.border_width_bottom = 3
+				selected_style.corner_radius_top_left = 4
+				selected_style.corner_radius_top_right = 4
+				selected_style.corner_radius_bottom_right = 4
+				selected_style.corner_radius_bottom_left = 4
+				btn.add_theme_stylebox_override("normal", selected_style)
+			else:
+				# Deselected: normal style
+				var normal_style = StyleBoxFlat.new()
+				normal_style.bg_color = Color(0.06, 0.04, 0.12, 0.7)
+				normal_style.border_color = Color(0.4, 0.35, 0.2)
+				normal_style.border_width_left = 1
+				normal_style.border_width_right = 1
+				normal_style.border_width_top = 1
+				normal_style.border_width_bottom = 1
+				normal_style.corner_radius_top_left = 4
+				normal_style.corner_radius_top_right = 4
+				normal_style.corner_radius_bottom_right = 4
+				normal_style.corner_radius_bottom_left = 4
+				btn.add_theme_stylebox_override("normal", normal_style)
+	# Play selection sound
+	if AudioManager:
+		AudioManager.play_sfx("ui_button_click")
+
+
 ## GAP-001: Clear team battle visuals
 func _clear_team_visuals() -> void:
 	for visual in _player_visuals:
@@ -3012,6 +3120,7 @@ func _clear_team_visuals() -> void:
 			else:
 				hp_bar.queue_free()
 	_player_team_hp_bars.clear()
+	_player_unit_containers.clear()
 	for hp_bar in _ai_team_hp_bars:
 		if hp_bar and is_instance_valid(hp_bar):
 			# Free parent container if it exists (new layout), else free the bar itself
