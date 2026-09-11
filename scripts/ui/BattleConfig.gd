@@ -455,46 +455,75 @@ func _on_start_battle() -> void:
 	var atk_mult: float = diff_data["atk_mult"]
 	var ai_level: float = diff_data["ai_level"]
 
-	# Create AI opponent soul (random element, similar level, difficulty-scaled stats)
-	var ai_elements = ["fire", "water", "earth", "wind", "light", "dark"]
-	var ai_element = ai_elements[randi() % ai_elements.size()]
+	# GAP-001: Build player team (4 souls) - auto-fill if less than 4 selected
+	var player_team: Array = []
 	var player_level: int = 1
 	if _selected_souls.size() > 0:
 		player_level = _selected_souls[0].get("level", 1)
-	var ai_soul = {
-		"id": "ai_soul_01",
-		"name": "敌方灵魂",
-		"element": ai_element,
-		"level": player_level,
-		"hp": int((100 + player_level * 10) * hp_mult),
-		"attack": int((12 + player_level * 2) * atk_mult),
-		"defense": int((8 + player_level) * hp_mult),
-		"is_player": false,
-		"difficulty": _selected_difficulty,
-		"ai_level": ai_level
-	}
+	# Add selected souls first
+	for soul in _selected_souls:
+		if player_team.size() < 4:
+			player_team.append(soul)
+	# Auto-fill remaining slots with random element souls
+	var fill_elements = ["fire", "water", "earth", "wind", "thunder", "ice", "light", "dark"]
+	var element_names = {"fire": "炎灵", "water": "水灵", "earth": "岩灵", "wind": "风灵", "thunder": "雷灵", "ice": "冰灵", "light": "光灵", "dark": "暗灵"}
+	while player_team.size() < 4:
+		var elem = fill_elements[randi() % fill_elements.size()]
+		player_team.append({
+			"id": "player_soul_%02d" % (player_team.size() + 1),
+			"name": element_names.get(elem, elem),
+			"element": elem,
+			"level": player_level,
+			"hp": 100 + player_level * 10,
+			"attack": 12 + player_level * 2,
+			"defense": 8 + player_level,
+			"is_player": true
+		})
 
-	# Save battle config to GameState in RTSArenaController expected format
-	var player_soul: Dictionary = {}
-	if _selected_souls.size() > 0:
-		player_soul = _selected_souls[0]
+	# GAP-001: Build AI team (4 souls) with different elements and difficulty-scaled stats
+	var ai_team: Array = []
+	var ai_elements = ["fire", "water", "earth", "wind", "thunder", "ice", "light", "dark"]
+	ai_elements.shuffle()
+	for i in 4:
+		var ai_elem = ai_elements[i % ai_elements.size()]
+		ai_team.append({
+			"id": "ai_soul_%02d" % (i + 1),
+			"name": "敌方" + element_names.get(ai_elem, ai_elem),
+			"element": ai_elem,
+			"level": player_level,
+			"hp": int((100 + player_level * 10) * hp_mult),
+			"attack": int((12 + player_level * 2) * atk_mult),
+			"defense": int((8 + player_level) * hp_mult),
+			"is_player": false,
+			"difficulty": _selected_difficulty,
+			"ai_level": ai_level
+		})
 
-	GameState.set_value("battle", "player_soul", player_soul)
-	GameState.set_value("battle", "ai_soul", ai_soul)
+	# Save battle config to GameState in team battle format (GAP-001)
+	GameState.set_value("battle", "player_souls", player_team)
+	GameState.set_value("battle", "ai_souls", ai_team)
 	GameState.set_value("battle", "map_name", MAPS[_selected_map]["name"])
 	GameState.set_value("battle", "tactic", _selected_tactic)
 	GameState.set_value("battle", "difficulty", _selected_difficulty)
-	GameState.set_value("battle", "player_souls", _selected_souls)
+	GameState.set_value("battle", "is_team_battle", true)
+
+	# Also store single soul for backward compatibility
+	if player_team.size() > 0:
+		GameState.set_value("battle", "player_soul", player_team[0])
+	if ai_team.size() > 0:
+		GameState.set_value("battle", "ai_soul", ai_team[0])
 
 	# Also store for battle config scene reference
 	var config: Dictionary = {
 		"map": _selected_map,
 		"tactic": _selected_tactic,
 		"difficulty": _selected_difficulty,
-		"player_souls": _selected_souls,
+		"player_souls": player_team,
+		"ai_souls": ai_team,
 		"map_name": MAPS[_selected_map]["name"],
 		"tactic_name": TACTICS[_selected_tactic]["name"],
-		"difficulty_name": diff_data["name"]
+		"difficulty_name": diff_data["name"],
+		"is_team_battle": true
 	}
 	GameState.set_value("game", "battle_config", config)
 

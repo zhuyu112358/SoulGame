@@ -1877,8 +1877,32 @@ func _try_auto_start_battle() -> void:
 	var ai_soul = GameState.get_value("battle", "ai_soul", null)
 	var map_name = GameState.get_value("battle", "map_name", "default_arena")
 
-	if player_soul != null and ai_soul != null:
-		GameLog.info("RTSArenaController: Starting battle countdown with config from GameState", "Arena")
+	# GAP-001: Check for team battle config (4v4)
+	var player_souls = GameState.get_value("battle", "player_souls", null)
+	var ai_souls = GameState.get_value("battle", "ai_souls", null)
+	var is_team_battle = GameState.get_value("battle", "is_team_battle", false)
+
+	if is_team_battle and player_souls != null and ai_souls != null and player_souls.size() > 0 and ai_souls.size() > 0:
+		GameLog.info("RTSArenaController: Starting TEAM battle countdown (%dv%d)" % [player_souls.size(), ai_souls.size()], "Arena")
+		# Save team config for rematch and pending start
+		_battle_config["player_souls"] = player_souls
+		_battle_config["ai_souls"] = ai_souls
+		_battle_config["map_name"] = map_name
+		_battle_config["is_team_battle"] = true
+		_pending_battle_config = {
+			"player_souls": player_souls,
+			"ai_souls": ai_souls,
+			"map_name": map_name,
+			"is_team_battle": true
+		}
+		# Start countdown
+		_start_countdown()
+		# Clear battle config from GameState after use
+		GameState.set_value("battle", "player_souls", null)
+		GameState.set_value("battle", "ai_souls", null)
+		GameState.set_value("battle", "is_team_battle", false)
+	elif player_soul != null and ai_soul != null:
+		GameLog.info("RTSArenaController: Starting 1v1 battle countdown with config from GameState", "Arena")
 		# Save config for rematch and pending start
 		_battle_config["player_soul"] = player_soul
 		_battle_config["ai_soul"] = ai_soul
@@ -1886,7 +1910,8 @@ func _try_auto_start_battle() -> void:
 		_pending_battle_config = {
 			"player_soul": player_soul,
 			"ai_soul": ai_soul,
-			"map_name": map_name
+			"map_name": map_name,
+			"is_team_battle": false
 		}
 		# Start countdown
 		_start_countdown()
@@ -1964,10 +1989,21 @@ func _update_countdown_display() -> void:
 func _start_battle_after_countdown() -> void:
 	if _pending_battle_config == null:
 		return
-	var player_soul = _pending_battle_config["player_soul"]
-	var ai_soul = _pending_battle_config["ai_soul"]
 	var map_name = _pending_battle_config["map_name"]
-	RTSArenaManager.start_battle(player_soul, ai_soul, map_name)
+	var is_team = _pending_battle_config.get("is_team_battle", false)
+
+	if is_team:
+		# GAP-001: 4v4 team battle
+		var player_team = _pending_battle_config["player_souls"]
+		var ai_team = _pending_battle_config["ai_souls"]
+		GameLog.info("RTSArenaController: Starting TEAM battle %dv%d" % [player_team.size(), ai_team.size()], "Arena")
+		RTSArenaManager.start_team_battle(player_team, ai_team, map_name)
+	else:
+		# 1v1 battle (backward compatibility)
+		var player_soul = _pending_battle_config["player_soul"]
+		var ai_soul = _pending_battle_config["ai_soul"]
+		RTSArenaManager.start_battle(player_soul, ai_soul, map_name)
+
 	_battle_active = true
 	# Play game start sound
 	if AudioManager:

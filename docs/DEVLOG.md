@@ -1,5 +1,29 @@
 ﻿# 战策 Battleplan 开发日志
 
+## [GAP-001] 4v4团队对战完整集成（2026-09-11）
+
+**目标**：从1v1格斗改造为4v4 RTS团队对战（GDD v2.0第3章核心战斗）
+
+### BattleConfig.gd改造
+- `_on_start_battle()`：从创建1个AI灵魂改为创建4个AI灵魂团队
+- 玩家队伍：选中的灵魂优先，不足4个自动补充随机元素灵魂
+- AI队伍：4个不同元素灵魂，难度缩放属性（hp_mult/atk_mult/ai_level）
+- 存储格式：`battle/player_souls`（Array）、`battle/ai_souls`（Array）、`battle/is_team_battle`（bool）
+- 向后兼容：同时存储`battle/player_soul`和`battle/ai_soul`（单个）
+
+### RTSArenaController.gd改造
+- `_try_auto_start_battle()`：检测`is_team_battle`标志，优先使用团队配置
+- `_start_battle_after_countdown()`：团队对战调用`RTSArenaManager.start_team_battle()`，1v1调用`start_battle()`
+- 团队配置存储在`_pending_battle_config`和`_battle_config`中
+
+### 游戏流程
+主菜单 → 开始游戏 → 灵魂选择（选1个）→ 战斗配置（自动补满4人队伍）→ 开始战斗 → 4v4竞技场
+
+### 测试结果
+2955 Passed, 0 Failed，无SCRIPT ERROR
+
+---
+
 ## [UI质量大改造] 从工业软件到真正的游戏（2026-09-11）
 
 **用户反馈**："还有哪有一排按钮按顺序贴在那的，随便找个游戏参考下也不至于这么设计吧，包括角色选择之类，不能做成一个个旋转或者摆pose的备选角色之类的？像星际争霸啊，暗黑破坏神啊之类的。设计给出的艺术图还可以的，怎么做出来都是工业软件的风格"
