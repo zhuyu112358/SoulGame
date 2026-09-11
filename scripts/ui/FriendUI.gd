@@ -135,7 +135,7 @@ func _refresh_friend_list() -> void:
 
 func _create_friend_item(p_friend: Dictionary) -> Control:
 	var panel = Panel.new()
-	panel.custom_minimum_size = Vector2(0, 60)
+	panel.custom_minimum_size = Vector2(0, 70)
 
 	var hbox = HBoxContainer.new()
 	hbox.layout_mode = 1
@@ -149,12 +149,39 @@ func _create_friend_item(p_friend: Dictionary) -> Control:
 	hbox.add_theme_constant_override("separation", 10)
 	panel.add_child(hbox)
 
+	# Friend avatar (element-colored square with first letter)
+	var avatar_container = VBoxContainer.new()
+	avatar_container.custom_minimum_size = Vector2(48, 0)
+	avatar_container.alignment = BoxContainer.ALIGNMENT_CENTER
+	hbox.add_child(avatar_container)
+
+	var avatar_bg = ColorRect.new()
+	avatar_bg.custom_minimum_size = Vector2(40, 40)
+	var element_color = _element_colors.get(p_friend["element"], Color(0.5, 0.5, 0.5))
+	avatar_bg.color = Color(element_color.r * 0.6, element_color.g * 0.6, element_color.b * 0.6, 0.9)
+	avatar_container.add_child(avatar_bg)
+
+	var avatar_label = Label.new()
+	avatar_label.text = p_friend["name"].substr(0, 1)
+	avatar_label.add_theme_font_size_override("font_size", 18)
+	avatar_label.add_theme_color_override("font_color", Color.WHITE)
+	avatar_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	avatar_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	avatar_label.position = Vector2(0, -38)
+	avatar_label.custom_minimum_size = Vector2(40, 40)
+	avatar_container.add_child(avatar_label)
+
 	# Status indicator
+	var status_vbox = VBoxContainer.new()
+	status_vbox.custom_minimum_size = Vector2(16, 0)
+	status_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	hbox.add_child(status_vbox)
+
 	var status_color = _friend_system.get_status_color(p_friend["status"])
 	var status_dot = ColorRect.new()
 	status_dot.custom_minimum_size = Vector2(12, 12)
 	status_dot.color = status_color
-	hbox.add_child(status_dot)
+	status_vbox.add_child(status_dot)
 
 	# Name and level
 	var name_vbox = VBoxContainer.new()
@@ -174,9 +201,13 @@ func _create_friend_item(p_friend: Dictionary) -> Control:
 	name_vbox.add_child(level_label)
 
 	# Action buttons
+	var button_vbox = VBoxContainer.new()
+	button_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	hbox.add_child(button_vbox)
+
 	var button_hbox = HBoxContainer.new()
 	button_hbox.add_theme_constant_override("separation", 5)
-	hbox.add_child(button_hbox)
+	button_vbox.add_child(button_hbox)
 
 	var message_button = Button.new()
 	message_button.text = "私聊"
@@ -200,7 +231,6 @@ func _create_friend_item(p_friend: Dictionary) -> Control:
 	button_hbox.add_child(remove_button)
 
 	return panel
-
 
 func _refresh_request_list() -> void:
 	if _request_list == null:
