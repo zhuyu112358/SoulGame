@@ -410,7 +410,18 @@ func _load_selected_souls() -> void:
 			_update_team_display()
 
 func _update_team_display() -> void:
-	# Update team slots with selected souls and portraits
+	# Update team slots with selected souls, portraits, element glow, and stat bars
+	var element_colors = {
+		"fire": Color(1.0, 0.4, 0.2),
+		"water": Color(0.3, 0.6, 1.0),
+		"earth": Color(0.5, 0.7, 0.3),
+		"wind": Color(0.4, 0.9, 0.8),
+		"light": Color(1.0, 0.9, 0.4),
+		"dark": Color(0.7, 0.4, 0.9),
+		"shadow": Color(0.7, 0.4, 0.9),
+		"thunder": Color(0.9, 0.8, 0.2),
+		"ice": Color(0.6, 0.9, 1.0),
+	}
 	for i in _max_team_size:
 		var slot = _team_container.get_child(i)
 		if slot == null:
@@ -425,6 +436,30 @@ func _update_team_display() -> void:
 			var soul: Dictionary = _selected_souls[i]
 			var soul_name: String = soul.get("name", "未知")
 			var element: String = soul.get("element", "unknown")
+			var elem_color = element_colors.get(element, Color(0.7, 0.6, 0.4))
+			# Update slot border to element color
+			var slot_style = StyleBoxFlat.new()
+			slot_style.bg_color = Color(0.08, 0.06, 0.14, 0.95)
+			slot_style.border_color = elem_color
+			slot_style.border_width_left = 2
+			slot_style.border_width_right = 2
+			slot_style.border_width_top = 2
+			slot_style.border_width_bottom = 2
+			slot_style.corner_radius_top_left = 8
+			slot_style.corner_radius_top_right = 8
+			slot_style.corner_radius_bottom_left = 8
+			slot_style.corner_radius_bottom_right = 8
+			slot.add_theme_stylebox_override("panel", slot_style)
+			# Portrait container with glow background
+			var portrait_container = VBoxContainer.new()
+			portrait_container.alignment = BoxContainer.ALIGNMENT_CENTER
+			portrait_container.add_theme_constant_override("separation", 2)
+			vbox.add_child(portrait_container)
+			# Element glow behind portrait
+			var glow = ColorRect.new()
+			glow.color = Color(elem_color.r, elem_color.g, elem_color.b, 0.15)
+			glow.custom_minimum_size = Vector2(100, 100)
+			portrait_container.add_child(glow)
 			# Try to load and display soul portrait
 			var portrait_path = "res://assets/art/characters/character_%s_soul_portrait.png" % element
 			if element == "dark":
@@ -437,7 +472,25 @@ func _update_team_display() -> void:
 					portrait_rect.texture = portrait_tex
 					portrait_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 					portrait_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-					vbox.add_child(portrait_rect)
+					portrait_rect.position = Vector2(5, 5)
+					glow.add_child(portrait_rect)
+			# Gold frame border around portrait
+			var frame = Panel.new()
+			frame.custom_minimum_size = Vector2(100, 100)
+			var frame_style = StyleBoxFlat.new()
+			frame_style.bg_color = Color(0, 0, 0, 0)
+			frame_style.border_color = Color(0.9, 0.75, 0.35, 0.8)
+			frame_style.border_width_left = 2
+			frame_style.border_width_right = 2
+			frame_style.border_width_top = 2
+			frame_style.border_width_bottom = 2
+			frame_style.corner_radius_top_left = 6
+			frame_style.corner_radius_top_right = 6
+			frame_style.corner_radius_bottom_left = 6
+			frame_style.corner_radius_bottom_right = 6
+			frame.add_theme_stylebox_override("panel", frame_style)
+			frame.position = Vector2(0, 0)
+			portrait_container.add_child(frame)
 			# Add soul name label
 			var name_label = Label.new()
 			name_label.text = soul_name
@@ -445,14 +498,59 @@ func _update_team_display() -> void:
 			name_label.add_theme_color_override("font_color", Color(0.95, 0.9, 0.75))
 			name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			vbox.add_child(name_label)
-			# Add element label
+			# Add element label with element color
 			var elem_label = Label.new()
 			elem_label.text = "[" + element + "]"
 			elem_label.add_theme_font_size_override("font_size", 11)
-			elem_label.add_theme_color_override("font_color", Color(0.7, 0.65, 0.5))
+			elem_label.add_theme_color_override("font_color", elem_color)
 			elem_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			vbox.add_child(elem_label)
+			# Stat bars: HP and ATK
+			var hp = soul.get("hp", 100)
+			var atk = soul.get("attack", 10)
+			var max_hp = soul.get("max_hp", 100)
+			var hp_bar = ProgressBar.new()
+			hp_bar.custom_minimum_size = Vector2(130, 10)
+			hp_bar.max_value = max_hp
+			hp_bar.value = hp
+			hp_bar.show_percentage = false
+			var hp_bg = StyleBoxFlat.new()
+			hp_bg.bg_color = Color(0.15, 0.05, 0.05, 0.9)
+			hp_bg.corner_radius_top_left = 3
+			hp_bg.corner_radius_top_right = 3
+			hp_bg.corner_radius_bottom_left = 3
+			hp_bg.corner_radius_bottom_right = 3
+			var hp_fill = StyleBoxFlat.new()
+			hp_fill.bg_color = Color(0.85, 0.25, 0.25, 1.0)
+			hp_fill.corner_radius_top_left = 2
+			hp_fill.corner_radius_top_right = 2
+			hp_fill.corner_radius_bottom_left = 2
+			hp_fill.corner_radius_bottom_right = 2
+			hp_bar.add_theme_stylebox_override("background", hp_bg)
+			hp_bar.add_theme_stylebox_override("fill", hp_fill)
+			vbox.add_child(hp_bar)
+			var atk_bar = ProgressBar.new()
+			atk_bar.custom_minimum_size = Vector2(130, 10)
+			atk_bar.max_value = 30
+			atk_bar.value = atk
+			atk_bar.show_percentage = false
+			var atk_bg = StyleBoxFlat.new()
+			atk_bg.bg_color = Color(0.1, 0.08, 0.05, 0.9)
+			atk_bg.corner_radius_top_left = 3
+			atk_bg.corner_radius_top_right = 3
+			atk_bg.corner_radius_bottom_left = 3
+			atk_bg.corner_radius_bottom_right = 3
+			var atk_fill = StyleBoxFlat.new()
+			atk_fill.bg_color = Color(0.95, 0.6, 0.2, 1.0)
+			atk_fill.corner_radius_top_left = 2
+			atk_fill.corner_radius_top_right = 2
+			atk_fill.corner_radius_bottom_left = 2
+			atk_fill.corner_radius_bottom_right = 2
+			atk_bar.add_theme_stylebox_override("background", atk_bg)
+			atk_bar.add_theme_stylebox_override("fill", atk_fill)
+			vbox.add_child(atk_bar)
 		else:
+			# Empty slot with dashed-style placeholder
 			var empty_label = Label.new()
 			empty_label.text = "+"
 			empty_label.add_theme_font_size_override("font_size", 36)
