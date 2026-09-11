@@ -87,6 +87,37 @@ func _ready() -> void:
 	_init_daily_behavior_ai()
 	_enter_home()
 	_play_home_ambience()
+	_animate_entrance()
+
+
+## Animate UI entrance with staggered fade-in + scale (game-level UI)
+func _animate_entrance() -> void:
+	# Soul display fade-in + scale (centerpiece)
+	var soul_display = get_node_or_null("SoulDisplay")
+	if soul_display and soul_display is CanvasItem:
+		soul_display.modulate.a = 0.0
+		soul_display.scale = Vector2(0.9, 0.9)
+		var soul_tween = create_tween()
+		soul_tween.set_ease(Tween.EASE_OUT)
+		soul_tween.set_trans(Tween.TRANS_BACK)
+		soul_tween.tween_interval(0.2)
+		soul_tween.tween_property(soul_display, "modulate:a", 1.0, 0.6)
+		soul_tween.parallel().tween_property(soul_display, "scale", Vector2(1.0, 1.0), 0.6)
+	# Staggered fade-in for panels
+	var panel_paths = ["StatusPanel", "GrowthPanel", "InteractionPanel", "ChatPanel"]
+	var delay := 0.4
+	for path in panel_paths:
+		var panel = get_node_or_null(path)
+		if panel and panel is CanvasItem:
+			panel.modulate.a = 0.0
+			panel.scale = Vector2(0.95, 0.95)
+			var panel_tween = create_tween()
+			panel_tween.set_ease(Tween.EASE_OUT)
+			panel_tween.set_trans(Tween.TRANS_BACK)
+			panel_tween.tween_interval(delay)
+			panel_tween.tween_property(panel, "modulate:a", 1.0, 0.4)
+			panel_tween.parallel().tween_property(panel, "scale", Vector2(1.0, 1.0), 0.4)
+			delay += 0.12
 
 
 ## Apply game-level UI styles to all panels and buttons

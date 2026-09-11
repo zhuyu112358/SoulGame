@@ -1,6 +1,25 @@
 ﻿# 战策 Battleplan 开发日志
 
 
+## [UI升级] 灵魂之家界面入场动画-灵魂立绘淡入缩放+面板交错淡入（2026-09-12）
+
+**本轮工作**：为灵魂之家界面添加入场动画，之前界面元素直接出现，没有过渡效果。
+
+**改进内容**：
+- 新增_animate_entrance()方法，在_ready末尾调用
+- 灵魂立绘（中心展示）淡入+缩放（0.9→1.0），延迟0.2秒，使用EASE_OUT + TRANS_BACK缓动
+- 4个面板（StatusPanel/GrowthPanel/InteractionPanel/ChatPanel）交错淡入+缩放（0.95→1.0），每个延迟0.12秒
+- 动画总时长约1.0秒
+
+**修改文件**：
+- scripts/game/SoulHomeController.gd：新增_animate_entrance()方法+_ready调用
+
+**验证结果**：
+- soul_home场景测试：NO SCRIPT ERROR
+- M2测试：2955 Passed, 0 Failed
+
+---
+
 ## [UI升级] 战斗配置界面入场动画-主面板淡入缩放+各区域交错淡入（2026-09-12）
 
 **本轮工作**：为战斗配置界面添加入场动画，之前界面元素直接出现，没有过渡效果。
