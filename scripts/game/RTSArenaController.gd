@@ -2977,6 +2977,10 @@ func _update_unit_display() -> void:
 				var hp_pct = float(unit_info.get("hp", 0)) / float(unit_info.get("max_hp", 100)) * 100.0
 				_player_team_hp_bars[i].value = hp_pct
 				_player_team_hp_bars[i].visible = true
+				# Update HP value label
+				var p_hp_label = _player_team_hp_bars[i].get_node_or_null("HPValueLabel")
+				if p_hp_label:
+					p_hp_label.text = "%d/%d" % [int(unit_info.get("hp", 0)), int(unit_info.get("max_hp", 100))]
 			else:
 				_player_team_hp_bars[i].visible = false
 	if info.has("ai_team"):
@@ -2987,6 +2991,10 @@ func _update_unit_display() -> void:
 				var hp_pct = float(unit_info.get("hp", 0)) / float(unit_info.get("max_hp", 100)) * 100.0
 				_ai_team_hp_bars[i].value = hp_pct
 				_ai_team_hp_bars[i].visible = true
+				# Update HP value label
+				var a_hp_label = _ai_team_hp_bars[i].get_node_or_null("HPValueLabel")
+				if a_hp_label:
+					a_hp_label.text = "%d/%d" % [int(unit_info.get("hp", 0)), int(unit_info.get("max_hp", 100))]
 			else:
 				_ai_team_hp_bars[i].visible = false
 
@@ -3280,6 +3288,19 @@ func _create_team_hp_bars(p_player_team: Array, p_ai_team: Array) -> void:
 		hp_bar.value = 100.0
 		hp_bar.show_percentage = false
 		hp_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		# HP value label overlay
+		var hp_value_label = Label.new()
+		hp_value_label.name = "HPValueLabel"
+		hp_value_label.text = "100/100"
+		hp_value_label.anchors_preset = Control.PRESET_FULL_RECT
+		hp_value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		hp_value_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		hp_value_label.add_theme_font_size_override("font_size", 10)
+		hp_value_label.add_theme_color_override("font_color", Color(1.0, 0.95, 0.8))
+		hp_value_label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.9))
+		hp_value_label.add_theme_constant_override("outline_size", 2)
+		hp_value_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		hp_value_label.z_index = 5
 		var bg_style = StyleBoxFlat.new()
 		bg_style.bg_color = Color(0.1, 0.08, 0.12, 0.9)
 		bg_style.border_color = Color(0.5, 0.4, 0.25)
@@ -3300,6 +3321,7 @@ func _create_team_hp_bars(p_player_team: Array, p_ai_team: Array) -> void:
 		fill_style.corner_radius_bottom_left = 2
 		hp_bar.add_theme_stylebox_override("fill", fill_style)
 		inner_box.add_child(hp_bar)
+		hp_bar.add_child(hp_value_label)
 		_player_team_hp_bars.append(hp_bar)
 
 		# Connect click signal for unit selection
@@ -3353,6 +3375,19 @@ func _create_team_hp_bars(p_player_team: Array, p_ai_team: Array) -> void:
 		hp_bar.max_value = 100.0
 		hp_bar.value = 100.0
 		hp_bar.show_percentage = false
+		# HP value label overlay
+		var ai_hp_value_label = Label.new()
+		ai_hp_value_label.name = "HPValueLabel"
+		ai_hp_value_label.text = "100/100"
+		ai_hp_value_label.anchors_preset = Control.PRESET_FULL_RECT
+		ai_hp_value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		ai_hp_value_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		ai_hp_value_label.add_theme_font_size_override("font_size", 10)
+		ai_hp_value_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.9))
+		ai_hp_value_label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.9))
+		ai_hp_value_label.add_theme_constant_override("outline_size", 2)
+		ai_hp_value_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		ai_hp_value_label.z_index = 5
 		var bg_style = StyleBoxFlat.new()
 		bg_style.bg_color = Color(0.12, 0.08, 0.08, 0.9)
 		bg_style.border_color = Color(0.5, 0.3, 0.25)
@@ -3373,6 +3408,7 @@ func _create_team_hp_bars(p_player_team: Array, p_ai_team: Array) -> void:
 		fill_style.corner_radius_bottom_left = 2
 		hp_bar.add_theme_stylebox_override("fill", fill_style)
 		inner_box.add_child(hp_bar)
+		hp_bar.add_child(ai_hp_value_label)
 		_ai_team_hp_bars.append(hp_bar)
 
 

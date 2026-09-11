@@ -1,6 +1,26 @@
 ﻿# 战策 Battleplan 开发日志
 
 
+## [战斗HUD升级] 队伍HP条数值标签-实时显示HP/最大HP（2026-09-12）
+
+**本轮工作**：为战斗HUD的玩家和AI队伍HP条添加数值标签，之前HP条只有进度条可视化，没有具体数值显示，玩家无法精确知道单位剩余血量。
+
+**改进内容**：
+- 玩家队伍4个HP条各添加数值标签（10号字+浅金色+黑色描边）
+- AI队伍4个HP条各添加数值标签（10号字+浅红色+黑色描边）
+- 数值标签居中显示在HP条上方，格式"当前HP/最大HP"
+- HP更新时数值标签同步更新
+- 数值标签z_index=5确保在进度条上方可见
+
+**修改文件**：
+- scripts/game/RTSArenaController.gd：_create_team_hp_bars()添加数值标签，_update_team_hp_bars()更新数值
+
+**验证结果**：
+- rts_arena场景测试：NO SCRIPT ERROR
+- M2测试：2955 Passed, 0 Failed
+
+---
+
 ## [战斗HUD升级] 技能按钮disabled样式-冷却中灰色禁用状态（2026-09-12）
 
 **本轮工作**：为战斗HUD的4个技能按钮添加disabled状态样式，之前技能按钮只有normal/hover/pressed三态，冷却或禁用时使用默认灰色样式，与游戏风格不统一。
