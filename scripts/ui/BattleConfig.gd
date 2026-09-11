@@ -160,8 +160,33 @@ func _build_ui() -> void:
 	_back_button = _create_game_button("返回", Vector2(150, 50), 16)
 	btn_hbox.add_child(_back_button)
 
-	_start_button = _create_game_button("开始战斗", Vector2(220, 55), 18)
+	_start_button = _create_game_button("开始战斗", Vector2(280, 60), 20)
 	_start_button.modulate = Color(1.0, 0.92, 0.5)  # Gold highlight for primary action
+	# Add golden glowing border for primary action
+	var start_normal = StyleBoxFlat.new()
+	start_normal.bg_color = Color(0.15, 0.1, 0.25, 0.95)
+	start_normal.border_color = Color(1.0, 0.85, 0.4)
+	start_normal.border_width_left = 3
+	start_normal.border_width_right = 3
+	start_normal.border_width_top = 3
+	start_normal.border_width_bottom = 3
+	start_normal.corner_radius_top_left = 8
+	start_normal.corner_radius_top_right = 8
+	start_normal.corner_radius_bottom_left = 8
+	start_normal.corner_radius_bottom_right = 8
+	_start_button.add_theme_stylebox_override("normal", start_normal)
+	var start_hover = StyleBoxFlat.new()
+	start_hover.bg_color = Color(0.25, 0.15, 0.35, 1.0)
+	start_hover.border_color = Color(1.0, 0.95, 0.6)
+	start_hover.border_width_left = 3
+	start_hover.border_width_right = 3
+	start_hover.border_width_top = 3
+	start_hover.border_width_bottom = 3
+	start_hover.corner_radius_top_left = 8
+	start_hover.corner_radius_top_right = 8
+	start_hover.corner_radius_bottom_left = 8
+	start_hover.corner_radius_bottom_right = 8
+	_start_button.add_theme_stylebox_override("hover", start_hover)
 	btn_hbox.add_child(_start_button)
 
 	GameLog.info("BattleConfig: UI built dynamically", "UI")
@@ -292,7 +317,7 @@ func _build_team_display() -> void:
 	# Create team slots (4 slots per GDD v2.0) with portrait display
 	for i in _max_team_size:
 		var slot = _create_card_panel(Color(0.1, 0.08, 0.18, 0.9), Color(0.5, 0.4, 0.3))
-		slot.custom_minimum_size = Vector2(130, 150)
+		slot.custom_minimum_size = Vector2(150, 180)
 		slot.name = "TeamSlot_" + str(i)
 
 		var vbox = VBoxContainer.new()
@@ -307,8 +332,8 @@ func _build_team_display() -> void:
 		vbox.add_child(slot_label)
 
 		var empty_label = Label.new()
-		empty_label.text = "(空)"
-		empty_label.add_theme_font_size_override("font_size", 16)
+		empty_label.text = "+"
+		empty_label.add_theme_font_size_override("font_size", 36)
 		empty_label.add_theme_color_override("font_color", Color(0.4, 0.35, 0.3))
 		empty_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		empty_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -350,15 +375,15 @@ func _update_team_display() -> void:
 		if slot == null:
 			continue
 		var vbox = slot.get_child(0)
-		if vbox == null or vbox.get_child_count() < 2:
+		if vbox == null:
 			continue
-		var empty_label = vbox.get_child(1)
+		# Remove all children except slot_label (first child)
+		while vbox.get_child_count() > 1:
+			vbox.get_child(1).queue_free()
 		if i < _selected_souls.size():
 			var soul: Dictionary = _selected_souls[i]
 			var soul_name: String = soul.get("name", "未知")
 			var element: String = soul.get("element", "unknown")
-			empty_label.text = soul_name + "\n[" + element + "]"
-			empty_label.add_theme_color_override("font_color", Color(0.95, 0.9, 0.75))
 			# Try to load and display soul portrait
 			var portrait_path = "res://assets/art/characters/character_%s_soul_portrait.png" % element
 			if element == "dark":
@@ -366,17 +391,34 @@ func _update_team_display() -> void:
 			if ResourceLoader.exists(portrait_path):
 				var portrait_tex = load(portrait_path)
 				if portrait_tex:
-					# Remove empty label and add portrait
-					empty_label.queue_free()
 					var portrait_rect = TextureRect.new()
-					portrait_rect.custom_minimum_size = Vector2(80, 80)
+					portrait_rect.custom_minimum_size = Vector2(90, 90)
 					portrait_rect.texture = portrait_tex
 					portrait_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 					portrait_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 					vbox.add_child(portrait_rect)
+			# Add soul name label
+			var name_label = Label.new()
+			name_label.text = soul_name
+			name_label.add_theme_font_size_override("font_size", 14)
+			name_label.add_theme_color_override("font_color", Color(0.95, 0.9, 0.75))
+			name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			vbox.add_child(name_label)
+			# Add element label
+			var elem_label = Label.new()
+			elem_label.text = "[" + element + "]"
+			elem_label.add_theme_font_size_override("font_size", 11)
+			elem_label.add_theme_color_override("font_color", Color(0.7, 0.65, 0.5))
+			elem_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			vbox.add_child(elem_label)
 		else:
-			empty_label.text = "(空)"
+			var empty_label = Label.new()
+			empty_label.text = "+"
+			empty_label.add_theme_font_size_override("font_size", 36)
 			empty_label.add_theme_color_override("font_color", Color(0.4, 0.35, 0.3))
+			empty_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			empty_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			vbox.add_child(empty_label)
 
 func _update_start_button() -> void:
 	# Enable start button only if at least 1 soul selected

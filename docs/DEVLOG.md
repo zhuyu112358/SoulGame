@@ -10265,3 +10265,36 @@ ode/life/max_life），而_update_skill_particles()期望新版数据结构（pa
 ### 注意事项
 - 严格遵守禁止动态创建StyleBoxTexture并设置patch_margin_*属性的约束
 - 所有9-slice样式使用StyleBoxFlat或主题中已有的.tres资源
+
+---
+
+## 2026-09-11 战斗配置面板美化 (UI-3深度改造)
+
+### 完成内容
+1. **队伍槽位美化**
+   - 尺寸从130x150增大到150x180
+   - 空槽位显示"+"号（36号字体）代替"(空)"
+   - 选中灵魂后显示：立绘(90x90) + 名字标签 + 元素标签
+
+2. **_update_team_display方法重写**
+   - 修复重复添加portrait的bug（每次调用先清空vbox再重建）
+   - 选中灵魂显示立绘+名字+元素（之前只显示文字或只有立绘丢失名字）
+   - 空槽位显示大号"+"号
+
+3. **开始战斗按钮突出优化**
+   - 尺寸从220x55增大到280x60，字体从18增大到20
+   - 添加金色发光边框（3px金色边框，圆角8px）
+   - hover状态边框更亮（Color(1.0, 0.95, 0.6)）
+   - 使用StyleBoxFlat（禁止动态StyleBoxTexture）
+
+### 验证结果
+- M2测试: 2697 Passed, 0 Failed
+- 无SCRIPT ERROR
+- 无动态StyleBoxTexture创建（符合监控任务要求）
+
+### 修改的文件
+- scripts/ui/BattleConfig.gd - 队伍槽位美化+_update_team_display重写+开始按钮金色边框
+
+### 注意事项
+- ui_battle_config_panel.png未导入（无.import文件），暂不使用，用StyleBoxFlat代替
+- 严格遵守禁止动态创建StyleBoxTexture并设置patch_margin_*属性的约束
