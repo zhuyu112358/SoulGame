@@ -84,12 +84,7 @@ func _apply_ui_theme() -> void:
 	_title_label.add_theme_font_size_override("font_size", 32)
 	_title_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.5))
 
-	# Apply 9-slice button style to all buttons
-	_apply_9slice_button_style(_back_button)
-	_apply_9slice_button_style(_save_button)
-	_apply_9slice_button_style(_reset_button)
-
-	# Button text colors
+	# Button text colors (9-slice styles come from battleplan_theme.tres)
 	for btn in [_back_button, _save_button, _reset_button]:
 		btn.add_theme_color_override("font_color", Color(0.95, 0.9, 0.75))
 		btn.add_theme_color_override("font_hover_color", Color(1.0, 0.95, 0.85))

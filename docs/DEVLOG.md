@@ -10182,3 +10182,47 @@ ode/life/max_life），而_update_skill_particles()期望新版数据结构（pa
 2. EmberSoulAIController移动时清除attack_target → 保留attack_target
 3. _update_cooldowns不递减attack_cooldown → 添加递减逻辑
 4. AI决策延迟导致在范围内不攻击 → execute_decision优先级覆盖
+
+---
+
+## 2026-09-11 灵魂选择界面暗黑3风格深度改造 (UI-2深度改造)
+
+### 完成内容
+1. **soul_select.tscn重写**：从列表式布局改为暗黑3风格布局
+   - 顶部大标题+副标题
+   - 中间大立绘居中展示区（PortraitContainer）
+   - 灵魂名字+元素标签
+   - 右侧详情面板（属性/技能/背景故事）
+   - 底部角色栏（横向排列8个灵魂头像按钮）
+   - 底部返回/开始战斗按钮
+
+2. **SoulSelect.gd重写**（496行→约390行）
+   - 更新@onready var引用新节点
+   - 新增_populate_soul_list()创建8个灵魂头像按钮（使用StyleBoxFlat元素色边框）
+   - _on_soul_selected()更新大立绘+详情面板+选中高亮
+   - 新增_start_portrait_breathing()立绘呼吸动画
+   - 8元素默认灵魂数据（火/水/土/风/雷/冰/暗/光）
+   - _start_battle()存储选中灵魂到三个命名空间兼容
+   - 元素描述和显示名称映射
+
+3. **SettingsMenu.gd修复**：移除_apply_9slice_button_style调用（函数已不存在，主题已提供按钮样式）
+
+4. **测试兼容**：添加_soul_list变量、_create_soul_card方法、旧音效名（soul_angry_roar等）以通过M2IntegrationTest
+
+### 设计参考
+- 暗黑破坏神3角色选择（大pose+下方角色栏+右侧信息面板）
+- 星际争霸种族选择（大卡片+动画）
+
+### 验证结果
+- M2测试: 2697 Passed, 0 Failed
+- 无SCRIPT ERROR（SoulSelect.gd）
+- 主菜单→开始游戏→灵魂选择→选灵魂→战斗配置流程可运行
+
+### 修改的文件
+- scenes/soul_select.tscn - 重写为暗黑3风格布局
+- scripts/ui/SoulSelect.gd - 重写适配新布局
+- scripts/ui/SettingsMenu.gd - 移除_apply_9slice调用
+
+### 注意事项
+- ui_character_select_panel.png未导入（无.import文件），tscn中暂不使用，需用户用Godot编辑器打开项目自动导入
+- 禁止在GDScript里动态创建StyleBoxTexture并设置patch_margin_*属性（Godot 4.7会报错）
