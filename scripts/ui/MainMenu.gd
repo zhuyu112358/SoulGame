@@ -1,4 +1,4 @@
-extends Control
+﻿extends Control
 ## MainMenu - Main menu scene controller
 ##
 ## Provides the main menu UI with game title and access to all game systems.
@@ -97,6 +97,22 @@ func _ready() -> void:
 			var btn_tween = create_tween()
 			btn_tween.tween_interval(0.3 + i * 0.08)
 			btn_tween.tween_property(btn, "modulate:a", 1.0, 0.4).set_ease(Tween.EASE_OUT)
+
+	# P0-紧急: Safety fallback - force all buttons visible after 2 seconds
+	var safety_timer = Timer.new()
+	safety_timer.wait_time = 2.0
+	safety_timer.one_shot = true
+	safety_timer.timeout.connect(_force_buttons_visible)
+	add_child(safety_timer)
+	safety_timer.start()
+
+
+## P0-紧急: Force all buttons visible (fallback if tween animation fails)
+func _force_buttons_visible() -> void:
+	for btn_name in _buttons.keys():
+		if _buttons[btn_name]:
+			_buttons[btn_name].modulate.a = 1.0
+	GameLog.info("MainMenu: Safety fallback - buttons forced visible", "UI")
 
 
 ## Build entire UI dynamically (no .tscn node dependency)
@@ -239,30 +255,30 @@ func _create_game_button(p_name: String, p_label: String, p_label_en: String, p_
 		var normal_style = StyleBoxTexture.new()
 		normal_style.texture = normal_tex
 		normal_style.region_rect = Rect2(0, 0, normal_tex.get_width(), normal_tex.get_height())
-		normal_style.patch_margin_left = 12
-		normal_style.patch_margin_right = 12
-		normal_style.patch_margin_top = 8
-		normal_style.patch_margin_bottom = 8
+		normal_style.patch_margin_left = 12.0
+		normal_style.patch_margin_right = 12.0
+		normal_style.patch_margin_top = 8.0
+		normal_style.patch_margin_bottom = 8.0
 		normal_style.draw_center = true
 		btn.add_theme_stylebox_override("normal", normal_style)
 	if hover_tex:
 		var hover_style = StyleBoxTexture.new()
 		hover_style.texture = hover_tex
 		hover_style.region_rect = Rect2(0, 0, hover_tex.get_width(), hover_tex.get_height())
-		hover_style.patch_margin_left = 12
-		hover_style.patch_margin_right = 12
-		hover_style.patch_margin_top = 8
-		hover_style.patch_margin_bottom = 8
+		hover_style.patch_margin_left = 12.0
+		hover_style.patch_margin_right = 12.0
+		hover_style.patch_margin_top = 8.0
+		hover_style.patch_margin_bottom = 8.0
 		hover_style.draw_center = true
 		btn.add_theme_stylebox_override("hover", hover_style)
 	if pressed_tex:
 		var pressed_style = StyleBoxTexture.new()
 		pressed_style.texture = pressed_tex
 		pressed_style.region_rect = Rect2(0, 0, pressed_tex.get_width(), pressed_tex.get_height())
-		pressed_style.patch_margin_left = 12
-		pressed_style.patch_margin_right = 12
-		pressed_style.patch_margin_top = 8
-		pressed_style.patch_margin_bottom = 8
+		pressed_style.patch_margin_left = 12.0
+		pressed_style.patch_margin_right = 12.0
+		pressed_style.patch_margin_top = 8.0
+		pressed_style.patch_margin_bottom = 8.0
 		pressed_style.draw_center = true
 		btn.add_theme_stylebox_override("pressed", pressed_style)
 

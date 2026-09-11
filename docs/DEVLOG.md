@@ -1,5 +1,27 @@
 ﻿# 战策 Battleplan 开发日志
 
+## [P0-紧急修复] 主菜单按钮不可见问题修复（2026-09-11）
+
+**问题**：用户实机测试反馈"界面上啥都没有"，主菜单所有12个按钮完全不可见（标题/副标题/分隔线正常显示）。
+
+**根因分析**：
+1. 主题应用顺序问题：_apply_ui_theme()在_build_ui()之后调用，可能覆盖按钮的theme override
+2. 按钮淡入动画风险：按钮初始modulate.a=0，若tween未执行则按钮永久透明
+3. StyleBoxTexture无fallback：若纹理加载失败按钮无背景
+
+**修复方案**：
+1. 将_apply_ui_theme()移到_build_ui()之前调用，确保按钮theme override优先
+2. 添加2秒safety fallback Timer，超时后强制所有按钮modulate.a=1.0
+3. _create_game_button()添加StyleBoxFlat fallback，纹理加载失败时使用深紫+金色边框纯色按钮
+4. 新增_force_buttons_visible()方法作为fallback回调
+
+**修改文件**：
+- MainMenu.gd：主题顺序调整+safety fallback+按钮样式fallback
+
+**测试结果**：2955 Passed, 0 Failed，无SCRIPT ERROR
+
+---
+
 ## [4v4团队结算统计] 团队伤害+存活数+队员表现（2026-09-11）
 
 **改造内容**：

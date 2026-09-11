@@ -1,4 +1,4 @@
-extends Node2D
+﻿extends Node2D
 ## RTSArenaController - Controller for the RTS arena battle scene
 ##
 ## Manages the RTS arena UI: unit displays, HP/energy bars, skill buttons,
@@ -3285,10 +3285,10 @@ func _show_result_modal(p_result: String, p_title: String, p_title_color: Color,
 		var panel_style = StyleBoxTexture.new()
 		panel_style.texture = panel_tex
 		panel_style.region_rect = Rect2(0, 0, panel_tex.get_width(), panel_tex.get_height())
-		panel_style.patch_margin_left = 24
-		panel_style.patch_margin_right = 24
-		panel_style.patch_margin_top = 24
-		panel_style.patch_margin_bottom = 24
+		panel_style.patch_margin_left = 24.0
+		panel_style.patch_margin_right = 24.0
+		panel_style.patch_margin_top = 24.0
+		panel_style.patch_margin_bottom = 24.0
 		panel_style.draw_center = true
 		panel.add_theme_stylebox_override("panel", panel_style)
 	else:
@@ -3735,30 +3735,30 @@ func _apply_9slice_button_style(p_button: Button) -> void:
 		var normal_style = StyleBoxTexture.new()
 		normal_style.texture = normal_tex
 		normal_style.region_rect = Rect2(0, 0, normal_tex.get_width(), normal_tex.get_height())
-		normal_style.patch_margin_left = 12
-		normal_style.patch_margin_right = 12
-		normal_style.patch_margin_top = 8
-		normal_style.patch_margin_bottom = 8
+		normal_style.patch_margin_left = 12.0
+		normal_style.patch_margin_right = 12.0
+		normal_style.patch_margin_top = 8.0
+		normal_style.patch_margin_bottom = 8.0
 		normal_style.draw_center = true
 		p_button.add_theme_stylebox_override("normal", normal_style)
 	if hover_tex:
 		var hover_style = StyleBoxTexture.new()
 		hover_style.texture = hover_tex
 		hover_style.region_rect = Rect2(0, 0, hover_tex.get_width(), hover_tex.get_height())
-		hover_style.patch_margin_left = 12
-		hover_style.patch_margin_right = 12
-		hover_style.patch_margin_top = 8
-		hover_style.patch_margin_bottom = 8
+		hover_style.patch_margin_left = 12.0
+		hover_style.patch_margin_right = 12.0
+		hover_style.patch_margin_top = 8.0
+		hover_style.patch_margin_bottom = 8.0
 		hover_style.draw_center = true
 		p_button.add_theme_stylebox_override("hover", hover_style)
 	if pressed_tex:
 		var pressed_style = StyleBoxTexture.new()
 		pressed_style.texture = pressed_tex
 		pressed_style.region_rect = Rect2(0, 0, pressed_tex.get_width(), pressed_tex.get_height())
-		pressed_style.patch_margin_left = 12
-		pressed_style.patch_margin_right = 12
-		pressed_style.patch_margin_top = 8
-		pressed_style.patch_margin_bottom = 8
+		pressed_style.patch_margin_left = 12.0
+		pressed_style.patch_margin_right = 12.0
+		pressed_style.patch_margin_top = 8.0
+		pressed_style.patch_margin_bottom = 8.0
 		pressed_style.draw_center = true
 		p_button.add_theme_stylebox_override("pressed", pressed_style)
 
