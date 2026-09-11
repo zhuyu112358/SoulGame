@@ -2137,11 +2137,11 @@ func _apply_hud_skin() -> void:
 	var player_panel = get_node_or_null("TopBar/PlayerPanel")
 	if player_panel and (player_panel is Panel or player_panel is PanelContainer):
 		player_panel.add_theme_stylebox_override("panel", player_card_style)
-
+		player_panel.add_theme_stylebox_override("panel", player_card_style)
 	var ai_panel = get_node_or_null("TopBar/AIPanel")
 	if ai_panel and (ai_panel is Panel or ai_panel is PanelContainer):
 		ai_panel.add_theme_stylebox_override("panel", ai_card_style)
-
+		ai_panel.add_theme_stylebox_override("panel", ai_card_style)
 	# Skill button style: square with gold border (matching ui_hud_skin design)
 	var skill_btn_normal = StyleBoxFlat.new()
 	skill_btn_normal.bg_color = Color(0.15, 0.10, 0.25, 0.95)
@@ -3279,19 +3279,19 @@ func _show_result_modal(p_result: String, p_title: String, p_title_color: Color,
 	panel.position = Vector2(340, 100)
 	panel.size = Vector2(600, 520)
 	panel.name = "ResultModal"
-		# Panel styling: StyleBoxFlat (dynamic StyleBoxTexture broken in Godot 4.7 GDScript)
-		var panel_style = StyleBoxFlat.new()
-		panel_style.bg_color = Color(0.10, 0.08, 0.18, 0.97)
-		panel_style.border_color = Color(0.83, 0.66, 0.36, 1.0)
-		panel_style.border_width_left = 3
-		panel_style.border_width_right = 3
-		panel_style.border_width_top = 3
-		panel_style.border_width_bottom = 3
-		panel_style.corner_radius_top_left = 12
-		panel_style.corner_radius_top_right = 12
-		panel_style.corner_radius_bottom_left = 12
-		panel_style.corner_radius_bottom_right = 12
-		panel.add_theme_stylebox_override("panel", panel_style)
+	# Panel styling: StyleBoxFlat (dynamic StyleBoxTexture broken in Godot 4.7 GDScript)
+	var panel_style = StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.10, 0.08, 0.18, 0.97)
+	panel_style.border_color = Color(0.83, 0.66, 0.36, 1.0)
+	panel_style.border_width_left = 3
+	panel_style.border_width_right = 3
+	panel_style.border_width_top = 3
+	panel_style.border_width_bottom = 3
+	panel_style.corner_radius_top_left = 12
+	panel_style.corner_radius_top_right = 12
+	panel_style.corner_radius_bottom_left = 12
+	panel_style.corner_radius_bottom_right = 12
+	panel.add_theme_stylebox_override("panel", panel_style)
 	add_child(panel)
 	# Animate panel appearance
 	panel.scale = Vector2(0.85, 0.85)

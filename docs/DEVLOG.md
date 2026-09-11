@@ -11257,3 +11257,33 @@ ode/life/max_life），而_update_skill_particles()期望新版数据结构（pa
 - 继续升级其他界面（灵魂之家/灵魂图鉴/收藏系统等）
 - 战斗HUD技能图标按钮+冷却遮罩
 - 实机测试验证渲染效果
+
+---
+
+## 2026-09-11 P0紧急修复：战斗流程阻断性脚本错误
+
+### 问题根因
+用户反馈"战斗没法进行"、"没一个页面是功能正常的"。通过直接运行场景测试发现两个严重脚本解析错误：
+
+### 错误1：SoulSelect.gd _detail_panel未声明
+- **错误**：Parse Error: Identifier "_detail_panel" not declared in the current scope at line 563/577
+- **影响**：灵魂选择界面脚本加载失败 → 无法选择灵魂 → 战斗配置读不到灵魂 → 开始按钮禁用 → 无法进入战斗
+- **修复**：添加@onready var _detail_panel: Panel = 变量声明
+
+### 错误2：RTSArenaController.gd 缩进错误
+- **错误**：Parse Error: Expected statement, found "Indent" instead at line 3283，后续修复后又出现Expected indented block after "if" block
+- **影响**：竞技场脚本加载失败 → 即使进入战斗也会崩溃
+- **修复**：修复5处缩进错误（第2108/2110/2139/2143/3294行），if语句body正确缩进
+
+### 验证结果
+- soul_select.tscn：**NO SCRIPT ERRORS**，正常初始化，加载8个立绘纹理
+- rts_arena.tscn：**NO SCRIPT ERRORS**，正常初始化，HUD/粒子/战术指令系统全部就绪
+- 完整游戏运行10秒：**NO SCRIPT ERRORS**
+- M2测试：**2891 Passed, 0 Failed** 全绿
+
+### 修改的文件
+- scripts/ui/SoulSelect.gd - 添加_detail_panel变量声明
+- scripts/game/RTSArenaController.gd - 修复5处缩进错误
+
+### 教训
+自动化测试（2891 Passed）不检查脚本解析错误，必须用--scene直接运行场景才能发现解析错误。后续每次UI修改后都要直接运行场景验证。

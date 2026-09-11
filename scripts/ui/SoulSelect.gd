@@ -17,6 +17,7 @@ const FontLoader = preload("res://scripts/core/FontLoader.gd")
 @onready var _character_bar: HBoxContainer = $CharacterBar
 @onready var _back_button: Button = $BackButton
 @onready var _start_button: Button = $StartButton
+@onready var _detail_panel: Panel = $DetailPanel
 
 var _souls: Array = []
 var _selected_index: int = -1
