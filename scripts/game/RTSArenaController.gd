@@ -2239,49 +2239,57 @@ func _apply_hud_skin() -> void:
 	if ai_panel and (ai_panel is Panel or ai_panel is PanelContainer):
 		ai_panel.add_theme_stylebox_override("panel", ai_card_style)
 		ai_panel.add_theme_stylebox_override("panel", ai_card_style)
-	# Skill button style: square with gold border (matching ui_hud_skin design)
-	var skill_btn_normal = StyleBoxFlat.new()
-	skill_btn_normal.bg_color = Color(0.15, 0.10, 0.25, 0.95)
-	skill_btn_normal.border_color = Color(0.83, 0.66, 0.36, 0.9)
-	skill_btn_normal.border_width_left = 2
-	skill_btn_normal.border_width_right = 2
-	skill_btn_normal.border_width_top = 2
-	skill_btn_normal.border_width_bottom = 2
-	skill_btn_normal.corner_radius_top_left = 4
-	skill_btn_normal.corner_radius_top_right = 4
-	skill_btn_normal.corner_radius_bottom_left = 4
-	skill_btn_normal.corner_radius_bottom_right = 4
-
-	var skill_btn_hover = StyleBoxFlat.new()
-	skill_btn_hover.bg_color = Color(0.25, 0.18, 0.35, 0.98)
-	skill_btn_hover.border_color = Color(1.0, 0.85, 0.4, 1.0)
-	skill_btn_hover.border_width_left = 3
-	skill_btn_hover.border_width_right = 3
-	skill_btn_hover.border_width_top = 3
-	skill_btn_hover.border_width_bottom = 3
-	skill_btn_hover.corner_radius_top_left = 4
-	skill_btn_hover.corner_radius_top_right = 4
-	skill_btn_hover.corner_radius_bottom_left = 4
-	skill_btn_hover.corner_radius_bottom_right = 4
-
-	var skill_btn_pressed = StyleBoxFlat.new()
-	skill_btn_pressed.bg_color = Color(0.35, 0.25, 0.15, 1.0)
-	skill_btn_pressed.border_color = Color(1.0, 0.9, 0.5, 1.0)
-	skill_btn_pressed.border_width_left = 2
-	skill_btn_pressed.border_width_right = 2
-	skill_btn_pressed.border_width_top = 2
-	skill_btn_pressed.border_width_bottom = 2
-	skill_btn_pressed.corner_radius_top_left = 4
-	skill_btn_pressed.corner_radius_top_right = 4
-	skill_btn_pressed.corner_radius_bottom_left = 4
-	skill_btn_pressed.corner_radius_bottom_right = 4
-
+	# Skill button style: per-skill element color borders for visual distinction
+	# Attack skills: red/orange, Heal: green, Defend: blue
+	var skill_element_colors = {
+		"heavy_strike": Color(0.9, 0.3, 0.2),   # Red for heavy attack
+		"quick_strike": Color(0.95, 0.55, 0.2),  # Orange for quick attack
+		"heal": Color(0.3, 0.8, 0.4),             # Green for healing
+		"defend": Color(0.3, 0.55, 0.9)           # Blue for defense
+	}
 	for skill_name in skill_buttons.keys():
 		var btn = skill_buttons[skill_name]
 		if btn and btn is Button:
-			btn.add_theme_stylebox_override("normal", skill_btn_normal)
-			btn.add_theme_stylebox_override("hover", skill_btn_hover)
-			btn.add_theme_stylebox_override("pressed", skill_btn_pressed)
+			var elem_color = skill_element_colors.get(skill_name, Color(0.83, 0.66, 0.36))
+			# Normal: dark bg + element color border
+			var s_normal = StyleBoxFlat.new()
+			s_normal.bg_color = Color(0.12, 0.08, 0.20, 0.95)
+			s_normal.border_color = elem_color
+			s_normal.border_width_left = 2
+			s_normal.border_width_right = 2
+			s_normal.border_width_top = 2
+			s_normal.border_width_bottom = 2
+			s_normal.corner_radius_top_left = 4
+			s_normal.corner_radius_top_right = 4
+			s_normal.corner_radius_bottom_left = 4
+			s_normal.corner_radius_bottom_right = 4
+			btn.add_theme_stylebox_override("normal", s_normal)
+			# Hover: brighter bg + lighter element border
+			var s_hover = StyleBoxFlat.new()
+			s_hover.bg_color = Color(0.22, 0.15, 0.32, 0.98)
+			s_hover.border_color = elem_color.lightened(0.3)
+			s_hover.border_width_left = 3
+			s_hover.border_width_right = 3
+			s_hover.border_width_top = 3
+			s_hover.border_width_bottom = 3
+			s_hover.corner_radius_top_left = 4
+			s_hover.corner_radius_top_right = 4
+			s_hover.corner_radius_bottom_left = 4
+			s_hover.corner_radius_bottom_right = 4
+			btn.add_theme_stylebox_override("hover", s_hover)
+			# Pressed: darker bg
+			var s_pressed = StyleBoxFlat.new()
+			s_pressed.bg_color = Color(0.08, 0.05, 0.14, 1.0)
+			s_pressed.border_color = elem_color.darkened(0.2)
+			s_pressed.border_width_left = 2
+			s_pressed.border_width_right = 2
+			s_pressed.border_width_top = 2
+			s_pressed.border_width_bottom = 2
+			s_pressed.corner_radius_top_left = 4
+			s_pressed.corner_radius_top_right = 4
+			s_pressed.corner_radius_bottom_left = 4
+			s_pressed.corner_radius_bottom_right = 4
+			btn.add_theme_stylebox_override("pressed", s_pressed)
 
 	# Tactical command buttons: each with its own color border (game-level UI)
 	var tactical_colors = {
