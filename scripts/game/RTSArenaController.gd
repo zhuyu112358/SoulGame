@@ -3256,12 +3256,30 @@ func _create_team_hp_bars(p_player_team: Array, p_ai_team: Array) -> void:
 		var element = unit_info.get("element", "neutral")
 		var fill_color = element_colors.get(element, Color(0.8, 0.3, 0.3))
 
-		# Container for name + HP bar
-		var container = VBoxContainer.new()
+		# Panel container with element color border
+		var container = Panel.new()
 		container.name = "AITeamHPContainer_%d" % i
 		container.position = Vector2(1065, 15 + i * 42)
 		container.custom_minimum_size = Vector2(200, 38)
+		var panel_style = StyleBoxFlat.new()
+		panel_style.bg_color = Color(0.06, 0.04, 0.12, 0.7)
+		panel_style.border_color = fill_color.darkened(0.4)
+		panel_style.border_width_left = 2
+		panel_style.border_width_right = 2
+		panel_style.border_width_top = 2
+		panel_style.border_width_bottom = 2
+		panel_style.corner_radius_top_left = 4
+		panel_style.corner_radius_top_right = 4
+		panel_style.corner_radius_bottom_right = 4
+		panel_style.corner_radius_bottom_left = 4
+		container.add_theme_stylebox_override("panel", panel_style)
 		add_child(container)
+
+		# Inner VBox for name + HP bar
+		var inner_box = VBoxContainer.new()
+		inner_box.name = "InnerBox"
+		inner_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		container.add_child(inner_box)
 
 		# Name label (right-aligned)
 		var name_label = Label.new()
@@ -3269,7 +3287,7 @@ func _create_team_hp_bars(p_player_team: Array, p_ai_team: Array) -> void:
 		name_label.add_theme_font_size_override("font_size", 11)
 		name_label.add_theme_color_override("font_color", Color(0.9, 0.7, 0.7))
 		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-		container.add_child(name_label)
+		inner_box.add_child(name_label)
 
 		# HP bar
 		var hp_bar = ProgressBar.new()
@@ -3297,7 +3315,7 @@ func _create_team_hp_bars(p_player_team: Array, p_ai_team: Array) -> void:
 		fill_style.corner_radius_bottom_right = 2
 		fill_style.corner_radius_bottom_left = 2
 		hp_bar.add_theme_stylebox_override("fill", fill_style)
-		container.add_child(hp_bar)
+		inner_box.add_child(hp_bar)
 		_ai_team_hp_bars.append(hp_bar)
 
 

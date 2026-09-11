@@ -1,6 +1,25 @@
 ﻿# 战策 Battleplan 开发日志
 
 
+## [战斗HUD升级] AI队伍HP条元素色边框面板-与玩家队伍保持一致的视觉风格（2026-09-12）
+
+**本轮工作**：为战斗HUD右侧的AI队伍HP条添加元素色边框面板，之前AI队伍HP条使用纯VBoxContainer，没有背景面板和边框。
+
+**改进内容**：
+- AI队伍HP条容器从VBoxContainer改为Panel，添加深紫底色+元素色边框(2px)+圆角(4px)
+- 内部使用VBoxContainer放置名字标签和HP条
+- 元素色边框根据每个AI单位的元素类型动态设置（8种元素对应颜色）
+- 与玩家队伍HP条的视觉风格保持一致
+
+**修改文件**：
+- scripts/game/RTSArenaController.gd：重写_create_team_hp_bars()中AI队伍HP条创建部分
+
+**验证结果**：
+- rts_arena场景测试：NO SCRIPT ERROR
+- M2测试：2955 Passed, 0 Failed
+
+---
+
 ## [战斗HUD升级] 队伍HP条元素色边框-每个单位根据元素类型显示对应颜色边框（2026-09-12）
 
 **本轮工作**：为战斗HUD左侧的玩家队伍HP条容器添加元素色边框，之前所有单位HP条统一使用暗金色边框。
