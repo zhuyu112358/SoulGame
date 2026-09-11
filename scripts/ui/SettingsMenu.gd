@@ -148,43 +148,6 @@ func _apply_ui_theme() -> void:
 
 
 ## Apply 9-slice button style from UI component textures
-func _apply_9slice_button_style(p_button: Button) -> void:
-	var normal_tex = load("res://assets/art/ui/ui_button_normal.png")
-	var hover_tex = load("res://assets/art/ui/ui_button_hover.png")
-	var pressed_tex = load("res://assets/art/ui/ui_button_pressed.png")
-	if normal_tex:
-		var normal_style = StyleBoxTexture.new()
-		normal_style.texture = normal_tex
-		normal_style.region_rect = Rect2(0, 0, normal_tex.get_width(), normal_tex.get_height())
-		normal_style.patch_margin_left = 12.0
-		normal_style.patch_margin_right = 12.0
-		normal_style.patch_margin_top = 8.0
-		normal_style.patch_margin_bottom = 8.0
-		normal_style.draw_center = true
-		p_button.add_theme_stylebox_override("normal", normal_style)
-	if hover_tex:
-		var hover_style = StyleBoxTexture.new()
-		hover_style.texture = hover_tex
-		hover_style.region_rect = Rect2(0, 0, hover_tex.get_width(), hover_tex.get_height())
-		hover_style.patch_margin_left = 12.0
-		hover_style.patch_margin_right = 12.0
-		hover_style.patch_margin_top = 8.0
-		hover_style.patch_margin_bottom = 8.0
-		hover_style.draw_center = true
-		p_button.add_theme_stylebox_override("hover", hover_style)
-	if pressed_tex:
-		var pressed_style = StyleBoxTexture.new()
-		pressed_style.texture = pressed_tex
-		pressed_style.region_rect = Rect2(0, 0, pressed_tex.get_width(), pressed_tex.get_height())
-		pressed_style.patch_margin_left = 12.0
-		pressed_style.patch_margin_right = 12.0
-		pressed_style.patch_margin_top = 8.0
-		pressed_style.patch_margin_bottom = 8.0
-		pressed_style.draw_center = true
-		p_button.add_theme_stylebox_override("pressed", pressed_style)
-
-
-## Populate option buttons
 func _populate_options() -> void:
 	# Resolution options
 	_resolution_option.clear()
