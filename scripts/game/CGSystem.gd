@@ -59,7 +59,7 @@ signal cg_skipped(cg_type)
 func _ready() -> void:
 	# Connect signals
 	_skip_button.pressed.connect(_on_skip_pressed)
-	gui_input.connect(_on_gui_input)
+	# Note: CanvasLayer does not have gui_input signal, use _input() instead for keyboard shortcuts
 	visible = true
 
 	# Setup button hover
@@ -79,7 +79,10 @@ func _ready() -> void:
 	else:
 		_show_fallback_text()
 
-	GameLog.info("CGSystem: Ready", "CG")
+	# Apply game-level UI styles
+	_setup_ui_styles()
+
+	GameLog.info("CGSystem: Ready (game-level UI)", "CG")
 
 
 ## Show fallback text when video not available
@@ -259,6 +262,103 @@ func _on_gui_input(event: InputEvent) -> void:
 ## Skip button pressed
 func _on_skip_pressed() -> void:
 	_return_to_menu()
+## Apply game-level UI styles to panels, buttons, and progress bar
+func _setup_ui_styles() -> void:
+	# Skip button three-state style
+	var btn_normal = StyleBoxFlat.new()
+	btn_normal.bg_color = Color(0.12, 0.08, 0.22, 0.9)
+	btn_normal.border_color = Color(0.7, 0.55, 0.3, 0.8)
+	btn_normal.border_width_left = 2
+	btn_normal.border_width_right = 2
+	btn_normal.border_width_top = 2
+	btn_normal.border_width_bottom = 2
+	btn_normal.corner_radius_top_left = 6
+	btn_normal.corner_radius_top_right = 6
+	btn_normal.corner_radius_bottom_left = 6
+	btn_normal.corner_radius_bottom_right = 6
+
+	var btn_hover = StyleBoxFlat.new()
+	btn_hover.bg_color = Color(0.18, 0.12, 0.3, 0.95)
+	btn_hover.border_color = Color(0.95, 0.78, 0.45, 1.0)
+	btn_hover.border_width_left = 2
+	btn_hover.border_width_right = 2
+	btn_hover.border_width_top = 2
+	btn_hover.border_width_bottom = 2
+	btn_hover.corner_radius_top_left = 6
+	btn_hover.corner_radius_top_right = 6
+	btn_hover.corner_radius_bottom_left = 6
+	btn_hover.corner_radius_bottom_right = 6
+
+	var btn_pressed = StyleBoxFlat.new()
+	btn_pressed.bg_color = Color(0.08, 0.05, 0.15, 1.0)
+	btn_pressed.border_color = Color(0.6, 0.48, 0.25, 0.9)
+	btn_pressed.border_width_left = 2
+	btn_pressed.border_width_right = 2
+	btn_pressed.border_width_top = 2
+	btn_pressed.border_width_bottom = 2
+	btn_pressed.corner_radius_top_left = 6
+	btn_pressed.corner_radius_top_right = 6
+	btn_pressed.corner_radius_bottom_left = 6
+	btn_pressed.corner_radius_bottom_right = 6
+
+	if _skip_button:
+		_skip_button.add_theme_stylebox_override("normal", btn_normal)
+		_skip_button.add_theme_stylebox_override("hover", btn_hover)
+		_skip_button.add_theme_stylebox_override("pressed", btn_pressed)
+		_skip_button.add_theme_color_override("font_color", Color(0.95, 0.88, 0.65))
+		_skip_button.add_theme_font_size_override("font_size", 16)
+
+	# Text panel style: dark purple bg + gold border + rounded corners
+	if _text_panel:
+		var panel_style = StyleBoxFlat.new()
+		panel_style.bg_color = Color(0.06, 0.04, 0.12, 0.92)
+		panel_style.border_color = Color(0.83, 0.66, 0.36, 0.9)
+		panel_style.border_width_left = 2
+		panel_style.border_width_right = 2
+		panel_style.border_width_top = 2
+		panel_style.border_width_bottom = 2
+		panel_style.corner_radius_top_left = 10
+		panel_style.corner_radius_top_right = 10
+		panel_style.corner_radius_bottom_left = 10
+		panel_style.corner_radius_bottom_right = 10
+		_text_panel.add_theme_stylebox_override("panel", panel_style)
+
+	# Title label: large gold
+	if _title_label:
+		_title_label.add_theme_font_size_override("font_size", 36)
+		_title_label.add_theme_color_override("font_color", Color(1.0, 0.88, 0.5))
+
+	# Text label: gray-white
+	if _text_label:
+		_text_label.add_theme_font_size_override("font_size", 16)
+		_text_label.add_theme_color_override("font_color", Color(0.85, 0.82, 0.75))
+
+	# Progress bar style: gold fill
+	if _progress_bar:
+		var bar_bg = StyleBoxFlat.new()
+		bar_bg.bg_color = Color(0.1, 0.07, 0.18, 0.8)
+		bar_bg.border_color = Color(0.6, 0.5, 0.3, 0.6)
+		bar_bg.border_width_left = 1
+		bar_bg.border_width_right = 1
+		bar_bg.border_width_top = 1
+		bar_bg.border_width_bottom = 1
+		bar_bg.corner_radius_top_left = 3
+		bar_bg.corner_radius_top_right = 3
+		bar_bg.corner_radius_bottom_left = 3
+		bar_bg.corner_radius_bottom_right = 3
+		_progress_bar.add_theme_stylebox_override("background", bar_bg)
+
+		var bar_fill = StyleBoxFlat.new()
+		bar_fill.bg_color = Color(0.9, 0.7, 0.35, 0.9)
+		bar_fill.corner_radius_top_left = 2
+		bar_fill.corner_radius_top_right = 2
+		bar_fill.corner_radius_bottom_left = 2
+		bar_fill.corner_radius_bottom_right = 2
+		_progress_bar.add_theme_stylebox_override("fill", bar_fill)
+
+	GameLog.info("CGSystem: Game-level UI styles applied", "CG")
+
+
 func _setup_button_hover(p_button: Button) -> void:
 	if p_button == null:
 		return

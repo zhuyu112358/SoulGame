@@ -11562,3 +11562,32 @@ ode/life/max_life），而_update_skill_particles()期望新版数据结构（pa
 ### 下一步
 - 战斗HUD技能图标按钮+冷却遮罩（已有基础，评估是否需要进一步升级）
 - 实机测试验证渲染效果
+
+---
+
+## 2026-09-12 游戏级UI升级：CG播放界面 + 修复gui_input信号bug
+
+### 升级内容
+以SoulSelect.gd为质量模板，升级CG播放界面（CGSystem.gd）的视觉层。
+
+### 修复的已存在bug（导致脚本解析错误）
+- **gui_input信号错误**：gui_input.connect(_on_gui_input) 在CanvasLayer上无效，因为CanvasLayer没有gui_input信号（只有Control节点才有）。导致脚本完全无法加载。修复：移除这行代码，跳过按钮已提供跳过功能。
+
+### 视觉改进
+1. **跳过按钮三态StyleBoxFlat样式**：normal/hover/pressed三态背景样式（深紫底+金色边框+圆角6px），文字金色16号
+2. **文本面板美化**：深紫底色（Color(0.06,0.04,0.12,0.92)）+金色边框+圆角10px
+3. **进度条样式**：深紫底色+金色边框背景，金色填充样式
+4. **文字层次**：标题36号金色，正文16号灰白
+5. **添加_setup_ui_styles()方法**：统一管理所有按钮、面板、进度条和标签的视觉样式
+
+### 验证结果
+- cg_player.tscn：**NO SCRIPT ERRORS**，游戏级UI样式应用成功
+- M2测试：**2955 Passed, 0 Failed** 全绿
+
+### 修改的文件
+- scripts/game/CGSystem.gd - 修复gui_input信号bug，添加_setup_ui_styles()方法，按钮三态+文本面板美化+进度条样式+文字层次
+
+### 下一步
+- 所有界面游戏级UI升级已完成（11个界面）
+- 实机测试验证渲染效果和交互体验
+- 根据用户反馈进行细节调整
