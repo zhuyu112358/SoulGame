@@ -10451,3 +10451,40 @@ ode/life/max_life），而_update_skill_particles()期望新版数据结构（pa
 - UI组件PNG资源导入后集成(ui_character_select_panel/ui_battle_config_panel等)
 - 面板区域卡片式背景细节优化
 - 实机测试验证整体视觉效果
+
+---
+
+## 2026-09-11 UI组件资源导入+角色选择面板9-slice集成 (UI组件集成第一步)
+
+### 完成内容
+1. **UI组件PNG资源导入**
+   - 使用Godot headless --import模式导入所有UI组件PNG
+   - ui_character_select_panel.png (1024x512) ✅ 已导入
+   - ui_battle_config_panel.png (1024x512) ✅ 已导入
+   - ui_game_over_panel.png ✅ 已导入
+   - 累计55个UI组件全部可加载
+
+2. **创建StyleBoxTexture .tres样式文件**
+   - assets/ui/ui_character_select_panel_style.tres (patch_margin 60/40/60/40)
+   - assets/ui/ui_battle_config_panel_style.tres (patch_margin 60/40/60/40)
+   - 在.tres文件中定义patch_margin（符合禁止动态创建StyleBoxTexture的约束）
+
+3. **SoulSelect详情面板集成9-slice样式**
+   - DetailPanel应用ui_character_select_panel_style.tres
+   - 带fallback到StyleBoxFlat（如果9-slice样式不可用）
+   - 不使用动态StyleBoxTexture.patch_margin_*（符合监控任务要求）
+
+### 验证结果
+- M2测试: 2686 Passed, 0 Failed
+- 无SCRIPT ERROR
+- .tres样式文件可正常加载
+
+### 修改的文件
+- assets/ui/ui_character_select_panel_style.tres - 新建（角色选择面板9-slice样式）
+- assets/ui/ui_battle_config_panel_style.tres - 新建（战斗配置面板9-slice样式）
+- scripts/ui/SoulSelect.gd - DetailPanel应用9-slice样式+fallback
+
+### 下一步
+- BattleConfig主面板集成ui_battle_config_panel_style
+- 其他场景面板集成对应9-slice样式
+- 实机测试验证9-slice面板渲染效果

@@ -401,6 +401,27 @@ func _apply_ui_theme() -> void:
 	_subtitle_label.add_theme_font_size_override("font_size", 16)
 	_subtitle_label.add_theme_color_override("font_color", Color(0.7, 0.65, 0.5))
 
+	# Apply character select panel style (9-slice UI component)
+	var panel_style_path = "res://assets/ui/ui_character_select_panel_style.tres"
+	if ResourceLoader.exists(panel_style_path):
+		var panel_style = load(panel_style_path)
+		if panel_style:
+			_detail_panel.add_theme_stylebox_override("panel", panel_style)
+	else:
+		# Fallback to StyleBoxFlat if 9-slice style not available
+		var fallback_style = StyleBoxFlat.new()
+		fallback_style.bg_color = Color(0.08, 0.05, 0.15, 0.9)
+		fallback_style.border_color = Color(0.83, 0.66, 0.36)
+		fallback_style.border_width_left = 3
+		fallback_style.border_width_right = 3
+		fallback_style.border_width_top = 3
+		fallback_style.border_width_bottom = 3
+		fallback_style.corner_radius_top_left = 10
+		fallback_style.corner_radius_top_right = 10
+		fallback_style.corner_radius_bottom_left = 10
+		fallback_style.corner_radius_bottom_right = 10
+		_detail_panel.add_theme_stylebox_override("panel", fallback_style)
+
 
 ## Compatibility: legacy soul card creation (tests expect this method)
 func _create_soul_card(soul: Dictionary, index: int) -> Control:
