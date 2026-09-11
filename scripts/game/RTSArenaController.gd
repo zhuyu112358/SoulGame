@@ -29,6 +29,10 @@ var ai_energy_bar = null
 var ai_name_label = null
 var battle_time_label = null
 var battle_log = null
+var _player_hp_value_label = null
+var _player_energy_value_label = null
+var _ai_hp_value_label = null
+var _ai_energy_value_label = null
 var skill_buttons = {}
 
 ## Energy bar smooth transition
@@ -389,6 +393,7 @@ func _ready() -> void:
 	_apply_ui_theme()
 	_dlog("[DEBUG-READY] after _apply_ui_theme, before _apply_hp_energy_styles")
 	_apply_hp_energy_styles()
+	_setup_main_hp_energy_labels()
 	_dlog("[DEBUG-READY] after _apply_hp_energy_styles, before _apply_hud_skin")
 	_apply_hud_skin()
 	_dlog("[DEBUG-READY] after _apply_hud_skin, before _load_particle_textures")
@@ -2437,6 +2442,74 @@ func _apply_hud_skin() -> void:
 
 
 ## Apply custom styles to HP and energy bars (orb-like with gold border)
+## Setup value labels for main HP/energy bars
+func _setup_main_hp_energy_labels() -> void:
+	# Player HP value label
+	if player_hp_bar:
+		var p_hp_label = Label.new()
+		p_hp_label.name = "HPValueLabel"
+		p_hp_label.text = "100/100"
+		p_hp_label.anchors_preset = Control.PRESET_FULL_RECT
+		p_hp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		p_hp_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		p_hp_label.add_theme_font_size_override("font_size", 11)
+		p_hp_label.add_theme_color_override("font_color", Color(1.0, 0.95, 0.8))
+		p_hp_label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.9))
+		p_hp_label.add_theme_constant_override("outline_size", 2)
+		p_hp_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		p_hp_label.z_index = 5
+		player_hp_bar.add_child(p_hp_label)
+		_player_hp_value_label = p_hp_label
+	# Player energy value label
+	if player_energy_bar:
+		var p_en_label = Label.new()
+		p_en_label.name = "EnergyValueLabel"
+		p_en_label.text = "0/50"
+		p_en_label.anchors_preset = Control.PRESET_FULL_RECT
+		p_en_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		p_en_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		p_en_label.add_theme_font_size_override("font_size", 11)
+		p_en_label.add_theme_color_override("font_color", Color(0.8, 0.9, 1.0))
+		p_en_label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.9))
+		p_en_label.add_theme_constant_override("outline_size", 2)
+		p_en_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		p_en_label.z_index = 5
+		player_energy_bar.add_child(p_en_label)
+		_player_energy_value_label = p_en_label
+	# AI HP value label
+	if ai_hp_bar:
+		var a_hp_label = Label.new()
+		a_hp_label.name = "HPValueLabel"
+		a_hp_label.text = "100/100"
+		a_hp_label.anchors_preset = Control.PRESET_FULL_RECT
+		a_hp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		a_hp_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		a_hp_label.add_theme_font_size_override("font_size", 11)
+		a_hp_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.9))
+		a_hp_label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.9))
+		a_hp_label.add_theme_constant_override("outline_size", 2)
+		a_hp_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		a_hp_label.z_index = 5
+		ai_hp_bar.add_child(a_hp_label)
+		_ai_hp_value_label = a_hp_label
+	# AI energy value label
+	if ai_energy_bar:
+		var a_en_label = Label.new()
+		a_en_label.name = "EnergyValueLabel"
+		a_en_label.text = "0/50"
+		a_en_label.anchors_preset = Control.PRESET_FULL_RECT
+		a_en_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		a_en_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		a_en_label.add_theme_font_size_override("font_size", 11)
+		a_en_label.add_theme_color_override("font_color", Color(0.9, 0.8, 1.0))
+		a_en_label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.9))
+		a_en_label.add_theme_constant_override("outline_size", 2)
+		a_en_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		a_en_label.z_index = 5
+		ai_energy_bar.add_child(a_en_label)
+		_ai_energy_value_label = a_en_label
+
+
 func _apply_hp_energy_styles() -> void:
 	# HP bar style: red gradient fill with gold border
 	var hp_bg = StyleBoxFlat.new()
@@ -2959,14 +3032,22 @@ func _update_unit_display() -> void:
 	if info.has("player") and player_hp_bar:
 		var p = info["player"]
 		player_hp_bar.value = float(p.get("hp", 0)) / float(p.get("max_hp", 100)) * 100.0
+		if _player_hp_value_label:
+			_player_hp_value_label.text = "%d/%d" % [int(p.get("hp", 0)), int(p.get("max_hp", 100))]
 		if player_energy_bar:
 			_target_player_energy = float(p.get("energy", 0)) / float(p.get("max_energy", 50)) * 100.0
+			if _player_energy_value_label:
+				_player_energy_value_label.text = "%d/%d" % [int(p.get("energy", 0)), int(p.get("max_energy", 50))]
 
 	if info.has("ai") and ai_hp_bar:
 		var a = info["ai"]
 		ai_hp_bar.value = float(a.get("hp", 0)) / float(a.get("max_hp", 100)) * 100.0
+		if _ai_hp_value_label:
+			_ai_hp_value_label.text = "%d/%d" % [int(a.get("hp", 0)), int(a.get("max_hp", 100))]
 		if ai_energy_bar:
 			_target_ai_energy = float(a.get("energy", 0)) / float(a.get("max_energy", 50)) * 100.0
+			if _ai_energy_value_label:
+				_ai_energy_value_label.text = "%d/%d" % [int(a.get("energy", 0)), int(a.get("max_energy", 50))]
 
 	# GAP-001: Update team HP bars
 	if info.has("player_team"):
