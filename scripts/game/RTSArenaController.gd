@@ -485,7 +485,47 @@ func _setup_pause_button() -> void:
 	_pause_button.position = Vector2(600, 10)
 	_pause_button.size = Vector2(80, 35)
 	_pause_button.add_theme_font_size_override("font_size", 14)
-	_pause_button.modulate = Color(0.9, 0.9, 0.7)
+	# Game-level style: dark purple with gold border
+	var pause_style = StyleBoxFlat.new()
+	pause_style.bg_color = Color(0.12, 0.08, 0.22)
+	pause_style.border_color = Color(0.83, 0.66, 0.36)
+	pause_style.border_width_left = 2
+	pause_style.border_width_right = 2
+	pause_style.border_width_top = 2
+	pause_style.border_width_bottom = 2
+	pause_style.corner_radius_top_left = 6
+	pause_style.corner_radius_top_right = 6
+	pause_style.corner_radius_bottom_left = 6
+	pause_style.corner_radius_bottom_right = 6
+	_pause_button.add_theme_stylebox_override("normal", pause_style)
+	# Hover style: brighter bg + lighter gold border
+	var pause_hover = StyleBoxFlat.new()
+	pause_hover.bg_color = Color(0.2, 0.14, 0.32)
+	pause_hover.border_color = Color(1.0, 0.88, 0.5)
+	pause_hover.border_width_left = 3
+	pause_hover.border_width_right = 3
+	pause_hover.border_width_top = 3
+	pause_hover.border_width_bottom = 3
+	pause_hover.corner_radius_top_left = 6
+	pause_hover.corner_radius_top_right = 6
+	pause_hover.corner_radius_bottom_left = 6
+	pause_hover.corner_radius_bottom_right = 6
+	_pause_button.add_theme_stylebox_override("hover", pause_hover)
+	# Pressed style: darker bg
+	var pause_pressed = StyleBoxFlat.new()
+	pause_pressed.bg_color = Color(0.08, 0.05, 0.15)
+	pause_pressed.border_color = Color(0.7, 0.55, 0.3)
+	pause_pressed.border_width_left = 2
+	pause_pressed.border_width_right = 2
+	pause_pressed.border_width_top = 2
+	pause_pressed.border_width_bottom = 2
+	pause_pressed.corner_radius_top_left = 6
+	pause_pressed.corner_radius_top_right = 6
+	pause_pressed.corner_radius_bottom_left = 6
+	pause_pressed.corner_radius_bottom_right = 6
+	_pause_button.add_theme_stylebox_override("pressed", pause_pressed)
+	_pause_button.add_theme_color_override("font_color", Color(0.95, 0.9, 0.7))
+	_pause_button.add_theme_color_override("font_hover_color", Color(1.0, 0.95, 0.8))
 	_pause_button.pressed.connect(_on_pause_button_pressed)
 	_setup_button_hover(_pause_button)
 	add_child(_pause_button)

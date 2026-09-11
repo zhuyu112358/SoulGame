@@ -1,6 +1,26 @@
 ﻿# 战策 Battleplan 开发日志
 
 
+## [战斗HUD升级] 暂停按钮游戏级UI样式-深紫底金色边框三态StyleBoxFlat（2026-09-12）
+
+**本轮工作**：为战斗HUD顶部的暂停按钮添加游戏级UI样式，之前只有默认按钮样式+modulate颜色。
+
+**暂停按钮升级**：
+- normal：深紫底(Color(0.12,0.08,0.22))+金色边框(2px)+圆角(6px)
+- hover：更亮紫底+亮金边框(3px)
+- pressed：深色底+暗金边框(2px)
+- 文字：normal浅金色，hover亮金色
+- 保留_setup_button_hover的缩放+发光动画效果
+
+**修改文件**：
+- scripts/game/RTSArenaController.gd：重写_setup_pause_button()方法
+
+**验证结果**：
+- rts_arena场景测试：NO SCRIPT ERROR
+- M2测试：2955 Passed, 0 Failed（首次因按钮文字加了图标导致1个测试失败，改回"暂停"后全绿）
+
+---
+
 ## [战斗HUD升级] 战斗日志消息颜色编码-暴击金/治疗绿/伤害红/战术紫等10种颜色（2026-09-12）
 
 **本轮工作**：为战斗日志添加消息类型颜色编码，不同战斗事件使用不同颜色显示，提升可读性和游戏感。
