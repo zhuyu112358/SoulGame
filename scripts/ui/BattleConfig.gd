@@ -76,10 +76,39 @@ func _build_ui() -> void:
 	center.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(center)
 
+	# Main panel with 9-slice style (UI component integration)
+	var main_panel = PanelContainer.new()
+	main_panel.name = "MainPanel"
+	main_panel.custom_minimum_size = Vector2(900, 650)
+	var panel_style_path = "res://assets/ui/ui_battle_config_panel_style.tres"
+	if ResourceLoader.exists(panel_style_path):
+		var panel_style = load(panel_style_path)
+		if panel_style:
+			main_panel.add_theme_stylebox_override("panel", panel_style)
+	else:
+		# Fallback to StyleBoxFlat
+		var fallback_style = StyleBoxFlat.new()
+		fallback_style.bg_color = Color(0.08, 0.05, 0.15, 0.92)
+		fallback_style.border_color = Color(0.83, 0.66, 0.36)
+		fallback_style.border_width_left = 3
+		fallback_style.border_width_right = 3
+		fallback_style.border_width_top = 3
+		fallback_style.border_width_bottom = 3
+		fallback_style.corner_radius_top_left = 12
+		fallback_style.corner_radius_top_right = 12
+		fallback_style.corner_radius_bottom_left = 12
+		fallback_style.corner_radius_bottom_right = 12
+		main_panel.add_theme_stylebox_override("panel", fallback_style)
+	center.add_child(main_panel)
+
 	var vbox = VBoxContainer.new()
 	vbox.name = "MainVBox"
 	vbox.add_theme_constant_override("separation", 15)
-	center.add_child(vbox)
+	vbox.add_theme_constant_override("margin_left", 30)
+	vbox.add_theme_constant_override("margin_right", 30)
+	vbox.add_theme_constant_override("margin_top", 20)
+	vbox.add_theme_constant_override("margin_bottom", 20)
+	main_panel.add_child(vbox)
 
 	# Title
 	var title = Label.new()

@@ -10488,3 +10488,40 @@ ode/life/max_life），而_update_skill_particles()期望新版数据结构（pa
 - BattleConfig主面板集成ui_battle_config_panel_style
 - 其他场景面板集成对应9-slice样式
 - 实机测试验证9-slice面板渲染效果
+
+---
+
+## 2026-09-11 BattleConfig主面板9-slice集成 (UI组件集成第二步)
+
+### 完成内容
+1. **BattleConfig主面板9-slice样式集成**
+   - 在CenterContainer和VBoxContainer之间添加PanelContainer(MainPanel)
+   - 应用ui_battle_config_panel_style.tres (1024x512 9-slice组件)
+   - 面板尺寸900x650，内边距30/20/30/20
+   - 带fallback到StyleBoxFlat（深紫背景+金色边框+圆角12px）
+
+2. **其他场景Panel节点确认**
+   - soul_codex.tscn: 2个Panel
+   - collection.tscn: 2个Panel
+   - friends.tscn: 4个Panel
+   - matchmaking.tscn: 1个Panel
+   - training_stats_menu.tscn: 0个Panel（需添加）
+   - 下轮继续集成这些场景的9-slice样式
+
+### 验证结果
+- M2测试: 2686 Passed, 0 Failed
+- 无SCRIPT ERROR
+- 9-slice面板样式可正常加载
+
+### 修改的文件
+- scripts/ui/BattleConfig.gd - 添加MainPanel PanelContainer+9-slice样式+fallback
+
+### UI组件集成进度
+- SoulSelect详情面板 ✅ (上轮)
+- BattleConfig主面板 ✅ (本轮)
+- 其他场景面板 ⏳ (下轮)
+
+### 下一步
+- 其他场景面板9-slice样式集成(soul_codex/collection/friends/matchmaking)
+- training_stats_menu添加Panel容器
+- 实机测试验证9-slice面板渲染效果
