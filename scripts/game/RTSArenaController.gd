@@ -3146,36 +3146,36 @@ func _create_team_hp_bars(p_player_team: Array, p_ai_team: Array) -> void:
 		container.position = Vector2(15, 15 + i * 42)
 		container.custom_minimum_size = Vector2(200, 38)
 		container.flat = true
-		# Normal style: transparent with subtle border
+		# Normal style: transparent with element color border
 		var normal_style = StyleBoxFlat.new()
 		normal_style.bg_color = Color(0.06, 0.04, 0.12, 0.7)
-		normal_style.border_color = Color(0.4, 0.35, 0.2)
-		normal_style.border_width_left = 1
-		normal_style.border_width_right = 1
-		normal_style.border_width_top = 1
-		normal_style.border_width_bottom = 1
+		normal_style.border_color = fill_color.darkened(0.4)
+		normal_style.border_width_left = 2
+		normal_style.border_width_right = 2
+		normal_style.border_width_top = 2
+		normal_style.border_width_bottom = 2
 		normal_style.corner_radius_top_left = 4
 		normal_style.corner_radius_top_right = 4
 		normal_style.corner_radius_bottom_right = 4
 		normal_style.corner_radius_bottom_left = 4
 		container.add_theme_stylebox_override("normal", normal_style)
-		# Hover style: brighter border
+		# Hover style: brighter element color border
 		var hover_style = StyleBoxFlat.new()
 		hover_style.bg_color = Color(0.1, 0.08, 0.18, 0.85)
-		hover_style.border_color = Color(0.8, 0.7, 0.4)
-		hover_style.border_width_left = 2
-		hover_style.border_width_right = 2
-		hover_style.border_width_top = 2
-		hover_style.border_width_bottom = 2
+		hover_style.border_color = fill_color.lightened(0.2)
+		hover_style.border_width_left = 3
+		hover_style.border_width_right = 3
+		hover_style.border_width_top = 3
+		hover_style.border_width_bottom = 3
 		hover_style.corner_radius_top_left = 4
 		hover_style.corner_radius_top_right = 4
 		hover_style.corner_radius_bottom_right = 4
 		hover_style.corner_radius_bottom_left = 4
 		container.add_theme_stylebox_override("hover", hover_style)
-		# Pressed style
+		# Pressed style: element color border
 		var pressed_style = StyleBoxFlat.new()
 		pressed_style.bg_color = Color(0.12, 0.1, 0.2, 0.9)
-		pressed_style.border_color = Color(1.0, 0.88, 0.5)
+		pressed_style.border_color = fill_color
 		pressed_style.border_width_left = 2
 		pressed_style.border_width_right = 2
 		pressed_style.border_width_top = 2
