@@ -67,6 +67,7 @@ var _team_hp_container = null    # Container for team HP bars
 var _player_team_hp_bars: Array = []  # HP bars for player team units
 var _ai_team_hp_bars: Array = []      # HP bars for AI team units
 var _player_unit_containers: Array = []  # Clickable containers for player unit selection
+var _selection_indicator = null  # Gold circle indicator for selected unit
 var _selected_unit_index: int = 0     # Currently selected player unit (for tactical commands)
 
 ## Battle active flag
@@ -2865,6 +2866,11 @@ func _setup_team_visuals(p_battle_info: Dictionary) -> void:
 		add_child(light)
 		_ai_lights.append(light)
 
+	# Create selection indicator (gold circle under selected unit)
+	_selection_indicator = _create_selection_indicator()
+	add_child(_selection_indicator)
+	_selection_indicator.visible = false
+
 	# Create team HP bars with soul names and element colors
 	_create_team_hp_bars(player_team, ai_team)
 
@@ -3056,6 +3062,13 @@ func _create_team_hp_bars(p_player_team: Array, p_ai_team: Array) -> void:
 func _select_player_unit(p_index: int) -> void:
 	_selected_unit_index = p_index
 	GameLog.info("RTSArena: Selected player unit %d" % p_index, "Arena")
+	# Immediately update selection indicator position
+	if _selection_indicator and is_instance_valid(_selection_indicator):
+		if p_index < _player_visuals.size():
+			var sel_visual = _player_visuals[p_index]
+			if sel_visual and is_instance_valid(sel_visual) and sel_visual.visible:
+				_selection_indicator.visible = true
+				_selection_indicator.position = sel_visual.position + Vector2(0, 35)
 	# Update visual selection state
 	for idx in range(_player_unit_containers.size()):
 		var btn = _player_unit_containers[idx]
@@ -3121,6 +3134,9 @@ func _clear_team_visuals() -> void:
 				hp_bar.queue_free()
 	_player_team_hp_bars.clear()
 	_player_unit_containers.clear()
+	if _selection_indicator and is_instance_valid(_selection_indicator):
+		_selection_indicator.queue_free()
+	_selection_indicator = null
 	for hp_bar in _ai_team_hp_bars:
 		if hp_bar and is_instance_valid(hp_bar):
 			# Free parent container if it exists (new layout), else free the bar itself
@@ -3910,6 +3926,49 @@ func _on_battle_time_updated(p_time: float) -> void:
 
 
 ## Create unit visual: AnimatedSprite2D from design sheet (with chroma-key shader) or procedural sprite with bob
+## Create gold circle selection indicator for selected unit
+func _create_selection_indicator() -> Node2D:
+	var indicator = Node2D.new()
+	indicator.name = "SelectionIndicator"
+	indicator.z_index = 5
+
+	# Outer glow ring
+	var glow = _create_ring_texture(48, Color(1.0, 0.88, 0.5, 0.3))
+	var glow_sprite = Sprite2D.new()
+	glow_sprite.texture = glow
+	glow_sprite.scale = Vector2(1.3, 1.3)
+	indicator.add_child(glow_sprite)
+
+	# Main gold ring
+	var ring = _create_ring_texture(40, Color(1.0, 0.88, 0.5, 0.9))
+	var ring_sprite = Sprite2D.new()
+	ring_sprite.texture = ring
+	indicator.add_child(ring_sprite)
+
+	# Inner accent ring
+	var inner = _create_ring_texture(34, Color(1.0, 0.95, 0.7, 0.5))
+	var inner_sprite = Sprite2D.new()
+	inner_sprite.texture = inner
+	indicator.add_child(inner_sprite)
+
+	return indicator
+
+
+## Create a ring texture procedurally
+func _create_ring_texture(p_radius: int, p_color: Color) -> ImageTexture:
+	var size = p_radius * 2 + 4
+	var img = Image.create(size, size, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0, 0, 0, 0))
+	var center = Vector2(size / 2, size / 2)
+	for x in range(size):
+		for y in range(size):
+			var dist = center.distance_to(Vector2(x, y))
+			if dist <= p_radius and dist >= p_radius - 3:
+				var alpha = p_color.a * (1.0 - abs(dist - (p_radius - 1.5)) / 2.0)
+				img.set_pixel(x, y, Color(p_color.r, p_color.g, p_color.b, alpha))
+	return ImageTexture.create_from_image(img)
+
+
 func _create_unit_visual(p_element: String, p_personality: Dictionary = {}) -> CanvasItem:
 	# Try new element sprite sheet first (has animation frames, no alpha - use chroma-key shader)
 	var sheet_path := "res://assets/art/new_soul_unit_%s_sprite_sheet.png" % p_element.to_lower()

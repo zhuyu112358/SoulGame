@@ -1,5 +1,32 @@
 ﻿# 战策 Battleplan 开发日志
 
+## [战斗玩法增强] 选中单位战场金色选择指示器+脉冲动画（2026-09-12）
+
+**本轮工作**：为4v4战斗中选中的玩家单位添加战场金色选择指示器，让玩家在战场上清楚看到当前选中的单位。
+
+**功能实现**：
+1. 程序化生成三层金色圆环指示器（外发光环+主金环+内 accent 环）
+2. 指示器跟随选中单位移动，位于单位脚下（position + Vector2(0, 35)）
+3. 脉冲动画：缩放1.0-1.1倍循环，sin函数驱动
+4. 选中单位死亡时自动隐藏指示器
+5. _create_ring_texture()方法：程序化生成圆环纹理（ImageTexture）
+6. _clear_team_visuals()中清除指示器
+
+**视觉效果**：
+- 外层：金色半透明发光环（alpha 0.3，放大1.3倍）
+- 中层：主金色环（alpha 0.9）
+- 内层：亮金色 accent 环（alpha 0.5）
+- 脉冲：缩放1.0-1.1倍，周期约1.26秒
+
+**修改文件**：
+- scripts/game/RTSArenaController.gd：添加_selection_indicator变量，_create_selection_indicator()和_create_ring_texture()方法，_process中更新指示器位置，_select_player_unit中立即更新指示器
+
+**验证结果**：
+- rts_arena场景测试：NO SCRIPT ERROR，HUD skin正常加载
+- M2测试：2955 Passed, 0 Failed
+
+---
+
 ## [战斗玩法增强] 4v4玩家单位点击选择功能+选中金色高亮（2026-09-12）
 
 **本轮工作**：在4v4团队战斗中实现玩家单位点击选择功能，填补核心玩法缺失。
