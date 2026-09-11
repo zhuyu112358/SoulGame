@@ -73,11 +73,50 @@ func _ready() -> void:
 	GameLog.info("SettingsMenu: Game-level UI styles applied", "UI")
 
 
-## Animate entrance
+## Animate entrance with staggered fade-in + scale (game-level UI)
 func _animate_entrance() -> void:
-	modulate = Color(1, 1, 1, 0)
-	var tween = create_tween()
-	tween.tween_property(self, "modulate:a", 1.0, 0.3).set_ease(Tween.EASE_OUT)
+	# Title fade-in + scale
+	if _title_label and _title_label is CanvasItem:
+		_title_label.modulate.a = 0.0
+		_title_label.scale = Vector2(0.95, 0.95)
+		var title_tween = create_tween()
+		title_tween.set_ease(Tween.EASE_OUT)
+		title_tween.set_trans(Tween.TRANS_BACK)
+		title_tween.tween_property(_title_label, "modulate:a", 1.0, 0.4)
+		title_tween.parallel().tween_property(_title_label, "scale", Vector2(1.0, 1.0), 0.4)
+	# TabContainer fade-in + scale
+	var tab_container = get_node_or_null("MarginContainer/VBox/TabContainer")
+	if tab_container and tab_container is CanvasItem:
+		tab_container.modulate.a = 0.0
+		tab_container.scale = Vector2(0.95, 0.95)
+		var tab_tween = create_tween()
+		tab_tween.set_ease(Tween.EASE_OUT)
+		tab_tween.set_trans(Tween.TRANS_BACK)
+		tab_tween.tween_interval(0.2)
+		tab_tween.tween_property(tab_container, "modulate:a", 1.0, 0.4)
+		tab_tween.parallel().tween_property(tab_container, "scale", Vector2(1.0, 1.0), 0.4)
+	# Buttons fade-in
+	var back_btn = get_node_or_null("MarginContainer/VBox/ButtonRow/BackButton")
+	if back_btn and back_btn is CanvasItem:
+		back_btn.modulate.a = 0.0
+		var back_tween = create_tween()
+		back_tween.set_ease(Tween.EASE_OUT)
+		back_tween.tween_interval(0.5)
+		back_tween.tween_property(back_btn, "modulate:a", 1.0, 0.3)
+	var save_btn = get_node_or_null("MarginContainer/VBox/ButtonRow/SaveButton")
+	if save_btn and save_btn is CanvasItem:
+		save_btn.modulate.a = 0.0
+		var save_tween = create_tween()
+		save_tween.set_ease(Tween.EASE_OUT)
+		save_tween.tween_interval(0.6)
+		save_tween.tween_property(save_btn, "modulate:a", 1.0, 0.3)
+	var reset_btn = get_node_or_null("MarginContainer/VBox/ButtonRow/ResetButton")
+	if reset_btn and reset_btn is CanvasItem:
+		reset_btn.modulate.a = 0.0
+		var reset_tween = create_tween()
+		reset_tween.set_ease(Tween.EASE_OUT)
+		reset_tween.tween_interval(0.7)
+		reset_tween.tween_property(reset_btn, "modulate:a", 1.0, 0.3)
 
 
 ## Apply UI theme
