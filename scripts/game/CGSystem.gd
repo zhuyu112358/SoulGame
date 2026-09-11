@@ -23,6 +23,7 @@ enum CGType {
 @onready var _skip_button: Button = $SkipButton
 @onready var _progress_bar: ProgressBar = $ProgressBar
 @onready var _fade_layer: ColorRect = $FadeLayer
+@onready var _video_player: VideoStreamPlayer = $VideoPlayer
 
 ## Current CG data
 var _current_cg: Dictionary = {}
@@ -59,12 +60,45 @@ func _ready() -> void:
 	# Connect signals
 	_skip_button.pressed.connect(_on_skip_pressed)
 	gui_input.connect(_on_gui_input)
-	visible = false
+	visible = true
 
 	# Setup button hover
 	_setup_button_hover(_skip_button)
 
+	# Auto-play opening CG video if available
+	var video_path = "res://assets/cg_video/opening_cg_final.mp4"
+	if ResourceLoader.exists(video_path):
+		var video_stream = load(video_path)
+		if video_stream:
+			_video_player.stream = video_stream
+			_video_player.play()
+			_video_player.finished.connect(_on_video_finished)
+			GameLog.info("CGSystem: Playing opening CG video", "CG")
+		else:
+			_show_fallback_text()
+	else:
+		_show_fallback_text()
+
 	GameLog.info("CGSystem: Ready", "CG")
+
+
+## Show fallback text when video not available
+func _show_fallback_text() -> void:
+	_title_label.text = "战策 Battleplan"
+	_text_label.text = "Opening CG\n\n灵魂指挥官·RTS对战竞技场\n\n点击任意位置或按跳过返回主菜单"
+	_text_panel.visible = true
+
+
+## Video finished callback
+func _on_video_finished() -> void:
+	_return_to_menu()
+
+
+## Return to main menu
+func _return_to_menu() -> void:
+	if _video_player.playing:
+		_video_player.stop()
+	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
 
 
 ## Play a CG sequence
@@ -224,12 +258,7 @@ func _on_gui_input(event: InputEvent) -> void:
 
 ## Skip button pressed
 func _on_skip_pressed() -> void:
-	if AudioManager:
-		AudioManager.play_sfx("ui_button_click")
-	skip_cg()
-
-
-## Setup button hover effects
+	_return_to_menu()
 func _setup_button_hover(p_button: Button) -> void:
 	if p_button == null:
 		return

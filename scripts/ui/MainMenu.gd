@@ -33,7 +33,7 @@ const MENU_BUTTONS: Array = [
 	{"name": "friends", "label": "好友系统", "label_en": "FRIENDS", "scene": "res://scenes/friends.tscn", "color": Color(0.7, 0.8, 1.0)},
 	{"name": "customize", "label": "捏脸系统", "label_en": "CUSTOMIZE", "scene": "res://scenes/soul_customization.tscn", "color": Color(1.0, 0.6, 0.8)},
 	{"name": "collection", "label": "收藏系统", "label_en": "COLLECTION", "scene": "res://scenes/collection.tscn", "color": Color(0.9, 0.8, 0.5)},
-	{"name": "settings", "label": "设置", "label_en": "SETTINGS", "scene": "res://scenes/settings.tscn", "color": Color(0.7, 0.7, 0.7)},
+	{"name": "settings", "label": "设置", "label_en": "SETTINGS", "scene": "res://scenes/settings_menu.tscn", "color": Color(0.7, 0.7, 0.7)},
 	{"name": "quit", "label": "退出游戏", "label_en": "QUIT", "scene": "", "color": Color(0.9, 0.4, 0.4)},
 ]
 

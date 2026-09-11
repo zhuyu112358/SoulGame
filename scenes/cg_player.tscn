@@ -16,6 +16,10 @@ grow_vertical = 2
 expand_mode = 1
 stretch_mode = 6
 
+[node name="VideoPlayer" type="VideoStreamPlayer" parent="."]
+volume_db = 0.0
+autoplay = false
+
 [node name="TextPanel" type="Panel" parent="."]
 layout_mode = 3
 anchors_preset = 12

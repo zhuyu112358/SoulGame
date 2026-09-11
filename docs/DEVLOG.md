@@ -10745,3 +10745,50 @@ ode/life/max_life），而_update_skill_particles()期望新版数据结构（pa
 - 实机测试验证所有UI改造效果
 - 根据实机反馈调整细节
 - 准备M2 EA发布
+
+---
+
+## 2026-09-11 P0修复：设置跳转错误+CG黑屏问题
+
+### 用户实机测试反馈问题修复
+
+#### 1. 设置界面跳转错误修复
+- **问题**：主菜单设置按钮跳转到settings.tscn（只有简单音量滑块），而不是settings_menu.tscn（完整设置界面，49个节点，包含TabContainer/分辨率/全屏/画质/语言/难度等）
+- **修复**：MainMenu.gd中settings按钮的scene从es://scenes/settings.tscn改为es://scenes/settings_menu.tscn
+- **验证**：现在点击设置会进入完整的设置界面
+
+#### 2. 剧情CG黑屏修复
+- **问题**：CGSystem._ready()设置visible=false，没有自动播放CG内容，进入cg_player.tscn后屏幕是黑的
+- **根因**：CGSystem只支持通过play_cg()方法外部触发播放，场景加载时不会自动播放
+- **修复**：
+  - cg_player.tscn添加VideoStreamPlayer节点
+  - CGSystem.gd添加_video_player引用
+  - _ready()中自动加载并播放opening_cg_final.mp4
+  - 视频播放完成后自动返回主菜单
+  - 跳过按钮/点击屏幕都返回主菜单
+  - 视频不存在时显示fallback文本
+- **验证**：进入剧情CG会自动播放开场视频，可跳过返回
+
+### 代码质量检查
+- 4个监控文件均无StyleBoxTexture.new()违规
+- 背景图都是1920x1080全屏场景背景，不是UI设计图
+- 主菜单代码已使用真正的UI节点（Button/Label/VBoxContainer），不是贴图
+
+### 验证结果
+- M2测试: 2686 Passed, 0 Failed
+- 无SCRIPT ERROR
+
+### 修改的文件
+- scripts/ui/MainMenu.gd - 设置按钮跳转到settings_menu.tscn
+- scenes/cg_player.tscn - 添加VideoStreamPlayer节点
+- scripts/game/CGSystem.gd - 自动播放opening CG视频+返回主菜单
+
+### 下一步
+继续修复用户反馈的其他10个问题：
+- 训练统计返回按钮
+- 教学模式UI
+- 随机匹配功能
+- 好友系统UI
+- 捏脸系统
+- 灵魂图鉴/收藏/灵魂之家功能完善
+- 开始战斗流程验证
