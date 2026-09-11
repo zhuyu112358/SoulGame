@@ -11508,3 +11508,29 @@ ode/life/max_life），而_update_skill_particles()期望新版数据结构（pa
 - 继续升级其他界面（随机匹配/捏脸系统等）
 - 战斗HUD技能图标按钮+冷却遮罩
 - 实机测试验证渲染效果
+
+---
+
+## 2026-09-11 游戏级UI升级：捏脸/自定义系统界面
+
+### 升级内容
+以SoulSelect.gd为质量模板，升级捏脸/自定义系统界面（SoulCustomizationUI.gd）的视觉层。
+
+### 视觉改进
+1. **预览面板元素色光晕背景**：_refresh_preview()方法添加元素色光晕背景（8种元素对应颜色，alpha 0.6）+3px金色装饰边框+圆角10px
+2. **按钮三态StyleBoxFlat样式**：随机/重置/保存/返回按钮添加normal/hover/pressed三态背景样式（深紫底+金色边框+圆角6px），hover时边框变亮，文字金色
+3. **灵魂名字标签放大**：字号增加到24号元素色
+4. **添加_setup_ui_styles()方法**：统一管理所有按钮和标签的视觉样式
+5. **保留已有样式**：按钮hover缩放动画、按钮hover modulate效果、金色边框样式方法
+
+### 验证结果
+- soul_customization.tscn：**NO SCRIPT ERRORS**，自定义系统加载成功（7层自定义），游戏级UI样式应用成功
+- M2测试：**2955 Passed, 0 Failed** 全绿
+
+### 修改的文件
+- scripts/ui/SoulCustomizationUI.gd - _refresh_preview()添加元素色光晕背景，添加_setup_ui_styles()方法，按钮三态样式
+
+### 下一步
+- 继续升级其他界面（随机匹配等）
+- 战斗HUD技能图标按钮+冷却遮罩
+- 实机测试验证渲染效果

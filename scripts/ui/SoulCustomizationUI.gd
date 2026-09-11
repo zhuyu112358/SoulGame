@@ -53,7 +53,7 @@ func _ready() -> void:
 	_refresh_layer_list()
 	_refresh_options()
 	_refresh_summary()
-	GameLog.info("SoulCustomizationUI: Ready", "UI")
+	GameLog.info("SoulCustomizationUI: Ready (game-level UI)", "UI")
 
 	# Setup button hover effects
 	for btn in [_random_button, _reset_button, _save_button, _back_button]:
@@ -101,6 +101,62 @@ func _setup_ui() -> void:
 	if _back_button:
 		_back_button.pressed.connect(_on_back_pressed)
 		_setup_button_hover(_back_button)
+
+	# Apply game-level UI styles
+	_setup_ui_styles()
+
+
+## Apply game-level UI styles to panels and buttons
+func _setup_ui_styles() -> void:
+	# Three-state button style
+	var btn_normal = StyleBoxFlat.new()
+	btn_normal.bg_color = Color(0.12, 0.08, 0.22, 0.95)
+	btn_normal.border_color = Color(0.7, 0.55, 0.3, 0.8)
+	btn_normal.border_width_left = 2
+	btn_normal.border_width_right = 2
+	btn_normal.border_width_top = 2
+	btn_normal.border_width_bottom = 2
+	btn_normal.corner_radius_top_left = 6
+	btn_normal.corner_radius_top_right = 6
+	btn_normal.corner_radius_bottom_left = 6
+	btn_normal.corner_radius_bottom_right = 6
+
+	var btn_hover = StyleBoxFlat.new()
+	btn_hover.bg_color = Color(0.18, 0.12, 0.3, 0.98)
+	btn_hover.border_color = Color(0.95, 0.78, 0.45, 1.0)
+	btn_hover.border_width_left = 2
+	btn_hover.border_width_right = 2
+	btn_hover.border_width_top = 2
+	btn_hover.border_width_bottom = 2
+	btn_hover.corner_radius_top_left = 6
+	btn_hover.corner_radius_top_right = 6
+	btn_hover.corner_radius_bottom_left = 6
+	btn_hover.corner_radius_bottom_right = 6
+
+	var btn_pressed = StyleBoxFlat.new()
+	btn_pressed.bg_color = Color(0.08, 0.05, 0.15, 1.0)
+	btn_pressed.border_color = Color(0.6, 0.48, 0.25, 0.9)
+	btn_pressed.border_width_left = 2
+	btn_pressed.border_width_right = 2
+	btn_pressed.border_width_top = 2
+	btn_pressed.border_width_bottom = 2
+	btn_pressed.corner_radius_top_left = 6
+	btn_pressed.corner_radius_top_right = 6
+	btn_pressed.corner_radius_bottom_left = 6
+	btn_pressed.corner_radius_bottom_right = 6
+
+	for btn in [_random_button, _reset_button, _save_button, _back_button]:
+		if btn:
+			btn.add_theme_stylebox_override("normal", btn_normal)
+			btn.add_theme_stylebox_override("hover", btn_hover)
+			btn.add_theme_stylebox_override("pressed", btn_pressed)
+			btn.add_theme_color_override("font_color", Color(0.95, 0.88, 0.65))
+
+	# Soul name label: larger gold
+	if _soul_name_label:
+		_soul_name_label.add_theme_font_size_override("font_size", 24)
+
+	GameLog.info("SoulCustomizationUI: Game-level UI styles applied", "UI")
 
 
 func _setup_button_hover(p_button: Button) -> void:
@@ -186,9 +242,25 @@ func _refresh_summary() -> void:
 
 
 func _refresh_preview() -> void:
-	# Show soul portrait with customization tint
+	# Show soul portrait with customization tint + element glow background
 	if _preview_sprite == null:
 		return
+
+	# Apply element-colored glow background to preview panel
+	if _preview_panel:
+		var element_color = _element_colors.get(_current_element, Color(0.5, 0.5, 0.5))
+		var glow_style = StyleBoxFlat.new()
+		glow_style.bg_color = Color(element_color.r * 0.15, element_color.g * 0.15, element_color.b * 0.15, 0.6)
+		glow_style.border_color = Color(0.85, 0.65, 0.3, 0.9)
+		glow_style.border_width_left = 3
+		glow_style.border_width_right = 3
+		glow_style.border_width_top = 3
+		glow_style.border_width_bottom = 3
+		glow_style.corner_radius_top_left = 10
+		glow_style.corner_radius_top_right = 10
+		glow_style.corner_radius_bottom_left = 10
+		glow_style.corner_radius_bottom_right = 10
+		_preview_panel.add_theme_stylebox_override("panel", glow_style)
 	# Load portrait based on current soul element
 	var element = _current_soul_id
 	var element_file_map = {
