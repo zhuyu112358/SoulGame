@@ -1,6 +1,35 @@
 # 战策 Battleplan 开发日志
 
 
+## [战斗玩法] 4v4全队移动指令-未选中单位时左键点击移动所有存活单位（2026-09-12）
+
+**本轮工作**：增强4v4团队战斗的单位控制能力，添加全队移动指令功能。当没有选中单位时，左键点击战场会移动所有存活的玩家单位。
+
+**改进内容**：
+- RTSArenaManager.gd：新增move_all_player_units_to(p_position)方法
+  - 移动所有存活的玩家单位到目标位置
+  - 单位以2x2阵型分散在目标位置周围（间距50像素）
+  - 检查战斗状态
+- RTSArenaController.gd：修改_unhandled_input方法
+  - 4v4团队战斗中：
+    - 有选中单位时：左键点击移动选中单位
+    - 未选中单位时：左键点击移动所有存活单位（2x2阵型）
+  - 1v1战斗保持原有行为
+  - 两种模式都显示移动指示器和播放点击音效
+
+**修改文件**：
+- scripts/game/RTSArenaManager.gd：新增move_all_player_units_to方法
+- scripts/game/RTSArenaController.gd：修改_unhandled_input支持全队移动
+
+**验证结果**：
+- rts_arena场景测试：NO SCRIPT ERROR
+- M2测试：2955 Passed, 0 Failed
+
+---
+
+# 战策 Battleplan 开发日志
+
+
 ## [战斗玩法] 4v4单单位技能指令-技能按钮对选中单位生效（2026-09-12）
 
 **本轮工作**：增强4v4团队战斗的单位控制能力，让技能按钮（重击/快击/治疗/防御）对选中单位生效，而非全队级别。
