@@ -69,6 +69,8 @@ var _player_lights: Array = []   # Array of PointLight2D for player team
 var _ai_lights: Array = []       # Array of PointLight2D for AI team
 var _player_overhead_hp_bars: Array = []  # Overhead HP bars for player team
 var _ai_overhead_hp_bars: Array = []      # Overhead HP bars for AI team
+var _player_overhead_names: Array = []    # Overhead name labels for player team
+var _ai_overhead_names: Array = []        # Overhead name labels for AI team
 var _team_hp_container = null    # Container for team HP bars
 var _player_team_hp_bars: Array = []  # HP bars for player team units
 var _ai_team_hp_bars: Array = []      # HP bars for AI team units
@@ -3571,6 +3573,11 @@ func _setup_team_visuals(p_battle_info: Dictionary) -> void:
 		var p_hp_bar = _create_overhead_hp_bar(true)
 		_player_overhead_hp_bars.append(p_hp_bar)
 
+		# Create overhead name label
+		var p_name = unit_info.get("name", "Soul %d" % i)
+		var p_name_label = _create_overhead_name_label(p_name, true)
+		_player_overhead_names.append(p_name_label)
+
 	# Create AI team visuals
 	var ai_team = p_battle_info.get("ai_team", [])
 	for i in range(ai_team.size()):
@@ -3596,6 +3603,11 @@ func _setup_team_visuals(p_battle_info: Dictionary) -> void:
 		# Create overhead HP bar
 		var a_hp_bar = _create_overhead_hp_bar(false)
 		_ai_overhead_hp_bars.append(a_hp_bar)
+
+		# Create overhead name label
+		var a_name = unit_info.get("name", "Enemy %d" % i)
+		var a_name_label = _create_overhead_name_label(a_name, false)
+		_ai_overhead_names.append(a_name_label)
 
 	# Create selection indicator (gold circle under selected unit)
 	_selection_indicator = _create_selection_indicator()
@@ -3995,6 +4007,15 @@ func _clear_team_visuals() -> void:
 		if bar_data and bar_data.has("bg") and bar_data["bg"] and is_instance_valid(bar_data["bg"]):
 			bar_data["bg"].queue_free()
 	_ai_overhead_hp_bars.clear()
+	# Clear overhead name labels
+	for label in _player_overhead_names:
+		if label and is_instance_valid(label):
+			label.queue_free()
+	_player_overhead_names.clear()
+	for label in _ai_overhead_names:
+		if label and is_instance_valid(label):
+			label.queue_free()
+	_ai_overhead_names.clear()
 	for hp_bar in _player_team_hp_bars:
 		if hp_bar and is_instance_valid(hp_bar):
 			# Free parent container if it exists (new layout), else free the bar itself
@@ -5064,7 +5085,7 @@ func _create_overhead_hp_bar(p_is_player: bool) -> Dictionary:
 	return bar_data
 
 
-## Update overhead HP bars positions and values
+## Update overhead HP bars and name labels positions and values
 func _update_overhead_hp_bars(info: Dictionary) -> void:
 	# Player team
 	if info.has("player_team"):
@@ -5108,6 +5129,13 @@ func _update_overhead_hp_bars(info: Dictionary) -> void:
 				else:
 					bar_data["fill"].color = Color(0.9, 0.3, 0.3)
 
+			# Update name label position
+			if i < _player_overhead_names.size():
+				var name_label = _player_overhead_names[i]
+				if name_label and is_instance_valid(name_label):
+					name_label.visible = visual.visible
+					name_label.position = visual.position + Vector2(-40, -75)
+
 	# AI team
 	if info.has("ai_team"):
 		var ai_team = info["ai_team"]
@@ -5149,6 +5177,32 @@ func _update_overhead_hp_bars(info: Dictionary) -> void:
 					bar_data["fill"].color = Color(0.95, 0.6, 0.2)
 				else:
 					bar_data["fill"].color = Color(0.7, 0.2, 0.2)
+
+			# Update name label position
+			if i < _ai_overhead_names.size():
+				var name_label = _ai_overhead_names[i]
+				if name_label and is_instance_valid(name_label):
+					name_label.visible = visual.visible
+					name_label.position = visual.position + Vector2(-40, -75)
+
+
+## Create overhead name label for a unit
+func _create_overhead_name_label(p_name: String, p_is_player: bool) -> Label:
+	var label = Label.new()
+	label.name = "OverheadName"
+	label.text = p_name
+	label.size = Vector2(80, 16)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", 11)
+	if p_is_player:
+		label.add_theme_color_override("font_color", Color(0.7, 0.9, 1.0))
+	else:
+		label.add_theme_color_override("font_color", Color(1.0, 0.7, 0.7))
+	label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.9))
+	label.add_theme_constant_override("outline_size", 3)
+	label.z_index = 22
+	add_child(label)
+	return label
 
 
 ## Create gold circle selection indicator for selected unit
