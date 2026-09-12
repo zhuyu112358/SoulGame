@@ -69,7 +69,9 @@ var _player_lights: Array = []   # Array of PointLight2D for player team
 var _ai_lights: Array = []       # Array of PointLight2D for AI team
 var _player_overhead_hp_bars: Array = []
 var _prev_player_team_hp: Array = []  # Track previous HP for change detection
-var _prev_ai_team_hp: Array = []  # Overhead HP bars for player team
+var _prev_ai_team_hp: Array = []
+var _prev_main_player_hp: float = -1.0  # Track previous main HP for change detection
+var _prev_main_ai_hp: float = -1.0
 var _ai_overhead_hp_bars: Array = []      # Overhead HP bars for AI team
 var _player_overhead_names: Array = []    # Overhead name labels for player team
 var _ai_overhead_names: Array = []        # Overhead name labels for AI team
@@ -3441,7 +3443,19 @@ func _update_unit_display() -> void:
 
 	if info.has("player") and player_hp_bar:
 		var p = info["player"]
-		player_hp_bar.value = float(p.get("hp", 0)) / float(p.get("max_hp", 100)) * 100.0
+		var main_player_hp = float(p.get("hp", 0))
+		# HP change flash effect
+		if _prev_main_player_hp >= 0:
+			if main_player_hp < _prev_main_player_hp:
+				var main_flash = create_tween()
+				player_hp_bar.modulate = Color(1.5, 0.5, 0.5)
+				main_flash.tween_property(player_hp_bar, "modulate", Color(1, 1, 1), 0.2)
+			elif main_player_hp > _prev_main_player_hp:
+				var main_heal = create_tween()
+				player_hp_bar.modulate = Color(0.5, 1.5, 0.5)
+				main_heal.tween_property(player_hp_bar, "modulate", Color(1, 1, 1), 0.2)
+		_prev_main_player_hp = main_player_hp
+		player_hp_bar.value = main_player_hp / float(p.get("max_hp", 100)) * 100.0
 		if _player_hp_value_label:
 			_player_hp_value_label.text = "%d/%d" % [int(p.get("hp", 0)), int(p.get("max_hp", 100))]
 		if player_energy_bar:
@@ -3451,7 +3465,19 @@ func _update_unit_display() -> void:
 
 	if info.has("ai") and ai_hp_bar:
 		var a = info["ai"]
-		ai_hp_bar.value = float(a.get("hp", 0)) / float(a.get("max_hp", 100)) * 100.0
+		var main_ai_hp = float(a.get("hp", 0))
+		# HP change flash effect
+		if _prev_main_ai_hp >= 0:
+			if main_ai_hp < _prev_main_ai_hp:
+				var ai_main_flash = create_tween()
+				ai_hp_bar.modulate = Color(1.5, 0.5, 0.5)
+				ai_main_flash.tween_property(ai_hp_bar, "modulate", Color(1, 1, 1), 0.2)
+			elif main_ai_hp > _prev_main_ai_hp:
+				var ai_main_heal = create_tween()
+				ai_hp_bar.modulate = Color(0.5, 1.5, 0.5)
+				ai_main_heal.tween_property(ai_hp_bar, "modulate", Color(1, 1, 1), 0.2)
+		_prev_main_ai_hp = main_ai_hp
+		ai_hp_bar.value = main_ai_hp / float(a.get("max_hp", 100)) * 100.0
 		if _ai_hp_value_label:
 			_ai_hp_value_label.text = "%d/%d" % [int(a.get("hp", 0)), int(a.get("max_hp", 100))]
 		if ai_energy_bar:
