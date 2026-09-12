@@ -12882,3 +12882,20 @@ es://scenes/settings_menu.tscn
 ### 验证
 - 场景测试：rts_arena.tscn加载成功，无SCRIPT ERROR
 - M2测试：2955 Passed, 0 Failed
+
+## 2026-09-12 4v4战斗单位受击红色闪烁效果
+
+### 新增功能
+- **单位受击闪烁**：当单位受到伤害时，单位精灵会短暂显示红色 tint，然后在0.15秒内恢复正常
+- **玩家和AI单位都支持**：玩家单位和AI单位受到伤害时都会触发受击闪烁
+- **HP变化检测**：通过比较当前HP和上一帧HP来检测伤害，HP减少时触发闪烁
+
+### 实现细节
+- 添加_prev_player_hp和_prev_ai_hp数组跟踪每个单位的上一帧HP
+- 在_update_overhead_hp_bars中检测HP变化
+- _trigger_unit_hit_flash方法设置modulate为红色，然后用tween恢复
+- 在_clear_team_visuals中清理HP跟踪数组
+
+### 验证
+- 场景测试：rts_arena.tscn加载成功，无SCRIPT ERROR
+- M2测试：2955 Passed, 0 Failed
