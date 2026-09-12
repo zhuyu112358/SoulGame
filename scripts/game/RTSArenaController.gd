@@ -4915,6 +4915,25 @@ func _on_unit_hp_changed(p_current_hp: int, p_max_hp: int, p_unit: SoulUnit) -> 
 func _on_unit_died(p_unit: SoulUnit) -> void:
 	var death_color = Color(1.0, 0.3, 0.2) if p_unit.is_player_controlled else Color(1.0, 0.5, 0.3)
 	_spawn_death_particles(p_unit.position, death_color)
+	# Auto-switch selected unit if the selected player unit died
+	if p_unit.is_player_controlled:
+		var is_team = GameState.get_value("battle", "is_team_battle", false)
+		if is_team and _selected_unit_index >= 0:
+			var dead_unit = RTSArenaManager.player_units[_selected_unit_index]
+			if dead_unit == p_unit:
+				# Find next alive player unit
+				var next_idx = -1
+				for i in range(RTSArenaManager.player_units.size()):
+					var check_unit = RTSArenaManager.player_units[i]
+					if check_unit and check_unit.state != SoulUnit.UnitState.DEAD:
+						next_idx = i
+						break
+				if next_idx >= 0:
+					_select_player_unit(next_idx)
+				else:
+					_selected_unit_index = -1
+					if _selection_indicator and is_instance_valid(_selection_indicator):
+						_selection_indicator.visible = false
 
 
 ## Spawn hit effect particles (small burst of sparks)
