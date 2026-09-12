@@ -1064,6 +1064,27 @@ func move_all_player_units_to(p_position: Vector2) -> void:
 		idx += 1
 
 
+## Player command: stop specific team unit (4v4 team battle)
+func stop_player_unit(p_index: int) -> void:
+	if p_index < 0 or p_index >= player_units.size():
+		return
+	var unit = player_units[p_index]
+	if unit == null or unit.state == SoulUnit.UnitState.DEAD:
+		return
+	if battle_state != BattleState.ACTIVE:
+		return
+	unit.stop()
+
+
+## Player command: stop all alive player units (4v4 team battle)
+func stop_all_player_units() -> void:
+	if battle_state != BattleState.ACTIVE:
+		return
+	for unit in player_units:
+		if unit and unit.state != SoulUnit.UnitState.DEAD:
+			unit.stop()
+
+
 ## Player command: attack target
 func player_attack_target(p_target: SoulUnit) -> void:
 	if player_unit == null or player_unit.state == SoulUnit.UnitState.DEAD:

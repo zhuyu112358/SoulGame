@@ -841,6 +841,19 @@ func _unhandled_input(event: InputEvent) -> void:
 				KEY_4:
 					_on_defend_pressed()
 					get_viewport().set_input_as_handled()
+				KEY_S:
+					# Stop command: stop selected unit or all units
+					var is_team_s = GameState.get_value("battle", "is_team_battle", false)
+					if is_team_s:
+						if _selected_unit_index >= 0 and _selected_unit_index < RTSArenaManager.player_units.size():
+							RTSArenaManager.stop_player_unit(_selected_unit_index)
+						else:
+							RTSArenaManager.stop_all_player_units()
+					elif RTSArenaManager.player_unit:
+						RTSArenaManager.player_unit.stop()
+					if AudioManager:
+						AudioManager.play_sfx("ui_button_click", 0.3)
+					get_viewport().set_input_as_handled()
 	# Left-click on arena: move selected unit to clicked position (RTS control)
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		if _battle_active and not _is_paused:
