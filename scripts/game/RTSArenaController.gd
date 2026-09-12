@@ -864,6 +864,29 @@ func _unhandled_input(event: InputEvent) -> void:
 					if AudioManager:
 						AudioManager.play_sfx("ui_button_click", 0.4)
 					get_viewport().set_input_as_handled()
+	# Right-click on arena: set selected unit attack target (4v4 team battle)
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_RIGHT:
+		if _battle_active and not _is_paused:
+			var click_pos = get_global_mouse_position()
+			var arena_rect = Rect2(20, 90, 1240, 470)
+			if arena_rect.has_point(click_pos):
+				var is_team = GameState.get_value("battle", "is_team_battle", false)
+				if is_team and _selected_unit_index >= 0 and _selected_unit_index < RTSArenaManager.player_units.size():
+					# Find nearest AI unit to click position
+					var nearest_ai = null
+					var nearest_dist = 9999.0
+					for ai_u in RTSArenaManager.ai_units:
+						if ai_u and ai_u.state != SoulUnit.UnitState.DEAD:
+							var dist = ai_u.position.distance_to(click_pos)
+							if dist < nearest_dist and dist < 100.0:
+								nearest_dist = dist
+								nearest_ai = ai_u
+					if nearest_ai:
+						RTSArenaManager.set_player_unit_attack_target(_selected_unit_index, nearest_ai)
+						_spawn_attack_indicator(nearest_ai.position)
+						if AudioManager:
+							AudioManager.play_sfx("ui_button_click", 0.4)
+						get_viewport().set_input_as_handled()
 
 
 ## Setup battle speed button UI
@@ -1699,6 +1722,21 @@ func _spawn_move_indicator(p_position: Vector2) -> void:
 	var tween = create_tween()
 	tween.tween_property(ring, "scale", Vector2(1.8, 1.8), 0.4)
 	tween.parallel().tween_property(ring, "color:a", 0.0, 0.4)
+	tween.tween_callback(ring.queue_free)
+
+
+## Spawn red attack target indicator at position
+func _spawn_attack_indicator(p_position: Vector2) -> void:
+	var ring = ColorRect.new()
+	ring.name = "AttackIndicator"
+	ring.color = Color(1.0, 0.3, 0.2, 0.8)
+	ring.size = Vector2(32, 32)
+	ring.position = p_position - Vector2(16, 16)
+	ring.z_index = 5
+	add_child(ring)
+	var tween = create_tween()
+	tween.tween_property(ring, "scale", Vector2(2.0, 2.0), 0.5)
+	tween.parallel().tween_property(ring, "color:a", 0.0, 0.5)
 	tween.tween_callback(ring.queue_free)
 
 
