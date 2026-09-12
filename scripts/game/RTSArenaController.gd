@@ -72,6 +72,8 @@ var _ai_overhead_hp_bars: Array = []      # Overhead HP bars for AI team
 var _player_overhead_names: Array = []    # Overhead name labels for player team
 var _ai_overhead_names: Array = []        # Overhead name labels for AI team
 var _attack_range_indicator = null        # Attack range circle for selected unit
+var _prev_player_hp = []                    # Previous HP for player units (for hit flash)
+var _prev_ai_hp = []                        # Previous HP for AI units (for hit flash)
 var _team_hp_container = null    # Container for team HP bars
 var _player_team_hp_bars: Array = []  # HP bars for player team units
 var _ai_team_hp_bars: Array = []      # HP bars for AI team units
@@ -2006,6 +2008,17 @@ func _spawn_attack_indicator(p_position: Vector2) -> void:
 	tween.tween_property(indicator, "scale", Vector2(1.5, 1.5), 0.3)
 	tween.parallel().tween_property(indicator, "modulate:a", 0.0, 0.3)
 	tween.tween_callback(indicator.queue_free)
+
+
+## Trigger hit flash on a unit visual
+func _trigger_unit_hit_flash(p_visual: Node2D, p_is_player: bool) -> void:
+	if not p_visual or not is_instance_valid(p_visual):
+		return
+	# Set to red tint
+	p_visual.modulate = Color(1.5, 0.5, 0.5, 1.0)
+	# Tween back to normal
+	var tween = create_tween()
+	tween.tween_property(p_visual, "modulate", Color(1, 1, 1, 1), 0.15)
 
 
 ## Update error message display
@@ -4092,6 +4105,9 @@ func _clear_team_visuals() -> void:
 	if _attack_range_indicator and is_instance_valid(_attack_range_indicator):
 		_attack_range_indicator.queue_free()
 	_attack_range_indicator = null
+	# Clear hit flash tracking
+	_prev_player_hp.clear()
+	_prev_ai_hp.clear()
 	for hp_bar in _player_team_hp_bars:
 		if hp_bar and is_instance_valid(hp_bar):
 			# Free parent container if it exists (new layout), else free the bar itself
@@ -5184,6 +5200,13 @@ func _update_overhead_hp_bars(info: Dictionary) -> void:
 			var hp = unit_info.get("hp", 100)
 			var max_hp = unit_info.get("max_hp", 100)
 			var hp_ratio = clamp(float(hp) / float(max_hp), 0.0, 1.0) if max_hp > 0 else 0.0
+			# Hit flash detection: compare with previous HP
+			if i < _prev_player_hp.size():
+				if hp < _prev_player_hp[i]:
+					_trigger_unit_hit_flash(visual, true)
+				_prev_player_hp[i] = hp
+			else:
+				_prev_player_hp.append(hp)
 
 			# Position above unit
 			var bar_pos = visual.position + Vector2(-25, -55)
@@ -5233,6 +5256,13 @@ func _update_overhead_hp_bars(info: Dictionary) -> void:
 			var hp = unit_info.get("hp", 100)
 			var max_hp = unit_info.get("max_hp", 100)
 			var hp_ratio = clamp(float(hp) / float(max_hp), 0.0, 1.0) if max_hp > 0 else 0.0
+			# Hit flash detection: compare with previous HP
+			if i < _prev_ai_hp.size():
+				if hp < _prev_ai_hp[i]:
+					_trigger_unit_hit_flash(visual, false)
+				_prev_ai_hp[i] = hp
+			else:
+				_prev_ai_hp.append(hp)
 
 			# Position above unit
 			var bar_pos = visual.position + Vector2(-25, -55)
