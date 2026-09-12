@@ -872,14 +872,14 @@ func _unhandled_input(event: InputEvent) -> void:
 					if AudioManager:
 						AudioManager.play_sfx("ui_button_click", 0.4)
 					get_viewport().set_input_as_handled()
-	# Right-click on arena: set selected unit attack target (4v4 team battle)
+	# Right-click on arena: set attack target (4v4 team battle)
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_RIGHT:
 		if _battle_active and not _is_paused:
 			var click_pos = get_global_mouse_position()
 			var arena_rect = Rect2(20, 90, 1240, 470)
 			if arena_rect.has_point(click_pos):
 				var is_team = GameState.get_value("battle", "is_team_battle", false)
-				if is_team and _selected_unit_index >= 0 and _selected_unit_index < RTSArenaManager.player_units.size():
+				if is_team:
 					# Find nearest AI unit to click position
 					var nearest_ai = null
 					var nearest_dist = 9999.0
@@ -890,7 +890,12 @@ func _unhandled_input(event: InputEvent) -> void:
 								nearest_dist = dist
 								nearest_ai = ai_u
 					if nearest_ai:
-						RTSArenaManager.set_player_unit_attack_target(_selected_unit_index, nearest_ai)
+						if _selected_unit_index >= 0 and _selected_unit_index < RTSArenaManager.player_units.size():
+							# Selected unit: set only selected unit's attack target
+							RTSArenaManager.set_player_unit_attack_target(_selected_unit_index, nearest_ai)
+						else:
+							# No unit selected: set all alive units' attack target
+							RTSArenaManager.set_all_player_units_attack_target(nearest_ai)
 						_spawn_attack_indicator(nearest_ai.position)
 						if AudioManager:
 							AudioManager.play_sfx("ui_button_click", 0.4)

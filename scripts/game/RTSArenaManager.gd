@@ -1085,6 +1085,17 @@ func set_player_unit_attack_target(p_index: int, p_target: SoulUnit) -> void:
 	unit.set_attack_target(p_target)
 
 
+## Player command: set all alive player units attack target (4v4 team battle)
+func set_all_player_units_attack_target(p_target: SoulUnit) -> void:
+	if battle_state != BattleState.ACTIVE:
+		return
+	if p_target == null or p_target.state == SoulUnit.UnitState.DEAD:
+		return
+	for unit in player_units:
+		if unit and unit.state != SoulUnit.UnitState.DEAD:
+			unit.set_attack_target(p_target)
+
+
 ## Player command: use skill
 func player_use_skill(p_skill_name: String, p_target: SoulUnit = null) -> bool:
 	if player_unit == null or player_unit.state == SoulUnit.UnitState.DEAD:
