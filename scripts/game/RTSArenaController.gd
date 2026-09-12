@@ -841,17 +841,29 @@ func _unhandled_input(event: InputEvent) -> void:
 				KEY_4:
 					_on_defend_pressed()
 					get_viewport().set_input_as_handled()
-	# Left-click on arena: move player unit to clicked position (RTS control)
+	# Left-click on arena: move selected unit to clicked position (RTS control)
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		if _battle_active and not _is_paused and RTSArenaManager.player_unit:
+		if _battle_active and not _is_paused:
 			var click_pos = get_global_mouse_position()
 			var arena_rect = Rect2(20, 90, 1240, 470)
 			if arena_rect.has_point(click_pos):
-				RTSArenaManager.player_move_to(click_pos)
-				_spawn_move_indicator(click_pos)
-				if AudioManager:
-					AudioManager.play_sfx("ui_button_click", 0.4)
-				get_viewport().set_input_as_handled()
+				# 4v4 team battle: move selected unit if one is selected
+				var is_team = GameState.get_value("battle", "is_team_battle", false)
+				if is_team and _selected_unit_index >= 0 and _selected_unit_index < RTSArenaManager.player_units.size():
+					var sel_unit = RTSArenaManager.player_units[_selected_unit_index]
+					if sel_unit and sel_unit.state != SoulUnit.UnitState.DEAD:
+						RTSArenaManager.move_player_unit_to(_selected_unit_index, click_pos)
+						_spawn_move_indicator(click_pos)
+						if AudioManager:
+							AudioManager.play_sfx("ui_button_click", 0.4)
+						get_viewport().set_input_as_handled()
+				# 1v1 battle: move player unit
+				elif RTSArenaManager.player_unit:
+					RTSArenaManager.player_move_to(click_pos)
+					_spawn_move_indicator(click_pos)
+					if AudioManager:
+						AudioManager.play_sfx("ui_button_click", 0.4)
+					get_viewport().set_input_as_handled()
 
 
 ## Setup battle speed button UI

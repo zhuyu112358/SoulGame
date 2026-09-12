@@ -1026,6 +1026,18 @@ func player_move_to(p_position: Vector2) -> void:
 	player_unit.move_to(p_position)
 
 
+## Player command: move specific team unit to position (4v4 team battle)
+func move_player_unit_to(p_index: int, p_position: Vector2) -> void:
+	if p_index < 0 or p_index >= player_units.size():
+		return
+	var unit = player_units[p_index]
+	if unit == null or unit.state == SoulUnit.UnitState.DEAD:
+		return
+	if battle_state != BattleState.ACTIVE:
+		return
+	unit.move_to(p_position)
+
+
 ## Player command: attack target
 func player_attack_target(p_target: SoulUnit) -> void:
 	if player_unit == null or player_unit.state == SoulUnit.UnitState.DEAD:
