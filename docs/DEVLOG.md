@@ -13041,3 +13041,21 @@ es://scenes/settings_menu.tscn
 
 ### 验证
 - 场景测试：rts_arena.tscn加载成功，无SCRIPT ERROR
+
+## 2026-09-12 4v4战斗单位移动上下浮动动画
+
+### 新增功能
+- **单位移动上下浮动**：当单位处于MOVING状态时，视觉代理会有轻微的上下浮动动画（振幅3像素），表示移动的动感
+- **玩家和AI单位都支持**：双方队伍的所有单位移动时都会有浮动动画
+- **相位错开**：每个单位的浮动相位不同（i * 1.5），避免所有单位同步浮动显得机械
+- **AI单位相位偏移**：AI单位的浮动相位额外偏移2.0，与玩家单位区分开
+
+### 实现细节
+- 在视觉代理更新逻辑中检测单位状态是否为MOVING
+- 使用sin(Time.get_ticks_msec() / 120.0 + phase) * 3.0生成浮动偏移
+- 将浮动偏移添加到单位位置的Y轴上
+- 修复了缩进错误（Parse Error: Expected statement, found "Indent" instead）
+
+### 验证
+- 场景测试：rts_arena.tscn加载成功，无SCRIPT ERROR
+- 修复了缩进错误导致的Parse Error
