@@ -13223,3 +13223,21 @@ es://scenes/settings_menu.tscn
 
 ### 验证
 - 场景测试：rts_arena.tscn加载成功，无SCRIPT ERROR
+
+## 2026-09-12 4v4战斗选中单位元素色光晕
+
+### 新增功能
+- **选中单位元素色光晕**：选中单位时，选择指示器的外发光环颜色变为该单位的元素色，提供更丰富的视觉反馈
+- **元素色映射**：支持8种元素（fire/water/earth/wind/light/dark/thunder/ice）的颜色映射
+- **与金色选择指示器配合**：外发光环显示元素色，主金环和内accent环保持金色，既有辨识度又有元素特色
+- **取消选中时恢复**：取消选中或所有单位死亡时，外发光环恢复为金色
+- **使用已有的_get_element_color函数**：与施法元素色tint效果使用相同的颜色映射
+
+### 实现细节
+- 添加_selection_glow_sprite变量，保存选择指示器外发光环的引用
+- 在_create_selection_indicator中保存外发光环引用
+- 在_select_player_unit中，根据选中单位的element属性设置外发光环颜色
+- 在_on_unit_died中，所有单位死亡时恢复外发光环为金色
+
+### 验证
+- 场景测试：rts_arena.tscn加载成功，无SCRIPT ERROR
