@@ -1,6 +1,33 @@
 ﻿# 战策 Battleplan 开发日志
 
 
+## [UI升级] GrowthVisualizer成长可视化器游戏级UI升级-面板样式/进度条金色填充/文字层次/按钮三态/入场动画（2026-09-12）
+
+**本轮工作**：为GrowthVisualizer成长可视化器组件添加游戏级UI样式，之前使用默认控件样式。
+
+**改进内容**：
+- 新增_setup_ui_styles()方法
+  - RadarPanel：深紫底色(Color(0.06,0.04,0.12,0.9))+金色边框(2px)+圆角(8px)
+  - RadarTitle：16号金色字体
+  - LevelLabel：28号金色字体
+  - 进度条标签：13号灰白字体
+  - 进度条：深紫底色+金色边框背景，金色填充
+  - BackButton：三态StyleBoxFlat样式(normal/hover/pressed)+14号金色字体
+- 新增_animate_entrance()方法
+  - RadarPanel淡入+缩放(0.9→1.0)
+  - BarsContainer淡入+缩放(0.95→1.0)，延迟0.2秒
+  - BackButton淡入，延迟0.5秒
+- _ready中调用_setup_ui_styles()和_animate_entrance()
+
+**修改文件**：
+- scripts/ui/GrowthVisualizer.gd：新增_setup_ui_styles()和_animate_entrance()方法
+
+**验证结果**：
+- growth_visualizer场景测试：NO SCRIPT ERROR
+- M2测试：2955 Passed, 0 Failed
+
+---
+
 ## [UI升级] CG播放界面入场动画-跳过按钮/文本面板/标题/正文交错淡入+缩放（2026-09-12）
 
 **本轮工作**：为CG播放界面添加UI元素入场动画，之前只有CG内容的_fade_in()淡入，UI元素直接出现。

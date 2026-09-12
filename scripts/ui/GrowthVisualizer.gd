@@ -38,6 +38,139 @@ var milestone_label: Label = null
 func _ready() -> void:
 	GameLog.info("GrowthVisualizer: Initialized", "UI")
 	_setup_node_refs()
+	_setup_ui_styles()
+	_animate_entrance()
+	GameLog.info("GrowthVisualizer: Game-level UI styles applied", "UI")
+
+
+## Apply game-level UI styles (panels, progress bars, text hierarchy, buttons)
+func _setup_ui_styles() -> void:
+	# Radar panel style - deep purple bg + gold border + rounded corners
+	var radar_panel = get_node_or_null("RadarPanel")
+	if radar_panel and radar_panel is Panel:
+		var panel_style = StyleBoxFlat.new()
+		panel_style.bg_color = Color(0.06, 0.04, 0.12, 0.9)
+		panel_style.border_color = Color(0.83, 0.66, 0.36, 0.9)
+		panel_style.border_width_left = 2
+		panel_style.border_width_right = 2
+		panel_style.border_width_top = 2
+		panel_style.border_width_bottom = 2
+		panel_style.corner_radius_top_left = 8
+		panel_style.corner_radius_top_right = 8
+		panel_style.corner_radius_bottom_left = 8
+		panel_style.corner_radius_bottom_right = 8
+		radar_panel.add_theme_stylebox_override("panel", panel_style)
+	# Radar title - gold color, larger font
+	var radar_title = get_node_or_null("RadarPanel/RadarTitle")
+	if radar_title and radar_title is Label:
+		radar_title.add_theme_font_size_override("font_size", 16)
+		radar_title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.5))
+	# Level label - gold, larger
+	if level_label:
+		level_label.add_theme_font_size_override("font_size", 28)
+		level_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.5))
+	# Progress bar labels - gray-white
+	for label_name in ["XPLabel", "EnergyLabel", "CognitiveLabel", "EmotionalLabel", "SkillLabel", "MilestoneLabel"]:
+		var label = get_node_or_null("BarsContainer/" + label_name)
+		if label and label is Label:
+			label.add_theme_font_size_override("font_size", 13)
+			label.add_theme_color_override("font_color", Color(0.8, 0.78, 0.72))
+	# Progress bars - gold fill style
+	var bar_style = StyleBoxFlat.new()
+	bar_style.bg_color = Color(0.1, 0.08, 0.18, 0.8)
+	bar_style.border_color = Color(0.7, 0.55, 0.3, 0.6)
+	bar_style.border_width_left = 1
+	bar_style.border_width_right = 1
+	bar_style.border_width_top = 1
+	bar_style.border_width_bottom = 1
+	bar_style.corner_radius_top_left = 4
+	bar_style.corner_radius_top_right = 4
+	bar_style.corner_radius_bottom_left = 4
+	bar_style.corner_radius_bottom_right = 4
+	var bar_fill = StyleBoxFlat.new()
+	bar_fill.bg_color = Color(0.9, 0.7, 0.3, 0.9)
+	bar_fill.corner_radius_top_left = 3
+	bar_fill.corner_radius_top_right = 3
+	bar_fill.corner_radius_bottom_left = 3
+	bar_fill.corner_radius_bottom_right = 3
+	for bar in [xp_bar, energy_bar, cognitive_bar, emotional_bar, skill_bar]:
+		if bar:
+			bar.add_theme_stylebox_override("background", bar_style)
+			bar.add_theme_stylebox_override("fill", bar_fill)
+	# Back button - three-state StyleBoxFlat
+	var back_btn = get_node_or_null("BackButton")
+	if back_btn and back_btn is Button:
+		var btn_normal = StyleBoxFlat.new()
+		btn_normal.bg_color = Color(0.12, 0.08, 0.22, 0.95)
+		btn_normal.border_color = Color(0.7, 0.55, 0.3, 0.8)
+		btn_normal.border_width_left = 2
+		btn_normal.border_width_right = 2
+		btn_normal.border_width_top = 2
+		btn_normal.border_width_bottom = 2
+		btn_normal.corner_radius_top_left = 6
+		btn_normal.corner_radius_top_right = 6
+		btn_normal.corner_radius_bottom_left = 6
+		btn_normal.corner_radius_bottom_right = 6
+		var btn_hover = StyleBoxFlat.new()
+		btn_hover.bg_color = Color(0.18, 0.12, 0.3, 0.95)
+		btn_hover.border_color = Color(1.0, 0.85, 0.5, 1.0)
+		btn_hover.border_width_left = 2
+		btn_hover.border_width_right = 2
+		btn_hover.border_width_top = 2
+		btn_hover.border_width_bottom = 2
+		btn_hover.corner_radius_top_left = 6
+		btn_hover.corner_radius_top_right = 6
+		btn_hover.corner_radius_bottom_left = 6
+		btn_hover.corner_radius_bottom_right = 6
+		var btn_pressed = StyleBoxFlat.new()
+		btn_pressed.bg_color = Color(0.08, 0.05, 0.15, 0.95)
+		btn_pressed.border_color = Color(0.6, 0.45, 0.2, 0.9)
+		btn_pressed.border_width_left = 2
+		btn_pressed.border_width_right = 2
+		btn_pressed.border_width_top = 2
+		btn_pressed.border_width_bottom = 2
+		btn_pressed.corner_radius_top_left = 6
+		btn_pressed.corner_radius_top_right = 6
+		btn_pressed.corner_radius_bottom_left = 6
+		btn_pressed.corner_radius_bottom_right = 6
+		back_btn.add_theme_stylebox_override("normal", btn_normal)
+		back_btn.add_theme_stylebox_override("hover", btn_hover)
+		back_btn.add_theme_stylebox_override("pressed", btn_pressed)
+		back_btn.add_theme_color_override("font_color", Color(0.9, 0.8, 0.6))
+		back_btn.add_theme_font_size_override("font_size", 14)
+
+
+## Animate UI entrance with staggered fade-in + scale (game-level UI)
+func _animate_entrance() -> void:
+	# Radar panel fade-in + scale
+	var radar_panel = get_node_or_null("RadarPanel")
+	if radar_panel and radar_panel is CanvasItem:
+		radar_panel.modulate.a = 0.0
+		radar_panel.scale = Vector2(0.9, 0.9)
+		var radar_tween = create_tween()
+		radar_tween.set_ease(Tween.EASE_OUT)
+		radar_tween.set_trans(Tween.TRANS_BACK)
+		radar_tween.tween_property(radar_panel, "modulate:a", 1.0, 0.5)
+		radar_tween.parallel().tween_property(radar_panel, "scale", Vector2(1.0, 1.0), 0.5)
+	# Bars container fade-in + scale
+	var bars_container = get_node_or_null("BarsContainer")
+	if bars_container and bars_container is CanvasItem:
+		bars_container.modulate.a = 0.0
+		bars_container.scale = Vector2(0.95, 0.95)
+		var bars_tween = create_tween()
+		bars_tween.set_ease(Tween.EASE_OUT)
+		bars_tween.set_trans(Tween.TRANS_BACK)
+		bars_tween.tween_interval(0.2)
+		bars_tween.tween_property(bars_container, "modulate:a", 1.0, 0.4)
+		bars_tween.parallel().tween_property(bars_container, "scale", Vector2(1.0, 1.0), 0.4)
+	# Back button fade-in
+	var back_btn = get_node_or_null("BackButton")
+	if back_btn and back_btn is CanvasItem:
+		back_btn.modulate.a = 0.0
+		var back_tween = create_tween()
+		back_tween.set_ease(Tween.EASE_OUT)
+		back_tween.tween_interval(0.5)
+		back_tween.tween_property(back_btn, "modulate:a", 1.0, 0.3)
 
 
 ## Setup references to scene nodes
