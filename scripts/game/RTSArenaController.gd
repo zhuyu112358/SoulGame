@@ -71,6 +71,7 @@ var _player_overhead_hp_bars: Array = []  # Overhead HP bars for player team
 var _ai_overhead_hp_bars: Array = []      # Overhead HP bars for AI team
 var _player_overhead_names: Array = []    # Overhead name labels for player team
 var _ai_overhead_names: Array = []        # Overhead name labels for AI team
+var _attack_range_indicator = null        # Attack range circle for selected unit
 var _team_hp_container = null    # Container for team HP bars
 var _player_team_hp_bars: Array = []  # HP bars for player team units
 var _ai_team_hp_bars: Array = []      # HP bars for AI team units
@@ -3614,6 +3615,11 @@ func _setup_team_visuals(p_battle_info: Dictionary) -> void:
 	add_child(_selection_indicator)
 	_selection_indicator.visible = false
 
+	# Create attack range indicator for selected unit
+	_attack_range_indicator = _create_attack_range_indicator()
+	add_child(_attack_range_indicator)
+	_attack_range_indicator.visible = false
+
 	# Create selected unit info panel (bottom-left, above HP bars)
 	_selected_unit_panel = _create_selected_unit_panel()
 	add_child(_selected_unit_panel)
@@ -3943,6 +3949,10 @@ func _select_player_unit(p_index: int) -> void:
 			if sel_visual and is_instance_valid(sel_visual) and sel_visual.visible:
 				_selection_indicator.visible = true
 				_selection_indicator.position = sel_visual.position + Vector2(0, 35)
+				_update_attack_range_indicator()
+			else:
+				if _attack_range_indicator and is_instance_valid(_attack_range_indicator):
+					_attack_range_indicator.visible = false
 	# Update visual selection state
 	for idx in range(_player_unit_containers.size()):
 		var btn = _player_unit_containers[idx]
@@ -4016,6 +4026,10 @@ func _clear_team_visuals() -> void:
 		if label and is_instance_valid(label):
 			label.queue_free()
 	_ai_overhead_names.clear()
+	# Clear attack range indicator
+	if _attack_range_indicator and is_instance_valid(_attack_range_indicator):
+		_attack_range_indicator.queue_free()
+	_attack_range_indicator = null
 	for hp_bar in _player_team_hp_bars:
 		if hp_bar and is_instance_valid(hp_bar):
 			# Free parent container if it exists (new layout), else free the bar itself
@@ -5203,6 +5217,72 @@ func _create_overhead_name_label(p_name: String, p_is_player: bool) -> Label:
 	label.z_index = 22
 	add_child(label)
 	return label
+
+
+## Create attack range indicator (semi-transparent circle) for selected unit
+func _create_attack_range_indicator() -> Node2D:
+	var indicator = Node2D.new()
+	indicator.name = "AttackRangeIndicator"
+	indicator.z_index = 4
+
+	# Create range circle texture programmatically
+	var radius = 100  # Default attack range
+	var img_size = int(radius * 2) + 4
+	var img = Image.create(img_size, img_size, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0, 0, 0, 0))
+	var center = Vector2(img_size / 2, img_size / 2)
+	for x in range(img_size):
+		for y in range(img_size):
+			var dist = Vector2(x, y).distance_to(center)
+			if dist <= radius:
+				# Semi-transparent fill
+				var alpha = 0.08 if dist < radius - 3 else 0.3
+				img.set_pixel(x, y, Color(1.0, 0.88, 0.5, alpha))
+	var texture = ImageTexture.create_from_image(img)
+
+	var sprite = Sprite2D.new()
+	sprite.name = "RangeCircle"
+	sprite.texture = texture
+	sprite.centered = true
+	sprite.modulate = Color(1.0, 0.88, 0.5, 0.6)
+	indicator.add_child(sprite)
+
+	return indicator
+
+
+## Update attack range indicator position and size for selected unit
+func _update_attack_range_indicator() -> void:
+	if not _attack_range_indicator or not is_instance_valid(_attack_range_indicator):
+		return
+
+	var is_team = GameState.get_value("battle", "is_team_battle", false)
+	if not is_team or _selected_unit_index < 0:
+		_attack_range_indicator.visible = false
+		return
+
+	if _selected_unit_index >= _player_visuals.size():
+		_attack_range_indicator.visible = false
+		return
+
+	var visual = _player_visuals[_selected_unit_index]
+	if not visual or not is_instance_valid(visual) or not visual.visible:
+		_attack_range_indicator.visible = false
+		return
+
+	# Get selected unit's attack range
+	var attack_range = 100.0
+	if _selected_unit_index < RTSArenaManager.player_units.size():
+		var unit = RTSArenaManager.player_units[_selected_unit_index]
+		if unit and is_instance_valid(unit):
+			attack_range = float(unit.attack_range)
+
+	# Position at unit location
+	_attack_range_indicator.visible = true
+	_attack_range_indicator.position = visual.position
+
+	# Scale indicator to match attack range (default texture radius is 100)
+	var scale_factor = attack_range / 100.0
+	_attack_range_indicator.scale = Vector2(scale_factor, scale_factor)
 
 
 ## Create gold circle selection indicator for selected unit
