@@ -1076,6 +1076,27 @@ func player_use_skill(p_skill_name: String, p_target: SoulUnit = null) -> bool:
 	return success
 
 
+## Player command: use skill on specific team unit (4v4 team battle)
+func player_unit_use_skill(p_index: int, p_skill_name: String, p_target: SoulUnit = null) -> bool:
+	if p_index < 0 or p_index >= player_units.size():
+		return false
+	var unit = player_units[p_index]
+	if unit == null or unit.state == SoulUnit.UnitState.DEAD:
+		return false
+	if battle_state != BattleState.ACTIVE:
+		return false
+
+	var target: SoulUnit = p_target
+	if target == null:
+		# Find nearest alive enemy
+		target = _find_nearest_enemy(unit, ai_units)
+
+	var success: bool = unit.use_skill(p_skill_name, target)
+	if success:
+		_add_log("%s uses %s!" % [unit.soul_name, p_skill_name])
+	return success
+
+
 ## Player macro command (design doc: coach-style RTS, one command per 30s)
 ## Commands: "gather", "retreat", "attack", "defend"
 ## Soul may disobey based on loyalty/courage personality

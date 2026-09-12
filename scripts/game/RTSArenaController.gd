@@ -5053,10 +5053,19 @@ func _add_log(p_message: String) -> void:
 
 ## Skill button handlers
 func _on_heavy_strike_pressed() -> void:
-	var success = RTSArenaManager.player_use_skill("heavy_strike")
+	var is_team = GameState.get_value("battle", "is_team_battle", false)
+	var success = false
+	var skill_pos = Vector2.ZERO
+	if is_team and _selected_unit_index >= 0 and _selected_unit_index < RTSArenaManager.player_units.size():
+		success = RTSArenaManager.player_unit_use_skill(_selected_unit_index, "heavy_strike")
+		if success and _selected_unit_index < _player_visuals.size():
+			skill_pos = _player_visuals[_selected_unit_index].position
+	else:
+		success = RTSArenaManager.player_use_skill("heavy_strike")
+		if success and RTSArenaManager.player_unit:
+			skill_pos = RTSArenaManager.player_unit.position
 	if success:
-		if RTSArenaManager.player_unit:
-			_spawn_skill_particle("heavy_strike", RTSArenaManager.player_unit.position)
+		_spawn_skill_particle("heavy_strike", skill_pos)
 		_trigger_chromatic_aberration(12.0, 0.35)
 		if AudioManager:
 			AudioManager.play_sfx("skill_rock")
@@ -5064,10 +5073,19 @@ func _on_heavy_strike_pressed() -> void:
 		_show_skill_error("重击")
 
 func _on_quick_strike_pressed() -> void:
-	var success = RTSArenaManager.player_use_skill("quick_strike")
+	var is_team = GameState.get_value("battle", "is_team_battle", false)
+	var success = false
+	var skill_pos = Vector2.ZERO
+	if is_team and _selected_unit_index >= 0 and _selected_unit_index < RTSArenaManager.player_units.size():
+		success = RTSArenaManager.player_unit_use_skill(_selected_unit_index, "quick_strike")
+		if success and _selected_unit_index < _player_visuals.size():
+			skill_pos = _player_visuals[_selected_unit_index].position
+	else:
+		success = RTSArenaManager.player_use_skill("quick_strike")
+		if success and RTSArenaManager.player_unit:
+			skill_pos = RTSArenaManager.player_unit.position
 	if success:
-		if RTSArenaManager.player_unit:
-			_spawn_skill_particle("quick_strike", RTSArenaManager.player_unit.position)
+		_spawn_skill_particle("quick_strike", skill_pos)
 		_trigger_chromatic_aberration(8.0, 0.25)
 		if AudioManager:
 			AudioManager.play_sfx("skill_windblade")
@@ -5075,10 +5093,19 @@ func _on_quick_strike_pressed() -> void:
 		_show_skill_error("快击")
 
 func _on_heal_pressed() -> void:
-	var success = RTSArenaManager.player_use_skill("heal")
+	var is_team = GameState.get_value("battle", "is_team_battle", false)
+	var success = false
+	var skill_pos = Vector2.ZERO
+	if is_team and _selected_unit_index >= 0 and _selected_unit_index < RTSArenaManager.player_units.size():
+		success = RTSArenaManager.player_unit_use_skill(_selected_unit_index, "heal")
+		if success and _selected_unit_index < _player_visuals.size():
+			skill_pos = _player_visuals[_selected_unit_index].position
+	else:
+		success = RTSArenaManager.player_use_skill("heal")
+		if success and RTSArenaManager.player_unit:
+			skill_pos = RTSArenaManager.player_unit.position
 	if success:
-		if RTSArenaManager.player_unit:
-			_spawn_skill_particle("heal", RTSArenaManager.player_unit.position)
+		_spawn_skill_particle("heal", skill_pos)
 		_trigger_chromatic_aberration(5.0, 0.2)
 		if AudioManager:
 			AudioManager.play_sfx("skill_heal")
@@ -5086,10 +5113,19 @@ func _on_heal_pressed() -> void:
 		_show_skill_error("治疗")
 
 func _on_defend_pressed() -> void:
-	var success = RTSArenaManager.player_use_skill("defend")
+	var is_team = GameState.get_value("battle", "is_team_battle", false)
+	var success = false
+	var skill_pos = Vector2.ZERO
+	if is_team and _selected_unit_index >= 0 and _selected_unit_index < RTSArenaManager.player_units.size():
+		success = RTSArenaManager.player_unit_use_skill(_selected_unit_index, "defend")
+		if success and _selected_unit_index < _player_visuals.size():
+			skill_pos = _player_visuals[_selected_unit_index].position
+	else:
+		success = RTSArenaManager.player_use_skill("defend")
+		if success and RTSArenaManager.player_unit:
+			skill_pos = RTSArenaManager.player_unit.position
 	if success:
-		if RTSArenaManager.player_unit:
-			_spawn_skill_particle("defend", RTSArenaManager.player_unit.position)
+		_spawn_skill_particle("defend", skill_pos)
 		_trigger_chromatic_aberration(6.0, 0.2)
 		if AudioManager:
 			AudioManager.play_sfx("skill_defend")
