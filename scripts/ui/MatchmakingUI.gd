@@ -92,6 +92,57 @@ func _ready() -> void:
 	_setup_ui_styles()
 
 	GameLog.info("MatchmakingUI: Ready (game-level UI)", "UI")
+	_animate_entrance()
+
+
+## Animate UI entrance with staggered fade-in + scale (game-level UI)
+func _animate_entrance() -> void:
+	# Status label fade-in
+	if _status_label and _status_label is CanvasItem:
+		_status_label.modulate.a = 0.0
+		var status_tween = create_tween()
+		status_tween.set_ease(Tween.EASE_OUT)
+		status_tween.tween_property(_status_label, "modulate:a", 1.0, 0.4)
+	# Timer label fade-in
+	if _timer_label and _timer_label is CanvasItem:
+		_timer_label.modulate.a = 0.0
+		var timer_tween = create_tween()
+		timer_tween.set_ease(Tween.EASE_OUT)
+		timer_tween.tween_interval(0.15)
+		timer_tween.tween_property(_timer_label, "modulate:a", 1.0, 0.3)
+	# Progress bar fade-in + scale
+	if _progress_bar and _progress_bar is CanvasItem:
+		_progress_bar.modulate.a = 0.0
+		_progress_bar.scale = Vector2(0.95, 0.95)
+		var prog_tween = create_tween()
+		prog_tween.set_ease(Tween.EASE_OUT)
+		prog_tween.set_trans(Tween.TRANS_BACK)
+		prog_tween.tween_interval(0.3)
+		prog_tween.tween_property(_progress_bar, "modulate:a", 1.0, 0.4)
+		prog_tween.parallel().tween_property(_progress_bar, "scale", Vector2(1.0, 1.0), 0.4)
+	# Opponent panel fade-in + scale
+	if _opponent_panel and _opponent_panel is CanvasItem:
+		_opponent_panel.modulate.a = 0.0
+		_opponent_panel.scale = Vector2(0.95, 0.95)
+		var opp_tween = create_tween()
+		opp_tween.set_ease(Tween.EASE_OUT)
+		opp_tween.set_trans(Tween.TRANS_BACK)
+		opp_tween.tween_interval(0.45)
+		opp_tween.tween_property(_opponent_panel, "modulate:a", 1.0, 0.4)
+		opp_tween.parallel().tween_property(_opponent_panel, "scale", Vector2(1.0, 1.0), 0.4)
+	# Buttons fade-in
+	if _cancel_button and _cancel_button is CanvasItem:
+		_cancel_button.modulate.a = 0.0
+		var cancel_tween = create_tween()
+		cancel_tween.set_ease(Tween.EASE_OUT)
+		cancel_tween.tween_interval(0.6)
+		cancel_tween.tween_property(_cancel_button, "modulate:a", 1.0, 0.3)
+	if _start_button and _start_button is CanvasItem:
+		_start_button.modulate.a = 0.0
+		var start_tween = create_tween()
+		start_tween.set_ease(Tween.EASE_OUT)
+		start_tween.tween_interval(0.7)
+		start_tween.tween_property(_start_button, "modulate:a", 1.0, 0.3)
 
 
 ## Matchmaking started
