@@ -3496,6 +3496,12 @@ func _update_unit_display() -> void:
 		player_hp_bar.value = main_player_hp / float(p.get("max_hp", 100)) * 100.0
 		if _player_hp_value_label:
 			_player_hp_value_label.text = "%d/%d" % [int(p.get("hp", 0)), int(p.get("max_hp", 100))]
+			# Low HP warning pulse: red pulse when HP below 30%
+			if _player_hp_value_label and main_player_hp / float(p.get("max_hp", 100)) < 0.3:
+				var p_low_pulse = 0.5 + sin(Time.get_ticks_msec() / 200.0) * 0.5
+				_player_hp_value_label.modulate = Color(1.0, 0.3 + p_low_pulse * 0.3, 0.3 + p_low_pulse * 0.3)
+			elif _player_hp_value_label:
+				_player_hp_value_label.modulate = Color(1, 1, 1)
 		if player_energy_bar:
 			_target_player_energy = float(p.get("energy", 0)) / float(p.get("max_energy", 50)) * 100.0
 			if _player_energy_value_label:
@@ -3518,6 +3524,12 @@ func _update_unit_display() -> void:
 		ai_hp_bar.value = main_ai_hp / float(a.get("max_hp", 100)) * 100.0
 		if _ai_hp_value_label:
 			_ai_hp_value_label.text = "%d/%d" % [int(a.get("hp", 0)), int(a.get("max_hp", 100))]
+			# Low HP warning pulse: red pulse when HP below 30%
+			if _ai_hp_value_label and main_ai_hp / float(a.get("max_hp", 100)) < 0.3:
+				var a_low_pulse = 0.5 + sin(Time.get_ticks_msec() / 200.0 + 1.0) * 0.5
+				_ai_hp_value_label.modulate = Color(1.0, 0.3 + a_low_pulse * 0.3, 0.3 + a_low_pulse * 0.3)
+			elif _ai_hp_value_label:
+				_ai_hp_value_label.modulate = Color(1, 1, 1)
 		if ai_energy_bar:
 			_target_ai_energy = float(a.get("energy", 0)) / float(a.get("max_energy", 50)) * 100.0
 			if _ai_energy_value_label:
