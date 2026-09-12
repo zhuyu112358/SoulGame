@@ -1,7 +1,6 @@
-[gd_scene load_steps=3 format=3 uid="uid://battle_config_scene"]
+[gd_scene load_steps=2 format=3 uid="uid://battle_config_scene"]
 
 [ext_resource type="Script" path="res://scripts/ui/BattleConfig.gd" id="1_battleconfig"]
-[ext_resource type="Texture2D" path="res://assets/art/main_menu_bg.png" id="2_bg"]
 
 [node name="BattleConfig" type="Control"]
 layout_mode = 3
@@ -12,16 +11,14 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_battleconfig")
 
-[node name="Background" type="TextureRect" parent="."]
+[node name="Background" type="ColorRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = ExtResource("2_bg")
-expand_mode = 1
-stretch_mode = 6
+color = Color(0.08, 0.05, 0.15, 1.0)
 
 [node name="DimOverlay" type="ColorRect" parent="."]
 layout_mode = 1
@@ -30,4 +27,4 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.1, 0.08, 0.15, 0.7)
+color = Color(0.1, 0.08, 0.15, 0.5)
