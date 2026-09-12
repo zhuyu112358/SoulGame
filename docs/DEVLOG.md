@@ -13007,3 +13007,21 @@ es://scenes/settings_menu.tscn
 ### 验证
 - 场景测试：rts_arena.tscn加载成功，无SCRIPT ERROR
 - 修复了Parse Error: Variable "_prev_ai_team_hp" has the same name as a previously declared variable
+
+## 2026-09-12 4v4战斗单位死亡慢动作效果
+
+### 新增功能
+- **单位死亡慢动作**：当任何单位（玩家或AI）死亡时，游戏速度短暂降至0.3倍
+- **自动恢复**：0.3秒后游戏速度自动恢复到1.0倍
+- **速度按钮同步**：慢动作期间速度按钮显示"⚡ 0.3x"并禁用，恢复后显示"⚡ 1x"并启用
+- **配合死亡粒子**：慢动作与死亡粒子效果同时播放，增强死亡仪式感
+
+### 实现细节
+- 在_on_unit_died方法中添加慢动作逻辑
+- 使用RTSArenaManager.set_battle_speed(0.3)设置慢动作
+- 使用create_tween().tween_interval(0.3)延迟0.3秒后恢复速度
+- 第二个tween延迟0.5秒后恢复速度按钮状态
+- 仅在_battle_active为true时触发，避免战斗结束后干扰
+
+### 验证
+- 场景测试：rts_arena.tscn加载成功，无SCRIPT ERROR
