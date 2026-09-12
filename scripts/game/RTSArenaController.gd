@@ -5161,6 +5161,13 @@ func _on_battle_time_updated(p_time: float) -> void:
 		var minutes = int(p_time) / 60
 		var seconds = int(p_time) % 60
 		battle_time_label.text = "%02d:%02d" % [minutes, seconds]
+		# Color coding based on battle duration
+		if p_time < 60.0:
+			battle_time_label.modulate = Color(0.5, 1.0, 0.5)  # Green: early battle
+		elif p_time < 180.0:
+			battle_time_label.modulate = Color(1.0, 0.9, 0.4)  # Yellow: mid battle
+		else:
+			battle_time_label.modulate = Color(1.0, 0.5, 0.5)  # Red: long battle
 
 
 ## Create unit visual: AnimatedSprite2D from design sheet (with chroma-key shader) or procedural sprite with bob
