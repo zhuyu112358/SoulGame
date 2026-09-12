@@ -67,6 +67,59 @@ func _ready() -> void:
 				tw.tween_property(btn, "scale", Vector2(1.0, 1.0), 0.2)
 			)
 
+	_animate_entrance()
+
+
+## Animate UI entrance with staggered fade-in + scale (game-level UI)
+func _animate_entrance() -> void:
+	# TopBar fade-in
+	var top_bar = get_node_or_null("TopBar")
+	if top_bar and top_bar is CanvasItem:
+		top_bar.modulate.a = 0.0
+		var top_tween = create_tween()
+		top_tween.set_ease(Tween.EASE_OUT)
+		top_tween.tween_property(top_bar, "modulate:a", 1.0, 0.4)
+	# Preview panel fade-in + scale (most prominent)
+	if _preview_panel and _preview_panel is CanvasItem:
+		_preview_panel.modulate.a = 0.0
+		_preview_panel.scale = Vector2(0.9, 0.9)
+		var preview_tween = create_tween()
+		preview_tween.set_ease(Tween.EASE_OUT)
+		preview_tween.set_trans(Tween.TRANS_BACK)
+		preview_tween.tween_interval(0.15)
+		preview_tween.tween_property(_preview_panel, "modulate:a", 1.0, 0.5)
+		preview_tween.parallel().tween_property(_preview_panel, "scale", Vector2(1.0, 1.0), 0.5)
+	# Layer list fade-in + scale
+	var layer_list = get_node_or_null("Main/LayerList")
+	if layer_list and layer_list is CanvasItem:
+		layer_list.modulate.a = 0.0
+		layer_list.scale = Vector2(0.95, 0.95)
+		var layer_tween = create_tween()
+		layer_tween.set_ease(Tween.EASE_OUT)
+		layer_tween.set_trans(Tween.TRANS_BACK)
+		layer_tween.tween_interval(0.3)
+		layer_tween.tween_property(layer_list, "modulate:a", 1.0, 0.4)
+		layer_tween.parallel().tween_property(layer_list, "scale", Vector2(1.0, 1.0), 0.4)
+	# Option panel fade-in + scale
+	var option_panel = get_node_or_null("Main/OptionPanel")
+	if option_panel and option_panel is CanvasItem:
+		option_panel.modulate.a = 0.0
+		option_panel.scale = Vector2(0.95, 0.95)
+		var option_tween = create_tween()
+		option_tween.set_ease(Tween.EASE_OUT)
+		option_tween.set_trans(Tween.TRANS_BACK)
+		option_tween.tween_interval(0.45)
+		option_tween.tween_property(option_panel, "modulate:a", 1.0, 0.4)
+		option_tween.parallel().tween_property(option_panel, "scale", Vector2(1.0, 1.0), 0.4)
+	# BottomBar fade-in
+	var bottom_bar = get_node_or_null("BottomBar")
+	if bottom_bar and bottom_bar is CanvasItem:
+		bottom_bar.modulate.a = 0.0
+		var bottom_tween = create_tween()
+		bottom_tween.set_ease(Tween.EASE_OUT)
+		bottom_tween.tween_interval(0.6)
+		bottom_tween.tween_property(bottom_bar, "modulate:a", 1.0, 0.3)
+
 
 func _find_ui_nodes() -> void:
 	_soul_name_label = get_node_or_null("TopBar/SoulNameLabel")

@@ -1,6 +1,28 @@
 ﻿# 战策 Battleplan 开发日志
 
 
+## [UI升级] 捏脸系统界面入场动画-TopBar/预览面板/图层列表/选项面板/BottomBar交错淡入+缩放（2026-09-12）
+
+**本轮工作**：为捏脸系统界面添加入场动画，之前界面元素直接出现，没有过渡效果。
+
+**改进内容**：
+- 新增_animate_entrance()方法，在_ready末尾调用
+- TopBar淡入（0.4秒）
+- 预览面板淡入+缩放（0.9→1.0），延迟0.15秒，使用EASE_OUT + TRANS_BACK缓动
+- 图层列表淡入+缩放（0.95→1.0），延迟0.3秒
+- 选项面板淡入+缩放（0.95→1.0），延迟0.45秒
+- BottomBar淡入，延迟0.6秒
+- 动画总时长约1.0秒
+
+**修改文件**：
+- scripts/ui/SoulCustomizationUI.gd：新增_animate_entrance()方法+_ready调用
+
+**验证结果**：
+- soul_customization场景测试：NO SCRIPT ERROR
+- M2测试：2955 Passed, 0 Failed
+
+---
+
 ## [UI升级] 设置界面入场动画增强-标题/TabContainer/按钮交错淡入+缩放（2026-09-12）
 
 **本轮工作**：增强设置界面入场动画，之前只是整体淡入（0.3秒），没有交错效果，不符合游戏级UI规范第7条。
