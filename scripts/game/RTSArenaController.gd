@@ -3381,7 +3381,11 @@ func _process(delta: float) -> void:
 			var p_unit = RTSArenaManager.player_units[i]
 			if p_unit and is_instance_valid(p_unit) and p_unit.state != SoulUnit.UnitState.DEAD:
 				_player_visuals[i].visible = true
-				_player_visuals[i].position = p_unit.position
+				# Movement bob: vertical offset when moving
+				var p_bob = 0.0
+				if p_unit.state == SoulUnit.UnitState.MOVING:
+					p_bob = sin(Time.get_ticks_msec() / 120.0 + i * 1.5) * 3.0
+				_player_visuals[i].position = p_unit.position + Vector2(0, p_bob)
 			else:
 				_player_visuals[i].visible = false
 	for i in range(_ai_visuals.size()):
@@ -3389,7 +3393,11 @@ func _process(delta: float) -> void:
 			var a_unit = RTSArenaManager.ai_units[i]
 			if a_unit and is_instance_valid(a_unit) and a_unit.state != SoulUnit.UnitState.DEAD:
 				_ai_visuals[i].visible = true
-				_ai_visuals[i].position = a_unit.position
+				# Movement bob: vertical offset when moving
+				var a_bob = 0.0
+				if a_unit.state == SoulUnit.UnitState.MOVING:
+					a_bob = sin(Time.get_ticks_msec() / 120.0 + i * 1.5 + 2.0) * 3.0
+				_ai_visuals[i].position = a_unit.position + Vector2(0, a_bob)
 			else:
 				_ai_visuals[i].visible = false
 
