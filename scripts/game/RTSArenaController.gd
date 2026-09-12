@@ -5667,6 +5667,22 @@ func _on_unit_hp_changed(p_current_hp: int, p_max_hp: int, p_unit: SoulUnit) -> 
 func _on_unit_died(p_unit: SoulUnit) -> void:
 	var death_color = Color(1.0, 0.3, 0.2) if p_unit.is_player_controlled else Color(1.0, 0.5, 0.3)
 	_spawn_death_particles(p_unit.position, death_color)
+	# Slow motion effect on death: brief slowdown then recover
+	if RTSArenaManager and _battle_active:
+		RTSArenaManager.set_battle_speed(0.3)
+		var slow_tween = create_tween()
+		slow_tween.tween_interval(0.3)
+		slow_tween.tween_callback(func(): RTSArenaManager.set_battle_speed(1.0))
+		# Update speed button display
+		if _speed_button:
+			_speed_button.text = "⚡ 0.3x"
+			_speed_button.disabled = true
+		var restore_tween = create_tween()
+		restore_tween.tween_interval(0.5)
+		restore_tween.tween_callback(func():
+			if _speed_button:
+				_speed_button.text = "⚡ 1x"
+				_speed_button.disabled = false)
 	# Auto-switch selected unit if the selected player unit died
 	if p_unit.is_player_controlled:
 		var is_team = GameState.get_value("battle", "is_team_battle", false)
