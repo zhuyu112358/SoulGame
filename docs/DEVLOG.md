@@ -12899,3 +12899,24 @@ es://scenes/settings_menu.tscn
 ### 验证
 - 场景测试：rts_arena.tscn加载成功，无SCRIPT ERROR
 - M2测试：2955 Passed, 0 Failed
+
+## 2026-09-12 4v4战斗技能释放元素色发光效果
+
+### 新增功能
+- **技能释放发光**：释放技能时，单位周围显示元素色光晕扩散动画
+- **4个技能对应4种元素色**：
+  - 重击（heavy_strike）：土元素色（绿色）
+  - 快击（quick_strike）：风元素色（青色）
+  - 治疗（heal）：光元素色（金色）
+  - 防御（defend）：水元素色（蓝色）
+- **扩散淡出动画**：光晕从单位位置向外扩散2倍，同时淡出，持续0.4秒
+
+### 实现细节
+- _spawn_skill_glow方法：程序化生成径向渐变光晕纹理
+- 光晕半径40像素，alpha从中心向外递减
+- 在4个技能按钮处理方法中调用，传入对应元素色
+- 使用Node2D+Sprite2D+tween实现扩散淡出动画
+
+### 验证
+- 场景测试：rts_arena.tscn加载成功，无SCRIPT ERROR
+- M2测试：2955 Passed, 0 Failed
