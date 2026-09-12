@@ -2021,6 +2021,43 @@ func _trigger_unit_hit_flash(p_visual: Node2D, p_is_player: bool) -> void:
 	tween.tween_property(p_visual, "modulate", Color(1, 1, 1, 1), 0.15)
 
 
+## Spawn skill release glow effect at unit position
+func _spawn_skill_glow(p_position: Vector2, p_color: Color) -> void:
+	# Create expanding glow ring
+	var glow = Node2D.new()
+	glow.name = "SkillGlow"
+	glow.z_index = 8
+	glow.position = p_position
+
+	# Create glow texture programmatically
+	var radius = 40
+	var img_size = int(radius * 2) + 8
+	var img = Image.create(img_size, img_size, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0, 0, 0, 0))
+	var center = Vector2(img_size / 2, img_size / 2)
+	for x in range(img_size):
+		for y in range(img_size):
+			var dist = Vector2(x, y).distance_to(center)
+			if dist <= radius:
+				var alpha = (1.0 - dist / radius) * 0.6
+				img.set_pixel(x, y, Color(p_color.r, p_color.g, p_color.b, alpha))
+	var texture = ImageTexture.create_from_image(img)
+
+	var sprite = Sprite2D.new()
+	sprite.name = "GlowSprite"
+	sprite.texture = texture
+	sprite.centered = true
+	glow.add_child(sprite)
+
+	add_child(glow)
+
+	# Expand and fade animation
+	var tween = create_tween()
+	tween.tween_property(glow, "scale", Vector2(2.0, 2.0), 0.4)
+	tween.parallel().tween_property(glow, "modulate:a", 0.0, 0.4)
+	tween.tween_callback(glow.queue_free)
+
+
 ## Update error message display
 func _update_error_display(delta: float) -> void:
 	if _error_active:
@@ -5756,6 +5793,7 @@ func _on_heavy_strike_pressed() -> void:
 			skill_pos = RTSArenaManager.player_unit.position
 	if success:
 		_spawn_skill_particle("heavy_strike", skill_pos)
+		_spawn_skill_glow(skill_pos, Color(0.4, 0.7, 0.3))  # Earth element glow
 		_trigger_chromatic_aberration(12.0, 0.35)
 		if AudioManager:
 			AudioManager.play_sfx("skill_rock")
@@ -5776,6 +5814,7 @@ func _on_quick_strike_pressed() -> void:
 			skill_pos = RTSArenaManager.player_unit.position
 	if success:
 		_spawn_skill_particle("quick_strike", skill_pos)
+		_spawn_skill_glow(skill_pos, Color(0.3, 0.9, 0.8))  # Wind element glow
 		_trigger_chromatic_aberration(8.0, 0.25)
 		if AudioManager:
 			AudioManager.play_sfx("skill_windblade")
@@ -5796,6 +5835,7 @@ func _on_heal_pressed() -> void:
 			skill_pos = RTSArenaManager.player_unit.position
 	if success:
 		_spawn_skill_particle("heal", skill_pos)
+		_spawn_skill_glow(skill_pos, Color(1.0, 0.85, 0.3))  # Light element glow
 		_trigger_chromatic_aberration(5.0, 0.2)
 		if AudioManager:
 			AudioManager.play_sfx("skill_heal")
@@ -5816,6 +5856,7 @@ func _on_defend_pressed() -> void:
 			skill_pos = RTSArenaManager.player_unit.position
 	if success:
 		_spawn_skill_particle("defend", skill_pos)
+		_spawn_skill_glow(skill_pos, Color(0.2, 0.5, 1.0))  # Water element glow
 		_trigger_chromatic_aberration(6.0, 0.2)
 		if AudioManager:
 			AudioManager.play_sfx("skill_defend")
