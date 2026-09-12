@@ -3390,6 +3390,9 @@ func _process(delta: float) -> void:
 				var p_attack_scale = Vector2(1, 1)
 				if p_unit.state == SoulUnit.UnitState.ATTACKING:
 					p_attack_scale = Vector2(1.0 + sin(Time.get_ticks_msec() / 80.0 + i) * 0.08, 1.0 + sin(Time.get_ticks_msec() / 80.0 + i) * 0.08)
+				elif p_unit.state == SoulUnit.UnitState.CASTING:
+					# Casting pulse: stronger, slower pulse for spell charging feel
+					p_attack_scale = Vector2(1.0 + sin(Time.get_ticks_msec() / 160.0 + i) * 0.12, 1.0 + sin(Time.get_ticks_msec() / 160.0 + i) * 0.12)
 				_player_visuals[i].scale = p_attack_scale
 			else:
 				_player_visuals[i].visible = false
@@ -3407,6 +3410,9 @@ func _process(delta: float) -> void:
 				var a_attack_scale = Vector2(1, 1)
 				if a_unit.state == SoulUnit.UnitState.ATTACKING:
 					a_attack_scale = Vector2(1.0 + sin(Time.get_ticks_msec() / 80.0 + i + 1.0) * 0.08, 1.0 + sin(Time.get_ticks_msec() / 80.0 + i + 1.0) * 0.08)
+				elif a_unit.state == SoulUnit.UnitState.CASTING:
+					# Casting pulse: stronger, slower pulse for spell charging feel
+					a_attack_scale = Vector2(1.0 + sin(Time.get_ticks_msec() / 160.0 + i + 1.0) * 0.12, 1.0 + sin(Time.get_ticks_msec() / 160.0 + i + 1.0) * 0.12)
 				_ai_visuals[i].scale = a_attack_scale
 			else:
 				_ai_visuals[i].visible = false
