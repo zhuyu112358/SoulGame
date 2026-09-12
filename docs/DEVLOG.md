@@ -13095,3 +13095,21 @@ es://scenes/settings_menu.tscn
 
 ### 验证
 - 场景测试：rts_arena.tscn加载成功，无SCRIPT ERROR
+
+## 2026-09-12 4v4战斗单位施法元素色tint效果
+
+### 新增功能
+- **单位施法元素色tint**：当单位处于CASTING状态时，单位精灵会显示对应元素色的tint效果，表示正在施法
+- **8种元素支持**：火(橙红)、水(蓝)、土(绿)、风(青)、光(金)、暗(紫)、雷(黄)、冰(浅蓝)
+- **玩家和AI单位都支持**：双方队伍的所有单位施法时都会显示元素色tint
+- **脉冲强度**：tint强度在0.2-0.4之间脉冲，与施法缩放脉冲同步
+- **自动恢复**：非施法状态时modulate自动恢复为Color(1, 1, 1)
+
+### 实现细节
+- 添加_get_element_color辅助函数，支持中英文元素名映射
+- 在视觉代理更新逻辑中添加elif CASTING分支的元素色tint
+- 使用Color(1.0 - tint * (1.0 - elem.r), ...)公式计算混合颜色
+- 修复了缩进错误（Parse Error: Expected statement, found "Indent" instead）
+
+### 验证
+- 场景测试：rts_arena.tscn加载成功，无SCRIPT ERROR
