@@ -140,6 +140,10 @@ var _speed_button = null
 var _current_speed = 1.0
 var _speed_options = [1.0, 1.5, 2.0]
 
+## Hotkey help panel
+var _hotkey_panel = null
+var _hotkey_visible = false
+
 ## Tactical command system (GDD v2.0 Chapter 2.1.1)
 var _tactical_system = null
 var _tactical_buttons = {}
@@ -415,6 +419,7 @@ func _ready() -> void:
 	_animate_hud_entry()
 	_setup_pause_button()
 	_setup_speed_button()
+	_setup_hotkey_panel()
 	_setup_status_labels()
 	_setup_crit_label()
 	_setup_dodge_label()
@@ -873,6 +878,10 @@ func _unhandled_input(event: InputEvent) -> void:
 							if AudioManager:
 								AudioManager.play_sfx("ui_button_click", 0.3)
 					get_viewport().set_input_as_handled()
+				KEY_H:
+					# Toggle hotkey help panel
+					_toggle_hotkey_panel()
+					get_viewport().set_input_as_handled()
 	# Left-click on arena: move selected unit to clicked position (RTS control)
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		if _battle_active and not _is_paused:
@@ -960,6 +969,74 @@ func _setup_speed_button() -> void:
 	_speed_button.pressed.connect(_on_speed_button_pressed)
 	_setup_button_hover(_speed_button)
 	add_child(_speed_button)
+
+
+## Create hotkey help panel (toggle with H key)
+func _setup_hotkey_panel() -> void:
+	_hotkey_panel = Panel.new()
+	_hotkey_panel.name = "HotkeyPanel"
+	_hotkey_panel.position = Vector2(450, 80)
+	_hotkey_panel.size = Vector2(380, 320)
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.06, 0.04, 0.12, 0.97)
+	style.border_color = Color(1.0, 0.88, 0.5)
+	style.border_width_left = 2
+	style.border_width_right = 2
+	style.border_width_top = 2
+	style.border_width_bottom = 2
+	style.corner_radius_top_left = 10
+	style.corner_radius_top_right = 10
+	style.corner_radius_bottom_right = 10
+	style.corner_radius_bottom_left = 10
+	_hotkey_panel.add_theme_stylebox_override("panel", style)
+
+	# Title
+	var title = Label.new()
+	title.text = "快捷键说明 (H键关闭)"
+	title.position = Vector2(15, 10)
+	title.add_theme_font_size_override("font_size", 18)
+	title.add_theme_color_override("font_color", Color(1.0, 0.88, 0.5))
+	_hotkey_panel.add_child(title)
+
+	# Hotkey list
+	var hotkeys = [
+		"左键点击    - 移动选中单位 / 全队移动",
+		"右键点击敌人 - 攻击目标 / 全队攻击",
+		"Tab         - 切换选中单位",
+		"S           - 停止待命",
+		"1 / 2 / 3 / 4 - 技能: 重击/快击/治疗/防御",
+		"H           - 显示/隐藏此帮助",
+		"ESC / 空格  - 暂停/继续",
+		"",
+		"提示: 点击队伍HP条可选中对应单位",
+		"      未选中单位时操作对全队生效",
+	]
+	var y_pos = 45
+	for hk in hotkeys:
+		var label = Label.new()
+		label.text = hk
+		label.position = Vector2(15, y_pos)
+		label.add_theme_font_size_override("font_size", 13)
+		if hk.begins_with("提示") or hk == "":
+			label.add_theme_color_override("font_color", Color(0.6, 0.55, 0.5))
+		else:
+			label.add_theme_color_override("font_color", Color(0.85, 0.82, 0.75))
+		_hotkey_panel.add_child(label)
+		y_pos += 26
+
+	_hotkey_panel.visible = false
+	_hotkey_visible = false
+	add_child(_hotkey_panel)
+
+
+## Toggle hotkey help panel visibility
+func _toggle_hotkey_panel() -> void:
+	if not _hotkey_panel or not is_instance_valid(_hotkey_panel):
+		return
+	_hotkey_visible = not _hotkey_visible
+	_hotkey_panel.visible = _hotkey_visible
+	if AudioManager:
+		AudioManager.play_sfx("ui_button_click", 0.3)
 
 
 ## Handle speed button press (cycle through speed options)
@@ -3794,6 +3871,9 @@ func _clear_team_visuals() -> void:
 	if _selected_unit_panel and is_instance_valid(_selected_unit_panel):
 		_selected_unit_panel.queue_free()
 	_selected_unit_panel = null
+	if _hotkey_panel and is_instance_valid(_hotkey_panel):
+		_hotkey_panel.queue_free()
+	_hotkey_panel = null
 	for hp_bar in _ai_team_hp_bars:
 		if hp_bar and is_instance_valid(hp_bar):
 			# Free parent container if it exists (new layout), else free the bar itself
