@@ -13025,3 +13025,19 @@ es://scenes/settings_menu.tscn
 
 ### 验证
 - 场景测试：rts_arena.tscn加载成功，无SCRIPT ERROR
+
+## 2026-09-12 战斗HUD技能按钮错误闪烁效果
+
+### 新增功能
+- **技能按钮错误闪烁**：当技能无法使用时（冷却中/能量不足/无法释放），对应的技能按钮会短暂变红（modulate=Color(1.5,0.4,0.4)），然后0.3秒内恢复正常
+- **配合错误提示**：与战斗日志错误信息和错误音效同时播放，提供多通道反馈
+- **4个技能都支持**：重击/快击/治疗/防御技能按钮都支持错误闪烁效果
+
+### 实现细节
+- 在_show_skill_error方法中添加技能按钮闪烁逻辑
+- 通过skill_buttons字典查找对应的技能按钮
+- 支持skill_name.to_lower()和原始skill_name两种键名查找
+- 使用create_tween将modulate从红色恢复到白色
+
+### 验证
+- 场景测试：rts_arena.tscn加载成功，无SCRIPT ERROR
