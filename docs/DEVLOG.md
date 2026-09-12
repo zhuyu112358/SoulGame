@@ -12989,3 +12989,21 @@ es://scenes/settings_menu.tscn
 ### 验证
 - 场景测试：rts_arena.tscn加载成功，无SCRIPT ERROR
 - M2测试：运行中（之前稳定2955 Passed, 0 Failed）
+
+## 2026-09-12 战斗HUD主HP条HP变化闪烁效果
+
+### 新增功能
+- **主HP条变化闪烁**：1v1战斗中，当玩家或AI的HP变化时，主HP条会闪烁
+- **HP减少红色闪烁**：HP减少时，HP条短暂变红（modulate=Color(1.5,0.5,0.5)），0.2秒内恢复
+- **HP增加绿色闪烁**：HP增加时（治疗），HP条短暂变绿（modulate=Color(0.5,1.5,0.5)），0.2秒内恢复
+- **玩家和AI都支持**：双方主HP条变化时都会触发闪烁效果
+
+### 实现细节
+- 添加_prev_main_player_hp和_prev_main_ai_hp变量跟踪上一帧HP
+- 在_update_unit_display方法中检测HP变化
+- HP减少/增加时创建tween将modulate从红/绿色恢复到白色
+- 修复了重复变量声明问题（_prev_ai_team_hp重复声明，_prev_player_hp/_prev_ai_hp类型冲突）
+
+### 验证
+- 场景测试：rts_arena.tscn加载成功，无SCRIPT ERROR
+- 修复了Parse Error: Variable "_prev_ai_team_hp" has the same name as a previously declared variable
