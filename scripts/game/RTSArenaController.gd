@@ -3207,14 +3207,19 @@ func _update_energy_bars_smooth(delta: float) -> void:
 
 ## Update skill cooldown display
 func _update_skill_cooldowns() -> void:
-	if RTSArenaManager.player_unit == null:
+	# Determine which unit to check cooldowns for
+	var unit_for_cd = RTSArenaManager.player_unit
+	var is_team = GameState.get_value("battle", "is_team_battle", false)
+	if is_team and _selected_unit_index >= 0 and _selected_unit_index < RTSArenaManager.player_units.size():
+		unit_for_cd = RTSArenaManager.player_units[_selected_unit_index]
+	if unit_for_cd == null:
 		return
 
 	for skill_name in skill_buttons.keys():
 		var button = skill_buttons[skill_name]
 		if button == null:
 			continue
-		var cooldown = RTSArenaManager.player_unit.skill_cooldowns.get(skill_name, 0)
+		var cooldown = unit_for_cd.skill_cooldowns.get(skill_name, 0)
 		var was_on_cd = _skill_was_on_cooldown.get(skill_name, false)
 		button.disabled = cooldown > 0
 		# Update cooldown overlay visual
@@ -5161,10 +5166,15 @@ func _on_defend_pressed() -> void:
 
 ## Show skill release error (on cooldown or not enough energy)
 func _show_skill_error(skill_name: String) -> void:
-	if RTSArenaManager.player_unit == null:
+	# Determine which unit to check for skill error
+	var unit_for_check = RTSArenaManager.player_unit
+	var is_team = GameState.get_value("battle", "is_team_battle", false)
+	if is_team and _selected_unit_index >= 0 and _selected_unit_index < RTSArenaManager.player_units.size():
+		unit_for_check = RTSArenaManager.player_units[_selected_unit_index]
+	if unit_for_check == null:
 		return
-	var cooldown = RTSArenaManager.player_unit.skill_cooldowns.get(skill_name.to_lower(), 0)
-	var energy = RTSArenaManager.player_unit.current_energy
+	var cooldown = unit_for_check.skill_cooldowns.get(skill_name.to_lower(), 0)
+	var energy = unit_for_check.current_energy
 	var reason = ""
 	if cooldown > 0:
 		reason = "冷却中 (%.1fs)" % cooldown
