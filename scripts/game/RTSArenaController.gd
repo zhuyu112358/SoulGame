@@ -67,7 +67,9 @@ var _player_visuals: Array = []  # Array of Sprite2D proxies for player team
 var _ai_visuals: Array = []      # Array of Sprite2D proxies for AI team
 var _player_lights: Array = []   # Array of PointLight2D for player team
 var _ai_lights: Array = []       # Array of PointLight2D for AI team
-var _player_overhead_hp_bars: Array = []  # Overhead HP bars for player team
+var _player_overhead_hp_bars: Array = []
+var _prev_player_team_hp: Array = []  # Track previous HP for change detection
+var _prev_ai_team_hp: Array = []  # Overhead HP bars for player team
 var _ai_overhead_hp_bars: Array = []      # Overhead HP bars for AI team
 var _player_overhead_names: Array = []    # Overhead name labels for player team
 var _ai_overhead_names: Array = []        # Overhead name labels for AI team
@@ -3469,7 +3471,25 @@ func _update_unit_display() -> void:
 		for i in range(_player_team_hp_bars.size()):
 			if i < player_team.size():
 				var unit_info = player_team[i]
-				var hp_pct = float(unit_info.get("hp", 0)) / float(unit_info.get("max_hp", 100)) * 100.0
+				var current_hp = float(unit_info.get("hp", 0))
+				var hp_pct = current_hp / float(unit_info.get("max_hp", 100)) * 100.0
+				# HP change flash effect
+				if i < _prev_player_team_hp.size():
+					var prev_hp = _prev_player_team_hp[i]
+					if current_hp < prev_hp:
+						# HP decreased: red flash
+						var flash_tween = create_tween()
+						_player_team_hp_bars[i].modulate = Color(1.5, 0.5, 0.5)
+						flash_tween.tween_property(_player_team_hp_bars[i], "modulate", Color(1, 1, 1), 0.2)
+					elif current_hp > prev_hp:
+						# HP increased: green flash
+						var heal_tween = create_tween()
+						_player_team_hp_bars[i].modulate = Color(0.5, 1.5, 0.5)
+						heal_tween.tween_property(_player_team_hp_bars[i], "modulate", Color(1, 1, 1), 0.2)
+				if i >= _prev_player_team_hp.size():
+					_prev_player_team_hp.append(current_hp)
+				else:
+					_prev_player_team_hp[i] = current_hp
 				_player_team_hp_bars[i].value = hp_pct
 				_player_team_hp_bars[i].visible = true
 				var is_dead = unit_info.get("hp", 0) <= 0
@@ -3496,7 +3516,25 @@ func _update_unit_display() -> void:
 		for i in range(_ai_team_hp_bars.size()):
 			if i < ai_team.size():
 				var unit_info = ai_team[i]
-				var hp_pct = float(unit_info.get("hp", 0)) / float(unit_info.get("max_hp", 100)) * 100.0
+				var current_hp_ai = float(unit_info.get("hp", 0))
+				var hp_pct = current_hp_ai / float(unit_info.get("max_hp", 100)) * 100.0
+				# HP change flash effect
+				if i < _prev_ai_team_hp.size():
+					var prev_hp_ai = _prev_ai_team_hp[i]
+					if current_hp_ai < prev_hp_ai:
+						# HP decreased: red flash
+						var ai_flash_tween = create_tween()
+						_ai_team_hp_bars[i].modulate = Color(1.5, 0.5, 0.5)
+						ai_flash_tween.tween_property(_ai_team_hp_bars[i], "modulate", Color(1, 1, 1), 0.2)
+					elif current_hp_ai > prev_hp_ai:
+						# HP increased: green flash
+						var ai_heal_tween = create_tween()
+						_ai_team_hp_bars[i].modulate = Color(0.5, 1.5, 0.5)
+						ai_heal_tween.tween_property(_ai_team_hp_bars[i], "modulate", Color(1, 1, 1), 0.2)
+				if i >= _prev_ai_team_hp.size():
+					_prev_ai_team_hp.append(current_hp_ai)
+				else:
+					_prev_ai_team_hp[i] = current_hp_ai
 				_ai_team_hp_bars[i].value = hp_pct
 				_ai_team_hp_bars[i].visible = true
 				var is_dead_ai = unit_info.get("hp", 0) <= 0
