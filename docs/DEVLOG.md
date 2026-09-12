@@ -1,6 +1,33 @@
 # 战策 Battleplan 开发日志
 
 
+## [战斗玩法] 4v4单单位攻击目标指令-右键点击AI单位设置选中单位攻击目标（2026-09-12）
+
+**本轮工作**：增强4v4团队战斗的单位控制能力，添加右键点击设置选中单位攻击目标的功能。
+
+**改进内容**：
+- RTSArenaManager.gd：新增set_player_unit_attack_target(p_index, p_target)方法
+  - 设置指定索引的玩家单位的攻击目标
+  - 检查索引有效性、单位存活状态、战斗状态
+- RTSArenaController.gd：
+  - 修改_unhandled_input方法，添加右键点击处理
+  - 4v4团队战斗中：右键点击AI单位附近（100像素内），找到最近的AI单位并设置为选中单位的攻击目标
+  - 新增_spawn_attack_indicator方法：红色攻击目标指示器（32x32，缩放2.0倍，0.5秒淡出）
+  - 播放点击音效
+
+**修改文件**：
+- scripts/game/RTSArenaManager.gd：新增set_player_unit_attack_target方法
+- scripts/game/RTSArenaController.gd：添加右键点击处理+_spawn_attack_indicator方法
+
+**验证结果**：
+- rts_arena场景测试：NO SCRIPT ERROR
+- M2测试：2955 Passed, 0 Failed
+
+---
+
+# 战策 Battleplan 开发日志
+
+
 ## [战斗玩法] 4v4单单位移动指令-左键点击移动选中单位（2026-09-12）
 
 **本轮工作**：增强4v4团队战斗的单位控制能力，之前左键点击移动只控制固定的第一个单位(player_unit)，不控制玩家选中的单位。
