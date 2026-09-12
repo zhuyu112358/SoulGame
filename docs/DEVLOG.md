@@ -12828,3 +12828,22 @@ es://scenes/settings_menu.tscn
 ### 验证
 - 场景测试：rts_arena.tscn加载成功，无SCRIPT ERROR
 - M2测试：2955 Passed, 0 Failed
+
+## 2026-09-12 4v4战斗单位头顶名字显示
+
+### 新增功能
+- **单位头顶名字**：4v4团队战斗中，每个单位头顶显示名字标签
+- **颜色区分**：玩家单位名字为浅蓝色，AI单位名字为浅红色
+- **黑色描边**：名字标签带3px黑色描边确保在各种背景下可读
+- **死亡自动隐藏**：单位死亡时头顶名字自动隐藏
+- **跟随移动**：名字标签跟随单位实时移动（单位位置上方75像素）
+
+### 实现细节
+- 每个单位创建一个Label作为名字标签
+- 名字从unit_info字典中获取，默认为"Soul N"或"Enemy N"
+- 在_update_overhead_hp_bars中同时更新名字标签位置
+- 在_clear_team_visuals中正确清理资源
+
+### 验证
+- 场景测试：rts_arena.tscn加载成功，无SCRIPT ERROR
+- M2测试：2955 Passed, 0 Failed
