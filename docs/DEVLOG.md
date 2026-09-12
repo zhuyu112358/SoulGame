@@ -12971,3 +12971,21 @@ es://scenes/settings_menu.tscn
 ### 验证
 - 场景测试：rts_arena.tscn加载成功，无SCRIPT ERROR
 - M2测试：运行中（之前稳定2955 Passed, 0 Failed）
+
+## 2026-09-12 战斗HUD队伍HP条HP变化闪烁效果
+
+### 新增功能
+- **HP减少红色闪烁**：当单位HP减少时，队伍HP条短暂变红（modulate=Color(1.5,0.5,0.5)），然后0.2秒内恢复正常
+- **HP增加绿色闪烁**：当单位HP增加时（治疗），队伍HP条短暂变绿（modulate=Color(0.5,1.5,0.5)），然后0.2秒内恢复正常
+- **玩家和AI队伍都支持**：双方队伍HP条变化时都会触发闪烁效果
+- **HP跟踪数组**：添加_prev_player_team_hp和_prev_ai_team_hp数组跟踪每个单位的上一帧HP
+
+### 实现细节
+- 在队伍HP条更新逻辑中，比较当前HP和上一帧HP
+- HP减少时创建tween将modulate从红色恢复到白色
+- HP增加时创建tween将modulate从绿色恢复到白色
+- 首次更新时初始化HP跟踪数组
+
+### 验证
+- 场景测试：rts_arena.tscn加载成功，无SCRIPT ERROR
+- M2测试：运行中（之前稳定2955 Passed, 0 Failed）
