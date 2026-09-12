@@ -29,6 +29,7 @@ var ai_energy_bar = null
 var ai_name_label = null
 var battle_time_label = null
 var battle_log = null
+var _battle_log_panel = null
 var _player_hp_value_label = null
 var _player_energy_value_label = null
 var _ai_hp_value_label = null
@@ -2554,6 +2555,7 @@ func _setup_ui_refs() -> void:
 	battle_time_label = get_node_or_null("TopBar/TimeLabel")
 	battle_log = get_node_or_null("BattleLog/LogText")
 	back_button = get_node_or_null("BottomBar/BackButton")
+	_battle_log_panel = get_node_or_null("BattleLog")
 	arena_viewport = get_node_or_null("ArenaViewport")
 	minimap = get_node_or_null("Minimap")
 
@@ -5988,6 +5990,11 @@ func _add_log(p_message: String) -> void:
 		else:
 			colored_msg = "[color=#d4d4d8]%s[/color]" % p_message  # Light gray for normal
 		battle_log.text += colored_msg + "\n"
+		# New message highlight: gold flash on battle log panel
+		if _battle_log_panel and is_instance_valid(_battle_log_panel):
+			var log_flash = create_tween()
+			_battle_log_panel.modulate = Color(1.3, 1.15, 0.7)  # Gold tint
+			log_flash.tween_property(_battle_log_panel, "modulate", Color(1, 1, 1), 0.4)
 		# Scroll to bottom (RichTextLabel uses scroll_to_line, not caret_position)
 		battle_log.scroll_to_line(battle_log.get_line_count() - 1)
 
