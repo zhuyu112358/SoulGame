@@ -4637,7 +4637,7 @@ func _create_selected_unit_panel() -> Panel:
 	var panel = Panel.new()
 	panel.name = "SelectedUnitPanel"
 	panel.position = Vector2(15, 200)
-	panel.size = Vector2(220, 110)
+	panel.size = Vector2(220, 140)
 	# Game-level panel style
 	var style = StyleBoxFlat.new()
 	style.bg_color = Color(0.06, 0.04, 0.12, 0.95)
@@ -4708,11 +4708,49 @@ func _create_selected_unit_panel() -> Panel:
 	hp_text.add_theme_color_override("font_color", Color(0.8, 0.75, 0.7))
 	panel.add_child(hp_text)
 
+	# Energy bar
+	var energy_bar = ProgressBar.new()
+	energy_bar.name = "UnitEnergyBar"
+	energy_bar.position = Vector2(10, 88)
+	energy_bar.size = Vector2(200, 12)
+	energy_bar.max_value = 100.0
+	energy_bar.value = 100.0
+	energy_bar.show_percentage = false
+	var energy_bg = StyleBoxFlat.new()
+	energy_bg.bg_color = Color(0.05, 0.05, 0.15, 0.9)
+	energy_bg.border_color = Color(0.3, 0.3, 0.6)
+	energy_bg.border_width_left = 1
+	energy_bg.border_width_right = 1
+	energy_bg.border_width_top = 1
+	energy_bg.border_width_bottom = 1
+	energy_bg.corner_radius_top_left = 3
+	energy_bg.corner_radius_top_right = 3
+	energy_bg.corner_radius_bottom_right = 3
+	energy_bg.corner_radius_bottom_left = 3
+	energy_bar.add_theme_stylebox_override("background", energy_bg)
+	var energy_fill = StyleBoxFlat.new()
+	energy_fill.bg_color = Color(0.3, 0.5, 1.0)
+	energy_fill.corner_radius_top_left = 2
+	energy_fill.corner_radius_top_right = 2
+	energy_fill.corner_radius_bottom_right = 2
+	energy_fill.corner_radius_bottom_left = 2
+	energy_bar.add_theme_stylebox_override("fill", energy_fill)
+	panel.add_child(energy_bar)
+
+	# Energy text
+	var energy_text = Label.new()
+	energy_text.name = "UnitEnergyText"
+	energy_text.text = ""
+	energy_text.position = Vector2(10, 102)
+	energy_text.add_theme_font_size_override("font_size", 11)
+	energy_text.add_theme_color_override("font_color", Color(0.7, 0.75, 0.9))
+	panel.add_child(energy_text)
+
 	# ATK/DEF labels
 	var stats_label = Label.new()
 	stats_label.name = "UnitStats"
 	stats_label.text = ""
-	stats_label.position = Vector2(10, 88)
+	stats_label.position = Vector2(10, 118)
 	stats_label.add_theme_font_size_override("font_size", 11)
 	stats_label.add_theme_color_override("font_color", Color(0.7, 0.68, 0.62))
 	panel.add_child(stats_label)
@@ -4750,6 +4788,15 @@ func _update_selected_unit_panel() -> void:
 	var hp_text = _selected_unit_panel.get_node_or_null("UnitHPText")
 	if hp_text:
 		hp_text.text = "HP: %d / %d" % [int(unit.current_hp), int(unit.max_hp)]
+	# Update energy bar
+	var energy_bar = _selected_unit_panel.get_node_or_null("UnitEnergyBar")
+	if energy_bar:
+		energy_bar.max_value = unit.max_energy if unit.max_energy > 0 else 100.0
+		energy_bar.value = unit.current_energy
+	# Update energy text
+	var energy_text = _selected_unit_panel.get_node_or_null("UnitEnergyText")
+	if energy_text:
+		energy_text.text = "能量: %d / %d" % [int(unit.current_energy), int(unit.max_energy if unit.max_energy > 0 else 100)]
 	# Update stats
 	var stats_label = _selected_unit_panel.get_node_or_null("UnitStats")
 	if stats_label:
