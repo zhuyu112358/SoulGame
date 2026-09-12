@@ -84,6 +84,7 @@ var _player_team_hp_bars: Array = []  # HP bars for player team units
 var _ai_team_hp_bars: Array = []      # HP bars for AI team units
 var _player_unit_containers: Array = []  # Clickable containers for player unit selection
 var _selection_indicator = null  # Gold circle indicator for selected unit
+var _selection_glow_sprite = null  # Outer glow ring for element color
 var _selected_unit_panel = null  # Info panel for selected unit
 var _selected_unit_index: int = 0     # Currently selected player unit (for tactical commands)
 
@@ -4231,6 +4232,12 @@ func _select_player_unit(p_index: int) -> void:
 		if sel_name and is_instance_valid(sel_name):
 			sel_name.scale = Vector2(1.3, 1.3)
 			sel_name.add_theme_color_override("font_color", Color(1.0, 0.88, 0.5))  # Gold
+		# Set selection glow to unit's element color
+		if _selection_glow_sprite and is_instance_valid(_selection_glow_sprite) and p_index < RTSArenaManager.player_team.size():
+			var sel_unit = RTSArenaManager.player_team[p_index]
+			if sel_unit:
+				var elem_color = _get_element_color(sel_unit.element)
+				_selection_glow_sprite.modulate = Color(elem_color.r, elem_color.g, elem_color.b, 1.0)
 	# Immediately update selection indicator position
 	if _selection_indicator and is_instance_valid(_selection_indicator):
 		if p_index < _player_visuals.size():
@@ -5621,6 +5628,7 @@ func _create_selection_indicator() -> Node2D:
 	glow_sprite.texture = glow
 	glow_sprite.scale = Vector2(1.3, 1.3)
 	indicator.add_child(glow_sprite)
+	_selection_glow_sprite = glow_sprite
 
 	# Main gold ring
 	var ring = _create_ring_texture(40, Color(1.0, 0.88, 0.5, 0.9))
@@ -5803,6 +5811,9 @@ func _on_unit_died(p_unit: SoulUnit) -> void:
 					_selected_unit_index = -1
 					if _selection_indicator and is_instance_valid(_selection_indicator):
 						_selection_indicator.visible = false
+						# Restore glow to gold when deselected
+						if _selection_glow_sprite and is_instance_valid(_selection_glow_sprite):
+							_selection_glow_sprite.modulate = Color(1.0, 0.88, 0.5, 1.0)
 					# Restore all unit name styles
 					for name_label in _player_overhead_names:
 						if name_label and is_instance_valid(name_label):
