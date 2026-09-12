@@ -3269,10 +3269,23 @@ func _update_unit_display() -> void:
 				var hp_pct = float(unit_info.get("hp", 0)) / float(unit_info.get("max_hp", 100)) * 100.0
 				_player_team_hp_bars[i].value = hp_pct
 				_player_team_hp_bars[i].visible = true
-				# Update HP value label
+				var is_dead = unit_info.get("hp", 0) <= 0
+				# Update HP value label - show "阵亡" when dead
 				var p_hp_label = _player_team_hp_bars[i].get_node_or_null("HPValueLabel")
 				if p_hp_label:
-					p_hp_label.text = "%d/%d" % [int(unit_info.get("hp", 0)), int(unit_info.get("max_hp", 100))]
+					if is_dead:
+						p_hp_label.text = "阵亡"
+						p_hp_label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
+					else:
+						p_hp_label.text = "%d/%d" % [int(unit_info.get("hp", 0)), int(unit_info.get("max_hp", 100))]
+						p_hp_label.add_theme_color_override("font_color", Color(0.9, 0.9, 0.85))
+				# Dim HP bar container when dead
+				var p_container = _player_team_hp_bars[i].get_parent()
+				if p_container:
+					if is_dead:
+						p_container.modulate = Color(0.4, 0.4, 0.4, 0.7)
+					else:
+						p_container.modulate = Color(1.0, 1.0, 1.0, 1.0)
 			else:
 				_player_team_hp_bars[i].visible = false
 	if info.has("ai_team"):
@@ -3283,10 +3296,23 @@ func _update_unit_display() -> void:
 				var hp_pct = float(unit_info.get("hp", 0)) / float(unit_info.get("max_hp", 100)) * 100.0
 				_ai_team_hp_bars[i].value = hp_pct
 				_ai_team_hp_bars[i].visible = true
-				# Update HP value label
+				var is_dead_ai = unit_info.get("hp", 0) <= 0
+				# Update HP value label - show "阵亡" when dead
 				var a_hp_label = _ai_team_hp_bars[i].get_node_or_null("HPValueLabel")
 				if a_hp_label:
-					a_hp_label.text = "%d/%d" % [int(unit_info.get("hp", 0)), int(unit_info.get("max_hp", 100))]
+					if is_dead_ai:
+						a_hp_label.text = "阵亡"
+						a_hp_label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
+					else:
+						a_hp_label.text = "%d/%d" % [int(unit_info.get("hp", 0)), int(unit_info.get("max_hp", 100))]
+						a_hp_label.add_theme_color_override("font_color", Color(0.9, 0.9, 0.85))
+				# Dim HP bar container when dead
+				var a_container = _ai_team_hp_bars[i].get_parent()
+				if a_container:
+					if is_dead_ai:
+						a_container.modulate = Color(0.4, 0.4, 0.4, 0.7)
+					else:
+						a_container.modulate = Color(1.0, 1.0, 1.0, 1.0)
 			else:
 				_ai_team_hp_bars[i].visible = false
 
