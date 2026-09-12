@@ -6000,6 +6000,14 @@ func _show_skill_error(skill_name: String) -> void:
 	# Show error message in battle log
 	if battle_log:
 		battle_log.text += "\n[技能] %s %s" % [skill_name, reason]
+	# Skill button red flash effect
+	var error_btn = skill_buttons.get(skill_name.to_lower(), null)
+	if error_btn == null:
+		error_btn = skill_buttons.get(skill_name, null)
+	if error_btn and is_instance_valid(error_btn):
+		var error_tween = create_tween()
+		error_btn.modulate = Color(1.5, 0.4, 0.4)
+		error_tween.tween_property(error_btn, "modulate", Color(1, 1, 1), 0.3)
 	# Play error sound
 	if AudioManager:
 		AudioManager.play_sfx("error")
