@@ -144,6 +144,10 @@ var _speed_options = [1.0, 1.5, 2.0]
 var _hotkey_panel = null
 var _hotkey_visible = false
 
+## Team alive count display
+var _player_alive_label = null
+var _ai_alive_label = null
+
 ## Tactical command system (GDD v2.0 Chapter 2.1.1)
 var _tactical_system = null
 var _tactical_buttons = {}
@@ -420,6 +424,7 @@ func _ready() -> void:
 	_setup_pause_button()
 	_setup_speed_button()
 	_setup_hotkey_panel()
+	_setup_team_alive_labels()
 	_setup_status_labels()
 	_setup_crit_label()
 	_setup_dodge_label()
@@ -1037,6 +1042,80 @@ func _toggle_hotkey_panel() -> void:
 	_hotkey_panel.visible = _hotkey_visible
 	if AudioManager:
 		AudioManager.play_sfx("ui_button_click", 0.3)
+
+
+## Create team alive count labels (4v4 team battle only)
+func _setup_team_alive_labels() -> void:
+	# Player alive count - next to player panel
+	_player_alive_label = Label.new()
+	_player_alive_label.name = "PlayerAliveLabel"
+	_player_alive_label.text = ""
+	_player_alive_label.position = Vector2(220, 15)
+	_player_alive_label.size = Vector2(80, 25)
+	_player_alive_label.add_theme_font_size_override("font_size", 14)
+	_player_alive_label.add_theme_color_override("font_color", Color(0.5, 0.9, 0.6))
+	_player_alive_label.add_theme_color_override("font_outline_color", Color(0.0, 0.1, 0.0, 0.9))
+	_player_alive_label.add_theme_constant_override("outline_size", 2)
+	_player_alive_label.visible = false
+	add_child(_player_alive_label)
+
+	# AI alive count - next to AI panel
+	_ai_alive_label = Label.new()
+	_ai_alive_label.name = "AIAliveLabel"
+	_ai_alive_label.text = ""
+	_ai_alive_label.position = Vector2(980, 15)
+	_ai_alive_label.size = Vector2(80, 25)
+	_ai_alive_label.add_theme_font_size_override("font_size", 14)
+	_ai_alive_label.add_theme_color_override("font_color", Color(0.9, 0.5, 0.5))
+	_ai_alive_label.add_theme_color_override("font_outline_color", Color(0.1, 0.0, 0.0, 0.9))
+	_ai_alive_label.add_theme_constant_override("outline_size", 2)
+	_ai_alive_label.visible = false
+	add_child(_ai_alive_label)
+
+
+## Update team alive count labels
+func _update_team_alive_labels(info: Dictionary) -> void:
+	var is_team = GameState.get_value("battle", "is_team_battle", false)
+	if not is_team:
+		if _player_alive_label:
+			_player_alive_label.visible = false
+		if _ai_alive_label:
+			_ai_alive_label.visible = false
+		return
+
+	# Player team alive count
+	if info.has("player_team") and _player_alive_label:
+		var player_team = info["player_team"]
+		var p_alive = 0
+		for u in player_team:
+			if u.get("hp", 0) > 0:
+				p_alive += 1
+		_player_alive_label.text = "存活 %d/%d" % [p_alive, player_team.size()]
+		_player_alive_label.visible = true
+		# Color: green if all alive, yellow if some dead, red if none alive
+		if p_alive == player_team.size():
+			_player_alive_label.add_theme_color_override("font_color", Color(0.5, 0.9, 0.6))
+		elif p_alive > 0:
+			_player_alive_label.add_theme_color_override("font_color", Color(0.95, 0.8, 0.3))
+		else:
+			_player_alive_label.add_theme_color_override("font_color", Color(0.9, 0.3, 0.3))
+
+	# AI team alive count
+	if info.has("ai_team") and _ai_alive_label:
+		var ai_team = info["ai_team"]
+		var a_alive = 0
+		for u in ai_team:
+			if u.get("hp", 0) > 0:
+				a_alive += 1
+		_ai_alive_label.text = "存活 %d/%d" % [a_alive, ai_team.size()]
+		_ai_alive_label.visible = true
+		# Color: red if all alive (enemy), yellow if some dead, green if none alive (good for player)
+		if a_alive == ai_team.size():
+			_ai_alive_label.add_theme_color_override("font_color", Color(0.9, 0.5, 0.5))
+		elif a_alive > 0:
+			_ai_alive_label.add_theme_color_override("font_color", Color(0.95, 0.8, 0.3))
+		else:
+			_ai_alive_label.add_theme_color_override("font_color", Color(0.5, 0.9, 0.6))
 
 
 ## Handle speed button press (cycle through speed options)
@@ -3260,6 +3339,9 @@ func _update_unit_display() -> void:
 			if _ai_energy_value_label:
 				_ai_energy_value_label.text = "%d/%d" % [int(a.get("energy", 0)), int(a.get("max_energy", 50))]
 
+	# Update team alive count labels
+	_update_team_alive_labels(info)
+
 	# GAP-001: Update team HP bars
 	if info.has("player_team"):
 		var player_team = info["player_team"]
@@ -3909,6 +3991,12 @@ func _clear_team_visuals() -> void:
 	if _hotkey_panel and is_instance_valid(_hotkey_panel):
 		_hotkey_panel.queue_free()
 	_hotkey_panel = null
+	if _player_alive_label and is_instance_valid(_player_alive_label):
+		_player_alive_label.queue_free()
+	_player_alive_label = null
+	if _ai_alive_label and is_instance_valid(_ai_alive_label):
+		_ai_alive_label.queue_free()
+	_ai_alive_label = null
 	for hp_bar in _ai_team_hp_bars:
 		if hp_bar and is_instance_valid(hp_bar):
 			# Free parent container if it exists (new layout), else free the bar itself
