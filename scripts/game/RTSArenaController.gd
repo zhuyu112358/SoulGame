@@ -1918,32 +1918,94 @@ func _trigger_skill_particles(p_position: Vector2, p_color: Color = Color(1.0, 0
 
 ## Spawn a move indicator ring at clicked position (RTS feedback)
 func _spawn_move_indicator(p_position: Vector2) -> void:
-	var ring = ColorRect.new()
-	ring.name = "MoveIndicator"
-	ring.color = Color(0.4, 0.8, 1.0, 0.7)
-	ring.size = Vector2(24, 24)
-	ring.position = p_position - Vector2(12, 12)
-	ring.z_index = 5
-	add_child(ring)
+	# Game-level move indicator: green pulsing ring with inner dot
+	var indicator = Node2D.new()
+	indicator.name = "MoveIndicator"
+	indicator.z_index = 5
+	indicator.position = p_position
+
+	# Create green ring texture programmatically
+	var radius = 18
+	var img_size = int(radius * 2) + 8
+	var img = Image.create(img_size, img_size, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0, 0, 0, 0))
+	var center = Vector2(img_size / 2, img_size / 2)
+	for x in range(img_size):
+		for y in range(img_size):
+			var dist = Vector2(x, y).distance_to(center)
+			if dist <= radius and dist >= radius - 4:
+				img.set_pixel(x, y, Color(0.3, 0.9, 0.5, 0.9))
+	var texture = ImageTexture.create_from_image(img)
+
+	var ring = Sprite2D.new()
+	ring.name = "Ring"
+	ring.texture = texture
+	ring.centered = true
+	indicator.add_child(ring)
+
+	# Inner dot
+	var dot = ColorRect.new()
+	dot.name = "Dot"
+	dot.size = Vector2(6, 6)
+	dot.position = Vector2(-3, -3)
+	dot.color = Color(0.3, 0.9, 0.5, 0.9)
+	indicator.add_child(dot)
+
+	add_child(indicator)
+
+	# Pulse and fade animation
 	var tween = create_tween()
-	tween.tween_property(ring, "scale", Vector2(1.8, 1.8), 0.4)
-	tween.parallel().tween_property(ring, "color:a", 0.0, 0.4)
-	tween.tween_callback(ring.queue_free)
+	tween.tween_property(indicator, "scale", Vector2(1.6, 1.6), 0.5)
+	tween.parallel().tween_property(indicator, "modulate:a", 0.0, 0.5)
+	tween.tween_callback(indicator.queue_free)
 
 
 ## Spawn red attack target indicator at position
 func _spawn_attack_indicator(p_position: Vector2) -> void:
-	var ring = ColorRect.new()
-	ring.name = "AttackIndicator"
-	ring.color = Color(1.0, 0.3, 0.2, 0.8)
-	ring.size = Vector2(32, 32)
-	ring.position = p_position - Vector2(16, 16)
-	ring.z_index = 5
-	add_child(ring)
+	# Game-level attack indicator: red pulsing ring with crosshair
+	var indicator = Node2D.new()
+	indicator.name = "AttackIndicator"
+	indicator.z_index = 5
+	indicator.position = p_position
+
+	# Create red ring texture programmatically
+	var radius = 22
+	var img_size = int(radius * 2) + 8
+	var img = Image.create(img_size, img_size, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0, 0, 0, 0))
+	var center = Vector2(img_size / 2, img_size / 2)
+	for x in range(img_size):
+		for y in range(img_size):
+			var dist = Vector2(x, y).distance_to(center)
+			if dist <= radius and dist >= radius - 5:
+				img.set_pixel(x, y, Color(1.0, 0.3, 0.2, 0.9))
+	var texture = ImageTexture.create_from_image(img)
+
+	var ring = Sprite2D.new()
+	ring.name = "Ring"
+	ring.texture = texture
+	ring.centered = true
+	indicator.add_child(ring)
+
+	# Crosshair lines
+	var h_line = ColorRect.new()
+	h_line.size = Vector2(20, 2)
+	h_line.position = Vector2(-10, -1)
+	h_line.color = Color(1.0, 0.3, 0.2, 0.9)
+	indicator.add_child(h_line)
+
+	var v_line = ColorRect.new()
+	v_line.size = Vector2(2, 20)
+	v_line.position = Vector2(-1, -10)
+	v_line.color = Color(1.0, 0.3, 0.2, 0.9)
+	indicator.add_child(v_line)
+
+	add_child(indicator)
+
 	var tween = create_tween()
-	tween.tween_property(ring, "scale", Vector2(2.0, 2.0), 0.5)
-	tween.parallel().tween_property(ring, "color:a", 0.0, 0.5)
-	tween.tween_callback(ring.queue_free)
+	tween.tween_property(indicator, "scale", Vector2(1.5, 1.5), 0.3)
+	tween.parallel().tween_property(indicator, "modulate:a", 0.0, 0.3)
+	tween.tween_callback(indicator.queue_free)
 
 
 ## Update error message display
