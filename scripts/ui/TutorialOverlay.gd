@@ -59,7 +59,9 @@ func _ready() -> void:
 	else:
 		visible = false
 
+	_setup_ui_styles()
 	GameLog.info("TutorialOverlay: Ready, active=%s, level=%d" % [_is_tutorial_active, _current_level], "UI")
+	GameLog.info("TutorialOverlay: Game-level UI styles applied", "UI")
 
 
 ## Start a tutorial level
@@ -176,6 +178,102 @@ func check_objective(p_objective_id: String, p_progress: float = 1.0) -> void:
 		return
 	# Future: check if current step objective matches and advance
 	pass
+
+
+## Apply game-level UI styles (panel, text hierarchy, progress bar, buttons)
+func _setup_ui_styles() -> void:
+	# Panel style - deep purple bg + gold border + rounded corners
+	if _panel:
+		var panel_style = StyleBoxFlat.new()
+		panel_style.bg_color = Color(0.06, 0.04, 0.12, 0.95)
+		panel_style.border_color = Color(0.83, 0.66, 0.36, 0.9)
+		panel_style.border_width_left = 2
+		panel_style.border_width_right = 2
+		panel_style.border_width_top = 2
+		panel_style.border_width_bottom = 2
+		panel_style.corner_radius_top_left = 8
+		panel_style.corner_radius_top_right = 8
+		panel_style.corner_radius_bottom_left = 8
+		panel_style.corner_radius_bottom_right = 8
+		_panel.add_theme_stylebox_override("panel", panel_style)
+	# Title - gold, larger
+	if _title_label:
+		_title_label.add_theme_font_size_override("font_size", 18)
+		_title_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.5))
+	# Step label - dark gold
+	if _step_label:
+		_step_label.add_theme_font_size_override("font_size", 14)
+		_step_label.add_theme_color_override("font_color", Color(0.85, 0.7, 0.35))
+	# Objective label - gray-white
+	if _objective_label:
+		_objective_label.add_theme_font_size_override("font_size", 14)
+		_objective_label.add_theme_color_override("font_color", Color(0.85, 0.82, 0.75))
+	# Hint label - lighter gray
+	if _hint_label:
+		_hint_label.add_theme_font_size_override("font_size", 13)
+		_hint_label.add_theme_color_override("font_color", Color(0.7, 0.68, 0.62))
+	# Progress bar - gold fill style
+	if _progress_bar:
+		var bar_bg = StyleBoxFlat.new()
+		bar_bg.bg_color = Color(0.1, 0.08, 0.18, 0.8)
+		bar_bg.border_color = Color(0.7, 0.55, 0.3, 0.6)
+		bar_bg.border_width_left = 1
+		bar_bg.border_width_right = 1
+		bar_bg.border_width_top = 1
+		bar_bg.border_width_bottom = 1
+		bar_bg.corner_radius_top_left = 4
+		bar_bg.corner_radius_top_right = 4
+		bar_bg.corner_radius_bottom_left = 4
+		bar_bg.corner_radius_bottom_right = 4
+		var bar_fill = StyleBoxFlat.new()
+		bar_fill.bg_color = Color(0.9, 0.7, 0.3, 0.9)
+		bar_fill.corner_radius_top_left = 3
+		bar_fill.corner_radius_top_right = 3
+		bar_fill.corner_radius_bottom_left = 3
+		bar_fill.corner_radius_bottom_right = 3
+		_progress_bar.add_theme_stylebox_override("background", bar_bg)
+		_progress_bar.add_theme_stylebox_override("fill", bar_fill)
+	# Buttons - three-state StyleBoxFlat
+	for btn in [_close_button, _minimize_button, _next_button]:
+		if btn:
+			var btn_normal = StyleBoxFlat.new()
+			btn_normal.bg_color = Color(0.12, 0.08, 0.22, 0.95)
+			btn_normal.border_color = Color(0.7, 0.55, 0.3, 0.8)
+			btn_normal.border_width_left = 2
+			btn_normal.border_width_right = 2
+			btn_normal.border_width_top = 2
+			btn_normal.border_width_bottom = 2
+			btn_normal.corner_radius_top_left = 6
+			btn_normal.corner_radius_top_right = 6
+			btn_normal.corner_radius_bottom_left = 6
+			btn_normal.corner_radius_bottom_right = 6
+			var btn_hover = StyleBoxFlat.new()
+			btn_hover.bg_color = Color(0.18, 0.12, 0.3, 0.95)
+			btn_hover.border_color = Color(1.0, 0.85, 0.5, 1.0)
+			btn_hover.border_width_left = 2
+			btn_hover.border_width_right = 2
+			btn_hover.border_width_top = 2
+			btn_hover.border_width_bottom = 2
+			btn_hover.corner_radius_top_left = 6
+			btn_hover.corner_radius_top_right = 6
+			btn_hover.corner_radius_bottom_left = 6
+			btn_hover.corner_radius_bottom_right = 6
+			var btn_pressed = StyleBoxFlat.new()
+			btn_pressed.bg_color = Color(0.08, 0.05, 0.15, 0.95)
+			btn_pressed.border_color = Color(0.6, 0.45, 0.2, 0.9)
+			btn_pressed.border_width_left = 2
+			btn_pressed.border_width_right = 2
+			btn_pressed.border_width_top = 2
+			btn_pressed.border_width_bottom = 2
+			btn_pressed.corner_radius_top_left = 6
+			btn_pressed.corner_radius_top_right = 6
+			btn_pressed.corner_radius_bottom_left = 6
+			btn_pressed.corner_radius_bottom_right = 6
+			btn.add_theme_stylebox_override("normal", btn_normal)
+			btn.add_theme_stylebox_override("hover", btn_hover)
+			btn.add_theme_stylebox_override("pressed", btn_pressed)
+			btn.add_theme_color_override("font_color", Color(0.9, 0.8, 0.6))
+			btn.add_theme_font_size_override("font_size", 13)
 
 
 ## Setup button hover effects

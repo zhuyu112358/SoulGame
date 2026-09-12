@@ -1,6 +1,30 @@
 ﻿# 战策 Battleplan 开发日志
 
 
+## [UI升级] TutorialOverlay战斗内教学覆盖层游戏级UI升级-面板样式/文字层次/进度条金色填充/按钮三态（2026-09-12）
+
+**本轮工作**：为TutorialOverlay战斗内教学覆盖层组件添加游戏级UI样式，之前只有按钮hover颜色变化，没有面板样式和文字层次。
+
+**改进内容**：
+- 新增_setup_ui_styles()方法
+  - Panel：深紫底色(Color(0.06,0.04,0.12,0.95))+金色边框(2px)+圆角(8px)
+  - TitleLabel：18号金色字体
+  - StepLabel：14号暗金色字体
+  - ObjectiveLabel：14号灰白字体
+  - HintLabel：13号浅灰字体
+  - ProgressBar：深紫底色+金色边框背景，金色填充
+  - CloseButton/MinimizeButton/NextButton：三态StyleBoxFlat样式(normal/hover/pressed)+13号金色字体
+- _ready中调用_setup_ui_styles()
+
+**修改文件**：
+- scripts/ui/TutorialOverlay.gd：新增_setup_ui_styles()方法
+
+**验证结果**：
+- tutorial_overlay场景测试：NO SCRIPT ERROR
+- M2测试：2955 Passed, 0 Failed
+
+---
+
 ## [UI升级] GrowthVisualizer成长可视化器游戏级UI升级-面板样式/进度条金色填充/文字层次/按钮三态/入场动画（2026-09-12）
 
 **本轮工作**：为GrowthVisualizer成长可视化器组件添加游戏级UI样式，之前使用默认控件样式。
