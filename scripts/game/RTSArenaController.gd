@@ -4052,8 +4052,22 @@ func _create_team_hp_bars(p_player_team: Array, p_ai_team: Array) -> void:
 
 ## Select a player unit by index (clickable HP bar)
 func _select_player_unit(p_index: int) -> void:
+	# Restore previous selected unit name style
+	if _selected_unit_index >= 0 and _selected_unit_index < _player_overhead_names.size():
+		var prev_name = _player_overhead_names[_selected_unit_index]
+		if prev_name and is_instance_valid(prev_name):
+			prev_name.scale = Vector2(1, 1)
+			prev_name.add_theme_color_override("font_color", Color(0.7, 0.9, 1.0))
+
 	_selected_unit_index = p_index
 	GameLog.info("RTSArena: Selected player unit %d" % p_index, "Arena")
+
+	# Highlight selected unit name: larger + gold color
+	if p_index >= 0 and p_index < _player_overhead_names.size():
+		var sel_name = _player_overhead_names[p_index]
+		if sel_name and is_instance_valid(sel_name):
+			sel_name.scale = Vector2(1.3, 1.3)
+			sel_name.add_theme_color_override("font_color", Color(1.0, 0.88, 0.5))  # Gold
 	# Immediately update selection indicator position
 	if _selection_indicator and is_instance_valid(_selection_indicator):
 		if p_index < _player_visuals.size():
@@ -5592,6 +5606,11 @@ func _on_unit_died(p_unit: SoulUnit) -> void:
 					_selected_unit_index = -1
 					if _selection_indicator and is_instance_valid(_selection_indicator):
 						_selection_indicator.visible = false
+					# Restore all unit name styles
+					for name_label in _player_overhead_names:
+						if name_label and is_instance_valid(name_label):
+							name_label.scale = Vector2(1, 1)
+							name_label.add_theme_color_override("font_color", Color(0.7, 0.9, 1.0))
 
 
 ## Spawn hit effect particles (small burst of sparks)
