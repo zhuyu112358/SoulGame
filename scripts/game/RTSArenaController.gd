@@ -3402,6 +3402,15 @@ func _on_battle_started(p_battle_info: Dictionary) -> void:
 		ArenaMap.position = Vector2(20, 90)
 		add_child(ArenaMap)
 
+	# Auto-select first alive player unit in team battle
+	var is_team_auto = GameState.get_value("battle", "is_team_battle", false)
+	if is_team_auto and RTSArenaManager.player_units.size() > 0:
+		for i in range(RTSArenaManager.player_units.size()):
+			var unit = RTSArenaManager.player_units[i]
+			if unit and unit.state != SoulUnit.UnitState.DEAD:
+				_select_player_unit(i)
+				break
+
 	# Setup minimap
 	if minimap:
 		minimap.set_player_unit(RTSArenaManager.player_unit)
