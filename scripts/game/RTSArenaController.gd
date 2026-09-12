@@ -3581,10 +3581,15 @@ func _update_skill_cooldowns() -> void:
 			# Button shows icon only; cooldown indicated by overlay + disabled state
 			_skill_was_on_cooldown[skill_name] = true
 		else:
-			# Play skill ready sound when cooldown finishes
-			if was_on_cd and AudioManager:
-				AudioManager.play_sfx("bat_skill_ready", 0.5)
-			_skill_was_on_cooldown[skill_name] = false
+				# Play skill ready sound and pulse animation when cooldown finishes
+				if was_on_cd:
+					if AudioManager:
+						AudioManager.play_sfx("bat_skill_ready", 0.5)
+					# Button pulse animation: scale up then back
+					var pulse_tween = create_tween()
+					pulse_tween.tween_property(button, "scale", Vector2(1.15, 1.15), 0.1)
+					pulse_tween.tween_property(button, "scale", Vector2(1.0, 1.0), 0.15)
+				_skill_was_on_cooldown[skill_name] = false
 
 
 ## Get max cooldown for a skill
