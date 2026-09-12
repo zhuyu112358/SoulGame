@@ -83,6 +83,42 @@ func _ready() -> void:
 	_setup_ui_styles()
 
 	GameLog.info("CGSystem: Ready (game-level UI)", "CG")
+	_animate_entrance()
+
+
+## Animate UI entrance with staggered fade-in + scale (game-level UI)
+func _animate_entrance() -> void:
+	# Skip button fade-in
+	if _skip_button and _skip_button is CanvasItem:
+		_skip_button.modulate.a = 0.0
+		var skip_tween = create_tween()
+		skip_tween.set_ease(Tween.EASE_OUT)
+		skip_tween.tween_interval(0.5)
+		skip_tween.tween_property(_skip_button, "modulate:a", 1.0, 0.4)
+	# Text panel fade-in + scale
+	if _text_panel and _text_panel is CanvasItem:
+		_text_panel.modulate.a = 0.0
+		_text_panel.scale = Vector2(0.95, 0.95)
+		var panel_tween = create_tween()
+		panel_tween.set_ease(Tween.EASE_OUT)
+		panel_tween.set_trans(Tween.TRANS_BACK)
+		panel_tween.tween_interval(0.8)
+		panel_tween.tween_property(_text_panel, "modulate:a", 1.0, 0.5)
+		panel_tween.parallel().tween_property(_text_panel, "scale", Vector2(1.0, 1.0), 0.5)
+	# Title label fade-in
+	if _title_label and _title_label is CanvasItem:
+		_title_label.modulate.a = 0.0
+		var title_tween = create_tween()
+		title_tween.set_ease(Tween.EASE_OUT)
+		title_tween.tween_interval(1.0)
+		title_tween.tween_property(_title_label, "modulate:a", 1.0, 0.4)
+	# Text label fade-in
+	if _text_label and _text_label is CanvasItem:
+		_text_label.modulate.a = 0.0
+		var text_tween = create_tween()
+		text_tween.set_ease(Tween.EASE_OUT)
+		text_tween.tween_interval(1.2)
+		text_tween.tween_property(_text_label, "modulate:a", 1.0, 0.4)
 
 
 ## Show fallback text when video not available
