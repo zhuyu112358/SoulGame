@@ -4260,13 +4260,23 @@ func _update_countdown(delta: float) -> void:
 		_countdown_value -= 1
 		if _countdown_value > 0:
 			_countdown_label.text = str(_countdown_value)
-			_countdown_label.scale = Vector2(1.5, 1.5)
+			_countdown_label.modulate.a = 1.0
+			# Scale-in animation: start small, expand to 1.5, then settle
+			var num_tween = create_tween()
+			_countdown_label.scale = Vector2(0.5, 0.5)
+			num_tween.tween_property(_countdown_label, "scale", Vector2(1.6, 1.6), 0.15)
+			num_tween.tween_property(_countdown_label, "scale", Vector2(1.3, 1.3), 0.15)
 			if AudioManager:
 				AudioManager.play_sfx("battle_ui_start")
 		elif _countdown_value == 0:
 			_countdown_label.text = "GO!"
-			_countdown_label.scale = Vector2(2.0, 2.0)
 			_countdown_label.add_theme_color_override("font_color", Color(0.4, 1.0, 0.5))
+			_countdown_label.modulate.a = 1.0
+			# GO! big scale-in with glow effect
+			var go_tween = create_tween()
+			_countdown_label.scale = Vector2(0.8, 0.8)
+			go_tween.tween_property(_countdown_label, "scale", Vector2(2.5, 2.5), 0.2)
+			go_tween.tween_property(_countdown_label, "scale", Vector2(2.0, 2.0), 0.2)
 			if AudioManager:
 				AudioManager.play_sfx("battle_critical")
 		else:
@@ -4278,6 +4288,7 @@ func _update_countdown(delta: float) -> void:
 				if skill_buttons[skill_name]:
 					skill_buttons[skill_name].disabled = false
 			_add_log("Fight!")
+			return
 			return
 	# Scale animation (pop effect)
 	var scale_progress = _countdown_timer / number_duration
