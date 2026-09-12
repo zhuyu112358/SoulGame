@@ -3388,7 +3388,11 @@ func _process(delta: float) -> void:
 				var p_bob = 0.0
 				if p_unit.state == SoulUnit.UnitState.MOVING:
 					p_bob = sin(Time.get_ticks_msec() / 120.0 + i * 1.5) * 3.0
-				_player_visuals[i].position = p_unit.position + Vector2(0, p_bob)
+				# Attack lunge: dash forward when attacking
+				var p_lunge = 0.0
+				if p_unit.state == SoulUnit.UnitState.ATTACKING:
+					p_lunge = sin(Time.get_ticks_msec() / 80.0 + i) * 6.0  # Dash right 6px
+				_player_visuals[i].position = p_unit.position + Vector2(p_lunge, p_bob)
 				# Attack pulse: scale up briefly when attacking
 				var p_attack_scale = Vector2(1, 1)
 				if p_unit.state == SoulUnit.UnitState.ATTACKING:
@@ -3415,7 +3419,11 @@ func _process(delta: float) -> void:
 				var a_bob = 0.0
 				if a_unit.state == SoulUnit.UnitState.MOVING:
 					a_bob = sin(Time.get_ticks_msec() / 120.0 + i * 1.5 + 2.0) * 3.0
-				_ai_visuals[i].position = a_unit.position + Vector2(0, a_bob)
+				# Attack lunge: dash forward (left for AI) when attacking
+				var a_lunge = 0.0
+				if a_unit.state == SoulUnit.UnitState.ATTACKING:
+					a_lunge = sin(Time.get_ticks_msec() / 80.0 + i + 1.0) * 6.0  # Dash left 6px
+				_ai_visuals[i].position = a_unit.position + Vector2(-a_lunge, a_bob)
 				# Attack pulse: scale up briefly when attacking
 				var a_attack_scale = Vector2(1, 1)
 				if a_unit.state == SoulUnit.UnitState.ATTACKING:
