@@ -854,6 +854,25 @@ func _unhandled_input(event: InputEvent) -> void:
 					if AudioManager:
 						AudioManager.play_sfx("ui_button_click", 0.3)
 					get_viewport().set_input_as_handled()
+				KEY_TAB:
+					# Cycle to next alive player unit (4v4 team battle)
+					var is_team_tab = GameState.get_value("battle", "is_team_battle", false)
+					if is_team_tab and RTSArenaManager.player_units.size() > 0:
+						var next_idx = -1
+						var start_idx = _selected_unit_index + 1
+						if start_idx >= RTSArenaManager.player_units.size():
+							start_idx = 0
+						for i in range(RTSArenaManager.player_units.size()):
+							var check_idx = (start_idx + i) % RTSArenaManager.player_units.size()
+							var check_unit = RTSArenaManager.player_units[check_idx]
+							if check_unit and check_unit.state != SoulUnit.UnitState.DEAD:
+								next_idx = check_idx
+								break
+						if next_idx >= 0:
+							_select_player_unit(next_idx)
+							if AudioManager:
+								AudioManager.play_sfx("ui_button_click", 0.3)
+					get_viewport().set_input_as_handled()
 	# Left-click on arena: move selected unit to clicked position (RTS control)
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		if _battle_active and not _is_paused:
