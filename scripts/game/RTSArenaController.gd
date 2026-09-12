@@ -3494,6 +3494,14 @@ func _update_unit_display() -> void:
 				main_heal.tween_property(player_hp_bar, "modulate", Color(1, 1, 1), 0.2)
 		_prev_main_player_hp = main_player_hp
 		player_hp_bar.value = main_player_hp / float(p.get("max_hp", 100)) * 100.0
+		# Color coding based on HP percentage
+		var p_hp_pct = main_player_hp / float(p.get("max_hp", 100))
+		if p_hp_pct > 0.5:
+			player_hp_bar.modulate = Color(0.5, 1.0, 0.6)  # Green: healthy
+		elif p_hp_pct > 0.2:
+			player_hp_bar.modulate = Color(1.0, 0.9, 0.4)  # Yellow: wounded
+		else:
+			player_hp_bar.modulate = Color(1.0, 0.5, 0.5)  # Red: critical
 		if _player_hp_value_label:
 			_player_hp_value_label.text = "%d/%d" % [int(p.get("hp", 0)), int(p.get("max_hp", 100))]
 			# Low HP warning pulse: red pulse when HP below 30%
@@ -3528,6 +3536,14 @@ func _update_unit_display() -> void:
 				ai_main_heal.tween_property(ai_hp_bar, "modulate", Color(1, 1, 1), 0.2)
 		_prev_main_ai_hp = main_ai_hp
 		ai_hp_bar.value = main_ai_hp / float(a.get("max_hp", 100)) * 100.0
+		# Color coding based on HP percentage
+		var a_hp_pct = main_ai_hp / float(a.get("max_hp", 100))
+		if a_hp_pct > 0.5:
+			ai_hp_bar.modulate = Color(0.5, 1.0, 0.6)  # Green: healthy
+		elif a_hp_pct > 0.2:
+			ai_hp_bar.modulate = Color(1.0, 0.9, 0.4)  # Yellow: wounded
+		else:
+			ai_hp_bar.modulate = Color(1.0, 0.5, 0.5)  # Red: critical
 		if _ai_hp_value_label:
 			_ai_hp_value_label.text = "%d/%d" % [int(a.get("hp", 0)), int(a.get("max_hp", 100))]
 			# Low HP warning pulse: red pulse when HP below 30%
