@@ -67,6 +67,8 @@ var _player_visuals: Array = []  # Array of Sprite2D proxies for player team
 var _ai_visuals: Array = []      # Array of Sprite2D proxies for AI team
 var _player_lights: Array = []   # Array of PointLight2D for player team
 var _ai_lights: Array = []       # Array of PointLight2D for AI team
+var _player_overhead_hp_bars: Array = []  # Overhead HP bars for player team
+var _ai_overhead_hp_bars: Array = []      # Overhead HP bars for AI team
 var _team_hp_container = null    # Container for team HP bars
 var _player_team_hp_bars: Array = []  # HP bars for player team units
 var _ai_team_hp_bars: Array = []      # HP bars for AI team units
@@ -3271,6 +3273,7 @@ func _process(delta: float) -> void:
 				_ai_visuals[i].position = a_unit.position
 			else:
 				_ai_visuals[i].visible = false
+
 	# Sync dynamic lights to unit positions with subtle pulse
 	if _player_light and is_instance_valid(RTSArenaManager.player_unit):
 		_player_light.position = RTSArenaManager.player_unit.position
@@ -3341,6 +3344,9 @@ func _update_unit_display() -> void:
 
 	# Update team alive count labels
 	_update_team_alive_labels(info)
+
+	# Update overhead HP bars
+	_update_overhead_hp_bars(info)
 
 	# GAP-001: Update team HP bars
 	if info.has("player_team"):
@@ -3561,6 +3567,10 @@ func _setup_team_visuals(p_battle_info: Dictionary) -> void:
 		add_child(light)
 		_player_lights.append(light)
 
+		# Create overhead HP bar
+		var p_hp_bar = _create_overhead_hp_bar(true)
+		_player_overhead_hp_bars.append(p_hp_bar)
+
 	# Create AI team visuals
 	var ai_team = p_battle_info.get("ai_team", [])
 	for i in range(ai_team.size()):
@@ -3582,6 +3592,10 @@ func _setup_team_visuals(p_battle_info: Dictionary) -> void:
 		light.position = visual.position
 		add_child(light)
 		_ai_lights.append(light)
+
+		# Create overhead HP bar
+		var a_hp_bar = _create_overhead_hp_bar(false)
+		_ai_overhead_hp_bars.append(a_hp_bar)
 
 	# Create selection indicator (gold circle under selected unit)
 	_selection_indicator = _create_selection_indicator()
@@ -3972,6 +3986,15 @@ func _clear_team_visuals() -> void:
 		if light and is_instance_valid(light):
 			light.queue_free()
 	_ai_lights.clear()
+	# Clear overhead HP bars
+	for bar_data in _player_overhead_hp_bars:
+		if bar_data and bar_data.has("bg") and bar_data["bg"] and is_instance_valid(bar_data["bg"]):
+			bar_data["bg"].queue_free()
+	_player_overhead_hp_bars.clear()
+	for bar_data in _ai_overhead_hp_bars:
+		if bar_data and bar_data.has("bg") and bar_data["bg"] and is_instance_valid(bar_data["bg"]):
+			bar_data["bg"].queue_free()
+	_ai_overhead_hp_bars.clear()
 	for hp_bar in _player_team_hp_bars:
 		if hp_bar and is_instance_valid(hp_bar):
 			# Free parent container if it exists (new layout), else free the bar itself
@@ -5004,6 +5027,128 @@ func _update_selected_unit_panel() -> void:
 	var stats_label = _selected_unit_panel.get_node_or_null("UnitStats")
 	if stats_label:
 		stats_label.text = "ATK: %d  DEF: %d  SPD: %.1f" % [int(unit.attack), int(unit.defense), unit.speed]
+
+
+## Create overhead HP bar for a unit
+## Returns Dictionary with "bg" (background ColorRect) and "fill" (fill ColorRect)
+func _create_overhead_hp_bar(p_is_player: bool) -> Dictionary:
+	var bar_data = {}
+
+	# Background
+	var bg = ColorRect.new()
+	bg.name = "OverheadHPBg"
+	bg.size = Vector2(50, 6)
+	bg.color = Color(0.1, 0.05, 0.05, 0.9)
+	bg.z_index = 20
+	add_child(bg)
+	bar_data["bg"] = bg
+
+	# Fill
+	var fill = ColorRect.new()
+	fill.name = "OverheadHPFill"
+	fill.size = Vector2(50, 6)
+	fill.color = Color(0.3, 0.8, 0.4) if p_is_player else Color(0.9, 0.3, 0.3)
+	fill.z_index = 21
+	add_child(fill)
+	bar_data["fill"] = fill
+
+	# Border (thin outline)
+	var border = ColorRect.new()
+	border.name = "OverheadHPBorder"
+	border.size = Vector2(52, 8)
+	border.color = Color(0.0, 0.0, 0.0, 0.7)
+	border.z_index = 19
+	add_child(border)
+	bar_data["border"] = border
+
+	return bar_data
+
+
+## Update overhead HP bars positions and values
+func _update_overhead_hp_bars(info: Dictionary) -> void:
+	# Player team
+	if info.has("player_team"):
+		var player_team = info["player_team"]
+		for i in range(_player_overhead_hp_bars.size()):
+			if i >= _player_visuals.size() or i >= player_team.size():
+				continue
+			var bar_data = _player_overhead_hp_bars[i]
+			var visual = _player_visuals[i]
+			if not visual or not is_instance_valid(visual) or not visual.visible:
+				if bar_data.has("bg") and bar_data["bg"]:
+					bar_data["bg"].visible = false
+				if bar_data.has("fill") and bar_data["fill"]:
+					bar_data["fill"].visible = false
+				if bar_data.has("border") and bar_data["border"]:
+					bar_data["border"].visible = false
+				continue
+
+			var unit_info = player_team[i]
+			var hp = unit_info.get("hp", 100)
+			var max_hp = unit_info.get("max_hp", 100)
+			var hp_ratio = clamp(float(hp) / float(max_hp), 0.0, 1.0) if max_hp > 0 else 0.0
+
+			# Position above unit
+			var bar_pos = visual.position + Vector2(-25, -55)
+			if bar_data.has("bg") and bar_data["bg"]:
+				bar_data["bg"].visible = true
+				bar_data["bg"].position = bar_pos
+			if bar_data.has("border") and bar_data["border"]:
+				bar_data["border"].visible = true
+				bar_data["border"].position = bar_pos + Vector2(-1, -1)
+			if bar_data.has("fill") and bar_data["fill"]:
+				bar_data["fill"].visible = true
+				bar_data["fill"].position = bar_pos
+				bar_data["fill"].size = Vector2(50.0 * hp_ratio, 6)
+				# Color: green > 60%, yellow 30-60%, red < 30%
+				if hp_ratio > 0.6:
+					bar_data["fill"].color = Color(0.3, 0.8, 0.4)
+				elif hp_ratio > 0.3:
+					bar_data["fill"].color = Color(0.95, 0.8, 0.3)
+				else:
+					bar_data["fill"].color = Color(0.9, 0.3, 0.3)
+
+	# AI team
+	if info.has("ai_team"):
+		var ai_team = info["ai_team"]
+		for i in range(_ai_overhead_hp_bars.size()):
+			if i >= _ai_visuals.size() or i >= ai_team.size():
+				continue
+			var bar_data = _ai_overhead_hp_bars[i]
+			var visual = _ai_visuals[i]
+			if not visual or not is_instance_valid(visual) or not visual.visible:
+				if bar_data.has("bg") and bar_data["bg"]:
+					bar_data["bg"].visible = false
+				if bar_data.has("fill") and bar_data["fill"]:
+					bar_data["fill"].visible = false
+				if bar_data.has("border") and bar_data["border"]:
+					bar_data["border"].visible = false
+				continue
+
+			var unit_info = ai_team[i]
+			var hp = unit_info.get("hp", 100)
+			var max_hp = unit_info.get("max_hp", 100)
+			var hp_ratio = clamp(float(hp) / float(max_hp), 0.0, 1.0) if max_hp > 0 else 0.0
+
+			# Position above unit
+			var bar_pos = visual.position + Vector2(-25, -55)
+			if bar_data.has("bg") and bar_data["bg"]:
+				bar_data["bg"].visible = true
+				bar_data["bg"].position = bar_pos
+			if bar_data.has("border") and bar_data["border"]:
+				bar_data["border"].visible = true
+				bar_data["border"].position = bar_pos + Vector2(-1, -1)
+			if bar_data.has("fill") and bar_data["fill"]:
+				bar_data["fill"].visible = true
+				bar_data["fill"].position = bar_pos
+				bar_data["fill"].size = Vector2(50.0 * hp_ratio, 6)
+				# Color: red > 60%, orange 30-60%, dark red < 30% (enemy)
+				if hp_ratio > 0.6:
+					bar_data["fill"].color = Color(0.9, 0.3, 0.3)
+				elif hp_ratio > 0.3:
+					bar_data["fill"].color = Color(0.95, 0.6, 0.2)
+				else:
+					bar_data["fill"].color = Color(0.7, 0.2, 0.2)
 
 
 ## Create gold circle selection indicator for selected unit
