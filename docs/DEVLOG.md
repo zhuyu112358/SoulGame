@@ -1,6 +1,33 @@
 # 战策 Battleplan 开发日志
 
 
+## [战斗玩法] 4v4全队攻击目标指令-未选中单位时右键点击设置全队攻击目标（2026-09-12）
+
+**本轮工作**：增强4v4团队战斗的单位控制能力，添加全队攻击目标指令功能。当没有选中单位时，右键点击AI单位会设置所有存活玩家单位的攻击目标。
+
+**改进内容**：
+- RTSArenaManager.gd：新增set_all_player_units_attack_target(p_target)方法
+  - 设置所有存活的玩家单位的攻击目标
+  - 检查战斗状态和目标存活状态
+- RTSArenaController.gd：修改_unhandled_input中的右键点击处理
+  - 4v4团队战斗中：
+    - 有选中单位时：右键点击设置选中单位的攻击目标
+    - 未选中单位时：右键点击设置所有存活单位的攻击目标
+  - 两种模式都显示红色攻击目标指示器和播放点击音效
+
+**修改文件**：
+- scripts/game/RTSArenaManager.gd：新增set_all_player_units_attack_target方法
+- scripts/game/RTSArenaController.gd：修改右键点击处理支持全队攻击目标
+
+**验证结果**：
+- rts_arena场景测试：NO SCRIPT ERROR
+- M2测试：2955 Passed, 0 Failed
+
+---
+
+# 战策 Battleplan 开发日志
+
+
 ## [战斗玩法] 4v4全队移动指令-未选中单位时左键点击移动所有存活单位（2026-09-12）
 
 **本轮工作**：增强4v4团队战斗的单位控制能力，添加全队移动指令功能。当没有选中单位时，左键点击战场会移动所有存活的玩家单位。
