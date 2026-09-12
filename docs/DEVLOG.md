@@ -1,6 +1,36 @@
 # 战策 Battleplan 开发日志
 
 
+## [战斗玩法] 4v4单单位技能指令-技能按钮对选中单位生效（2026-09-12）
+
+**本轮工作**：增强4v4团队战斗的单位控制能力，让技能按钮（重击/快击/治疗/防御）对选中单位生效，而非全队级别。
+
+**改进内容**：
+- RTSArenaManager.gd：新增player_unit_use_skill(p_index, p_skill_name, p_target)方法
+  - 对指定索引的玩家单位使用技能
+  - 自动寻找最近的存活敌人作为目标（如果未指定目标）
+  - 检查索引有效性、单位存活状态、战斗状态
+- RTSArenaController.gd：修改4个技能按钮处理方法
+  - _on_heavy_strike_pressed：4v4团队战斗中对选中单位使用重击
+  - _on_quick_strike_pressed：4v4团队战斗中对选中单位使用快击
+  - _on_heal_pressed：4v4团队战斗中对选中单位使用治疗
+  - _on_defend_pressed：4v4团队战斗中对选中单位使用防御
+  - 技能粒子效果位置改为选中单位的位置（从_player_visuals获取）
+  - 1v1战斗保持原有行为
+
+**修改文件**：
+- scripts/game/RTSArenaManager.gd：新增player_unit_use_skill方法
+- scripts/game/RTSArenaController.gd：修改4个技能按钮处理方法
+
+**验证结果**：
+- rts_arena场景测试：NO SCRIPT ERROR
+- M2测试：2955 Passed, 0 Failed
+
+---
+
+# 战策 Battleplan 开发日志
+
+
 ## [战斗玩法] 4v4单单位攻击目标指令-右键点击AI单位设置选中单位攻击目标（2026-09-12）
 
 **本轮工作**：增强4v4团队战斗的单位控制能力，添加右键点击设置选中单位攻击目标的功能。
