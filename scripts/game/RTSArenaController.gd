@@ -3394,6 +3394,13 @@ func _process(delta: float) -> void:
 					# Casting pulse: stronger, slower pulse for spell charging feel
 					p_attack_scale = Vector2(1.0 + sin(Time.get_ticks_msec() / 160.0 + i) * 0.12, 1.0 + sin(Time.get_ticks_msec() / 160.0 + i) * 0.12)
 				_player_visuals[i].scale = p_attack_scale
+				# Casting element tint: color shift when casting spells
+				if p_unit.state == SoulUnit.UnitState.CASTING:
+					var p_elem_color = _get_element_color(p_unit.element)
+					var p_tint_amount = 0.3 + sin(Time.get_ticks_msec() / 160.0 + i) * 0.1
+					_player_visuals[i].modulate = Color(1.0 - p_tint_amount * (1.0 - p_elem_color.r), 1.0 - p_tint_amount * (1.0 - p_elem_color.g), 1.0 - p_tint_amount * (1.0 - p_elem_color.b))
+				else:
+					_player_visuals[i].modulate = Color(1, 1, 1)
 			else:
 				_player_visuals[i].visible = false
 	for i in range(_ai_visuals.size()):
@@ -3414,6 +3421,13 @@ func _process(delta: float) -> void:
 					# Casting pulse: stronger, slower pulse for spell charging feel
 					a_attack_scale = Vector2(1.0 + sin(Time.get_ticks_msec() / 160.0 + i + 1.0) * 0.12, 1.0 + sin(Time.get_ticks_msec() / 160.0 + i + 1.0) * 0.12)
 				_ai_visuals[i].scale = a_attack_scale
+				# Casting element tint: color shift when casting spells
+				if a_unit.state == SoulUnit.UnitState.CASTING:
+					var a_elem_color = _get_element_color(a_unit.element)
+					var a_tint_amount = 0.3 + sin(Time.get_ticks_msec() / 160.0 + i + 1.0) * 0.1
+					_ai_visuals[i].modulate = Color(1.0 - a_tint_amount * (1.0 - a_elem_color.r), 1.0 - a_tint_amount * (1.0 - a_elem_color.g), 1.0 - a_tint_amount * (1.0 - a_elem_color.b))
+				else:
+					_ai_visuals[i].modulate = Color(1, 1, 1)
 			else:
 				_ai_visuals[i].visible = false
 
@@ -6793,3 +6807,26 @@ func start_test_battle() -> void:
 	_battle_config["map_name"] = "default_arena"
 	RTSArenaManager.start_battle(player_soul, ai_soul)
 	_battle_active = true
+
+
+## Get element color for visual effects
+func _get_element_color(p_element: String) -> Color:
+	match p_element:
+		"fire", "火":
+			return Color(1.0, 0.6, 0.4)
+		"water", "水":
+			return Color(0.5, 0.7, 1.0)
+		"earth", "土":
+			return Color(0.6, 0.9, 0.5)
+		"wind", "风":
+			return Color(0.5, 1.0, 0.9)
+		"light", "光":
+			return Color(1.0, 0.95, 0.6)
+		"dark", "暗", "shadow":
+			return Color(0.8, 0.5, 1.0)
+		"thunder", "雷":
+			return Color(0.95, 0.9, 0.4)
+		"ice", "冰":
+			return Color(0.6, 0.9, 1.0)
+		_:
+			return Color(1, 1, 1)
