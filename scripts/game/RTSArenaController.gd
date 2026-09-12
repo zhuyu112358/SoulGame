@@ -847,12 +847,20 @@ func _unhandled_input(event: InputEvent) -> void:
 			var click_pos = get_global_mouse_position()
 			var arena_rect = Rect2(20, 90, 1240, 470)
 			if arena_rect.has_point(click_pos):
-				# 4v4 team battle: move selected unit if one is selected
+				# 4v4 team battle: move selected unit if one is selected, else move all units
 				var is_team = GameState.get_value("battle", "is_team_battle", false)
-				if is_team and _selected_unit_index >= 0 and _selected_unit_index < RTSArenaManager.player_units.size():
-					var sel_unit = RTSArenaManager.player_units[_selected_unit_index]
-					if sel_unit and sel_unit.state != SoulUnit.UnitState.DEAD:
-						RTSArenaManager.move_player_unit_to(_selected_unit_index, click_pos)
+				if is_team:
+					if _selected_unit_index >= 0 and _selected_unit_index < RTSArenaManager.player_units.size():
+						var sel_unit = RTSArenaManager.player_units[_selected_unit_index]
+						if sel_unit and sel_unit.state != SoulUnit.UnitState.DEAD:
+							RTSArenaManager.move_player_unit_to(_selected_unit_index, click_pos)
+							_spawn_move_indicator(click_pos)
+							if AudioManager:
+								AudioManager.play_sfx("ui_button_click", 0.4)
+							get_viewport().set_input_as_handled()
+					else:
+						# No unit selected: move all alive units in formation
+						RTSArenaManager.move_all_player_units_to(click_pos)
 						_spawn_move_indicator(click_pos)
 						if AudioManager:
 							AudioManager.play_sfx("ui_button_click", 0.4)

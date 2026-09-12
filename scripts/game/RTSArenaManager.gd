@@ -1038,6 +1038,32 @@ func move_player_unit_to(p_index: int, p_position: Vector2) -> void:
 	unit.move_to(p_position)
 
 
+## Player command: move all alive player units to position (4v4 team battle)
+## Units spread out around target position based on their index
+func move_all_player_units_to(p_position: Vector2) -> void:
+	if battle_state != BattleState.ACTIVE:
+		return
+	var alive_count = 0
+	for u in player_units:
+		if u and u.state != SoulUnit.UnitState.DEAD:
+			alive_count += 1
+	if alive_count == 0:
+		return
+	# Spread units around target position in a formation
+	var spacing = 50.0
+	var idx = 0
+	for i in range(player_units.size()):
+		var unit = player_units[i]
+		if unit == null or unit.state == SoulUnit.UnitState.DEAD:
+			continue
+		# Formation: 2x2 grid centered on target
+		var row = idx / 2
+		var col = idx % 2
+		var offset = Vector2((col - 0.5) * spacing, (row - 0.5) * spacing)
+		unit.move_to(p_position + offset)
+		idx += 1
+
+
 ## Player command: attack target
 func player_attack_target(p_target: SoulUnit) -> void:
 	if player_unit == null or player_unit.state == SoulUnit.UnitState.DEAD:
