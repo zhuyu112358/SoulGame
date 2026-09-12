@@ -3651,9 +3651,23 @@ func _update_energy_bars_smooth(delta: float) -> void:
 	if player_energy_bar:
 		_current_player_energy = lerp(_current_player_energy, _target_player_energy, delta * _energy_bar_smooth_speed)
 		player_energy_bar.value = _current_player_energy
+		# Color coding based on energy percentage
+		if _current_player_energy > 50.0:
+			player_energy_bar.modulate = Color(0.5, 1.0, 0.6)  # Green: plenty of energy
+		elif _current_player_energy > 20.0:
+			player_energy_bar.modulate = Color(1.0, 0.9, 0.4)  # Yellow: moderate energy
+		else:
+			player_energy_bar.modulate = Color(1.0, 0.5, 0.5)  # Red: low energy
 	if ai_energy_bar:
 		_current_ai_energy = lerp(_current_ai_energy, _target_ai_energy, delta * _energy_bar_smooth_speed)
 		ai_energy_bar.value = _current_ai_energy
+		# Color coding based on energy percentage
+		if _current_ai_energy > 50.0:
+			ai_energy_bar.modulate = Color(0.5, 1.0, 0.6)  # Green: plenty of energy
+		elif _current_ai_energy > 20.0:
+			ai_energy_bar.modulate = Color(1.0, 0.9, 0.4)  # Yellow: moderate energy
+		else:
+			ai_energy_bar.modulate = Color(1.0, 0.5, 0.5)  # Red: low energy
 
 
 ## Update skill cooldown display
