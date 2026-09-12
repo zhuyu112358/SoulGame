@@ -12937,3 +12937,19 @@ es://scenes/settings_menu.tscn
 ### 验证
 - 场景测试：rts_arena.tscn加载成功，无SCRIPT ERROR
 - M2测试：2955 Passed, 0 Failed
+
+## 2026-09-12 战斗HUD技能冷却完成脉冲动画
+
+### 新增功能
+- **技能冷却完成脉冲**：当技能冷却结束时，技能按钮会播放一个放大1.15倍然后恢复的脉冲动画
+- **配合音效**：脉冲动画与现有的技能就绪音效同时播放，提供视听双重反馈
+- **4个技能都支持**：重击、快击、治疗、防御4个技能冷却完成时都会触发脉冲动画
+
+### 实现细节
+- 在_update_skill_cooldowns方法中检测冷却完成（was_on_cd为true且当前cooldown为0）
+- 使用create_tween创建两段动画：0.1秒放大到1.15倍，0.15秒恢复到1.0倍
+- 脉冲动画与技能就绪音效同时触发
+
+### 验证
+- 场景测试：rts_arena.tscn加载成功，无SCRIPT ERROR
+- M2测试：2955 Passed, 0 Failed
