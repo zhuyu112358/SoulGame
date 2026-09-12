@@ -1,6 +1,30 @@
 # 战策 Battleplan 开发日志
 
 
+## [UI增强] 选中单位信息面板添加能量条显示（2026-09-12）
+
+**本轮工作**：增强选中单位信息面板，添加能量条显示，让玩家可以直观看到选中单位的能量状态，判断是否可以释放技能。
+
+**改进内容**：
+- RTSArenaController.gd：修改选中单位信息面板
+  - 面板高度从110增加到140，容纳能量条
+  - 新增蓝色能量进度条（UnitEnergyBar），带深蓝色背景和蓝色填充
+  - 新增能量数值标签（UnitEnergyText），显示"能量: 当前 / 最大"
+  - ATK/DEF/SPD属性标签位置下移
+  - _update_selected_unit_panel方法更新能量条和数值
+
+**修改文件**：
+- scripts/game/RTSArenaController.gd：修改_create_selected_unit_panel和_update_selected_unit_panel方法
+
+**验证结果**：
+- rts_arena场景测试：NO SCRIPT ERROR
+- M2测试：2955 Passed, 0 Failed
+
+---
+
+# 战策 Battleplan 开发日志
+
+
 ## [战斗玩法] 4v4选中单位死亡时自动切换到下一个存活单位（2026-09-12）
 
 **本轮工作**：增强4v4团队战斗的单位控制体验，当选中的玩家单位死亡时自动切换到下一个存活的单位，避免选中死亡单位后无法操作的问题。
