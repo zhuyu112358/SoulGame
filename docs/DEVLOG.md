@@ -1,6 +1,35 @@
 # 战策 Battleplan 开发日志
 
 
+## [战斗玩法] 4v4停止待命指令-S键停止选中单位或全队移动（2026-09-12）
+
+**本轮工作**：增强4v4团队战斗的单位控制能力，添加停止/待命指令功能。按S键可以停止选中单位或全队的移动。
+
+**改进内容**：
+- RTSArenaManager.gd：新增两个方法
+  - stop_player_unit(p_index)：停止指定索引的玩家单位（设置IDLE状态，清除攻击目标）
+  - stop_all_player_units()：停止所有存活的玩家单位
+- RTSArenaController.gd：修改_unhandled_input方法
+  - 添加S键快捷键处理
+  - 4v4团队战斗中：
+    - 有选中单位时：S键停止选中单位
+    - 未选中单位时：S键停止所有存活单位
+  - 1v1战斗中：S键停止player_unit
+  - 播放点击音效
+
+**修改文件**：
+- scripts/game/RTSArenaManager.gd：新增stop_player_unit和stop_all_player_units方法
+- scripts/game/RTSArenaController.gd：添加S键快捷键处理
+
+**验证结果**：
+- rts_arena场景测试：NO SCRIPT ERROR
+- M2测试：2955 Passed, 0 Failed
+
+---
+
+# 战策 Battleplan 开发日志
+
+
 ## [战斗玩法] 4v4全队攻击目标指令-未选中单位时右键点击设置全队攻击目标（2026-09-12）
 
 **本轮工作**：增强4v4团队战斗的单位控制能力，添加全队攻击目标指令功能。当没有选中单位时，右键点击AI单位会设置所有存活玩家单位的攻击目标。
