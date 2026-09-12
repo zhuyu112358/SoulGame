@@ -1,6 +1,28 @@
 # 战策 Battleplan 开发日志
 
 
+## [战斗玩法] 4v4技能冷却显示修复-冷却遮罩和错误提示使用选中单位（2026-09-12）
+
+**本轮工作**：修复4v4团队战斗中技能冷却显示不正确的问题。之前技能冷却遮罩和错误提示一直使用player_unit（1v1单位），而不是选中的团队单位。
+
+**修复内容**：
+- RTSArenaController.gd：修改两个方法
+  - _update_skill_cooldowns()：4v4团队战斗中使用选中单位的冷却数据，1v1保持使用player_unit
+  - _show_skill_error()：4v4团队战斗中使用选中单位的冷却和能量检查，1v1保持使用player_unit
+- 切换选中单位时，技能冷却显示会自动更新为新选中单位的状态
+
+**修改文件**：
+- scripts/game/RTSArenaController.gd：修改_update_skill_cooldowns和_show_skill_error方法
+
+**验证结果**：
+- rts_arena场景测试：NO SCRIPT ERROR
+- M2测试：2955 Passed, 0 Failed
+
+---
+
+# 战策 Battleplan 开发日志
+
+
 ## [战斗玩法] 4v4停止待命指令-S键停止选中单位或全队移动（2026-09-12）
 
 **本轮工作**：增强4v4团队战斗的单位控制能力，添加停止/待命指令功能。按S键可以停止选中单位或全队的移动。
